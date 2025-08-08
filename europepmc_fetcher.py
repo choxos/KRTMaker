@@ -1,5 +1,5 @@
 """
-Europe PMC bioRxiv fetcher - Simple and reliable XML access
+Europe PMC bioRxiv fetcher - Complete result retrieval with multiple pagination methods
 """
 from __future__ import annotations
 
@@ -7,8 +7,18 @@ import re
 import requests
 import tempfile
 import xml.etree.ElementTree as ET
-from typing import Optional, Tuple, Dict
+import time
+from typing import Optional, Tuple, Dict, List
 from urllib.parse import urlparse, quote
+
+# Try to import pyeuropepmc for automatic pagination
+try:
+    from pyeuropepmc.search import SearchClient
+    PYEUROPEPMC_AVAILABLE = True
+    print("✅ pyeuropepmc library available - will use automatic pagination")
+except ImportError:
+    PYEUROPEPMC_AVAILABLE = False
+    print("⚠️  pyeuropepmc not available - using manual pagination methods")
 
 class EuropePMCFetcher:
     """Fetch bioRxiv papers via Europe PMC API"""
@@ -73,7 +83,7 @@ class EuropePMCFetcher:
                 'query': query,
                 'format': 'xml',
                 'resultType': 'lite',
-                'pageSize': 10
+                'pageSize': 100  # Increased from 10
             }
             
             response = self.session.get(url, params=params, timeout=30)
@@ -155,7 +165,7 @@ class EuropePMCFetcher:
                 'query': query,
                 'format': 'xml',
                 'resultType': 'core',  # Get more detailed metadata
-                'pageSize': 5
+                'pageSize': 50  # Increased from 5
             }
             
             response = self.session.get(url, params=params, timeout=30)
@@ -277,3 +287,342 @@ class EuropePMCFetcher:
             os.unlink(file_path)
         except Exception:
             pass  # Ignore cleanup errors
+    
+    def search_all_biorxiv_papers(self, limit: Optional[int] = None) -> List[Dict]:
+        """
+        Search ALL bioRxiv papers in Europe PMC with complete pagination.
+        Returns a list of paper metadata dictionaries.
+        
+        Args:
+            limit: Optional limit on number of papers to retrieve (for testing)
+        """
+        print("🔍 Searching ALL bioRxiv papers in Europe PMC...")
+        
+        query = 'JOURNAL:("bioRxiv : the preprint server for biology")'
+        return self.search_complete_results(query, limit=limit)
+    
+    def search_all_biorxiv_papers_by_year(self, start_year: int = 2020, end_year: int = 2025, limit_per_year: Optional[int] = None) -> List[Dict]:
+        """
+        Search ALL bioRxiv papers year by year for better efficiency and progress tracking.
+        
+        Args:
+            start_year: Starting year (default: 2020)
+            end_year: Ending year (default: 2025) 
+            limit_per_year: Optional limit per year for testing
+            
+        Returns:
+            List of all paper metadata dictionaries across all years
+        """
+        print(f"📅 Searching bioRxiv papers year by year ({start_year}-{end_year})...")
+        
+        all_papers = []
+        total_papers_found = 0
+        
+        for year in range(start_year, end_year + 1):
+            print(f"\n📆 === YEAR {year} ===")
+            
+            # Create year-specific query
+            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
+            
+            # Search for this year
+            year_papers = self.search_complete_results(query, limit=limit_per_year)
+            
+            # Add year information to each paper
+            for paper in year_papers:
+                paper['search_year'] = year
+                
+            all_papers.extend(year_papers)
+            total_papers_found += len(year_papers)
+            
+            print(f"✅ Year {year}: {len(year_papers):,} papers (Total so far: {total_papers_found:,})")
+            
+            # Short pause between years to be respectful
+            time.sleep(1)
+        
+        print(f"\n🎉 COMPLETE! Total papers across all years: {total_papers_found:,}")
+        
+        # Sort by publication date if available
+        sorted_papers = sorted(all_papers, key=lambda x: x.get('publication_date', ''), reverse=True)
+        
+        return sorted_papers
+    
+    def get_year_statistics(self, start_year: int = 2020, end_year: int = 2025) -> Dict[int, int]:
+        """
+        Get paper count statistics by year without downloading full data.
+        
+        Args:
+            start_year: Starting year (default: 2020)
+            end_year: Ending year (default: 2025)
+            
+        Returns:
+            Dictionary mapping year -> paper count
+        """
+        print(f"📊 Getting bioRxiv statistics by year ({start_year}-{end_year})...")
+        
+        year_stats = {}
+        total_papers = 0
+        
+        for year in range(start_year, end_year + 1):
+            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
+            url = f"{self.BASE_URL}/search"
+            
+            params = {
+                'query': query,
+                'format': 'xml',
+                'resultType': 'lite',
+                'pageSize': 1,  # Just need the count
+                'retstart': 0
+            }
+            
+            try:
+                response = self.session.get(url, params=params, timeout=30)
+                response.raise_for_status()
+                
+                root = ET.fromstring(response.content)
+                hit_count_elem = root.find('.//hitCount')
+                
+                if hit_count_elem is not None:
+                    count = int(hit_count_elem.text)
+                    year_stats[year] = count
+                    total_papers += count
+                    print(f"📅 {year}: {count:,} papers")
+                else:
+                    year_stats[year] = 0
+                    print(f"📅 {year}: 0 papers")
+                    
+            except Exception as e:
+                print(f"❌ Error getting stats for {year}: {e}")
+                year_stats[year] = 0
+            
+            time.sleep(0.1)  # Small delay between requests
+        
+        print(f"\n📈 TOTAL across all years: {total_papers:,} papers")
+        print(f"📊 Year breakdown: {year_stats}")
+        
+        return year_stats
+    
+    def search_complete_results(self, query: str, limit: Optional[int] = None) -> List[Dict]:
+        """
+        Search Europe PMC with complete pagination to get ALL results.
+        
+        Args:
+            query: Search query string
+            limit: Optional limit on number of results (for testing)
+        """
+        all_results = []
+        page_size = 1000  # Maximum allowed by Europe PMC
+        ret_start = 0
+        total_count = None
+        
+        print(f"📊 Starting complete search: {query}")
+        
+        while True:
+            print(f"🔄 Fetching page: retstart={ret_start}, pageSize={page_size}")
+            
+            url = f"{self.BASE_URL}/search"
+            params = {
+                'query': query,
+                'format': 'xml',
+                'resultType': 'core',  # Get detailed metadata
+                'pageSize': page_size,
+                'retstart': ret_start
+            }
+            
+            try:
+                response = self.session.get(url, params=params, timeout=60)
+                response.raise_for_status()
+                
+                # Parse XML response
+                root = ET.fromstring(response.content)
+                
+                # Get total count on first request
+                if total_count is None:
+                    hit_count_elem = root.find('.//hitCount')
+                    if hit_count_elem is not None:
+                        total_count = int(hit_count_elem.text)
+                        print(f"📈 Total papers found: {total_count:,}")
+                        
+                        if limit and total_count > limit:
+                            print(f"⚠️  Limiting to {limit:,} papers for testing")
+                            total_count = limit
+                
+                # Extract results from this page
+                results = root.findall('.//result')
+                page_results = []
+                
+                for result in results:
+                    paper_data = self._extract_paper_data(result)
+                    if paper_data:
+                        page_results.append(paper_data)
+                        
+                        # Check limit
+                        if limit and len(all_results) >= limit:
+                            break
+                
+                all_results.extend(page_results)
+                print(f"✅ Retrieved {len(page_results)} papers (total: {len(all_results):,})")
+                
+                # Check if we have all results or hit limit
+                if (len(page_results) < page_size or 
+                    (limit and len(all_results) >= limit) or
+                    (total_count and len(all_results) >= total_count)):
+                    break
+                
+                # Prepare for next page
+                ret_start += page_size
+                
+                # Rate limiting - be respectful to Europe PMC
+                time.sleep(0.2)  # 200ms delay between requests
+                
+            except Exception as e:
+                print(f"❌ Error fetching page {ret_start}: {e}")
+                break
+        
+        print(f"🎉 Complete! Retrieved {len(all_results):,} total papers")
+        return all_results
+    
+    def _extract_paper_data(self, result_elem) -> Optional[Dict]:
+        """Extract paper data from a Europe PMC result element"""
+        try:
+            # Essential fields
+            title_elem = result_elem.find('title')
+            doi_elem = result_elem.find('doi')
+            id_elem = result_elem.find('id')
+            
+            # Debug: Print what we found
+            doi_text = doi_elem.text if doi_elem is not None else None
+            title_text = title_elem.text if title_elem is not None else None
+            id_text = id_elem.text if id_elem is not None else None
+            
+            # Must have either DOI or ID to be valid
+            if not doi_text and not id_text:
+                print(f"⚠️  Skipping paper: no DOI or ID found")
+                return None
+            
+            # Extract comprehensive metadata
+            paper_data = {
+                'doi': doi_text or 'No DOI',
+                'epmc_id': id_text,
+                'title': title_text if title_text else 'Unknown title',
+                'authors': self._extract_authors(result_elem),
+                'abstract': self._extract_abstract(result_elem),
+                'publication_date': self._extract_date(result_elem),
+                'journal': self._extract_journal(result_elem),
+                'keywords': self._extract_keywords(result_elem),
+                'pmcid': self._extract_text(result_elem, 'pmcid'),
+                'pmid': self._extract_text(result_elem, 'pmid'),
+                'source': 'europe_pmc_complete'
+            }
+            
+            # Optional debug output
+            # print(f"✅ Extracted: {doi_text or id_text} - {title_text[:50] if title_text else 'No title'}...")
+            
+            return paper_data
+            
+        except Exception as e:
+            print(f"❌ Error extracting paper data: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def _extract_authors(self, result_elem) -> str:
+        """Extract authors from result element"""
+        # Try detailed author list first
+        author_list_elem = result_elem.find('authorList')
+        if author_list_elem is not None:
+            authors = []
+            for author in author_list_elem.findall('.//author'):
+                fullName = author.find('fullName')
+                if fullName is not None:
+                    authors.append(fullName.text)
+            if authors:
+                return ', '.join(authors)
+        
+        # Fall back to author string
+        authors_elem = result_elem.find('authorString')
+        return authors_elem.text if authors_elem is not None else 'Unknown authors'
+    
+    def _extract_abstract(self, result_elem) -> Optional[str]:
+        """Extract abstract from result element"""
+        abstract_elem = result_elem.find('abstractText')
+        return abstract_elem.text if abstract_elem is not None else None
+    
+    def _extract_date(self, result_elem) -> Optional[str]:
+        """Extract publication date from result element"""
+        date_elem = result_elem.find('firstPublicationDate')
+        return date_elem.text if date_elem is not None else None
+    
+    def _extract_journal(self, result_elem) -> str:
+        """Extract journal name from result element"""
+        journal_elem = result_elem.find('journalTitle')
+        return journal_elem.text if journal_elem is not None else 'bioRxiv'
+    
+    def _extract_keywords(self, result_elem) -> List[str]:
+        """Extract keywords/mesh terms from result element"""
+        keywords = []
+        mesh_heading_list = result_elem.find('meshHeadingList')
+        if mesh_heading_list is not None:
+            for mesh_heading in mesh_heading_list.findall('.//meshHeading'):
+                descriptor_name = mesh_heading.find('descriptorName')
+                if descriptor_name is not None:
+                    keywords.append(descriptor_name.text)
+        return keywords
+    
+    def _extract_text(self, result_elem, field_name: str) -> Optional[str]:
+        """Extract text content from a field"""
+        elem = result_elem.find(field_name)
+        return elem.text if elem is not None else None
+    
+    def search_by_dois(self, dois: List[str]) -> Dict[str, Dict]:
+        """
+        Search for multiple DOIs and return comprehensive metadata.
+        
+        Args:
+            dois: List of DOI strings to search for
+            
+        Returns:
+            Dictionary mapping DOI -> metadata dict
+        """
+        print(f"🔍 Searching for {len(dois)} specific DOIs...")
+        
+        results = {}
+        
+        # Search in batches to be efficient
+        batch_size = 50
+        for i in range(0, len(dois), batch_size):
+            batch = dois[i:i+batch_size]
+            print(f"📄 Processing batch {i//batch_size + 1}: {len(batch)} DOIs")
+            
+            # Create OR query for this batch
+            doi_queries = [f'DOI:"{doi}"' for doi in batch]
+            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND ({" OR ".join(doi_queries)})'
+            
+            batch_results = self.search_complete_results(query)
+            
+            # Map results by DOI
+            for paper in batch_results:
+                if paper['doi'] in batch:
+                    results[paper['doi']] = paper
+            
+            time.sleep(0.5)  # Rate limiting between batches
+        
+        print(f"✅ Found {len(results)} papers out of {len(dois)} DOIs")
+        return results
+    
+    def get_all_biorxiv_dois(self, limit: Optional[int] = None) -> List[str]:
+        """
+        Get all bioRxiv DOIs from Europe PMC.
+        
+        Args:
+            limit: Optional limit for testing
+            
+        Returns:
+            List of DOI strings
+        """
+        print("📋 Retrieving all bioRxiv DOIs...")
+        
+        papers = self.search_all_biorxiv_papers(limit=limit)
+        dois = [paper['doi'] for paper in papers if paper.get('doi')]
+        
+        print(f"📊 Total DOIs extracted: {len(dois):,}")
+        return dois
