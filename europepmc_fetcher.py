@@ -154,7 +154,7 @@ class EuropePMCFetcher:
             params = {
                 'query': query,
                 'format': 'xml',
-                'resultType': 'lite',
+                'resultType': 'core',  # Get more detailed metadata
                 'pageSize': 5
             }
             
@@ -170,17 +170,44 @@ class EuropePMCFetcher:
             for result in results:
                 result_doi = result.find('doi')
                 if result_doi is not None and result_doi.text == doi:
-                    # Extract metadata in bioRxiv-compatible format
+                    # Extract comprehensive metadata from Europe PMC
                     title_elem = result.find('title')
                     authors_elem = result.find('authorString')
                     pub_date_elem = result.find('firstPublicationDate')
+                    abstract_elem = result.find('abstractText')
+                    journal_elem = result.find('journalTitle')
+                    pmcid_elem = result.find('pmcid')
+                    pmid_elem = result.find('pmid')
+                    
+                    # Extract author list if available
+                    author_list_elem = result.find('authorList')
+                    authors_detailed = []
+                    if author_list_elem is not None:
+                        for author in author_list_elem.findall('.//author'):
+                            fullName = author.find('fullName')
+                            if fullName is not None:
+                                authors_detailed.append(fullName.text)
+                    
+                    # Extract keywords/mesh terms if available
+                    keywords = []
+                    mesh_heading_list = result.find('meshHeadingList')
+                    if mesh_heading_list is not None:
+                        for mesh_heading in mesh_heading_list.findall('.//meshHeading'):
+                            descriptor_name = mesh_heading.find('descriptorName')
+                            if descriptor_name is not None:
+                                keywords.append(descriptor_name.text)
                     
                     return {
                         'preprint_doi': doi,
                         'preprint_title': title_elem.text if title_elem is not None else 'Unknown title',
                         'preprint_authors': authors_elem.text if authors_elem is not None else 'Unknown authors',
+                        'preprint_authors_detailed': authors_detailed if authors_detailed else None,
                         'preprint_date': pub_date_elem.text if pub_date_elem is not None else None,
-                        'preprint_platform': 'bioRxiv',
+                        'preprint_abstract': abstract_elem.text if abstract_elem is not None else None,
+                        'preprint_platform': journal_elem.text if journal_elem is not None else 'bioRxiv',
+                        'preprint_keywords': keywords if keywords else None,
+                        'pmcid': pmcid_elem.text if pmcid_elem is not None else None,
+                        'pmid': pmid_elem.text if pmid_elem is not None else None,
                         'source': 'europe_pmc'
                     }
             

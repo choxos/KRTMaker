@@ -11,7 +11,7 @@ urlpatterns = [
     
     # Article management
     path('articles/', views.ArticleDashboardView.as_view(), name='article_dashboard'),
-    path('articles/<str:identifier>/', views.ArticleProfileView.as_view(), name='article_profile'),
+    path('articles/<path:identifier>/', views.ArticleProfileView.as_view(), name='article_profile'),
     
     # path('analytics/', views.AnalyticsView.as_view(), name='analytics'),  # TODO: Implement AnalyticsView
     

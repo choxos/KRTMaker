@@ -152,7 +152,45 @@ class KRTMakerView(FormView):
                 fetcher = BioRxivFetcher()
                 session_doi = fetcher.parse_biorxiv_identifier(biorxiv_url)
                 if session_doi:
-                    biorxiv_metadata = fetcher.get_paper_metadata(session_doi) or {}
+                    raw_metadata = fetcher.get_paper_metadata(session_doi) or {}
+                    
+                    # Map Europe PMC metadata to our format
+                    if raw_metadata:
+                        biorxiv_metadata = {
+                            'doi': raw_metadata.get('preprint_doi', session_doi),
+                            'title': raw_metadata.get('preprint_title'),
+                            'authors': raw_metadata.get('preprint_authors'),
+                            'authors_detailed': raw_metadata.get('preprint_authors_detailed'),
+                            'publication_date': raw_metadata.get('preprint_date'),
+                            'abstract': raw_metadata.get('preprint_abstract'),
+                            'journal': raw_metadata.get('preprint_platform', 'bioRxiv'),
+                            'keywords': raw_metadata.get('preprint_keywords'),
+                            'pmcid': raw_metadata.get('pmcid'),
+                            'pmid': raw_metadata.get('pmid'),
+                            'source': raw_metadata.get('source', 'europe_pmc')
+                        }
+            
+            # Parse authors - use detailed list if available, otherwise parse string
+            authors_list = []
+            if biorxiv_metadata.get('authors_detailed'):
+                # Use detailed author list if available
+                authors_list = biorxiv_metadata['authors_detailed']
+            elif biorxiv_metadata.get('authors'):
+                # Fall back to parsing comma-separated string
+                authors_str = biorxiv_metadata['authors']
+                if isinstance(authors_str, str):
+                    authors_list = [author.strip() for author in authors_str.split(',')]
+                
+            # Parse publication date if available  
+            pub_date = None
+            if biorxiv_metadata.get('publication_date'):
+                try:
+                    from datetime import datetime
+                    date_str = biorxiv_metadata['publication_date']
+                    # Europe PMC returns dates in YYYY-MM-DD format
+                    pub_date = datetime.strptime(date_str[:10], '%Y-%m-%d').date()
+                except (ValueError, TypeError):
+                    pub_date = None
             
             # Create session record
             session = KRTSession.objects.create(
@@ -161,13 +199,13 @@ class KRTMakerView(FormView):
                 file_size=file_size,
                 input_method=input_method,
                 doi=biorxiv_metadata.get('doi') or session_doi,
-                biorxiv_id=biorxiv_metadata.get('biorxiv_id'),
-                epmc_id=biorxiv_metadata.get('epmc_id'),
-                authors=json.dumps(biorxiv_metadata.get('authors', [])) if biorxiv_metadata.get('authors') else None,
-                publication_date=biorxiv_metadata.get('publication_date'),
-                journal=biorxiv_metadata.get('journal'),
+                biorxiv_id=session_doi,  # Store the bioRxiv ID
+                epmc_id=None,  # Will be populated when we get EPMC ID
+                authors=json.dumps(authors_list) if authors_list else None,
+                publication_date=pub_date,
+                journal=biorxiv_metadata.get('journal', 'bioRxiv'),
                 keywords=json.dumps(biorxiv_metadata.get('keywords', [])) if biorxiv_metadata.get('keywords') else None,
-                categories=json.dumps(biorxiv_metadata.get('categories', [])) if biorxiv_metadata.get('categories') else None,
+                categories=None,  # Categories not available from Europe PMC
                 mode=mode,
                 provider=provider,
                 model_name=model,
@@ -226,8 +264,10 @@ class KRTMakerView(FormView):
             
             # Update session with results
             session.status = 'completed'
-            session.title = result.get('title', '')
-            session.abstract = result.get('abstract', '')
+            # Use bioRxiv metadata title if available, otherwise use extracted title
+            session.title = biorxiv_metadata.get('title') or result.get('title', '')
+            # Use bioRxiv metadata abstract if available, otherwise use extracted abstract
+            session.abstract = biorxiv_metadata.get('abstract') or result.get('abstract', '')
             session.krt_data = result.get('rows', [])
             session.processing_time = processing_time
             session.save()
@@ -369,8 +409,8 @@ class ArticleProfileView(TemplateView):
         identifier = kwargs.get('identifier')
         
         # Find sessions for this article (by DOI or session_id)
-        if identifier.startswith('10.1101/'):
-            # DOI identifier
+        if identifier.startswith('10.1101/') or '/' in identifier:
+            # DOI identifier (bioRxiv DOIs start with 10.1101/)
             sessions = KRTSession.objects.filter(doi=identifier, status='completed').order_by('-created_at')
             article_key = identifier
         else:
