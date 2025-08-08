@@ -104,11 +104,24 @@ def _normalize_llm_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, str]]:
 
         resource_name = (
             get_ci(row, KRT_COLUMN_RESOURCE_NAME) or ""
-        ).strip() or "Unknown resource"
+        ).strip()
+        
+        # Only use fallback if truly empty - let AI handle proper names
+        if not resource_name or resource_name.lower() in ['n/a', 'na', 'unknown', 'none']:
+            resource_name = "Resource name not extracted"
         identifier = (
             get_ci(row, KRT_COLUMN_IDENTIFIER) or ""
         ).strip() or "No identifier exists"
-        new_or_reuse = (get_ci(row, KRT_COLUMN_NEW_OR_REUSE) or "").strip() or "Reuse"
+        new_or_reuse_raw = (get_ci(row, KRT_COLUMN_NEW_OR_REUSE) or "").strip()
+        source_text = (get_ci(row, KRT_COLUMN_SOURCE) or "").strip().lower()
+        
+        # Apply correct NEW/REUSE logic based on source
+        if new_or_reuse_raw.lower() in ['new', 'reuse']:
+            new_or_reuse = new_or_reuse_raw.lower().capitalize()
+        elif any(phrase in source_text for phrase in ['this study', 'this paper', 'current study', 'present study', 'authors']):
+            new_or_reuse = "New"
+        else:
+            new_or_reuse = "Reuse"
         source = (get_ci(row, KRT_COLUMN_SOURCE) or "").strip()
         addl = (get_ci(row, KRT_COLUMN_ADDITIONAL_INFO) or "").strip()
 

@@ -43,9 +43,11 @@ IDENTIFIER EXAMPLES:
 - Chemicals: "Cat# D9628" (Sigma-Aldrich)
 - If no identifier exists: "No identifier exists"
 
-NEW/REUSE GUIDELINES:
-- "new": Data collected, protocols developed, code written, organisms generated FOR THIS STUDY
-- "reuse": Pre-existing resources, published protocols, commercial reagents, established cell lines
+NEW/REUSE GUIDELINES (CRITICAL - FOLLOW EXACTLY):
+- "new": ONLY when source is "This study", "This paper", "Current study", or similar phrases indicating the resource was generated/created/collected in this specific study
+- "reuse": ALL commercial products, published software, established cell lines, commercial reagents, published protocols from other sources
+- Examples of "new" sources: "This study", "This paper", "Current study", "Authors", "Present study"
+- Examples of "reuse" sources: Company names (Abcam, Invitrogen, BD Biosciences), Software developers, Previous publications
 
 WEB SEARCH INSTRUCTIONS:
 When the article text lacks specific information (vendor, catalog #, RRID, version), search the web to find:
@@ -64,32 +66,64 @@ QUALITY STANDARDS:
 - Dilution factors, concentrations in ADDITIONAL INFORMATION
 - Specify figure panels/tables produced by new datasets/code
 
-EXAMPLES OF GOOD ENTRIES:
+RESOURCE NAME PATTERNS (Extract from manuscript text using these patterns):
+
+ANTIBODIES:
+- Pattern: [Species] [polyclonal/monoclonal] anti-[Target] [optional: Clone info]
+- Examples: "Chicken polyclonal anti-MAP2", "Mouse monoclonal anti-Tyrosine Hydroxylase", "PE Mouse Anti-Human CD49e Clone IIA1", "Alexa Fluor 647 donkey anti-mouse IgG (H+L)"
+
+SOFTWARE:
+- Pattern: [Software Name] [Version in parentheses if available]
+- Examples: "CellRanger", "HTSeq (version 1.99.2)", "FastQC (version 0.11.5)", "STAR (version 2.5.0a)", "Seurat (version 4.0.0)"
+
+CHEMICALS/REAGENTS:
+- Pattern: [Specific product name] [optional: descriptive info]
+- Examples: "Fetal Bovine Serum (FBS)", "Target retrieval buffer", "Protease IV", "Human TNF alpha", "Opal 520", "Matrigel"
+
+COMMERCIAL ASSAYS:
+- Examples: "RNAscopeTM Multiplex Fluorescent V2 kit", "SsoFast EvaGreen Supermix", "iScript Reverse Transcription Supermix"
+
+NEW RESOURCES (when source = "This study"):
+- Datasets: "Raw and analyzed data to the NCBI:GEO server (RNA-seq)", "Raw and analyzed data to the NCBI:GEO server (CRISPR-screen)"
+- Cell lines: "Human: NURR1-GFP reporter hESC", "Human: iCAS/NURR1-GFP hESC"
+- Oligonucleotides: "Human PTGFR2 PCR primer forward: GCTGCTTCTCATTGTCTCGG", "Human GAPDH qPCR primer forward: ATGTTCGTCATGGGTGTGAA"
+
+EXAMPLES OF COMPLETE ENTRIES:
+
 {
   "RESOURCE TYPE": "Antibody",
-  "RESOURCE NAME": "Rabbit Anti-TH", 
-  "SOURCE": "Millipore",
-  "IDENTIFIER": "Cat# AB152; RRID: AB_390204",
+  "RESOURCE NAME": "Chicken polyclonal anti-MAP2", 
+  "SOURCE": "Abcam",
+  "IDENTIFIER": "Cat# ab5392; RRID: AB_2138153",
   "NEW/REUSE": "reuse",
   "ADDITIONAL INFORMATION": "Dilution: 1:500"
 }
 
 {
   "RESOURCE TYPE": "Software/code",
-  "RESOURCE NAME": "FIJI Version 2.10.0",
-  "SOURCE": "National Institute of Health (NIH)", 
-  "IDENTIFIER": "https://imagej.net/software/fiji/; RRID: SCR_002285",
+  "RESOURCE NAME": "HTSeq (version 1.99.2)",
+  "SOURCE": "Anders et al.", 
+  "IDENTIFIER": "https://htseq.readthedocs.io/en/master/",
   "NEW/REUSE": "reuse",
   "ADDITIONAL INFORMATION": ""
 }
 
 {
   "RESOURCE TYPE": "Dataset",
-  "RESOURCE NAME": "RNA-Seq expression data",
-  "SOURCE": "Gene Expression Omnibus (GEO)",
-  "IDENTIFIER": "GEO Accession #: GSE123456; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456", 
+  "RESOURCE NAME": "Raw and analyzed data to the NCBI:GEO server (RNA-seq)",
+  "SOURCE": "This study",
+  "IDENTIFIER": "GEO Accession #: GSE216365; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE216365", 
   "NEW/REUSE": "new",
   "ADDITIONAL INFORMATION": "Raw data used to produce Figure panels 2A-2C"
+}
+
+{
+  "RESOURCE TYPE": "Oligonucleotide",
+  "RESOURCE NAME": "Human GAPDH qPCR primer forward: ATGTTCGTCATGGGTGTGAA",
+  "SOURCE": "This study",
+  "IDENTIFIER": "No identifier exists", 
+  "NEW/REUSE": "new",
+  "ADDITIONAL INFORMATION": "Custom designed primer for qPCR validation"
 }
 
 Remember: A reader must be able to unambiguously identify and obtain every resource listed. Completeness and accuracy are critical for scientific reproducibility."""
@@ -127,14 +161,25 @@ class LLMClient:
     ) -> List[Dict[str, str]]:
         prompt = (
             "Extract a comprehensive Key Resources Table (KRT) in JSON format from this scientific article.\n\n"
-            "CRITICAL INSTRUCTIONS:\n"
+            "CRITICAL RESOURCE NAME EXTRACTION:\n"
+            "- Find the EXACT names as they appear in the manuscript (Methods, Materials sections)\n"
+            "- For antibodies: Look for patterns like 'anti-[protein]', 'mouse anti-', 'rabbit polyclonal'\n"
+            "- For software: Include version numbers from the text (e.g., 'ImageJ version 1.53')\n"
+            "- For chemicals: Use the specific product names mentioned (e.g., 'DAPI', 'Trypsin-EDTA')\n"
+            "- For primers: Include the actual primer names or sequences if given\n"
+            "- NEVER use placeholder names like 'N/A', 'Various antibodies', 'Standard reagents'\n\n"
+            "CRITICAL NEW/REUSE LOGIC:\n"
+            "- NEW: ONLY when the text explicitly states the resource was generated/created/collected 'in this study', 'for this study', or source is described as 'this study', 'current study', 'authors'\n"
+            "- REUSE: ALL commercial products, published software, established protocols, anything from companies or other publications\n"
+            "- When in doubt, default to 'reuse' unless clearly stated as created for this study\n\n"
+            "SOURCE IDENTIFICATION:\n"
+            "- For NEW resources: Use 'This study', 'This paper', 'Current study'\n"
+            "- For REUSE resources: Use specific company names (Abcam, Invitrogen, Sigma-Aldrich), software developers, or publication authors\n\n"
+            "REQUIRED ACTIONS:\n"
             "- Analyze the ENTIRE article text thoroughly, especially Methods, Materials, and Results sections\n"
-            "- For EVERY resource mentioned (antibodies, software, reagents, datasets, etc.), create a KRT entry\n" 
-            "- When specific information is missing (vendor, catalog #, RRID), use your knowledge to search for the most likely correct information\n"
+            "- For EVERY resource mentioned, create a KRT entry with proper names from the text\n" 
+            "- When vendor/catalog info is missing, use your knowledge to find the most likely correct information\n"
             "- NEVER use 'N/A', 'Unknown', or leave required fields empty\n"
-            "- Ensure resource names match exactly how they appear in the manuscript text\n"
-            "- Include version numbers for all software\n"
-            "- Use specific vendor/supplier names, not generic descriptions\n"
             "- For new datasets/code, specify which figures/tables they produced\n\n"
             "Return only valid JSON array with no additional text or formatting.\n\n"
         )
