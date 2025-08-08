@@ -107,6 +107,7 @@ class BioRxivFetcher:
     def download_xml_from_s3(self, doi: str, metadata: dict) -> Optional[str]:
         """
         Download XML from bioRxiv S3 bucket (official recommended method).
+        bioRxiv S3 files use UUID names, so we need to search manifests to find the right paper.
         Returns path to extracted XML file, or None if failed.
         """
         try:
@@ -119,9 +120,6 @@ class BioRxivFetcher:
             if not s3_folder:
                 raise ValueError(f"Could not parse date: {preprint_date}")
             
-            # Extract paper ID for searching
-            paper_id = doi.replace('10.1101/', '')
-            
             # Set up S3 client
             s3_client = build_s3_client()
             
@@ -129,57 +127,104 @@ class BioRxivFetcher:
             prefix = f"Current_Content/{s3_folder}/"
             
             try:
-                # List objects in the monthly folder
+                # List all .meca files in the monthly folder
                 response = s3_client.list_objects_v2(
                     Bucket=BIO_RXIV_BUCKET,
                     Prefix=prefix,
                     RequestPayer='requester'
                 )
                 
-                # Look for files containing our paper ID
-                meca_key = None
-                if 'Contents' in response:
-                    for obj in response['Contents']:
-                        if paper_id in obj['Key'] and obj['Key'].endswith('.meca'):
-                            meca_key = obj['Key']
-                            break
+                if 'Contents' not in response:
+                    raise ValueError(f"No files found in S3 folder {s3_folder}")
                 
-                if not meca_key:
-                    raise ValueError(f"Paper {paper_id} not found in S3 folder {s3_folder}")
+                # Get .meca files
+                meca_files = [obj for obj in response['Contents'] if obj['Key'].endswith('.meca')]
                 
-                # Download the .meca file (it's actually a zip)
-                temp_fd, temp_meca_path = tempfile.mkstemp(suffix='.meca', prefix='biorxiv_')
-                os.close(temp_fd)
+                if not meca_files:
+                    raise ValueError(f"No .meca files found in S3 folder {s3_folder}")
                 
-                s3_client.download_file(
-                    BIO_RXIV_BUCKET,
-                    meca_key,
-                    temp_meca_path,
-                    ExtraArgs={'RequestPayer': 'requester'}
-                )
+                print(f"Searching through {len(meca_files)} .meca files in {s3_folder}...")
                 
-                # Extract XML from the .meca zip file
-                xml_path = self._extract_xml_from_meca(temp_meca_path, paper_id)
+                # Search for our DOI by checking manifest files
+                for i, meca_obj in enumerate(meca_files[:20]):  # Limit search for testing
+                    try:
+                        meca_key = meca_obj['Key']
+                        
+                        # Download .meca file temporarily
+                        temp_fd, temp_meca_path = tempfile.mkstemp(suffix='.meca', prefix='biorxiv_search_')
+                        os.close(temp_fd)
+                        
+                        s3_client.download_file(
+                            BIO_RXIV_BUCKET,
+                            meca_key,
+                            temp_meca_path,
+                            ExtraArgs={'RequestPayer': 'requester'}
+                        )
+                        
+                        # Check if this .meca contains our paper
+                        if self._meca_contains_doi(temp_meca_path, doi):
+                            print(f"Found paper in {meca_key}!")
+                            
+                            # Extract XML from this .meca file
+                            xml_path = self._extract_xml_from_meca(temp_meca_path, doi)
+                            
+                            # Clean up .meca file
+                            try:
+                                os.unlink(temp_meca_path)
+                            except:
+                                pass
+                            
+                            return xml_path
+                        
+                        # Clean up if not the right file
+                        try:
+                            os.unlink(temp_meca_path)
+                        except:
+                            pass
+                        
+                        if (i + 1) % 5 == 0:
+                            print(f"   Searched {i + 1}/{len(meca_files)} files...")
+                    
+                    except Exception as e:
+                        print(f"   Error checking {meca_obj['Key']}: {e}")
+                        continue
                 
-                # Clean up .meca file
-                try:
-                    os.unlink(temp_meca_path)
-                except:
-                    pass
-                
-                return xml_path
+                raise ValueError(f"Paper {doi} not found in any .meca files in {s3_folder}")
                 
             except ClientError as e:
-                # Try alternative folder structures if needed
-                if "NoSuchKey" in str(e):
-                    # Maybe try Back_Content or different naming
-                    raise ValueError(f"Paper not found in S3: {e}")
-                else:
-                    raise ValueError(f"S3 access error: {e}")
+                raise ValueError(f"S3 access error: {e}")
         
         except Exception as e:
             print(f"Error downloading XML from S3 for {doi}: {e}")
             return None
+    
+    def _meca_contains_doi(self, meca_path: str, doi: str) -> bool:
+        """
+        Check if a .meca file contains the specified DOI by examining the XML content
+        """
+        try:
+            with zipfile.ZipFile(meca_path, 'r') as zip_file:
+                # Look for XML files in the content folder (where the actual paper XML is)
+                xml_files = [f for f in zip_file.namelist() 
+                           if f.endswith('.xml') and 'content/' in f and 'manifest' not in f.lower()]
+                
+                if not xml_files:
+                    return False
+                
+                # Read the main XML content (first XML file found)
+                xml_content = zip_file.read(xml_files[0]).decode('utf-8', errors='ignore')
+                
+                # Check if our DOI appears in the XML content
+                # Try both full DOI and just the ID part
+                paper_id = doi.replace('10.1101/', '')
+                
+                return (doi in xml_content or 
+                        paper_id in xml_content or
+                        f"doi>{doi}<" in xml_content or
+                        f"doi>{paper_id}<" in xml_content)
+        
+        except Exception:
+            return False
     
     def _extract_xml_from_meca(self, meca_path: str, paper_id: str) -> Optional[str]:
         """
