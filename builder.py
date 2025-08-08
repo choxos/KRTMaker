@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from jats_parser import read_xml, extract_plain_text, extract_title_and_abstract
+from jats_parser import read_xml, extract_plain_text, extract_title_and_abstract, extract_relevant_sections_for_llm
 from regex_extractor import extract_krt_regex
 from krt_types import (
     KRTEntry,
@@ -53,9 +53,10 @@ def build_from_xml_path(
 
     tree = read_xml(xml_path)
     title, abstract = extract_title_and_abstract(tree)
-    text = extract_plain_text(tree)
-
+    
     if options.mode == "llm":
+        # For LLM mode, extract only relevant sections to reduce API usage
+        text = extract_relevant_sections_for_llm(tree)
         config = LLMConfig(
             provider=(options.provider or "openai_compatible"),
             model=(options.model or "gpt-4o-mini"),
@@ -76,6 +77,8 @@ def build_from_xml_path(
             "mode": "llm",
         }
     else:
+        # For regex mode, use full text for comprehensive pattern matching
+        text = extract_plain_text(tree)
         entries: List[KRTEntry] = extract_krt_regex(text)
         rows = krt_entries_to_json_rows(entries)
         return {

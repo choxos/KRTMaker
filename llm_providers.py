@@ -196,9 +196,10 @@ class LLMClient:
         self, article_text: str, extra_instructions: Optional[str] = None
     ) -> List[Dict[str, str]]:
         prompt = (
-            "Extract a comprehensive Key Resources Table (KRT) in JSON format from this scientific article.\n\n"
+            "Extract a comprehensive Key Resources Table (KRT) in JSON format from these targeted sections of a scientific article.\n\n"
+            "CONTENT PROVIDED: You are receiving the METHODS, RESULTS, and APPENDIX sections only (not the full article). This focused content contains the most relevant information for resource identification.\n\n"
             "CRITICAL RESOURCE NAME EXTRACTION:\n"
-            "- Find the EXACT names as they appear in the manuscript (Methods, Materials sections)\n"
+            "- Find the EXACT names as they appear in the provided sections\n"
             "- For antibodies: Look for patterns like 'anti-[protein]', 'mouse anti-', 'rabbit polyclonal'\n"
             "- For software: Include version numbers from the text (e.g., 'ImageJ version 1.53')\n"
             "- For chemicals: Use the specific product names mentioned (e.g., 'DAPI', 'Trypsin-EDTA')\n"
@@ -212,8 +213,8 @@ class LLMClient:
             "- For NEW resources: Use 'This study', 'This paper', 'Current study'\n"
             "- For REUSE resources: Use specific company names (Abcam, Invitrogen, Sigma-Aldrich), software developers, or publication authors\n\n"
             "REQUIRED ACTIONS:\n"
-            "- Analyze the ENTIRE article text thoroughly, especially Methods, Materials, and Results sections\n"
-            "- For EVERY resource mentioned, create a KRT entry with proper names from the text\n" 
+            "- Analyze ALL provided sections thoroughly for resource mentions\n"
+            "- For EVERY resource mentioned, create a KRT entry with proper names from the text\n"
             "- When vendor/catalog info is missing, use your knowledge to find the most likely correct information\n"
             "- NEVER use 'N/A', 'Unknown', or leave required fields empty\n"
             "- For new datasets/code, specify which figures/tables they produced\n\n"
@@ -222,8 +223,8 @@ class LLMClient:
         if extra_instructions:
             prompt += f"Additional requirements: {extra_instructions.strip()}\n\n"
         prompt += (
-            "Article full text:\n" + article_text[:150000]
-        )  # Reduced slightly to allow for longer system prompt
+            "Relevant article sections (Methods, Results, Appendix):\n" + article_text[:150000]
+        )  # Targeted sections to reduce API usage while maintaining quality
 
         provider = (self.config.provider or "openai_compatible").lower()
         if provider == "openai":
