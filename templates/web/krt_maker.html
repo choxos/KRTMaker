@@ -1,0 +1,406 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}KRT Maker - Create Your Key Resource Table{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feature-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .llm-config {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 15px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        background-color: #fafafa;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #007bff;
+        background-color: #f0f8ff;
+    }
+    
+    .upload-area.dragover {
+        border-color: #007bff;
+        background-color: #e3f2fd;
+    }
+    
+    .mode-selection .form-check {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .mode-selection .form-check:hover {
+        border-color: #007bff;
+    }
+    
+    .mode-selection .form-check-input:checked ~ .form-check-label {
+        color: #007bff;
+        font-weight: 600;
+    }
+    
+    .mode-selection .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    .btn-process {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-process:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .processing-indicator {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="fas fa-magic me-3"></i>KRT Maker
+            </h1>
+            <p class="lead text-muted">
+                Transform your bioRxiv manuscripts into comprehensive Key Resource Tables
+            </p>
+        </div>
+    </div>
+
+    <!-- Processing Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card feature-card">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="krt-form">
+                        {% csrf_token %}
+                        
+                        <!-- File Upload Section -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-upload me-2 text-primary"></i>Upload Your Manuscript
+                            </h5>
+                            
+                            <div class="upload-area" id="upload-area">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted">Drag and drop your XML file here</h6>
+                                <p class="text-muted small mb-3">or click to browse</p>
+                                {{ form.xml_file }}
+                                {% if form.xml_file.help_text %}
+                                    <small class="form-text text-muted">{{ form.xml_file.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            {% if form.xml_file.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.xml_file.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Extraction Method Selection -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-cogs me-2 text-primary"></i>Extraction Method
+                            </h5>
+                            
+                            <div class="mode-selection">
+                                {% for choice in form.mode %}
+                                    <div class="form-check">
+                                        {{ choice.tag }}
+                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}">
+                                            <strong>{{ choice.choice_label|slice:":1" }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ choice.choice_label|slice:"1:" }}</small>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.mode.help_text %}
+                                <small class="form-text text-muted">{{ form.mode.help_text }}</small>
+                            {% endif %}
+                            {% if form.mode.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.mode.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- LLM Configuration (Hidden by default) -->
+                        <div class="llm-config" id="llm-config" style="display: none;">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-robot me-2"></i>AI Configuration
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.provider.id_for_label }}" class="form-label">{{ form.provider.label }}</label>
+                                    {{ form.provider }}
+                                    {% if form.provider.help_text %}
+                                        <small class="form-text text-muted">{{ form.provider.help_text }}</small>
+                                    {% endif %}
+                                    {% if form.provider.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.provider.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.model.id_for_label }}" class="form-label">{{ form.model.label }}</label>
+                                    {{ form.model }}
+                                    {% if form.model.help_text %}
+                                        <small class="form-text text-muted">{{ form.model.help_text }}</small>
+                                    {% endif %}
+                                    {% if form.model.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.model.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3" id="base-url-field" style="display: none;">
+                                <label for="{{ form.base_url.id_for_label }}" class="form-label">{{ form.base_url.label }}</label>
+                                {{ form.base_url }}
+                                {% if form.base_url.help_text %}
+                                    <small class="form-text text-muted">{{ form.base_url.help_text }}</small>
+                                {% endif %}
+                                {% if form.base_url.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.base_url.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.api_key.id_for_label }}" class="form-label">{{ form.api_key.label }}</label>
+                                {{ form.api_key }}
+                                {% if form.api_key.help_text %}
+                                    <small class="form-text text-muted">{{ form.api_key.help_text }}</small>
+                                {% endif %}
+                                {% if form.api_key.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.api_key.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.extra_instructions.id_for_label }}" class="form-label">{{ form.extra_instructions.label }}</label>
+                                {{ form.extra_instructions }}
+                                {% if form.extra_instructions.help_text %}
+                                    <small class="form-text text-muted">{{ form.extra_instructions.help_text }}</small>
+                                {% endif %}
+                                {% if form.extra_instructions.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.extra_instructions.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-process" id="submit-btn">
+                                <i class="fas fa-magic me-2"></i>Create KRT
+                            </button>
+                        </div>
+                        
+                        <!-- Processing Indicator -->
+                        <div class="processing-indicator" id="processing">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Processing your manuscript...</p>
+                            <small class="text-muted">This may take a few moments depending on the file size and method selected.</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-question-circle me-2 text-info"></i>How to Use
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-download me-2"></i>1. Get Your XML File</h6>
+                            <p class="small text-muted">Download the XML/JATS file from bioRxiv for your manuscript.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-upload me-2"></i>2. Upload & Configure</h6>
+                            <p class="small text-muted">Upload your file and choose between fast regex or AI-powered extraction.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-table me-2"></i>3. Get Your KRT</h6>
+                            <p class="small text-muted">Download your completed Key Resource Table in your preferred format.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get form elements
+    const form = document.getElementById('krt-form');
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    const llmConfig = document.getElementById('llm-config');
+    const providerSelect = document.getElementById('id_provider');
+    const baseUrlField = document.getElementById('base-url-field');
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('id_xml_file');
+    const submitBtn = document.getElementById('submit-btn');
+    const processing = document.getElementById('processing');
+
+    // Handle mode selection
+    function updateLLMVisibility() {
+        const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+        if (selectedMode === 'llm') {
+            llmConfig.style.display = 'block';
+        } else {
+            llmConfig.style.display = 'none';
+        }
+    }
+
+    // Handle provider selection
+    function updateProviderFields() {
+        const selectedProvider = providerSelect.value;
+        if (selectedProvider === 'openai_compatible') {
+            baseUrlField.style.display = 'block';
+        } else {
+            baseUrlField.style.display = 'none';
+        }
+    }
+
+    // Event listeners for mode changes
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', updateLLMVisibility);
+    });
+
+    // Event listener for provider changes
+    providerSelect.addEventListener('change', updateProviderFields);
+
+    // File upload drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            updateFileDisplay(files[0]);
+        }
+    });
+
+    // Click to upload
+    uploadArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            updateFileDisplay(this.files[0]);
+        }
+    });
+
+    function updateFileDisplay(file) {
+        const uploadArea = document.getElementById('upload-area');
+        uploadArea.innerHTML = `
+            <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+            <h6 class="text-success">${file.name}</h6>
+            <p class="text-muted small">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <small class="text-muted">Click to choose a different file</small>
+        `;
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        submitBtn.style.display = 'none';
+        processing.style.display = 'block';
+    });
+
+    // Initialize visibility
+    updateLLMVisibility();
+    updateProviderFields();
+});
+</script>
+{% endblock %}
