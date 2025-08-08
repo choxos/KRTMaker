@@ -13,6 +13,9 @@ urlpatterns = [
     path('articles/', views.ArticleDashboardView.as_view(), name='article_dashboard'),
     path('articles/<path:identifier>/', views.ArticleProfileView.as_view(), name='article_profile'),
     
+    # Database management
+    path('database/', views.DatabaseManagementView.as_view(), name='database_management'),
+    
     # path('analytics/', views.AnalyticsView.as_view(), name='analytics'),  # TODO: Implement AnalyticsView
     
     # Export functionality

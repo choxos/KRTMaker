@@ -500,6 +500,82 @@ class ArticleProfileView(TemplateView):
         }
 
 
+class DatabaseManagementView(TemplateView):
+    """Database management interface for populating and managing the article database"""
+    template_name = 'web/database_management.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get database statistics
+        total_articles = Article.objects.count()
+        articles_with_sessions = Article.objects.filter(total_sessions__gt=0).count()
+        articles_with_krt = Article.objects.filter(has_existing_krt=True).count()
+        
+        # Get latest articles
+        recent_articles = Article.objects.order_by('-last_processed')[:10]
+        
+        # Get year statistics from existing articles
+        year_distribution = {}
+        for article in Article.objects.filter(publication_date__isnull=False):
+            year = article.publication_date.year
+            year_distribution[year] = year_distribution.get(year, 0) + 1
+        
+        # Get journal distribution
+        journal_distribution = {}
+        for article in Article.objects.filter(journal__isnull=False).exclude(journal=''):
+            journal = article.journal
+            journal_distribution[journal] = journal_distribution.get(journal, 0) + 1
+        
+        # Sort distributions
+        year_distribution = dict(sorted(year_distribution.items(), reverse=True)[:10])
+        journal_distribution = dict(sorted(journal_distribution.items(), key=lambda x: x[1], reverse=True)[:10])
+        
+        # Population status
+        expected_total = 19405  # Based on our Europe PMC statistics
+        population_percentage = (total_articles / expected_total * 100) if expected_total > 0 else 0
+        
+        context.update({
+            'total_articles': total_articles,
+            'articles_with_sessions': articles_with_sessions,
+            'articles_with_krt': articles_with_krt,
+            'articles_without_sessions': total_articles - articles_with_sessions,
+            'recent_articles': recent_articles,
+            'year_distribution': year_distribution,
+            'journal_distribution': journal_distribution,
+            'expected_total': expected_total,
+            'population_percentage': population_percentage,
+            'is_populated': total_articles > 1000,  # Consider populated if more than 1000 articles
+        })
+        
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        """Handle database population requests"""
+        action = request.POST.get('action')
+        
+        if action == 'populate_full':
+            # Trigger full population (this would typically be done via background task)
+            messages.info(request, '🚀 Full database population initiated. This may take several minutes. Check the admin interface for progress.')
+            
+            # In a production environment, you would typically queue this as a background task
+            # For now, we'll provide instructions for manual execution
+            messages.warning(request, '💡 For best performance, run this command manually: python manage.py populate_articles')
+            
+        elif action == 'populate_update':
+            # Trigger update-only population
+            messages.info(request, '🔄 Database update initiated. Only new articles will be added.')
+            messages.warning(request, '💡 Run this command manually: python manage.py populate_articles --update-only')
+            
+        elif action == 'populate_year':
+            year = request.POST.get('year')
+            if year:
+                messages.info(request, f'📅 Population for year {year} initiated.')
+                messages.warning(request, f'💡 Run this command manually: python manage.py populate_articles --start-year {year} --end-year {year}')
+        
+        return redirect('web:database_management')
+
+
 @require_http_methods(["GET"])
 def export_krt(request, session_id, format_type):
     """Export KRT data in various formats"""

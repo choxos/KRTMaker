@@ -1,0 +1,420 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}Database Management - KRT Maker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .database-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .progress-container {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .progress {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        height: 8px;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        border-radius: 15px;
+        height: 8px;
+    }
+    
+    .action-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #007bff;
+    }
+    
+    .action-card h5 {
+        color: #007bff;
+        margin-bottom: 1rem;
+    }
+    
+    .distribution-chart {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .distribution-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .distribution-item:last-child {
+        border-bottom: none;
+    }
+    
+    .distribution-bar {
+        width: 100px;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        margin-left: 1rem;
+    }
+    
+    .distribution-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #6610f2);
+        border-radius: 4px;
+    }
+    
+    .recent-articles {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .article-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .article-item:last-child {
+        border-bottom: none;
+    }
+    
+    .article-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .article-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .population-status {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .status-populated {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-partial {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .status-empty {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-0">📊 Database Management</h1>
+            <p class="text-muted">Manage and populate the bioRxiv article database</p>
+        </div>
+    </div>
+    
+    <!-- Database Statistics -->
+    <div class="database-stats">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_articles|floatformat:0 }}</div>
+                    <div class="stat-label">Total Articles</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ articles_with_sessions|floatformat:0 }}</div>
+                    <div class="stat-label">With KRT Sessions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ articles_with_krt|floatformat:0 }}</div>
+                    <div class="stat-label">With Existing KRT</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ population_percentage|floatformat:1 }}%</div>
+                    <div class="stat-label">Database Complete</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Population Progress -->
+        <div class="progress-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Population Progress</span>
+                <span>{{ total_articles|floatformat:0 }} / {{ expected_total|floatformat:0 }} articles</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" style="width: {{ population_percentage|floatformat:1 }}%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Population Status -->
+    <div class="row">
+        <div class="col-12">
+            {% if is_populated %}
+            <div class="population-status status-populated">
+                <strong>✅ Database is populated!</strong> You have {{ total_articles|floatformat:0 }} articles in your database.
+                You can now browse and analyze the complete bioRxiv dataset.
+            </div>
+            {% elif total_articles > 0 %}
+            <div class="population-status status-partial">
+                <strong>⚠️ Database is partially populated.</strong> You have {{ total_articles|floatformat:0 }} articles but could have up to {{ expected_total|floatformat:0 }}.
+                Consider running a full population to get all available bioRxiv papers.
+            </div>
+            {% else %}
+            <div class="population-status status-empty">
+                <strong>❌ Database is empty.</strong> No articles found in your database.
+                Run the population command below to download all bioRxiv papers from Europe PMC.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-lg-8">
+            <h3>🚀 Population Actions</h3>
+            
+            <div class="action-card">
+                <h5>📥 Full Database Population</h5>
+                <p>Download all bioRxiv papers ({{ expected_total|floatformat:0 }} papers) from Europe PMC. This will take approximately 4-5 minutes.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="populate_full">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Populate All Articles (2020-2025)
+                    </button>
+                </form>
+                <small class="text-muted">
+                    <strong>Manual command:</strong> <code>python manage.py populate_articles</code>
+                </small>
+            </div>
+            
+            <div class="action-card">
+                <h5>🔄 Update Database</h5>
+                <p>Add only new articles without modifying existing ones. Faster than full population.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="populate_update">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-sync-alt"></i> Update with New Articles
+                    </button>
+                </form>
+                <small class="text-muted">
+                    <strong>Manual command:</strong> <code>python manage.py populate_articles --update-only</code>
+                </small>
+            </div>
+            
+            <div class="action-card">
+                <h5>📅 Populate Specific Year</h5>
+                <p>Populate articles from a specific year for testing or incremental updates.</p>
+                <form method="post" class="d-flex align-items-end gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="populate_year">
+                    <div class="form-group">
+                        <label for="year">Year:</label>
+                        <select name="year" id="year" class="form-control">
+                            <option value="2025">2025 (2,298 papers)</option>
+                            <option value="2024">2024 (3,534 papers)</option>
+                            <option value="2023">2023 (4,063 papers)</option>
+                            <option value="2022">2022 (3,848 papers)</option>
+                            <option value="2021">2021 (2,765 papers)</option>
+                            <option value="2020">2020 (2,897 papers)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-calendar"></i> Populate Year
+                    </button>
+                </form>
+                <small class="text-muted">
+                    <strong>Manual command:</strong> <code>python manage.py populate_articles --start-year YYYY --end-year YYYY</code>
+                </small>
+            </div>
+            
+            <!-- Additional Commands -->
+            <div class="action-card">
+                <h5>🛠️ Additional Commands</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Statistics Only:</strong><br>
+                        <code>python manage.py populate_articles --stats-only</code>
+                        <p class="small text-muted">Get paper counts without downloading</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Test Mode:</strong><br>
+                        <code>python manage.py populate_articles --limit-per-year 100</code>
+                        <p class="small text-muted">Limit papers per year for testing</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Dry Run:</strong><br>
+                        <code>python manage.py populate_articles --dry-run</code>
+                        <p class="small text-muted">See what would be done without changes</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Force Refresh:</strong><br>
+                        <code>python manage.py populate_articles --force-refresh</code>
+                        <p class="small text-muted">Overwrite all existing data</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Year Distribution -->
+            <div class="distribution-chart mb-4">
+                <h5>📅 Articles by Year</h5>
+                {% for year, count in year_distribution.items %}
+                <div class="distribution-item">
+                    <span>{{ year }}</span>
+                    <span>{{ count|floatformat:0 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted">No articles with publication dates found.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- Journal Distribution -->
+            <div class="distribution-chart mb-4">
+                <h5>📖 Top Journals</h5>
+                {% for journal, count in journal_distribution.items %}
+                <div class="distribution-item">
+                    <span class="text-truncate" style="max-width: 150px;">{{ journal }}</span>
+                    <span>{{ count|floatformat:0 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted">No journal information found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Articles -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="recent-articles">
+                <h5>📄 Recently Added Articles</h5>
+                {% for article in recent_articles %}
+                <div class="article-item">
+                    <div class="article-title">
+                        <a href="{% url 'web:article_profile' article.doi %}" class="text-decoration-none">
+                            {{ article.title|truncatechars:100 }}
+                        </a>
+                    </div>
+                    <div class="article-meta">
+                        <span class="badge badge-secondary me-2">{{ article.journal|default:"Unknown Journal" }}</span>
+                        {% if article.publication_date %}
+                        <span class="me-2">📅 {{ article.publication_date }}</span>
+                        {% endif %}
+                        <span class="me-2">🔗 {{ article.total_sessions }} sessions</span>
+                        {% if article.has_existing_krt %}
+                        <span class="badge badge-success">✅ Has KRT</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No articles found. Run the population command to add articles to your database.</p>
+                {% endfor %}
+                
+                {% if total_articles > 10 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'web:article_dashboard' %}" class="btn btn-outline-primary">
+                        View All {{ total_articles|floatformat:0 }} Articles
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> Need Help?</h6>
+                <ul class="mb-0">
+                    <li><strong>Admin Interface:</strong> Visit <a href="/admin/">/admin/</a> to manage articles directly</li>
+                    <li><strong>Performance:</strong> Population takes ~4-5 minutes for all {{ expected_total|floatformat:0 }} papers</li>
+                    <li><strong>Storage:</strong> Expect ~40MB of metadata for the complete database</li>
+                    <li><strong>Updates:</strong> Run update commands periodically to get new bioRxiv papers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add confirmation for full population
+    document.querySelector('button[type="submit"]').addEventListener('click', function(e) {
+        if (this.innerText.includes('Populate All Articles')) {
+            if (!confirm('This will download {{ expected_total|floatformat:0 }} articles and may take several minutes. Continue?')) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Auto-refresh page every 30 seconds if population is running
+    {% if not is_populated %}
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+    {% endif %}
+</script>
+{% endblock %}
