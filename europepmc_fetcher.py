@@ -121,12 +121,16 @@ class EuropePMCFetcher:
             if 'xml' not in content_type:
                 raise ValueError(f"Invalid content type: {content_type}")
             
-            # Create temporary file
+            # Create temporary file in system temp directory (NOT in project directory)
+            # This prevents Django auto-reloader from detecting the file and restarting
+            system_temp_dir = tempfile.gettempdir()
+            
             temp_file = tempfile.NamedTemporaryFile(
                 mode='w',
                 suffix='.xml',
                 delete=False,
-                encoding='utf-8'
+                encoding='utf-8',
+                dir=system_temp_dir  # Explicitly use system temp directory
             )
             temp_file.write(response.text)
             temp_file.close()

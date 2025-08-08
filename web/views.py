@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import time
+import tempfile
 from datetime import datetime, timedelta
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -98,9 +99,22 @@ class KRTMakerView(FormView):
                 original_filename = xml_file.name
                 file_size = xml_file.size
                 
-                # Save uploaded file temporarily
-                temp_path = default_storage.save(f"temp/{session_id}_{xml_file.name}", xml_file)
-                xml_path = default_storage.path(temp_path)
+                # Save uploaded file to system temp directory (NOT in project media directory)
+                # This prevents Django auto-reloader from detecting the file and restarting
+                temp_file = tempfile.NamedTemporaryFile(
+                    mode='wb',
+                    suffix=f"_{original_filename}",
+                    delete=False,
+                    dir=tempfile.gettempdir()  # Use system temp directory
+                )
+                
+                # Copy uploaded file content to temp file
+                for chunk in xml_file.chunks():
+                    temp_file.write(chunk)
+                temp_file.close()
+                
+                xml_path = temp_file.name
+                temp_xml_path = xml_path  # For cleanup
                 
             elif input_method == 'url' and biorxiv_url:
                 # bioRxiv URL method
