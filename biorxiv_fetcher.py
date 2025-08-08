@@ -7,8 +7,14 @@ import re
 import requests
 import tempfile
 import os
+import zipfile
+from datetime import datetime
 from typing import Optional, Tuple
 from urllib.parse import urlparse
+
+# Import S3 functionality
+from s3_downloader import build_s3_client, BIO_RXIV_BUCKET, BIO_RXIV_REGION
+from botocore.exceptions import ClientError
 
 
 class BioRxivFetcher:
@@ -85,9 +91,129 @@ class BioRxivFetcher:
             print(f"Error fetching metadata for {doi}: {e}")
             return None
     
+    def _get_s3_folder_from_date(self, date_str: str) -> str:
+        """
+        Convert a date string (YYYY-MM-DD) to bioRxiv S3 folder format.
+        Examples: '2022-07-10' -> 'July_2022', '2021-03-15' -> 'March_2021'
+        """
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            month_name = date_obj.strftime('%B')  # Full month name
+            year = date_obj.year
+            return f"{month_name}_{year}"
+        except:
+            return None
+    
+    def download_xml_from_s3(self, doi: str, metadata: dict) -> Optional[str]:
+        """
+        Download XML from bioRxiv S3 bucket (official recommended method).
+        Returns path to extracted XML file, or None if failed.
+        """
+        try:
+            # Get paper date and convert to S3 folder format
+            preprint_date = metadata.get('preprint_date', '')
+            if not preprint_date:
+                raise ValueError("No preprint date available")
+            
+            s3_folder = self._get_s3_folder_from_date(preprint_date)
+            if not s3_folder:
+                raise ValueError(f"Could not parse date: {preprint_date}")
+            
+            # Extract paper ID for searching
+            paper_id = doi.replace('10.1101/', '')
+            
+            # Set up S3 client
+            s3_client = build_s3_client()
+            
+            # Search for the paper in the appropriate monthly folder
+            prefix = f"Current_Content/{s3_folder}/"
+            
+            try:
+                # List objects in the monthly folder
+                response = s3_client.list_objects_v2(
+                    Bucket=BIO_RXIV_BUCKET,
+                    Prefix=prefix,
+                    RequestPayer='requester'
+                )
+                
+                # Look for files containing our paper ID
+                meca_key = None
+                if 'Contents' in response:
+                    for obj in response['Contents']:
+                        if paper_id in obj['Key'] and obj['Key'].endswith('.meca'):
+                            meca_key = obj['Key']
+                            break
+                
+                if not meca_key:
+                    raise ValueError(f"Paper {paper_id} not found in S3 folder {s3_folder}")
+                
+                # Download the .meca file (it's actually a zip)
+                temp_fd, temp_meca_path = tempfile.mkstemp(suffix='.meca', prefix='biorxiv_')
+                os.close(temp_fd)
+                
+                s3_client.download_file(
+                    BIO_RXIV_BUCKET,
+                    meca_key,
+                    temp_meca_path,
+                    ExtraArgs={'RequestPayer': 'requester'}
+                )
+                
+                # Extract XML from the .meca zip file
+                xml_path = self._extract_xml_from_meca(temp_meca_path, paper_id)
+                
+                # Clean up .meca file
+                try:
+                    os.unlink(temp_meca_path)
+                except:
+                    pass
+                
+                return xml_path
+                
+            except ClientError as e:
+                # Try alternative folder structures if needed
+                if "NoSuchKey" in str(e):
+                    # Maybe try Back_Content or different naming
+                    raise ValueError(f"Paper not found in S3: {e}")
+                else:
+                    raise ValueError(f"S3 access error: {e}")
+        
+        except Exception as e:
+            print(f"Error downloading XML from S3 for {doi}: {e}")
+            return None
+    
+    def _extract_xml_from_meca(self, meca_path: str, paper_id: str) -> Optional[str]:
+        """
+        Extract XML file from a .meca zip file.
+        Returns path to extracted XML file.
+        """
+        try:
+            with zipfile.ZipFile(meca_path, 'r') as zip_file:
+                # Look for XML files in the content folder
+                xml_files = [f for f in zip_file.namelist() 
+                           if f.endswith('.xml') and 'content/' in f and 'manifest' not in f.lower()]
+                
+                if not xml_files:
+                    raise ValueError("No XML files found in .meca archive")
+                
+                # Usually there's one main XML file
+                xml_file = xml_files[0]
+                
+                # Extract to temporary file
+                temp_fd, temp_xml_path = tempfile.mkstemp(suffix='.xml', prefix='biorxiv_extracted_')
+                
+                with os.fdopen(temp_fd, 'wb') as temp_file:
+                    temp_file.write(zip_file.read(xml_file))
+                
+                return temp_xml_path
+        
+        except Exception as e:
+            print(f"Error extracting XML from .meca file: {e}")
+            return None
+    
     def download_xml(self, doi: str) -> Optional[str]:
         """
-        Download the XML file for a bioRxiv paper.
+        Download the XML file for a bioRxiv paper using the official S3 method.
+        Falls back to direct URL method if S3 fails.
         Returns the path to the downloaded file, or None if failed.
         """
         try:
@@ -96,6 +222,24 @@ class BioRxivFetcher:
             if not metadata:
                 raise ValueError(f"Paper not found: {doi}")
             
+            # Try S3 download first (official method)
+            xml_path = self.download_xml_from_s3(doi, metadata)
+            if xml_path:
+                return xml_path
+            
+            # If S3 fails, fall back to direct URL method
+            print(f"S3 download failed for {doi}, trying direct URL method...")
+            return self._download_xml_direct(doi, metadata)
+        
+        except Exception as e:
+            print(f"Error downloading XML for {doi}: {e}")
+            return None
+    
+    def _download_xml_direct(self, doi: str, metadata: dict) -> Optional[str]:
+        """
+        Fallback method: try to download XML directly from bioRxiv URLs.
+        """
+        try:
             # Extract the paper identifier for download URL
             paper_id = doi.replace('10.1101/', '')
             
@@ -129,7 +273,7 @@ class BioRxivFetcher:
             raise ValueError(f"Could not download XML for {doi}. The paper may not have XML available.")
             
         except Exception as e:
-            print(f"Error downloading XML for {doi}: {e}")
+            print(f"Error downloading XML directly for {doi}: {e}")
             return None
     
     def fetch_paper_info(self, identifier: str) -> Tuple[Optional[dict], Optional[str]]:

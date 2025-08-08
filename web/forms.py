@@ -204,14 +204,8 @@ class KRTMakerForm(forms.Form):
                 if not metadata:
                     raise ValidationError(f"Paper not found: {doi}. Please check the URL or DOI and make sure the paper exists on bioRxiv.")
                 
-                # Test if XML is available (this is more important for KRT extraction)
-                metadata_test, xml_path_test = fetcher.fetch_paper_info(biorxiv_url)
-                if not xml_path_test:
-                    raise ValidationError(f"Paper found ({metadata.get('preprint_title', 'Unknown title')[:50]}...) but XML source file is not available for download. This may be an older paper or the XML might not be publicly accessible.")
-                
-                # Clean up test file
-                if xml_path_test:
-                    fetcher.cleanup_temp_file(xml_path_test)
+                # With S3 method, most papers should work, so just validate existence
+                # XML availability will be checked during actual processing
                     
             except ValidationError:
                 raise  # Re-raise validation errors as-is
