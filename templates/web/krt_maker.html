@@ -431,13 +431,65 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Model choices for each provider
+    const modelChoices = {
+        'anthropic': [
+            {value: '', text: 'Select a model'},
+            {value: 'claude-opus-4-1-20250805', text: 'Claude Opus 4.1 (Latest)'},
+            {value: 'claude-opus-4-20250514', text: 'Claude Opus 4'},
+            {value: 'claude-sonnet-4-20250514', text: 'Claude Sonnet 4'},
+            {value: 'claude-3-7-sonnet-20250219', text: 'Claude Sonnet 3.7'},
+            {value: 'claude-3-5-sonnet-20241022', text: 'Claude Sonnet 3.5 v2'},
+            {value: 'claude-3-5-sonnet-20240620', text: 'Claude Sonnet 3.5'},
+            {value: 'claude-3-5-haiku-20241022', text: 'Claude Haiku 3.5'},
+            {value: 'claude-3-haiku-20240307', text: 'Claude Haiku 3'}
+        ],
+        'gemini': [
+            {value: '', text: 'Select a model'},
+            {value: 'gemini-2.5-pro', text: 'Gemini 2.5 Pro (Enhanced reasoning, multimodal)'},
+            {value: 'gemini-2.5-flash', text: 'Gemini 2.5 Flash (Adaptive thinking, cost efficient)'},
+            {value: 'gemini-2.5-flash-lite', text: 'Gemini 2.5 Flash-Lite (Most cost-efficient)'},
+            {value: 'gemini-2.0-flash', text: 'Gemini 2.0 Flash (Next generation features)'},
+            {value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash-Lite (Cost efficient, low latency)'},
+            {value: 'gemini-1.5-flash', text: 'Gemini 1.5 Flash (Fast and versatile)'},
+            {value: 'gemini-1.5-pro', text: 'Gemini 1.5 Pro (Complex reasoning) [Deprecated]'}
+        ],
+        'openai_compatible': [
+            {value: '', text: 'Select a model'},
+            {value: 'gpt-4o', text: 'GPT-4o (OpenAI-compatible)'},
+            {value: 'gpt-4-turbo', text: 'GPT-4 Turbo (OpenAI-compatible)'},
+            {value: 'gpt-3.5-turbo', text: 'GPT-3.5 Turbo (OpenAI-compatible)'},
+            {value: 'llama-3.1-70b', text: 'Llama 3.1 70B (Ollama/Local)'},
+            {value: 'llama-3.1-8b', text: 'Llama 3.1 8B (Ollama/Local)'},
+            {value: 'deepseek-v3', text: 'DeepSeek V3 (DeepSeek API)'},
+            {value: 'grok-2', text: 'Grok 2 (xAI API)'}
+        ]
+    };
+
     // Handle provider selection
     function updateProviderFields() {
         const selectedProvider = providerSelect.value;
+        const modelSelect = document.getElementById('id_model');
+        
+        // Update base URL field visibility
         if (selectedProvider === 'openai_compatible') {
             baseUrlField.style.display = 'block';
         } else {
             baseUrlField.style.display = 'none';
+        }
+        
+        // Update model choices
+        if (modelSelect && modelChoices[selectedProvider]) {
+            // Clear current options
+            modelSelect.innerHTML = '';
+            
+            // Add new options
+            modelChoices[selectedProvider].forEach(function(option) {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                modelSelect.appendChild(optionElement);
+            });
         }
     }
 

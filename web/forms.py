@@ -15,10 +15,41 @@ class KRTMakerForm(forms.Form):
     ]
     
     PROVIDER_CHOICES = [
-        ('openai', 'OpenAI (GPT-4, GPT-3.5)'),
         ('anthropic', 'Anthropic (Claude)'),
-        ('gemini', 'Google (Gemini Pro)'),
+        ('gemini', 'Google (Gemini)'),
         ('openai_compatible', 'OpenAI-Compatible (Ollama, DeepSeek, Grok)'),
+    ]
+    
+    # Model choices for each provider
+    ANTHROPIC_MODELS = [
+        ('claude-opus-4-1-20250805', 'Claude Opus 4.1 (Latest)'),
+        ('claude-opus-4-20250514', 'Claude Opus 4'),
+        ('claude-sonnet-4-20250514', 'Claude Sonnet 4'),
+        ('claude-3-7-sonnet-20250219', 'Claude Sonnet 3.7'),
+        ('claude-3-5-sonnet-20241022', 'Claude Sonnet 3.5 v2'),
+        ('claude-3-5-sonnet-20240620', 'Claude Sonnet 3.5'),
+        ('claude-3-5-haiku-20241022', 'Claude Haiku 3.5'),
+        ('claude-3-haiku-20240307', 'Claude Haiku 3'),
+    ]
+    
+    GEMINI_MODELS = [
+        ('gemini-2.5-pro', 'Gemini 2.5 Pro (Enhanced reasoning, multimodal)'),
+        ('gemini-2.5-flash', 'Gemini 2.5 Flash (Adaptive thinking, cost efficient)'),
+        ('gemini-2.5-flash-lite', 'Gemini 2.5 Flash-Lite (Most cost-efficient)'),
+        ('gemini-2.0-flash', 'Gemini 2.0 Flash (Next generation features)'),
+        ('gemini-2.0-flash-lite', 'Gemini 2.0 Flash-Lite (Cost efficient, low latency)'),
+        ('gemini-1.5-flash', 'Gemini 1.5 Flash (Fast and versatile)'),
+        ('gemini-1.5-pro', 'Gemini 1.5 Pro (Complex reasoning) [Deprecated]'),
+    ]
+    
+    OPENAI_COMPATIBLE_MODELS = [
+        ('gpt-4o', 'GPT-4o (OpenAI-compatible)'),
+        ('gpt-4-turbo', 'GPT-4 Turbo (OpenAI-compatible)'),
+        ('gpt-3.5-turbo', 'GPT-3.5 Turbo (OpenAI-compatible)'),
+        ('llama-3.1-70b', 'Llama 3.1 70B (Ollama/Local)'),
+        ('llama-3.1-8b', 'Llama 3.1 8B (Ollama/Local)'),
+        ('deepseek-v3', 'DeepSeek V3 (DeepSeek API)'),
+        ('grok-2', 'Grok 2 (xAI API)'),
     ]
     
     # Input method choice
@@ -76,15 +107,21 @@ class KRTMakerForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
-    model = forms.CharField(
+    # LLM model (dynamic choices based on provider)
+    model = forms.ChoiceField(
         required=False,
-        label="Model Name",
-        help_text="Specify the model (e.g., gpt-4o-mini, claude-3-5-sonnet, gemini-1.5-pro)",
-        widget=forms.TextInput(attrs={
+        choices=[],  # Will be populated dynamically
+        label="Model",
+        help_text="Select the specific model to use",
+        widget=forms.Select(attrs={
             'class': 'form-control',
-            'placeholder': 'e.g., gpt-4o-mini'
         })
     )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default model choices (Anthropic as default)
+        self.fields['model'].choices = [('', 'Select a model')] + self.ANTHROPIC_MODELS
     
     base_url = forms.URLField(
         required=False,
@@ -206,10 +243,9 @@ class KRTMakerForm(forms.Form):
                 self.add_error('base_url', 'Base URL is required for OpenAI-compatible providers.')
             
             # Check for API key (except for local Ollama)
-            if provider in ['openai', 'anthropic', 'gemini'] and not api_key:
+            if provider in ['anthropic', 'gemini'] and not api_key:
                 # Check if API key is available in environment
                 env_key_map = {
-                    'openai': 'OPENAI_API_KEY',
                     'anthropic': 'ANTHROPIC_API_KEY',
                     'gemini': 'GOOGLE_API_KEY'
                 }
