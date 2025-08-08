@@ -8,6 +8,11 @@ urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
     path('maker/', views.KRTMakerView.as_view(), name='krt_maker'),
     path('results/<str:session_id>/', views.ResultsView.as_view(), name='results'),
+    
+    # Article management
+    path('articles/', views.ArticleDashboardView.as_view(), name='article_dashboard'),
+    path('articles/<str:identifier>/', views.ArticleProfileView.as_view(), name='article_profile'),
+    
     # path('analytics/', views.AnalyticsView.as_view(), name='analytics'),  # TODO: Implement AnalyticsView
     
     # Export functionality

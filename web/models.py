@@ -24,9 +24,28 @@ class KRTSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Link to article (for grouping multiple sessions of the same article)
+    article = models.ForeignKey('Article', on_delete=models.CASCADE, related_name='sessions', null=True, blank=True)
+    
     # File info
     original_filename = models.CharField(max_length=255)
     file_size = models.PositiveIntegerField()
+    
+    # Article metadata (enhanced for bioRxiv and other sources)
+    input_method = models.CharField(max_length=20, choices=[('upload', 'File Upload'), ('url', 'bioRxiv URL/DOI')], default='upload')
+    doi = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    biorxiv_id = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    epmc_id = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    authors = models.TextField(blank=True, null=True)  # JSON list of authors
+    publication_date = models.DateField(blank=True, null=True)
+    journal = models.CharField(max_length=255, blank=True, null=True)
+    keywords = models.TextField(blank=True, null=True)  # JSON list of keywords
+    categories = models.TextField(blank=True, null=True)  # JSON list of categories
+    
+    # KRT analysis
+    existing_krt_detected = models.BooleanField(default=False)
+    existing_krt_count = models.PositiveIntegerField(default=0)
+    existing_krt_data = models.JSONField(default=list, blank=True)  # Store detected KRT from original paper
     
     # Processing options
     mode = models.CharField(max_length=20, choices=MODE_CHOICES)
@@ -80,6 +99,146 @@ class KRTSession(models.Model):
             self.new_resources = len([r for r in self.krt_data if r.get('NEW/REUSE', '').lower() == 'new'])
             self.reused_resources = len([r for r in self.krt_data if r.get('NEW/REUSE', '').lower() == 'reuse'])
             self.save(update_fields=['resources_found', 'new_resources', 'reused_resources'])
+    
+    @property
+    def formatted_authors(self):
+        """Get formatted authors list"""
+        if self.authors:
+            try:
+                authors_list = json.loads(self.authors) if isinstance(self.authors, str) else self.authors
+                if len(authors_list) > 3:
+                    return f"{', '.join(authors_list[:3])} et al."
+                return ', '.join(authors_list)
+            except (json.JSONDecodeError, TypeError):
+                return self.authors
+        return "Unknown Authors"
+    
+    @property
+    def formatted_keywords(self):
+        """Get formatted keywords list"""
+        if self.keywords:
+            try:
+                keywords_list = json.loads(self.keywords) if isinstance(self.keywords, str) else self.keywords
+                return keywords_list
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+    
+    @property
+    def is_biorxiv_paper(self):
+        """Check if this is a bioRxiv paper"""
+        return self.input_method == 'url' and (self.doi or self.biorxiv_id)
+    
+    @property
+    def display_title(self):
+        """Get title for display, with fallback"""
+        return self.title or f"Document: {self.original_filename}"
+    
+    @classmethod
+    def get_by_doi(cls, doi):
+        """Get all sessions for a specific DOI"""
+        return cls.objects.filter(doi=doi).order_by('-created_at')
+    
+    @classmethod
+    def get_unique_articles(cls):
+        """Get unique articles (by DOI or filename)"""
+        # Get all completed sessions
+        sessions = cls.objects.filter(status='completed').order_by('-created_at')
+        
+        # Group by DOI or filename
+        unique_articles = {}
+        for session in sessions:
+            key = session.doi or session.original_filename
+            if key not in unique_articles:
+                unique_articles[key] = {
+                    'primary_session': session,
+                    'all_sessions': [session],
+                    'llm_results': []
+                }
+            else:
+                unique_articles[key]['all_sessions'].append(session)
+            
+            # Track LLM results
+            if session.mode == 'llm':
+                unique_articles[key]['llm_results'].append({
+                    'session': session,
+                    'provider': session.provider,
+                    'model': session.model_name,
+                    'resources_found': session.resources_found,
+                    'processing_time': session.processing_time
+                })
+        
+        return list(unique_articles.values())
+
+
+class Article(models.Model):
+    """Model to group multiple KRT sessions for the same article"""
+    
+    # Unique identifier for the article
+    doi = models.CharField(max_length=255, unique=True, null=True, blank=True, db_index=True)
+    filename_hash = models.CharField(max_length=64, unique=True, null=True, blank=True, db_index=True)  # For uploaded files
+    
+    # Article metadata
+    title = models.CharField(max_length=500, blank=True, null=True)
+    authors = models.TextField(blank=True, null=True)  # JSON list
+    abstract = models.TextField(blank=True, null=True)
+    publication_date = models.DateField(blank=True, null=True)
+    journal = models.CharField(max_length=255, blank=True, null=True)
+    keywords = models.TextField(blank=True, null=True)  # JSON list
+    
+    # Analysis metadata
+    first_processed = models.DateTimeField(auto_now_add=True)
+    last_processed = models.DateTimeField(auto_now=True)
+    total_sessions = models.PositiveIntegerField(default=0)
+    
+    # Existing KRT detection
+    has_existing_krt = models.BooleanField(default=False)
+    existing_krt_count = models.PositiveIntegerField(default=0)
+    existing_krt_data = models.JSONField(default=list, blank=True)
+    
+    class Meta:
+        ordering = ['-last_processed']
+        indexes = [
+            models.Index(fields=['doi']),
+            models.Index(fields=['filename_hash']),
+            models.Index(fields=['last_processed']),
+        ]
+    
+    def __str__(self):
+        return self.title or f"Article ({self.doi or 'Uploaded file'})"
+    
+    @property
+    def best_session(self):
+        """Get the session with the most resources found"""
+        return self.sessions.filter(status='completed').order_by('-resources_found', '-created_at').first()
+    
+    @property
+    def llm_comparison_data(self):
+        """Get comparison data across different LLM models"""
+        llm_sessions = self.sessions.filter(mode='llm', status='completed').order_by('-created_at')
+        
+        comparison = {}
+        for session in llm_sessions:
+            key = f"{session.provider}_{session.model_name}"
+            if key not in comparison:
+                comparison[key] = {
+                    'provider': session.provider,
+                    'model': session.model_name,
+                    'sessions': [],
+                    'avg_resources': 0,
+                    'avg_time': 0,
+                    'best_session': None
+                }
+            
+            comparison[key]['sessions'].append(session)
+            
+            # Calculate averages
+            sessions_for_model = comparison[key]['sessions']
+            comparison[key]['avg_resources'] = sum(s.resources_found for s in sessions_for_model) / len(sessions_for_model)
+            comparison[key]['avg_time'] = sum(s.processing_time or 0 for s in sessions_for_model) / len(sessions_for_model)
+            comparison[key]['best_session'] = max(sessions_for_model, key=lambda s: s.resources_found)
+        
+        return list(comparison.values())
 
 
 class ProcessedFile(models.Model):

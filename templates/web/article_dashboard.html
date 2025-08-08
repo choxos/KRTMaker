@@ -1,0 +1,273 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}Article Dashboard - KRT Maker{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-newspaper me-2 text-primary"></i>Article Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Track and compare KRT extractions across all processed articles</p>
+                </div>
+                <div>
+                    <a href="{% url 'web:krt_maker' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Process New Article
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title h4">{{ total_articles }}</h3>
+                            <p class="card-text">Total Articles</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title h4">{{ total_sessions }}</h3>
+                            <p class="card-text">Total Extractions</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-cogs fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title h4">{{ biorxiv_articles }}</h3>
+                            <p class="card-text">bioRxiv Papers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-link fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title h4">{{ upload_articles }}</h3>
+                            <p class="card-text">Uploaded Files</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-upload fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LLM Performance Statistics -->
+    {% if llm_stats %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>LLM Performance Comparison
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Model</th>
+                                    <th>Articles Processed</th>
+                                    <th>Avg Resources Found</th>
+                                    <th>Avg Processing Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in llm_stats %}
+                                <tr>
+                                    <td>
+                                        {% if stat.provider == 'anthropic' %}
+                                            <span class="badge bg-primary">Anthropic</span>
+                                        {% elif stat.provider == 'gemini' %}
+                                            <span class="badge bg-success">Gemini</span>
+                                        {% elif stat.provider == 'openai_compatible' %}
+                                            <span class="badge bg-info">OpenAI-Compatible</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ stat.provider|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ stat.model }}</code>
+                                    </td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>
+                                        <span class="fw-bold">{{ stat.avg_resources }}</span>
+                                    </td>
+                                    <td>{{ stat.avg_time }}s</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Articles List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Processed Articles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if articles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Authors</th>
+                                        <th>Source</th>
+                                        <th>LLM Models Used</th>
+                                        <th>Best Result</th>
+                                        <th>Last Processed</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in articles %}
+                                    {% with session=article.primary_session %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong class="d-block">{{ session.display_title|truncatechars:60 }}</strong>
+                                                {% if session.doi %}
+                                                    <small class="text-muted">DOI: {{ session.doi }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">File: {{ session.original_filename|truncatechars:30 }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="small">{{ session.formatted_authors|truncatechars:40 }}</span>
+                                        </td>
+                                        <td>
+                                            {% if session.is_biorxiv_paper %}
+                                                <span class="badge bg-info">bioRxiv</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Upload</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if article.llm_results %}
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    {% for llm in article.llm_results %}
+                                                        <span class="badge bg-primary small">
+                                                            {{ llm.provider }} ({{ llm.resources_found }})
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted small">Regex only</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">{{ session.resources_found }} resources</span>
+                                            <br>
+                                            <small class="text-muted">{{ session.processing_time|floatformat:1 }}s</small>
+                                        </td>
+                                        <td>
+                                            <span class="small">{{ session.created_at|date:"M d, Y" }}</span>
+                                            <br>
+                                            <span class="small text-muted">{{ session.created_at|time:"H:i" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <a href="{% url 'web:article_profile' session.session_id %}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i> View Profile
+                                                </a>
+                                                <a href="{% url 'web:results' session.session_id %}" class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-download"></i> View Results
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endwith %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No articles processed yet</h5>
+                            <p class="text-muted">Start by processing your first article using the KRT Maker.</p>
+                            <a href="{% url 'web:krt_maker' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Process First Article
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-group-vertical .btn {
+    border-radius: 0.25rem;
+    margin-bottom: 2px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}

@@ -13,20 +13,26 @@ from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils.decorators import method_decorator
 from django.views.generic import FormView, TemplateView
-from django.db.models import Count, Avg, Sum
+from django.db.models import Count, Avg, Sum, Q
 from django.utils import timezone
 
 from .forms import KRTMakerForm, FeedbackForm
-from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics
+from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics, Article
 
-# Import the KRT maker functionality
+# Import the KRT maker functionality (using project root path)
+from django.conf import settings
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Add project root to path only once during module import
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from builder import build_from_xml_path, BuildOptions
 from validation import validate_xml_file, validate_api_config, ValidationError as KRTValidationError
 from biorxiv_fetcher import BioRxivFetcher
+from krt_detector import detect_existing_krt, format_krt_data_for_display
 
 
 class HomeView(TemplateView):
@@ -140,11 +146,29 @@ class KRTMakerView(FormView):
             else:
                 raise ValueError("No valid input method provided")
             
+            # Get bioRxiv metadata if available
+            biorxiv_metadata = {}
+            session_doi = None
+            if input_method == 'url' and biorxiv_url:
+                fetcher = BioRxivFetcher()
+                session_doi = fetcher.parse_biorxiv_identifier(biorxiv_url)
+                if session_doi:
+                    biorxiv_metadata = fetcher.get_paper_metadata(session_doi) or {}
+            
             # Create session record
             session = KRTSession.objects.create(
                 session_id=session_id,
                 original_filename=original_filename,
                 file_size=file_size,
+                input_method=input_method,
+                doi=biorxiv_metadata.get('doi') or session_doi,
+                biorxiv_id=biorxiv_metadata.get('biorxiv_id'),
+                epmc_id=biorxiv_metadata.get('epmc_id'),
+                authors=json.dumps(biorxiv_metadata.get('authors', [])) if biorxiv_metadata.get('authors') else None,
+                publication_date=biorxiv_metadata.get('publication_date'),
+                journal=biorxiv_metadata.get('journal'),
+                keywords=json.dumps(biorxiv_metadata.get('keywords', [])) if biorxiv_metadata.get('keywords') else None,
+                categories=json.dumps(biorxiv_metadata.get('categories', [])) if biorxiv_metadata.get('categories') else None,
                 mode=mode,
                 provider=provider,
                 model_name=model,
@@ -158,6 +182,16 @@ class KRTMakerView(FormView):
             
             # Validate XML file
             validate_xml_file(xml_path)
+            
+            # Detect existing KRT in the article
+            existing_krt_info = detect_existing_krt(xml_path)
+            existing_krt_data = format_krt_data_for_display(existing_krt_info.get('krt_tables', []))
+            
+            # Update session with existing KRT info
+            session.existing_krt_detected = existing_krt_info.get('has_krt', False)
+            session.existing_krt_count = existing_krt_info.get('krt_count', 0)
+            session.existing_krt_data = existing_krt_data
+            session.save()
             
             # Build options for KRT extraction
             options = BuildOptions(
@@ -264,3 +298,145 @@ class ResultsView(TemplateView):
             return redirect('web:home')
         
         return context
+
+
+class ArticleDashboardView(TemplateView):
+    """Dashboard showing all processed articles with their metadata and LLM comparison"""
+    template_name = 'web/article_dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get unique articles using the class method
+        unique_articles = KRTSession.get_unique_articles()
+        
+        # Statistics
+        total_articles = len(unique_articles)
+        total_sessions = KRTSession.objects.filter(status='completed').count()
+        biorxiv_articles = len([a for a in unique_articles if a['primary_session'].is_biorxiv_paper])
+        
+        # LLM usage statistics
+        llm_stats = {}
+        for article in unique_articles:
+            for llm_result in article['llm_results']:
+                provider_model = f"{llm_result['provider']}_{llm_result['model']}"
+                if provider_model not in llm_stats:
+                    llm_stats[provider_model] = {
+                        'count': 0, 
+                        'avg_resources': 0, 
+                        'avg_time': 0,
+                        'provider': llm_result['provider'],
+                        'model': llm_result['model']
+                    }
+                llm_stats[provider_model]['count'] += 1
+                llm_stats[provider_model]['avg_resources'] += llm_result['resources_found']
+                llm_stats[provider_model]['avg_time'] += llm_result['processing_time'] or 0
+        
+        # Calculate averages
+        for stats in llm_stats.values():
+            if stats['count'] > 0:
+                stats['avg_resources'] = round(stats['avg_resources'] / stats['count'], 1)
+                stats['avg_time'] = round(stats['avg_time'] / stats['count'], 2)
+        
+        context.update({
+            'articles': unique_articles,
+            'total_articles': total_articles,
+            'total_sessions': total_sessions,
+            'biorxiv_articles': biorxiv_articles,
+            'upload_articles': total_articles - biorxiv_articles,
+            'llm_stats': list(llm_stats.values()),
+        })
+        
+        return context
+
+
+class ArticleProfileView(TemplateView):
+    """Detailed profile page for a specific article showing all LLM results and metadata"""
+    template_name = 'web/article_profile.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get article identifier from URL
+        identifier = kwargs.get('identifier')
+        
+        # Find sessions for this article (by DOI or session_id)
+        if identifier.startswith('10.1101/'):
+            # DOI identifier
+            sessions = KRTSession.objects.filter(doi=identifier, status='completed').order_by('-created_at')
+            article_key = identifier
+        else:
+            # Session ID identifier - find by session and then group by DOI/filename
+            try:
+                primary_session = KRTSession.objects.get(session_id=identifier, status='completed')
+                article_key = primary_session.doi or primary_session.original_filename
+                sessions = KRTSession.objects.filter(
+                    Q(doi=article_key) | Q(original_filename=article_key),
+                    status='completed'
+                ).order_by('-created_at')
+            except KRTSession.DoesNotExist:
+                messages.error(self.request, 'Article not found.')
+                return redirect('web:article_dashboard')
+        
+        if not sessions.exists():
+            messages.error(self.request, 'Article not found.')
+            return redirect('web:article_dashboard')
+        
+        # Primary session (most recent or best)
+        primary_session = sessions.first()
+        
+        # Group sessions by LLM model
+        llm_results = {}
+        regex_results = []
+        
+        for session in sessions:
+            if session.mode == 'llm':
+                key = f"{session.provider}_{session.model_name}"
+                if key not in llm_results:
+                    llm_results[key] = {
+                        'provider': session.provider,
+                        'model': session.model_name,
+                        'sessions': [],
+                        'best_session': session,
+                        'avg_resources': 0,
+                        'avg_time': 0
+                    }
+                
+                llm_results[key]['sessions'].append(session)
+                
+                # Update best session
+                if session.resources_found > llm_results[key]['best_session'].resources_found:
+                    llm_results[key]['best_session'] = session
+            else:
+                regex_results.append(session)
+        
+        # Calculate averages for each LLM
+        for result in llm_results.values():
+            sessions_list = result['sessions']
+            result['avg_resources'] = sum(s.resources_found for s in sessions_list) / len(sessions_list)
+            result['avg_time'] = sum(s.processing_time or 0 for s in sessions_list) / len(sessions_list)
+        
+        # Check for existing KRT in the article
+        existing_krt_info = self._detect_existing_krt(primary_session)
+        
+        context.update({
+            'primary_session': primary_session,
+            'all_sessions': sessions,
+            'llm_results': list(llm_results.values()),
+            'regex_results': regex_results,
+            'total_sessions': sessions.count(),
+            'article_key': article_key,
+            'existing_krt_info': existing_krt_info,
+        })
+        
+        return context
+    
+    def _detect_existing_krt(self, session):
+        """Detect if the article already contains KRT tables"""
+        # This is a placeholder for KRT detection logic
+        # You would implement actual KRT detection by analyzing the XML content
+        return {
+            'has_krt': session.existing_krt_detected,
+            'krt_count': session.existing_krt_count,
+            'krt_data': session.existing_krt_data
+        }
