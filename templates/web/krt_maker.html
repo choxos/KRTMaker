@@ -118,8 +118,44 @@
                     <form method="post" enctype="multipart/form-data" id="krt-form">
                         {% csrf_token %}
                         
-                        <!-- File Upload Section -->
+                        <!-- Input Method Selection -->
                         <div class="mb-4">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-folder-open me-2 text-primary"></i>Input Method
+                            </h5>
+                            
+                            <div class="mode-selection">
+                                {% for choice in form.input_method %}
+                                    <div class="form-check">
+                                        {{ choice.tag }}
+                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}">
+                                            <strong>{{ choice.choice_label }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {% if choice.choice_value == "upload" %}
+                                                    Upload a bioRxiv XML file from your computer
+                                                {% else %}
+                                                    Enter a bioRxiv URL or DOI to fetch automatically
+                                                {% endif %}
+                                            </small>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.input_method.help_text %}
+                                <small class="form-text text-muted">{{ form.input_method.help_text }}</small>
+                            {% endif %}
+                            {% if form.input_method.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.input_method.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- File Upload Section -->
+                        <div class="mb-4" id="upload-section">
                             <h5 class="card-title mb-3">
                                 <i class="fas fa-upload me-2 text-primary"></i>Upload Your Manuscript
                             </h5>
@@ -140,6 +176,51 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                        </div>
+
+                        <!-- bioRxiv URL Section -->
+                        <div class="mb-4" id="url-section">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-link me-2 text-primary"></i>bioRxiv URL or DOI
+                            </h5>
+                            
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-link"></i>
+                                </span>
+                                {{ form.biorxiv_url }}
+                            </div>
+                            {% if form.biorxiv_url.help_text %}
+                                <small class="form-text text-muted">{{ form.biorxiv_url.help_text }}</small>
+                            {% endif %}
+                            {% if form.biorxiv_url.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.biorxiv_url.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mt-3 p-3 bg-light rounded">
+                                <h6 class="text-primary mb-2">
+                                    <i class="fas fa-info-circle me-1"></i>Supported Formats
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Full URL:</strong><br>
+                                            https://biorxiv.org/content/10.1101/2023.01.01.123456
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>DOI or Short form:</strong><br>
+                                            10.1101/2023.01.01.123456<br>
+                                            2023.01.01.123456
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Extraction Method Selection -->
@@ -287,12 +368,12 @@
                     </h5>
                     <div class="row">
                         <div class="col-md-4">
-                            <h6><i class="fas fa-download me-2"></i>1. Get Your XML File</h6>
-                            <p class="small text-muted">Download the XML/JATS file from bioRxiv for your manuscript.</p>
+                            <h6><i class="fas fa-link me-2"></i>1. Provide Your Paper</h6>
+                            <p class="small text-muted">Enter a bioRxiv URL/DOI or upload an XML file directly.</p>
                         </div>
                         <div class="col-md-4">
-                            <h6><i class="fas fa-upload me-2"></i>2. Upload & Configure</h6>
-                            <p class="small text-muted">Upload your file and choose between fast regex or AI-powered extraction.</p>
+                            <h6><i class="fas fa-cogs me-2"></i>2. Configure Extraction</h6>
+                            <p class="small text-muted">Choose between fast regex or AI-powered extraction method.</p>
                         </div>
                         <div class="col-md-4">
                             <h6><i class="fas fa-table me-2"></i>3. Get Your KRT</h6>
@@ -311,14 +392,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get form elements
     const form = document.getElementById('krt-form');
+    const inputMethodRadios = document.querySelectorAll('input[name="input_method"]');
     const modeRadios = document.querySelectorAll('input[name="mode"]');
     const llmConfig = document.getElementById('llm-config');
     const providerSelect = document.getElementById('id_provider');
     const baseUrlField = document.getElementById('base-url-field');
+    const uploadSection = document.getElementById('upload-section');
+    const urlSection = document.getElementById('url-section');
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('id_xml_file');
+    const urlInput = document.getElementById('id_biorxiv_url');
     const submitBtn = document.getElementById('submit-btn');
     const processing = document.getElementById('processing');
+
+    // Handle input method selection
+    function updateInputMethodVisibility() {
+        const selectedMethod = document.querySelector('input[name="input_method"]:checked').value;
+        if (selectedMethod === 'upload') {
+            uploadSection.style.display = 'block';
+            urlSection.style.display = 'none';
+            // Clear URL field
+            if (urlInput) urlInput.value = '';
+        } else {
+            uploadSection.style.display = 'none';
+            urlSection.style.display = 'block';
+            // Clear file input
+            if (fileInput) fileInput.value = '';
+        }
+    }
 
     // Handle mode selection
     function updateLLMVisibility() {
@@ -339,6 +440,11 @@ document.addEventListener('DOMContentLoaded', function() {
             baseUrlField.style.display = 'none';
         }
     }
+
+    // Event listeners for input method changes
+    inputMethodRadios.forEach(radio => {
+        radio.addEventListener('change', updateInputMethodVisibility);
+    });
 
     // Event listeners for mode changes
     modeRadios.forEach(radio => {
@@ -399,6 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initialize visibility
+    updateInputMethodVisibility();
     updateLLMVisibility();
     updateProviderFields();
 });

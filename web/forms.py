@@ -1,6 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from biorxiv_fetcher import BioRxivFetcher
 
 
 class KRTMakerForm(forms.Form):
@@ -18,13 +21,40 @@ class KRTMakerForm(forms.Form):
         ('openai_compatible', 'OpenAI-Compatible (Ollama, DeepSeek, Grok)'),
     ]
     
+    # Input method choice
+    INPUT_METHOD_CHOICES = [
+        ('upload', 'Upload XML File'),
+        ('url', 'bioRxiv URL or DOI'),
+    ]
+    
+    input_method = forms.ChoiceField(
+        choices=INPUT_METHOD_CHOICES,
+        initial='url',
+        label="Input Method",
+        help_text="Choose how to provide the manuscript",
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+    
     # File upload
     xml_file = forms.FileField(
+        required=False,
         label="Upload bioRxiv XML File",
         help_text="Select a JATS XML file from bioRxiv (usually ending in .xml)",
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.xml,.jats',
+        })
+    )
+    
+    # bioRxiv URL/DOI
+    biorxiv_url = forms.CharField(
+        required=False,
+        max_length=500,
+        label="bioRxiv URL or DOI",
+        help_text="Enter a bioRxiv URL (e.g., https://biorxiv.org/content/10.1101/2023.01.01.123456) or DOI (e.g., 10.1101/2023.01.01.123456)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'https://biorxiv.org/content/10.1101/2023.01.01.123456 or 2023.01.01.123456'
         })
     )
     
@@ -114,9 +144,54 @@ class KRTMakerForm(forms.Form):
         
         return xml_file
     
+    def clean_biorxiv_url(self):
+        """Validate bioRxiv URL or DOI"""
+        biorxiv_url = self.cleaned_data.get('biorxiv_url')
+        
+        if biorxiv_url:
+            biorxiv_url = biorxiv_url.strip()
+            
+            # Validate the URL/DOI format
+            fetcher = BioRxivFetcher()
+            doi = fetcher.parse_biorxiv_identifier(biorxiv_url)
+            
+            if not doi:
+                raise ValidationError(
+                    "Invalid bioRxiv URL or DOI format. Please provide a valid bioRxiv URL or DOI "
+                    "(e.g., https://biorxiv.org/content/10.1101/2023.01.01.123456 or 2023.01.01.123456)"
+                )
+            
+            # Test if the paper exists
+            try:
+                metadata = fetcher.get_paper_metadata(doi)
+                if not metadata:
+                    raise ValidationError(f"Paper not found: {doi}. Please check the URL or DOI.")
+            except Exception as e:
+                raise ValidationError(f"Error accessing bioRxiv: {str(e)}")
+        
+        return biorxiv_url
+
     def clean(self):
         """Cross-field validation"""
         cleaned_data = super().clean()
+        
+        # Input method validation
+        input_method = cleaned_data.get('input_method')
+        xml_file = cleaned_data.get('xml_file')
+        biorxiv_url = cleaned_data.get('biorxiv_url')
+        
+        if input_method == 'upload':
+            if not xml_file:
+                self.add_error('xml_file', 'Please upload an XML file when using file upload method.')
+            if biorxiv_url:
+                self.add_error('biorxiv_url', 'Please clear the URL field when using file upload method.')
+        elif input_method == 'url':
+            if not biorxiv_url:
+                self.add_error('biorxiv_url', 'Please provide a bioRxiv URL or DOI when using URL method.')
+            if xml_file:
+                self.add_error('xml_file', 'Please clear the file upload when using URL method.')
+        
+        # LLM configuration validation
         mode = cleaned_data.get('mode')
         provider = cleaned_data.get('provider')
         base_url = cleaned_data.get('base_url')

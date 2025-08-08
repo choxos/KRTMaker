@@ -25,6 +25,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from builder import build_from_xml_path, BuildOptions
 from validation import validate_xml_file, validate_api_config, ValidationError as KRTValidationError
+from biorxiv_fetcher import BioRxivFetcher
 
 
 class HomeView(TemplateView):
@@ -60,7 +61,9 @@ class KRTMakerView(FormView):
         session_id = uuid.uuid4().hex[:16]
         
         # Get form data
-        xml_file = form.cleaned_data['xml_file']
+        input_method = form.cleaned_data['input_method']
+        xml_file = form.cleaned_data.get('xml_file')
+        biorxiv_url = form.cleaned_data.get('biorxiv_url')
         mode = form.cleaned_data['mode']
         provider = form.cleaned_data.get('provider')
         model = form.cleaned_data.get('model')
@@ -68,32 +71,65 @@ class KRTMakerView(FormView):
         api_key = form.cleaned_data.get('api_key')
         extra_instructions = form.cleaned_data.get('extra_instructions')
         
-        # Create session record
-        session = KRTSession.objects.create(
-            session_id=session_id,
-            original_filename=xml_file.name,
-            file_size=xml_file.size,
-            mode=mode,
-            provider=provider,
-            model_name=model,
-            base_url=base_url,
-            extra_instructions=extra_instructions,
-            status='processing'
-        )
+        # Handle input method - get XML file path and metadata
+        xml_path = None
+        original_filename = "unknown.xml"
+        file_size = 0
+        temp_xml_path = None  # For cleanup if downloaded
         
         try:
-            # Save uploaded file temporarily
-            temp_path = default_storage.save(f"temp/{session_id}_{xml_file.name}", xml_file)
-            abs_path = default_storage.path(temp_path)
+            if input_method == 'upload' and xml_file:
+                # File upload method
+                original_filename = xml_file.name
+                file_size = xml_file.size
+                
+                # Save uploaded file temporarily
+                temp_path = default_storage.save(f"temp/{session_id}_{xml_file.name}", xml_file)
+                xml_path = default_storage.path(temp_path)
+                
+            elif input_method == 'url' and biorxiv_url:
+                # bioRxiv URL method
+                fetcher = BioRxivFetcher()
+                
+                # Parse DOI from URL
+                doi = fetcher.parse_biorxiv_identifier(biorxiv_url)
+                if not doi:
+                    raise ValueError("Invalid bioRxiv URL or DOI")
+                
+                # Get metadata and download XML
+                metadata, xml_path = fetcher.fetch_paper_info(biorxiv_url)
+                if not xml_path:
+                    raise ValueError(f"Could not download XML for {doi}")
+                
+                temp_xml_path = xml_path  # For cleanup
+                original_filename = f"{doi.replace('10.1101/', '')}.xml"
+                file_size = os.path.getsize(xml_path) if os.path.exists(xml_path) else 0
+                
+            else:
+                raise ValueError("No valid input method provided")
             
-            # Create ProcessedFile record
-            ProcessedFile.objects.create(
-                session=session,
-                file=temp_path
+            # Create session record
+            session = KRTSession.objects.create(
+                session_id=session_id,
+                original_filename=original_filename,
+                file_size=file_size,
+                mode=mode,
+                provider=provider,
+                model_name=model,
+                base_url=base_url,
+                extra_instructions=extra_instructions,
+                status='processing'
             )
             
-            # Validate file
-            validate_xml_file(abs_path)
+            # Create ProcessedFile record only for uploads
+            if input_method == 'upload':
+                ProcessedFile.objects.create(
+                    session=session,
+                    file=temp_path
+                )
+            
+            # Validate XML file
+            validate_xml_file(xml_path)
             
             # Build options for KRT extraction
             options = BuildOptions(
@@ -113,7 +149,7 @@ class KRTMakerView(FormView):
             start_time = time.time()
             
             # Extract KRT
-            result = build_from_xml_path(abs_path, options)
+            result = build_from_xml_path(xml_path, options)
             
             # Record processing time
             processing_time = time.time() - start_time
@@ -154,6 +190,14 @@ class KRTMakerView(FormView):
             
             messages.error(self.request, f'Processing error: {e}')
             return self.form_invalid(form)
+            
+        finally:
+            # Clean up temporary bioRxiv XML file
+            if temp_xml_path and os.path.exists(temp_xml_path):
+                try:
+                    os.unlink(temp_xml_path)
+                except Exception:
+                    pass  # Ignore cleanup errors
 
 
 class ResultsView(TemplateView):
