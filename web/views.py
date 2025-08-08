@@ -32,6 +32,7 @@ if project_root not in sys.path:
 from builder import build_from_xml_path, BuildOptions
 from validation import validate_xml_file, validate_api_config, ValidationError as KRTValidationError
 from biorxiv_fetcher import BioRxivFetcher
+from krt_validation import validate_krt_completeness, get_krt_quality_score, suggest_krt_improvements
 
 
 class HomeView(TemplateView):
@@ -333,12 +334,23 @@ class ResultsView(TemplateView):
                         resource_types[resource_type] = []
                     resource_types[resource_type].append(row)
                 
+                # Add KRT validation
+                validation_warnings = validate_krt_completeness(krt_data)
+                quality_score, max_score, quality_notes = get_krt_quality_score(krt_data)
+                improvement_suggestions = suggest_krt_improvements(krt_data)
+                
                 context.update({
                     'krt_data': krt_data,
                     'resource_types': resource_types,
                     'resource_count': len(krt_data),
                     'new_count': len([r for r in krt_data if r.get('NEW/REUSE', '').lower() == 'new']),
                     'reuse_count': len([r for r in krt_data if r.get('NEW/REUSE', '').lower() == 'reuse']),
+                    'validation_warnings': validation_warnings,
+                    'quality_score': quality_score,
+                    'max_quality_score': max_score,
+                    'quality_notes': quality_notes,
+                    'improvement_suggestions': improvement_suggestions,
+                    'quality_percentage': int((quality_score / max_score) * 100) if max_score > 0 else 0,
                 })
             
         except KRTSession.DoesNotExist:
@@ -486,3 +498,133 @@ class ArticleProfileView(TemplateView):
             'krt_count': session.existing_krt_count,
             'krt_data': session.existing_krt_data
         }
+
+
+@require_http_methods(["GET"])
+def export_krt(request, session_id, format_type):
+    """Export KRT data in various formats"""
+    try:
+        session = KRTSession.objects.get(session_id=session_id, status='completed')
+    except KRTSession.DoesNotExist:
+        return JsonResponse({'error': 'Session not found'}, status=404)
+    
+    # Get KRT data
+    krt_data = session.krt_data or []
+    
+    if not krt_data:
+        return JsonResponse({'error': 'No KRT data available'}, status=404)
+    
+    # Record export for analytics
+    KRTExport.objects.create(
+        session=session,
+        format=format_type,
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]
+    )
+    
+    if format_type == 'json':
+        response = JsonResponse({
+            'title': session.display_title,
+            'session_id': session_id,
+            'doi': session.doi,
+            'processing_date': session.created_at.isoformat(),
+            'mode': session.mode,
+            'provider': session.provider,
+            'model': session.model_name,
+            'resources_found': len(krt_data),
+            'krt_data': krt_data
+        }, json_dumps_params={'indent': 2})
+        response['Content-Disposition'] = f'attachment; filename="krt_{session_id}.json"'
+        return response
+    
+    elif format_type == 'csv':
+        import csv
+        from io import StringIO
+        
+        output = StringIO()
+        if krt_data:
+            # Use the keys from the first row, but ensure proper order
+            fieldnames = [
+                'RESOURCE TYPE', 'RESOURCE NAME', 'SOURCE', 
+                'IDENTIFIER', 'NEW/REUSE', 'ADDITIONAL INFORMATION'
+            ]
+            writer = csv.DictWriter(output, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for row in krt_data:
+                # Create a clean row with all required fields
+                clean_row = {}
+                for field in fieldnames:
+                    clean_row[field] = row.get(field, '')
+                writer.writerow(clean_row)
+        
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="krt_{session_id}.csv"'
+        return response
+    
+    elif format_type == 'excel':
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill
+            from io import BytesIO
+        except ImportError:
+            return JsonResponse({'error': 'Excel export not available (openpyxl not installed)'}, status=500)
+        
+        # Create workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Key Resources Table"
+        
+        # Add metadata
+        ws['A1'] = f"Key Resources Table - {session.display_title}"
+        ws['A1'].font = Font(bold=True, size=14)
+        ws['A2'] = f"Session ID: {session_id}"
+        ws['A3'] = f"DOI: {session.doi or 'N/A'}"
+        ws['A4'] = f"Processed: {session.created_at.strftime('%Y-%m-%d %H:%M')}"
+        ws['A5'] = f"Mode: {session.mode.upper()}"
+        if session.provider:
+            ws['A6'] = f"Provider: {session.provider} ({session.model_name})"
+        
+        # Add headers
+        headers = [
+            'RESOURCE TYPE', 'RESOURCE NAME', 'SOURCE', 
+            'IDENTIFIER', 'NEW/REUSE', 'ADDITIONAL INFORMATION'
+        ]
+        header_row = 8
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=header_row, column=col, value=header)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Add data
+        for row_idx, data_row in enumerate(krt_data, header_row + 1):
+            for col_idx, header in enumerate(headers, 1):
+                ws.cell(row=row_idx, column=col_idx, value=data_row.get(header, ''))
+        
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)  # Cap at 50 characters
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="krt_{session_id}.xlsx"'
+        return response
+    
+    else:
+        return JsonResponse({'error': 'Invalid format type'}, status=400)

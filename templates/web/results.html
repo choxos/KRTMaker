@@ -169,6 +169,83 @@
         </div>
     </div>
 
+    <!-- KRT Quality Score -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header {% if quality_percentage >= 80 %}bg-success text-white{% elif quality_percentage >= 60 %}bg-warning text-dark{% else %}bg-danger text-white{% endif %}">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>KRT Quality Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <h2 class="text-primary mb-1">{{ quality_score }}<span class="fs-6 text-muted">/{{ max_quality_score }}</span></h2>
+                            <div class="progress mb-2">
+                                <div class="progress-bar {% if quality_percentage >= 80 %}bg-success{% elif quality_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" style="width: {{ quality_percentage }}%"></div>
+                            </div>
+                            <p class="text-muted small mb-0">{{ quality_percentage }}% ASAP compliance</p>
+                        </div>
+                        <div class="col-md-9">
+                            <h6 class="text-muted mb-2">Quality Breakdown:</h6>
+                            <ul class="list-unstyled mb-0">
+                                {% for note in quality_notes %}
+                                <li class="small text-muted"><i class="fas fa-check-circle text-success me-1"></i>{{ note }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Warnings -->
+    {% if validation_warnings %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>ASAP Guidelines Compliance</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Your KRT may need attention in the following areas to meet ASAP Open Science guidelines:</p>
+                    <ul class="list-group list-group-flush">
+                        {% for warning in validation_warnings %}
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-info-circle text-warning me-2"></i>{{ warning }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Improvement Suggestions -->
+    {% if improvement_suggestions %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Improvement Suggestions</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Consider these improvements to enhance your KRT quality:</p>
+                    <ul class="list-group list-group-flush">
+                        {% for suggestion in improvement_suggestions %}
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-arrow-right text-info me-2"></i>{{ suggestion }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Existing KRT Warning -->
     {% if session.existing_krt_detected %}
     <div class="row mb-4">
@@ -282,12 +359,94 @@
 <!-- Export/Copy Functionality -->
 <script>
 function exportData(format) {
-    // This would typically make an API call to export the data
-    // For now, we'll show a placeholder
-    alert(`Export to ${format.toUpperCase()} functionality would be implemented here.`);
+    // Show loading indicator
+    const originalButtons = document.querySelectorAll('[onclick^="exportData"]');
+    originalButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+    });
     
-    // TODO: Implement actual export functionality
-    // Example: window.location.href = '/export/' + '{{ session.session_id }}' + '/' + format + '/';
+    // Create download link and trigger download
+    const url = "{% url 'web:export_krt' session.session_id 'FORMAT' %}".replace('FORMAT', format);
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Export failed: ${response.statusText}`);
+        }
+        
+        // Get filename from Content-Disposition header or create default
+        const disposition = response.headers.get('Content-Disposition');
+        let filename = `krt_{{ session.session_id }}.${format}`;
+        if (disposition) {
+            const matches = disposition.match(/filename="(.+)"/);
+            if (matches) filename = matches[1];
+        }
+        
+        return response.blob().then(blob => ({ blob, filename }));
+    })
+    .then(({ blob, filename }) => {
+        // Create download link
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+        
+        // Show success message
+        showToast('success', `${format.toUpperCase()} file downloaded successfully!`);
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        showToast('error', `Export failed: ${error.message}`);
+    })
+    .finally(() => {
+        // Restore buttons
+        originalButtons.forEach((btn, index) => {
+            btn.disabled = false;
+            const icons = ['fa-file-code', 'fa-file-csv', 'fa-file-excel'];
+            const labels = ['Download JSON', 'Download CSV', 'Download Excel'];
+            btn.innerHTML = `<i class="fas ${icons[index]} me-2"></i>${labels[index]}`;
+        });
+    });
+}
+
+function showToast(type, message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast show position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '1050';
+    
+    const iconClass = type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger';
+    const title = type === 'success' ? 'Success' : 'Error';
+    
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas ${iconClass} me-2"></i>
+            <strong class="me-auto">${title}</strong>
+            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
 }
 
 function copyToClipboard() {
@@ -308,27 +467,10 @@ function copyToClipboard() {
     
     // Copy to clipboard
     navigator.clipboard.writeText(krtText).then(function() {
-        // Show success message
-        const toast = document.createElement('div');
-        toast.className = 'toast show position-fixed top-0 end-0 m-3';
-        toast.innerHTML = `
-            <div class="toast-header">
-                <i class="fas fa-check-circle text-success me-2"></i>
-                <strong class="me-auto">Success</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                KRT data copied to clipboard!
-            </div>
-        `;
-        document.body.appendChild(toast);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 3000);
+        showToast('success', 'KRT data copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy text:', err);
+        showToast('error', 'Failed to copy to clipboard. Please try again.');
     });
 }
 </script>

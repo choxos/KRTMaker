@@ -16,7 +16,7 @@ urlpatterns = [
     # path('analytics/', views.AnalyticsView.as_view(), name='analytics'),  # TODO: Implement AnalyticsView
     
     # Export functionality
-    # path('export/<str:session_id>/<str:format_type>/', views.export_krt, name='export_krt'),  # TODO: Implement export_krt
+    path('export/<str:session_id>/<str:format_type>/', views.export_krt, name='export_krt'),
     
     # Feedback
     # path('feedback/', views.FeedbackView.as_view(), name='feedback'),  # TODO: Implement FeedbackView
