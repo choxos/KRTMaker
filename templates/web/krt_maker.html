@@ -184,14 +184,16 @@
                                 <i class="fas fa-link me-2 text-primary"></i>bioRxiv URL or DOI
                             </h5>
                             
-                            <div class="input-group">
+                            <div class="input-group position-relative">
                                 <span class="input-group-text">
                                     <i class="fas fa-link"></i>
                                 </span>
                                 {{ form.biorxiv_url }}
-                                <button type="button" class="btn btn-outline-secondary" id="check-doi-btn" onclick="checkDOIAvailability()">
-                                    <i class="fas fa-search"></i> Check Availability
-                                </button>
+                                
+                                <!-- DOI Suggestions Dropdown -->
+                                <div id="doi-suggestions" class="position-absolute bg-white border rounded shadow-lg" style="top: 100%; left: 0; right: 0; z-index: 1000; display: none; max-height: 400px; overflow-y: auto;">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
                             </div>
                             {% if form.biorxiv_url.help_text %}
                                 <small class="form-text text-muted">{{ form.biorxiv_url.help_text }}</small>
@@ -551,39 +553,157 @@ document.addEventListener('DOMContentLoaded', function() {
         processing.style.display = 'block';
     });
 
-    // DOI Availability Check Function
-    window.checkDOIAvailability = function() {
-        const urlInput = document.getElementById('id_biorxiv_url');
-        const checkBtn = document.getElementById('check-doi-btn');
-        const statusDiv = document.getElementById('doi-status');
+    // DOI Input Management
+    const urlInput = document.getElementById('id_biorxiv_url');
+    const doiSuggestions = document.getElementById('doi-suggestions');
+    const statusDiv = document.getElementById('doi-status');
+    
+    let suggestionTimeout = null;
+    let checkTimeout = null;
+    
+    // Show initial random suggestions when user focuses on input
+    urlInput.addEventListener('focus', function() {
+        if (!this.value.trim()) {
+            loadDOISuggestions('');
+        }
+    });
+    
+    // Handle input typing for search and auto-check
+    urlInput.addEventListener('input', function() {
+        const query = this.value.trim();
         
-        const doiValue = urlInput.value.trim();
+        // Clear previous timeouts
+        clearTimeout(suggestionTimeout);
+        clearTimeout(checkTimeout);
         
-        if (!doiValue) {
-            statusDiv.innerHTML = `
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Please enter a bioRxiv URL or DOI first.
-                </div>
-            `;
-            statusDiv.style.display = 'block';
+        if (query.length >= 3) {
+            // Search suggestions after short delay
+            suggestionTimeout = setTimeout(() => {
+                loadDOISuggestions(query);
+            }, 300);
+            
+            // Auto-check availability after longer delay (only for full DOIs)
+            if (query.includes('10.1101/') || query.includes('bioRxiv.org')) {
+                checkTimeout = setTimeout(() => {
+                    autoCheckDOIAvailability(query);
+                }, 1000);
+            }
+        } else if (query.length === 0) {
+            // Show random suggestions when input is empty
+            loadDOISuggestions('');
+        } else {
+            // Hide suggestions for short queries
+            hideSuggestions();
+        }
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!urlInput.contains(e.target) && !doiSuggestions.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+    
+    function loadDOISuggestions(query) {
+        const url = '{% url "web:get_doi_suggestions" %}' + (query ? `?q=${encodeURIComponent(query)}` : '');
+        
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySuggestions(data.suggestions, data.total_available, query);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading suggestions:', error);
+        });
+    }
+    
+    function displaySuggestions(suggestions, totalAvailable, query) {
+        if (suggestions.length === 0) {
+            hideSuggestions();
             return;
         }
         
-        // Show loading state
-        checkBtn.disabled = true;
-        checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        let html = '';
+        
+        // Header with total count
+        html += `
+            <div class="p-2 bg-light border-bottom">
+                <small class="text-muted">
+                    <i class="fas fa-database"></i> 
+                    ${query ? `${suggestions.length} matches` : `${suggestions.length} random samples`} 
+                    from ${totalAvailable.toLocaleString()} available papers
+                </small>
+            </div>
+        `;
+        
+        // Suggestions list
+        suggestions.forEach(suggestion => {
+            html += `
+                <div class="suggestion-item p-3 border-bottom" style="cursor: pointer;" data-doi="${suggestion.doi}">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-primary mb-1" style="font-size: 0.9rem;">
+                                ${suggestion.doi}
+                            </div>
+                            <div class="text-dark mb-1" style="font-size: 0.85rem;">
+                                ${suggestion.title}
+                            </div>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <i class="fas fa-users"></i> ${suggestion.authors}<br>
+                                <i class="fas fa-calendar"></i> ${suggestion.publication_date}
+                                <i class="fas fa-file-alt ms-2"></i> ${(suggestion.file_size / 1024).toFixed(1)} KB
+                            </div>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        doiSuggestions.innerHTML = html;
+        doiSuggestions.style.display = 'block';
+        
+        // Add click handlers
+        doiSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const doi = this.dataset.doi;
+                urlInput.value = doi;
+                hideSuggestions();
+                autoCheckDOIAvailability(doi);
+            });
+            
+            // Hover effects
+            item.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    }
+    
+    function hideSuggestions() {
+        doiSuggestions.style.display = 'none';
+    }
+    
+    function autoCheckDOIAvailability(doiValue) {
+        if (!doiValue.trim()) return;
         
         statusDiv.innerHTML = `
             <div class="alert alert-info">
                 <i class="fas fa-spinner fa-spin"></i>
-                Checking DOI availability and full text access...
+                Checking local XML availability...
             </div>
         `;
         statusDiv.style.display = 'block';
         
-        // Make AJAX request to check DOI availability
-        fetch('{% url "web:check_doi_availability" %}', {
+        // Use local availability check
+        fetch('{% url "web:check_doi_local_availability" %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -595,10 +715,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            // Reset button
-            checkBtn.disabled = false;
-            checkBtn.innerHTML = '<i class="fas fa-search"></i> Check Availability';
-            
             if (data.success) {
                 let alertClass = data.can_extract_krt ? 'alert-success' : 'alert-warning';
                 let icon = data.can_extract_krt ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
@@ -610,13 +726,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="flex-grow-1">
                                 <h6 class="mb-2">${data.message}</h6>
                                 
+                                ${data.local_file_available ? `
                                 <div class="row">
                                     <div class="col-md-6">
                                         <small class="text-muted">
                                             <strong>DOI:</strong> ${data.doi}<br>
-                                            <strong>EPMC ID:</strong> ${data.epmc_id}<br>
-                                            <strong>Indexed:</strong> ✅ Yes<br>
-                                            <strong>Full Text:</strong> ${data.full_text_available ? '✅ Available' : '❌ Not Available'}
+                                            <strong>Source:</strong> Local XML Storage<br>
+                                            <strong>File Size:</strong> ${(data.metadata.file_size / 1024).toFixed(1)} KB
                                         </small>
                                     </div>
                                     <div class="col-md-6">
@@ -627,6 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </small>
                                     </div>
                                 </div>
+                                ` : ''}
                                 
                                 ${data.suggestion ? '<div class="mt-2"><small class="text-muted"><strong>Suggestion:</strong> ' + data.suggestion + '</small></div>' : ''}
                             </div>
@@ -644,19 +761,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            // Reset button
-            checkBtn.disabled = false;
-            checkBtn.innerHTML = '<i class="fas fa-search"></i> Check Availability';
-            
             statusDiv.innerHTML = `
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Error:</strong> Failed to check DOI availability. Please try again.
+                    <strong>Error:</strong> Failed to check DOI availability.
                     <br><small class="text-muted">Network error: ${error.message}</small>
                 </div>
             `;
         });
-    };
+    }
 
     // Initialize visibility
     updateInputMethodVisibility();

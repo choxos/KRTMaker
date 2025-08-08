@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.db.models import Count
 import json
 
-from .models import Article, KRTSession, ProcessedFile, KRTExport, SystemMetrics
+from .models import Article, KRTSession, ProcessedFile, KRTExport, SystemMetrics, XMLFile
 
 
 @admin.register(Article)
@@ -196,3 +196,57 @@ def recalculate_session_counts(modeladmin, request, queryset):
         article.save()
 
 ArticleAdmin.actions = [recalculate_session_counts]
+
+
+@admin.register(XMLFile)
+class XMLFileAdmin(admin.ModelAdmin):
+    list_display = ['doi', 'title_short', 'file_size_display', 'publication_date', 'is_available', 'downloaded_at']
+    list_filter = ['is_available', 'journal', 'publication_date', 'downloaded_at']
+    search_fields = ['doi', 'title', 'authors', 'epmc_id']
+    readonly_fields = ['doi', 'file_hash', 'downloaded_at', 'last_checked', 'file_path_display']
+    ordering = ['-downloaded_at']
+    
+    fieldsets = (
+        ('Paper Information', {
+            'fields': ('doi', 'epmc_id', 'title', 'authors_display', 'publication_date', 'journal')
+        }),
+        ('File Information', {
+            'fields': ('file_path_display', 'file_size_display', 'file_hash', 'download_source')
+        }),
+        ('Status', {
+            'fields': ('is_available', 'error_message', 'downloaded_at', 'last_checked')
+        })
+    )
+    
+    def title_short(self, obj):
+        return obj.title[:60] + '...' if obj.title and len(obj.title) > 60 else obj.title or 'No Title'
+    title_short.short_description = 'Title'
+    
+    def file_size_display(self, obj):
+        if obj.file_size:
+            if obj.file_size > 1024 * 1024:
+                return f'{obj.file_size / (1024 * 1024):.1f} MB'
+            elif obj.file_size > 1024:
+                return f'{obj.file_size / 1024:.1f} KB'
+            else:
+                return f'{obj.file_size} bytes'
+        return 'Unknown'
+    file_size_display.short_description = 'File Size'
+    
+    def file_path_display(self, obj):
+        import os
+        if obj.file_path and os.path.exists(obj.full_file_path):
+            return format_html('<code>{}</code> ✅', obj.file_path)
+        else:
+            return format_html('<code>{}</code> ❌ Missing', obj.file_path)
+    file_path_display.short_description = 'File Path'
+    
+    def authors_display(self, obj):
+        try:
+            authors = json.loads(obj.authors) if obj.authors else []
+            if len(authors) > 3:
+                return ', '.join(authors[:3]) + f' ... ({len(authors)} total)'
+            return ', '.join(authors)
+        except:
+            return obj.authors[:50] + '...' if obj.authors and len(obj.authors) > 50 else obj.authors
+    authors_display.short_description = 'Authors'

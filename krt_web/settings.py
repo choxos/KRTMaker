@@ -140,3 +140,9 @@ if config('DATABASE_URL', default=None):
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# XML File Storage Configuration
+XML_STORAGE_DIR = os.path.join(BASE_DIR, 'xml_files')
+
+# Create XML storage directory if it doesn't exist
+os.makedirs(XML_STORAGE_DIR, exist_ok=True)

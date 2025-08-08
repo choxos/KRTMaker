@@ -349,7 +349,7 @@ class EuropePMCFetcher:
         """
         print("🔍 Searching ALL bioRxiv papers in Europe PMC...")
         
-        query = '(JOURNAL:("bioRxiv : the preprint server for biology") AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
+        query = 'JOURNAL:("bioRxiv : the preprint server for biology")'
         return self.search_complete_results(query, limit=limit)
     
     def search_all_biorxiv_papers_by_year(self, start_year: int = 2020, end_year: int = 2025, limit_per_year: Optional[int] = None) -> List[Dict]:
@@ -372,8 +372,8 @@ class EuropePMCFetcher:
         for year in range(start_year, end_year + 1):
             print(f"\n📆 === YEAR {year} ===")
             
-            # Create year-specific query with full text availability filter
-            query = f'(JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}]) AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
+            # Create year-specific query
+            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
             
             # Search for this year
             year_papers = self.search_complete_results(query, limit=limit_per_year)
@@ -414,7 +414,7 @@ class EuropePMCFetcher:
         total_papers = 0
         
         for year in range(start_year, end_year + 1):
-            query = f'(JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}]) AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
+            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
             url = f"{self.BASE_URL}/search"
             
             params = {

@@ -23,6 +23,8 @@ urlpatterns = [
     
     # AJAX endpoints
     path('check-doi/', views.check_doi_availability, name='check_doi_availability'),
+    path('check-doi-local/', views.check_doi_local_availability, name='check_doi_local_availability'),
+    path('doi-suggestions/', views.get_doi_suggestions, name='get_doi_suggestions'),
     
     # Feedback
     # path('feedback/', views.FeedbackView.as_view(), name='feedback'),  # TODO: Implement FeedbackView

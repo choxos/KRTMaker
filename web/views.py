@@ -17,7 +17,7 @@ from django.db.models import Count, Avg, Sum, Q
 from django.utils import timezone
 
 from .forms import KRTMakerForm, FeedbackForm
-from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics, Article
+from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics, Article, XMLFile
 
 # Import the KRT maker functionality (using project root path)
 from django.conf import settings
@@ -100,6 +100,7 @@ class KRTMakerView(FormView):
         temp_xml_path = None  # For cleanup if downloaded
         temp_path = None  # For Django file storage cleanup (uploads only)
         session = None  # Initialize session variable for exception handling
+        local_xml_file = None  # Initialize local_xml_file for local storage reference
         
         try:
             if input_method == 'upload' and xml_file:
@@ -135,39 +136,25 @@ class KRTMakerView(FormView):
                 if not doi:
                     raise ValueError("Invalid bioRxiv URL or DOI")
                 
-                # Step 1: Get EPMC ID for the DOI
-                epmc_id = fetcher.search_epmc_for_doi(doi)
-                if not epmc_id:
-                    raise ValueError(f"Paper not found: {doi}. Please check the URL or DOI and make sure the paper exists on bioRxiv. Please provide a bioRxiv URL or DOI when using URL method.")
+                # Step 1: Check if XML file exists locally
+                local_xml_file = XMLFile.objects.filter(doi=doi, is_available=True).first()
                 
-                # Step 2: Check full text availability BEFORE attempting download
-                full_text_status = fetcher.check_full_text_availability(epmc_id)
+                if not local_xml_file:
+                    raise ValueError(f"XML file not available in local dataset for {doi}. This paper may not be in our downloaded collection. Please run the XML download command to include more papers, or use the file upload method instead.")
                 
-                if not full_text_status['available']:
-                    # Provide detailed error message based on the specific issue
-                    error_msg = f"Full text XML not available for {doi}"
-                    
-                    if full_text_status.get('status_code') == 404:
-                        error_msg += f" (EPMC ID: {epmc_id}). This paper is indexed in Europe PMC but the full text XML is not yet available for download. This often happens with very recent preprints. Please try again in a few days, or contact the authors for the manuscript."
-                    elif full_text_status.get('error'):
-                        error_msg += f". Error: {full_text_status['error']}"
-                    
-                    error_msg += f"\n\nYou can still view this paper at: https://doi.org/{doi}"
-                    raise ValueError(error_msg)
+                # Step 2: Verify file exists on disk
+                if not local_xml_file.verify_file_exists():
+                    raise ValueError(f"XML file for {doi} was found in database but is missing from disk. Please run the XML download command to re-download this file.")
                 
-                # Step 3: If full text is available, proceed with download and processing
-                print(f"✅ Full text available for {doi} (EPMC ID: {epmc_id})")
-                if full_text_status.get('content_length'):
-                    print(f"📄 Expected file size: {full_text_status['content_length']} bytes")
-                
-                # Get metadata and download XML
-                metadata, xml_path = fetcher.fetch_paper_info(biorxiv_url)
-                if not xml_path:
-                    raise ValueError(f"Could not download XML for {doi} despite availability check passing. Please try again.")
-                
-                temp_xml_path = xml_path  # For cleanup
+                # Step 3: Use local XML file
+                xml_path = local_xml_file.full_file_path
+                temp_xml_path = None  # No cleanup needed for local files
                 original_filename = f"{doi.replace('10.1101/', '')}.xml"
-                file_size = os.path.getsize(xml_path) if os.path.exists(xml_path) else 0
+                file_size = local_xml_file.file_size
+                
+                print(f"✅ Using local XML file for {doi}")
+                print(f"📄 File size: {file_size} bytes")
+                print(f"📁 File path: {xml_path}")
                 
             else:
                 raise ValueError("No valid input method provided")
@@ -178,24 +165,21 @@ class KRTMakerView(FormView):
             if input_method == 'url' and biorxiv_url:
                 fetcher = BioRxivFetcher()
                 session_doi = fetcher.parse_biorxiv_identifier(biorxiv_url)
-                if session_doi:
-                    raw_metadata = fetcher.get_paper_metadata(session_doi) or {}
-                    
-                    # Map Europe PMC metadata to our format
-                    if raw_metadata:
-                        biorxiv_metadata = {
-                            'doi': raw_metadata.get('preprint_doi', session_doi),
-                            'title': raw_metadata.get('preprint_title'),
-                            'authors': raw_metadata.get('preprint_authors'),
-                            'authors_detailed': raw_metadata.get('preprint_authors_detailed'),
-                            'publication_date': raw_metadata.get('preprint_date'),
-                            'abstract': raw_metadata.get('preprint_abstract'),
-                            'journal': raw_metadata.get('preprint_platform', 'bioRxiv'),
-                            'keywords': raw_metadata.get('preprint_keywords'),
-                            'pmcid': raw_metadata.get('pmcid'),
-                            'pmid': raw_metadata.get('pmid'),
-                            'source': raw_metadata.get('source', 'europe_pmc')
-                        }
+                if session_doi and local_xml_file:
+                    # Use metadata from local XML file record
+                    biorxiv_metadata = {
+                        'doi': local_xml_file.doi,
+                        'title': local_xml_file.title,
+                        'authors': local_xml_file.authors,  # This is already JSON string
+                        'authors_detailed': json.loads(local_xml_file.authors) if local_xml_file.authors else [],
+                        'publication_date': local_xml_file.publication_date.strftime('%Y-%m-%d') if local_xml_file.publication_date else None,
+                        'abstract': None,  # Abstract not stored in XMLFile model - will be extracted from XML
+                        'journal': local_xml_file.journal,
+                        'keywords': None,  # Keywords not stored in XMLFile model
+                        'pmcid': None,
+                        'pmid': None,
+                        'source': 'local_xml_storage'
+                    }
             
             # Parse authors - use detailed list if available, otherwise parse string
             authors_list = []
@@ -823,5 +807,163 @@ def check_doi_availability(request):
         return JsonResponse({
             'success': False,
             'error': 'Server error while checking DOI availability',
+            'details': str(e)
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_doi_suggestions(request):
+    """
+    AJAX endpoint to get random DOI suggestions for autocomplete.
+    Returns a list of 10 random DOIs that have XML files available.
+    """
+    try:
+        # Get query parameter for search (if user is typing)
+        query = request.GET.get('q', '').strip()
+        
+        # Base queryset of available XML files
+        xml_files = XMLFile.objects.filter(is_available=True)
+        
+        if query:
+            # If user is typing, filter by DOI or title containing the query
+            xml_files = xml_files.filter(
+                Q(doi__icontains=query) | 
+                Q(title__icontains=query)
+            ).order_by('doi')[:10]
+        else:
+            # If no query, return 10 random suggestions
+            xml_files = xml_files.order_by('?')[:10]
+        
+        suggestions = []
+        for xml_file in xml_files:
+            # Format authors for display
+            authors_display = "Unknown Authors"
+            if xml_file.authors:
+                try:
+                    authors_list = json.loads(xml_file.authors)
+                    if len(authors_list) > 3:
+                        authors_display = f"{', '.join(authors_list[:3])} et al."
+                    else:
+                        authors_display = ', '.join(authors_list)
+                except:
+                    authors_display = xml_file.authors[:50] + "..." if len(xml_file.authors) > 50 else xml_file.authors
+            
+            suggestions.append({
+                'doi': xml_file.doi,
+                'title': xml_file.title[:80] + "..." if xml_file.title and len(xml_file.title) > 80 else xml_file.title or "Unknown Title",
+                'authors': authors_display,
+                'publication_date': xml_file.publication_date.strftime('%Y-%m-%d') if xml_file.publication_date else 'Unknown Date',
+                'file_size': xml_file.file_size,
+                'downloaded_at': xml_file.downloaded_at.strftime('%Y-%m-%d') if xml_file.downloaded_at else None
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'suggestions': suggestions,
+            'total_available': XMLFile.objects.filter(is_available=True).count(),
+            'query': query
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': 'Server error while getting DOI suggestions',
+            'details': str(e)
+        }, status=500)
+
+
+@require_http_methods(["POST"])
+def check_doi_local_availability(request):
+    """
+    AJAX endpoint to check if a DOI has XML file available locally.
+    This replaces the Europe PMC availability check for local XML storage.
+    """
+    try:
+        data = json.loads(request.body)
+        doi_input = data.get('doi', '').strip()
+        
+        if not doi_input:
+            return JsonResponse({
+                'success': False,
+                'error': 'No DOI provided'
+            }, status=400)
+        
+        # Initialize fetcher for DOI parsing
+        fetcher = BioRxivFetcher()
+        
+        # Parse DOI from input (handles URLs and DOIs)
+        doi = fetcher.parse_biorxiv_identifier(doi_input)
+        if not doi:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid bioRxiv URL or DOI format',
+                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2024.01.01.123456) or URL'
+            }, status=400)
+        
+        # Check if XML file exists locally
+        xml_file = XMLFile.objects.filter(doi=doi, is_available=True).first()
+        
+        if xml_file:
+            # Verify file still exists on disk
+            if xml_file.verify_file_exists():
+                # Format authors for display
+                authors_display = "Unknown Authors"
+                if xml_file.authors:
+                    try:
+                        authors_list = json.loads(xml_file.authors)
+                        if len(authors_list) > 3:
+                            authors_display = f"{', '.join(authors_list[:3])} et al."
+                        else:
+                            authors_display = ', '.join(authors_list)
+                    except:
+                        authors_display = xml_file.authors[:50] + "..." if len(xml_file.authors) > 50 else xml_file.authors
+                
+                return JsonResponse({
+                    'success': True,
+                    'doi': doi,
+                    'local_file_available': True,
+                    'can_extract_krt': True,
+                    'metadata': {
+                        'title': xml_file.title or 'Unknown Title',
+                        'authors': authors_display,
+                        'date': xml_file.publication_date.strftime('%Y-%m-%d') if xml_file.publication_date else 'Unknown Date',
+                        'journal': xml_file.journal,
+                        'file_size': xml_file.file_size,
+                        'downloaded_at': xml_file.downloaded_at.strftime('%Y-%m-%d %H:%M') if xml_file.downloaded_at else None
+                    },
+                    'message': f"✅ XML file available locally! Ready for KRT extraction.",
+                    'source': 'local_storage'
+                })
+            else:
+                return JsonResponse({
+                    'success': True,
+                    'doi': doi,
+                    'local_file_available': False,
+                    'can_extract_krt': False,
+                    'message': f"❌ XML file was downloaded but is no longer available on disk.",
+                    'suggestion': "Please run the XML download command to re-download this file.",
+                    'source': 'local_storage'
+                })
+        else:
+            return JsonResponse({
+                'success': True,
+                'doi': doi,
+                'local_file_available': False,
+                'can_extract_krt': False,
+                'message': f"⚠️ XML file not available in local dataset.",
+                'suggestion': "This paper may not be in our downloaded dataset. Please run the XML download command to include more papers.",
+                'source': 'local_storage'
+            })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': 'Server error while checking local DOI availability',
             'details': str(e)
         }, status=500)

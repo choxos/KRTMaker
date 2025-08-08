@@ -171,12 +171,87 @@ class KRTSession(models.Model):
         return list(unique_articles.values())
 
 
+class XMLFile(models.Model):
+    """Model to track downloaded XML files for bioRxiv papers"""
+    
+    # Paper identifiers
+    doi = models.CharField(max_length=255, unique=True, db_index=True)
+    epmc_id = models.CharField(max_length=50, null=True, blank=True, db_index=True)
+    
+    # File storage
+    file_path = models.CharField(max_length=500)  # Relative path from XML storage directory
+    file_size = models.PositiveIntegerField()
+    file_hash = models.CharField(max_length=64, db_index=True)  # SHA256 hash for integrity
+    
+    # Download metadata
+    downloaded_at = models.DateTimeField(auto_now_add=True)
+    last_checked = models.DateTimeField(auto_now=True)
+    download_source = models.CharField(max_length=50, default='europe_pmc')
+    
+    # Paper metadata
+    title = models.CharField(max_length=500, blank=True, null=True)
+    authors = models.TextField(blank=True, null=True)  # JSON list
+    publication_date = models.DateField(blank=True, null=True)
+    journal = models.CharField(max_length=255, default='bioRxiv')
+    
+    # Status tracking
+    is_available = models.BooleanField(default=True)
+    error_message = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-downloaded_at']
+        indexes = [
+            models.Index(fields=['doi']),
+            models.Index(fields=['epmc_id']),
+            models.Index(fields=['publication_date']),
+            models.Index(fields=['is_available']),
+        ]
+    
+    def __str__(self):
+        return f"XML: {self.doi}"
+    
+    @property
+    def full_file_path(self):
+        """Get the complete file path including XML storage directory"""
+        from django.conf import settings
+        import os
+        xml_storage_dir = getattr(settings, 'XML_STORAGE_DIR', os.path.join(settings.BASE_DIR, 'xml_files'))
+        return os.path.join(xml_storage_dir, self.file_path)
+    
+    def verify_file_exists(self):
+        """Check if the XML file still exists on disk"""
+        import os
+        exists = os.path.exists(self.full_file_path)
+        if not exists:
+            self.is_available = False
+            self.error_message = "File not found on disk"
+            self.save()
+        return exists
+    
+    def calculate_file_hash(self):
+        """Calculate SHA256 hash of the XML file"""
+        import hashlib
+        import os
+        
+        if not os.path.exists(self.full_file_path):
+            return None
+            
+        hash_sha256 = hashlib.sha256()
+        with open(self.full_file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_sha256.update(chunk)
+        return hash_sha256.hexdigest()
+
+
 class Article(models.Model):
     """Model to group multiple KRT sessions for the same article"""
     
     # Unique identifier for the article
     doi = models.CharField(max_length=255, unique=True, null=True, blank=True, db_index=True)
     filename_hash = models.CharField(max_length=64, unique=True, null=True, blank=True, db_index=True)  # For uploaded files
+    
+    # Link to XML file if available
+    xml_file = models.ForeignKey(XMLFile, on_delete=models.SET_NULL, null=True, blank=True, related_name='articles')
     
     # Article metadata
     title = models.CharField(max_length=500, blank=True, null=True)
