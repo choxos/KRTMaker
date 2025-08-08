@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .builder import BuildOptions, build_from_xml_path
-from .s3_downloader import download_objects, list_objects
+# Note: S3 functionality removed - using Europe PMC for bioRxiv papers
 
 
 def process_multiple_xmls(

@@ -83,33 +83,5 @@ def validate_api_config(
         print("Warning: No model specified, defaulting to claude-3-5-sonnet-latest")
 
 
-def validate_s3_access() -> Tuple[bool, str]:
-    """Check if AWS credentials are configured for S3 access."""
-    try:
-        import boto3
-        from botocore.exceptions import NoCredentialsError, ClientError
-
-        # Try to create S3 client
-        client = boto3.client("s3", region_name="us-east-1")
-
-        # Test access with a simple operation
-        client.list_objects_v2(
-            Bucket="biorxiv-src-monthly", MaxKeys=1, RequestPayer="requester"
-        )
-        return True, "S3 access confirmed"
-
-    except NoCredentialsError:
-        return (
-            False,
-            "AWS credentials not found. Configure with 'aws configure' or environment variables",
-        )
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        if error_code == "AccessDenied":
-            return False, "AWS credentials lack S3 access permissions"
-        elif error_code == "NoSuchBucket":
-            return False, "bioRxiv S3 bucket not accessible (may be region issue)"
-        else:
-            return False, f"S3 access error: {e}"
-    except Exception as e:
-        return False, f"Unexpected error testing S3 access: {e}"
+# Note: S3 validation removed - now using Europe PMC for bioRxiv papers
+# No AWS credentials or S3 access needed anymore!
