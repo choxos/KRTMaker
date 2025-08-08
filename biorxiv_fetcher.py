@@ -68,16 +68,16 @@ class BioRxivFetcher:
     def get_paper_metadata(self, doi: str) -> Optional[dict]:
         """Get paper metadata from bioRxiv API"""
         try:
-            # Remove 10.1101/ prefix for API call
-            paper_id = doi.replace('10.1101/', '')
-            url = f"{self.API_BASE}/details/biorxiv/{paper_id}"
+            # Use the correct bioRxiv API format: /pubs/biorxiv/{DOI}
+            url = f"{self.API_BASE}/pubs/biorxiv/{doi}"
             
             response = self.session.get(url, timeout=30)
             response.raise_for_status()
             
             data = response.json()
-            if data.get('messages') and data['messages'][0].get('status') == 'ok':
-                return data['collection'][0] if data.get('collection') else None
+            # Check if we have a collection with papers
+            if data.get('collection') and len(data['collection']) > 0:
+                return data['collection'][0]
             
             return None
             
@@ -99,10 +99,11 @@ class BioRxivFetcher:
             # Extract the paper identifier for download URL
             paper_id = doi.replace('10.1101/', '')
             
-            # Try different XML download URLs
+            # Try different XML download URLs using correct field names
+            preprint_date = metadata.get('preprint_date', '')
             xml_urls = [
-                f"{self.BASE_URL}/content/biorxiv/early/{metadata.get('date', '').replace('-', '/')}/{paper_id}.source.xml",
-                f"{self.BASE_URL}/content/early/{metadata.get('date', '').replace('-', '/')}/{paper_id}.source.xml",
+                f"{self.BASE_URL}/content/biorxiv/early/{preprint_date.replace('-', '/')}/{paper_id}.source.xml",
+                f"{self.BASE_URL}/content/early/{preprint_date.replace('-', '/')}/{paper_id}.source.xml",
                 f"{self.BASE_URL}/content/10.1101/{paper_id}.source.xml",
             ]
             
