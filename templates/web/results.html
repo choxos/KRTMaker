@@ -1,0 +1,355 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}KRT Results - {{ session.display_title|truncatechars:50 }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'web:home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'web:article_dashboard' %}">Articles</a></li>
+                    <li class="breadcrumb-item active">Results</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="h2 mb-2">KRT Extraction Results</h1>
+                    <h3 class="h5 text-muted mb-3">{{ session.display_title }}</h3>
+                    <div class="mb-3">
+                        {% if session.is_biorxiv_paper %}
+                            <span class="badge bg-info me-2">bioRxiv Paper</span>
+                        {% else %}
+                            <span class="badge bg-secondary me-2">Uploaded File</span>
+                        {% endif %}
+                        
+                        {% if session.mode == 'llm' %}
+                            {% if session.provider == 'anthropic' %}
+                                <span class="badge bg-primary me-2">Anthropic - {{ session.model_name }}</span>
+                            {% elif session.provider == 'gemini' %}
+                                <span class="badge bg-success me-2">Gemini - {{ session.model_name }}</span>
+                            {% elif session.provider == 'openai_compatible' %}
+                                <span class="badge bg-info me-2">OpenAI-Compatible - {{ session.model_name }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark me-2">Regex/Heuristics</span>
+                        {% endif %}
+                        
+                        <span class="badge bg-success">{{ resource_count }} Resource{{ resource_count|pluralize }}</span>
+                        
+                        {% if session.existing_krt_detected %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-table"></i> Has Existing KRT ({{ session.existing_krt_count }})
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'web:krt_maker' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>New Extraction
+                        </a>
+                        {% if session.doi %}
+                        <a href="{% url 'web:article_profile' session.doi %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-chart-line me-2"></i>Article Profile
+                        {% else %}
+                        <a href="{% url 'web:article_profile' session.session_id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-chart-line me-2"></i>Article Profile
+                        {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Processing Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-0">{{ resource_count }}</h4>
+                                <small class="text-muted">Total Resources</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success mb-0">{{ new_count }}</h4>
+                                <small class="text-muted">New</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning mb-0">{{ reuse_count }}</h4>
+                                <small class="text-muted">Reused</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info mb-0">{{ session.processing_time|floatformat:1 }}s</h4>
+                                <small class="text-muted">Processing Time</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Authors:</strong>
+                            <p class="mb-2">{{ session.formatted_authors }}</p>
+                            
+                            {% if session.doi %}
+                            <strong>DOI:</strong>
+                            <p class="mb-2">
+                                <a href="https://doi.org/{{ session.doi }}" target="_blank" class="text-decoration-none">
+                                    {{ session.doi }} <i class="fas fa-external-link-alt small"></i>
+                                </a>
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Session ID:</strong>
+                            <p class="mb-2"><code>{{ session.session_id }}</code></p>
+                            
+                            <strong>Processed:</strong>
+                            <p class="mb-2">{{ session.created_at|date:"F j, Y H:i" }}</p>
+                            
+                            {% if session.formatted_keywords %}
+                            <strong>Keywords:</strong>
+                            <div class="mb-2">
+                                {% for keyword in session.formatted_keywords %}
+                                    <span class="badge bg-light text-dark me-1">{{ keyword }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-download me-2"></i>Export Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="exportData('json')">
+                            <i class="fas fa-file-code me-2"></i>Download JSON
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportData('csv')">
+                            <i class="fas fa-file-csv me-2"></i>Download CSV
+                        </button>
+                        <button class="btn btn-outline-info" onclick="exportData('excel')">
+                            <i class="fas fa-file-excel me-2"></i>Download Excel
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                            <i class="fas fa-copy me-2"></i>Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing KRT Warning -->
+    {% if session.existing_krt_detected %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h6 class="alert-heading">
+                    <i class="fas fa-table me-2"></i>Existing KRT Detected
+                </h6>
+                <p class="mb-0">
+                    This article already contains {{ session.existing_krt_count }} KRT table{{ session.existing_krt_count|pluralize }} in its original content.
+                    Compare the detected resources below with the original KRT.
+                    <a href="{% if session.doi %}{% url 'web:article_profile' session.doi %}{% else %}{% url 'web:article_profile' session.session_id %}{% endif %}" class="alert-link">View detailed comparison</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- KRT Results by Resource Type -->
+    {% if resource_types %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>Key Resources Table (KRT)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for resource_type, resources in resource_types.items %}
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-tag me-2"></i>{{ resource_type }} 
+                            <span class="badge bg-light text-dark ms-2">{{ resources|length }}</span>
+                        </h6>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Resource Name</th>
+                                        <th>Source</th>
+                                        <th>Identifier</th>
+                                        <th>New/Reuse</th>
+                                        <th>Additional Information</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for resource in resources %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ resource.RESOURCE_NAME|default:"N/A" }}</strong>
+                                        </td>
+                                        <td>{{ resource.SOURCE|default:"N/A" }}</td>
+                                        <td>
+                                            {% if resource.IDENTIFIER %}
+                                                <code class="small">{{ resource.IDENTIFIER }}</code>
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if resource.NEW_OR_REUSE|lower == 'new' %}
+                                                <span class="badge bg-success">New</span>
+                                            {% elif resource.NEW_OR_REUSE|lower == 'reuse' %}
+                                                <span class="badge bg-warning text-dark">Reuse</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ resource.NEW_OR_REUSE|default:"N/A" }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="small">{{ resource.ADDITIONAL_INFO|default:"" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Results Found -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Resources Found</h5>
+                    <p class="text-muted">The extraction process didn't find any key resources in this document.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'web:krt_maker' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-plus me-2"></i>Try Different Method
+                        </a>
+                        <a href="{% url 'web:article_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Articles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Export/Copy Functionality -->
+<script>
+function exportData(format) {
+    // This would typically make an API call to export the data
+    // For now, we'll show a placeholder
+    alert(`Export to ${format.toUpperCase()} functionality would be implemented here.`);
+    
+    // TODO: Implement actual export functionality
+    // Example: window.location.href = '/export/' + '{{ session.session_id }}' + '/' + format + '/';
+}
+
+function copyToClipboard() {
+    // Create a string representation of the KRT data
+    let krtText = "Key Resources Table - {{ session.display_title }}\n";
+    krtText += "=" * 50 + "\n\n";
+    
+    {% if resource_types %}
+    {% for resource_type, resources in resource_types.items %}
+    krtText += "{{ resource_type }}\n";
+    krtText += "-".repeat({{ resource_type|length }}) + "\n";
+    {% for resource in resources %}
+    krtText += "• {{ resource.RESOURCE_NAME|default:'N/A' }} ({{ resource.SOURCE|default:'N/A' }})\n";
+    {% endfor %}
+    krtText += "\n";
+    {% endfor %}
+    {% endif %}
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(krtText).then(function() {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'toast show position-fixed top-0 end-0 m-3';
+        toast.innerHTML = `
+            <div class="toast-header">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                KRT data copied to clipboard!
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 3000);
+    });
+}
+</script>
+
+<style>
+.badge {
+    font-size: 0.75em;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb {
+    background: none;
+    padding: 0;
+}
+
+.toast {
+    z-index: 1050;
+}
+</style>
+{% endblock %}

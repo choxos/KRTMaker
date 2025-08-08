@@ -32,7 +32,6 @@ if project_root not in sys.path:
 from builder import build_from_xml_path, BuildOptions
 from validation import validate_xml_file, validate_api_config, ValidationError as KRTValidationError
 from biorxiv_fetcher import BioRxivFetcher
-from krt_detector import detect_existing_krt, format_krt_data_for_display
 
 
 class HomeView(TemplateView):
@@ -183,14 +182,23 @@ class KRTMakerView(FormView):
             # Validate XML file
             validate_xml_file(xml_path)
             
-            # Detect existing KRT in the article
-            existing_krt_info = detect_existing_krt(xml_path)
-            existing_krt_data = format_krt_data_for_display(existing_krt_info.get('krt_tables', []))
+            # Detect existing KRT in the article (import only when needed to avoid auto-reload)
+            try:
+                from krt_detector import detect_existing_krt, format_krt_data_for_display
+                existing_krt_info = detect_existing_krt(xml_path)
+                existing_krt_data = format_krt_data_for_display(existing_krt_info.get('krt_tables', []))
+                
+                # Update session with existing KRT info
+                session.existing_krt_detected = existing_krt_info.get('has_krt', False)
+                session.existing_krt_count = existing_krt_info.get('krt_count', 0)
+                session.existing_krt_data = existing_krt_data
+            except Exception as e:
+                print(f"KRT detection failed: {e}")
+                # Set default values if KRT detection fails
+                session.existing_krt_detected = False
+                session.existing_krt_count = 0
+                session.existing_krt_data = []
             
-            # Update session with existing KRT info
-            session.existing_krt_detected = existing_krt_info.get('has_krt', False)
-            session.existing_krt_count = existing_krt_info.get('krt_count', 0)
-            session.existing_krt_data = existing_krt_data
             session.save()
             
             # Build options for KRT extraction
@@ -433,8 +441,6 @@ class ArticleProfileView(TemplateView):
     
     def _detect_existing_krt(self, session):
         """Detect if the article already contains KRT tables"""
-        # This is a placeholder for KRT detection logic
-        # You would implement actual KRT detection by analyzing the XML content
         return {
             'has_krt': session.existing_krt_detected,
             'krt_count': session.existing_krt_count,
