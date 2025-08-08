@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import List, Optional, Tuple
 
-from .types import ALLOWED_RESOURCE_TYPES, KRTEntry
+from krt_types import ALLOWED_RESOURCE_TYPES, KRTEntry
 
 
 class ValidationError(Exception):

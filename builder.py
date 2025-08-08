@@ -4,9 +4,9 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .jats_parser import read_xml, extract_plain_text, extract_title_and_abstract
-from .regex_extractor import extract_krt_regex
-from .types import (
+from jats_parser import read_xml, extract_plain_text, extract_title_and_abstract
+from regex_extractor import extract_krt_regex
+from krt_types import (
     KRTEntry,
     krt_entries_to_json_rows,
     ALLOWED_RESOURCE_TYPES,
@@ -17,8 +17,8 @@ from .types import (
     KRT_COLUMN_NEW_OR_REUSE,
     KRT_COLUMN_ADDITIONAL_INFO,
 )
-from .llm_providers import LLMClient, LLMConfig
-from .validation import validate_xml_file, validate_api_config, ValidationError
+from llm_providers import LLMClient, LLMConfig
+from validation import validate_xml_file, validate_api_config, ValidationError
 
 
 @dataclass

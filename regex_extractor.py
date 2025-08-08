@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Dict, Iterable, List, Optional
 
-from .types import (
+from krt_types import (
     ALLOWED_RESOURCE_TYPES,
     KRTEntry,
 )
