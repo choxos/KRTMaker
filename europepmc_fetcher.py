@@ -75,8 +75,9 @@ class EuropePMCFetcher:
         Search Europe PMC for a bioRxiv paper by DOI and return the EPMC ID.
         """
         try:
-            # Search for the specific DOI in bioRxiv journal
-            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND DOI:"{doi}"'
+            # Search for the specific DOI (simplified query - don't filter by journal)
+            # This handles both published articles and preprints (PPR source)
+            query = f'DOI:"{doi}"'
             url = f"{self.BASE_URL}/search"
             
             params = {
@@ -99,12 +100,12 @@ class EuropePMCFetcher:
                 # Check if this result has the right DOI
                 result_doi = result.find('doi')
                 if result_doi is not None and result_doi.text == doi:
-                    # Get the fullTextId
+                    # Get the fullTextId first (for published articles)
                     fulltext_ids = result.findall('.//fullTextId')
                     if fulltext_ids:
                         return fulltext_ids[0].text
                     
-                    # Fallback to regular ID
+                    # Fallback to regular ID (for preprints like PPR972306)
                     id_elem = result.find('id')
                     if id_elem is not None:
                         return id_elem.text
@@ -157,8 +158,8 @@ class EuropePMCFetcher:
         Returns a dict with paper information compatible with bioRxiv API format.
         """
         try:
-            # Search for the paper
-            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND DOI:"{doi}"'
+            # Search for the paper (simplified query to handle both published and preprint versions)
+            query = f'DOI:"{doi}"'
             url = f"{self.BASE_URL}/search"
             
             params = {
@@ -298,7 +299,7 @@ class EuropePMCFetcher:
         """
         print("🔍 Searching ALL bioRxiv papers in Europe PMC...")
         
-        query = 'JOURNAL:("bioRxiv : the preprint server for biology")'
+        query = '(JOURNAL:("bioRxiv : the preprint server for biology") AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
         return self.search_complete_results(query, limit=limit)
     
     def search_all_biorxiv_papers_by_year(self, start_year: int = 2020, end_year: int = 2025, limit_per_year: Optional[int] = None) -> List[Dict]:
@@ -321,8 +322,8 @@ class EuropePMCFetcher:
         for year in range(start_year, end_year + 1):
             print(f"\n📆 === YEAR {year} ===")
             
-            # Create year-specific query
-            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
+            # Create year-specific query with full text availability filter
+            query = f'(JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}]) AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
             
             # Search for this year
             year_papers = self.search_complete_results(query, limit=limit_per_year)
@@ -363,7 +364,7 @@ class EuropePMCFetcher:
         total_papers = 0
         
         for year in range(start_year, end_year + 1):
-            query = f'JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}])'
+            query = f'(JOURNAL:("bioRxiv : the preprint server for biology") AND (FIRST_PDATE:[{year} TO {year}]) AND (HAS_FT:Y OR HAS_FREE_FULLTEXT:Y))'
             url = f"{self.BASE_URL}/search"
             
             params = {
