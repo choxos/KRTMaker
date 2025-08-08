@@ -92,6 +92,7 @@ class KRTMakerView(FormView):
         original_filename = "unknown.xml"
         file_size = 0
         temp_xml_path = None  # For cleanup if downloaded
+        temp_path = None  # For Django file storage cleanup (uploads only)
         
         try:
             if input_method == 'upload' and xml_file:
@@ -114,7 +115,9 @@ class KRTMakerView(FormView):
                 temp_file.close()
                 
                 xml_path = temp_file.name
-                temp_xml_path = xml_path  # For cleanup
+                temp_xml_path = xml_path  # For cleanup via finally block
+                # Note: For uploads, we don't use Django's default_storage since 
+                # we're saving to system temp directory to avoid auto-reload issues
                 
             elif input_method == 'url' and biorxiv_url:
                 # bioRxiv URL method
@@ -150,12 +153,8 @@ class KRTMakerView(FormView):
                 status='processing'
             )
             
-            # Create ProcessedFile record only for uploads
-            if input_method == 'upload':
-                ProcessedFile.objects.create(
-                    session=session,
-                    file=temp_path
-                )
+            # Note: No ProcessedFile record needed since we use system temp files
+            # This avoids Django auto-reload issues from file monitoring
             
             # Validate XML file
             validate_xml_file(xml_path)
@@ -194,8 +193,7 @@ class KRTMakerView(FormView):
             # Update analytics
             session.update_analytics()
             
-            # Clean up temporary file
-            default_storage.delete(temp_path)
+            # Note: Temp files cleaned up in finally block below
             
             messages.success(
                 self.request, 
