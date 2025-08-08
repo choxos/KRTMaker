@@ -99,6 +99,7 @@ class KRTMakerView(FormView):
         file_size = 0
         temp_xml_path = None  # For cleanup if downloaded
         temp_path = None  # For Django file storage cleanup (uploads only)
+        session = None  # Initialize session variable for exception handling
         
         try:
             if input_method == 'upload' and xml_file:
@@ -311,17 +312,19 @@ class KRTMakerView(FormView):
             return redirect('web:results', session_id=session_id)
             
         except KRTValidationError as e:
-            session.status = 'failed'
-            session.error_message = str(e)
-            session.save()
+            if session:
+                session.status = 'failed'
+                session.error_message = str(e)
+                session.save()
             
             messages.error(self.request, f'Validation error: {e}')
             return self.form_invalid(form)
             
         except Exception as e:
-            session.status = 'failed'
-            session.error_message = str(e)
-            session.save()
+            if session:
+                session.status = 'failed'
+                session.error_message = str(e)
+                session.save()
             
             messages.error(self.request, f'Processing error: {e}')
             return self.form_invalid(form)
