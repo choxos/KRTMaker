@@ -116,6 +116,56 @@ class EuropePMCFetcher:
             print(f"Error searching Europe PMC for {doi}: {e}")
             return None
     
+    def check_full_text_availability(self, epmc_id: str) -> Dict[str, any]:
+        """
+        Check if full text XML is available for download from Europe PMC.
+        Returns a dict with availability status and details.
+        """
+        if not epmc_id:
+            return {
+                'available': False,
+                'error': 'No EPMC ID provided',
+                'status_code': None,
+                'content_length': None
+            }
+        
+        try:
+            xml_url = f"{self.BASE_URL}/{epmc_id}/fullTextXML"
+            
+            # Use HEAD request to check availability without downloading
+            response = self.session.head(xml_url, timeout=30)
+            
+            if response.status_code == 200:
+                content_length = response.headers.get('content-length')
+                return {
+                    'available': True,
+                    'url': xml_url,
+                    'status_code': 200,
+                    'content_length': int(content_length) if content_length else None,
+                    'content_type': response.headers.get('content-type', 'unknown')
+                }
+            else:
+                return {
+                    'available': False,
+                    'error': f'HTTP {response.status_code}',
+                    'status_code': response.status_code,
+                    'url': xml_url
+                }
+                
+        except requests.exceptions.RequestException as e:
+            return {
+                'available': False,
+                'error': str(e),
+                'status_code': None,
+                'url': f"{self.BASE_URL}/{epmc_id}/fullTextXML"
+            }
+        except Exception as e:
+            return {
+                'available': False,
+                'error': f'Unexpected error: {str(e)}',
+                'status_code': None
+            }
+
     def download_xml_from_epmc(self, epmc_id: str) -> Optional[str]:
         """
         Download full text XML from Europe PMC using EPMC ID.

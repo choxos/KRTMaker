@@ -134,10 +134,35 @@ class KRTMakerView(FormView):
                 if not doi:
                     raise ValueError("Invalid bioRxiv URL or DOI")
                 
+                # Step 1: Get EPMC ID for the DOI
+                epmc_id = fetcher.search_epmc_for_doi(doi)
+                if not epmc_id:
+                    raise ValueError(f"Paper not found: {doi}. Please check the URL or DOI and make sure the paper exists on bioRxiv. Please provide a bioRxiv URL or DOI when using URL method.")
+                
+                # Step 2: Check full text availability BEFORE attempting download
+                full_text_status = fetcher.check_full_text_availability(epmc_id)
+                
+                if not full_text_status['available']:
+                    # Provide detailed error message based on the specific issue
+                    error_msg = f"Full text XML not available for {doi}"
+                    
+                    if full_text_status.get('status_code') == 404:
+                        error_msg += f" (EPMC ID: {epmc_id}). This paper is indexed in Europe PMC but the full text XML is not yet available for download. This often happens with very recent preprints. Please try again in a few days, or contact the authors for the manuscript."
+                    elif full_text_status.get('error'):
+                        error_msg += f". Error: {full_text_status['error']}"
+                    
+                    error_msg += f"\n\nYou can still view this paper at: https://doi.org/{doi}"
+                    raise ValueError(error_msg)
+                
+                # Step 3: If full text is available, proceed with download and processing
+                print(f"✅ Full text available for {doi} (EPMC ID: {epmc_id})")
+                if full_text_status.get('content_length'):
+                    print(f"📄 Expected file size: {full_text_status['content_length']} bytes")
+                
                 # Get metadata and download XML
                 metadata, xml_path = fetcher.fetch_paper_info(biorxiv_url)
                 if not xml_path:
-                    raise ValueError(f"Could not download XML for {doi}")
+                    raise ValueError(f"Could not download XML for {doi} despite availability check passing. Please try again.")
                 
                 temp_xml_path = xml_path  # For cleanup
                 original_filename = f"{doi.replace('10.1101/', '')}.xml"
@@ -704,3 +729,96 @@ def export_krt(request, session_id, format_type):
     
     else:
         return JsonResponse({'error': 'Invalid format type'}, status=400)
+
+
+@require_http_methods(["POST"])
+def check_doi_availability(request):
+    """
+    AJAX endpoint to check if a DOI has full text XML available for KRT extraction.
+    Returns availability status and detailed information.
+    """
+    try:
+        data = json.loads(request.body)
+        doi_input = data.get('doi', '').strip()
+        
+        if not doi_input:
+            return JsonResponse({
+                'success': False,
+                'error': 'No DOI provided'
+            }, status=400)
+        
+        # Initialize fetcher
+        fetcher = BioRxivFetcher()
+        
+        # Parse DOI from input (handles URLs and DOIs)
+        doi = fetcher.parse_biorxiv_identifier(doi_input)
+        if not doi:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid bioRxiv URL or DOI format',
+                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2024.01.01.123456) or URL'
+            }, status=400)
+        
+        # Step 1: Search for EPMC ID
+        epmc_id = fetcher.search_epmc_for_doi(doi)
+        
+        if not epmc_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Paper not found in Europe PMC',
+                'details': f'DOI {doi} was not found in the Europe PMC database. This could mean the paper is very new or not indexed yet.',
+                'doi': doi,
+                'indexed': False
+            }, status=404)
+        
+        # Step 2: Check full text availability
+        full_text_status = fetcher.check_full_text_availability(epmc_id)
+        
+        # Step 3: Get basic metadata for display
+        metadata = fetcher.get_paper_metadata(doi) or {}
+        
+        # Prepare response
+        response_data = {
+            'success': True,
+            'doi': doi,
+            'epmc_id': epmc_id,
+            'indexed': True,
+            'full_text_available': full_text_status['available'],
+            'can_extract_krt': full_text_status['available'],  # Only if full text is available
+            'metadata': {
+                'title': metadata.get('preprint_title', 'Title not available'),
+                'authors': metadata.get('preprint_authors', 'Authors not available'),
+                'date': metadata.get('preprint_date', 'Date not available'),
+                'journal': metadata.get('preprint_platform', 'bioRxiv'),
+                'abstract': metadata.get('preprint_abstract', '')[:200] + '...' if metadata.get('preprint_abstract') else 'Abstract not available'
+            },
+            'availability_details': full_text_status
+        }
+        
+        # Add specific messages based on availability status
+        if full_text_status['available']:
+            response_data['message'] = f"✅ Full text XML is available for KRT extraction!"
+            if full_text_status.get('content_length'):
+                response_data['message'] += f" (File size: ~{full_text_status['content_length']} bytes)"
+        else:
+            if full_text_status.get('status_code') == 404:
+                response_data['message'] = f"⚠️ Paper is indexed but full text XML is not yet available. This often happens with very recent preprints."
+                response_data['suggestion'] = "Try again in a few days as Europe PMC processes new papers regularly."
+            else:
+                response_data['message'] = f"❌ Full text XML is not available. Error: {full_text_status.get('error', 'Unknown error')}"
+                response_data['suggestion'] = "You may need to contact the authors directly for the manuscript."
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': 'Server error while checking DOI availability',
+            'details': str(e)
+        }, status=500)

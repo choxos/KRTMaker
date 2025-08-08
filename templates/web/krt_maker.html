@@ -189,6 +189,9 @@
                                     <i class="fas fa-link"></i>
                                 </span>
                                 {{ form.biorxiv_url }}
+                                <button type="button" class="btn btn-outline-secondary" id="check-doi-btn" onclick="checkDOIAvailability()">
+                                    <i class="fas fa-search"></i> Check Availability
+                                </button>
                             </div>
                             {% if form.biorxiv_url.help_text %}
                                 <small class="form-text text-muted">{{ form.biorxiv_url.help_text }}</small>
@@ -200,6 +203,11 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                            
+                            <!-- DOI Availability Status -->
+                            <div id="doi-status" class="mt-3" style="display: none;">
+                                <!-- This will be populated by JavaScript -->
+                            </div>
                             
                             <div class="mt-3 p-3 bg-light rounded">
                                 <h6 class="text-primary mb-2">
@@ -542,6 +550,113 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.style.display = 'none';
         processing.style.display = 'block';
     });
+
+    // DOI Availability Check Function
+    window.checkDOIAvailability = function() {
+        const urlInput = document.getElementById('id_biorxiv_url');
+        const checkBtn = document.getElementById('check-doi-btn');
+        const statusDiv = document.getElementById('doi-status');
+        
+        const doiValue = urlInput.value.trim();
+        
+        if (!doiValue) {
+            statusDiv.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Please enter a bioRxiv URL or DOI first.
+                </div>
+            `;
+            statusDiv.style.display = 'block';
+            return;
+        }
+        
+        // Show loading state
+        checkBtn.disabled = true;
+        checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        
+        statusDiv.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-spinner fa-spin"></i>
+                Checking DOI availability and full text access...
+            </div>
+        `;
+        statusDiv.style.display = 'block';
+        
+        // Make AJAX request to check DOI availability
+        fetch('{% url "web:check_doi_availability" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'doi': doiValue
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Reset button
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = '<i class="fas fa-search"></i> Check Availability';
+            
+            if (data.success) {
+                let alertClass = data.can_extract_krt ? 'alert-success' : 'alert-warning';
+                let icon = data.can_extract_krt ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+                
+                statusDiv.innerHTML = `
+                    <div class="alert ${alertClass}">
+                        <div class="d-flex align-items-start">
+                            <i class="${icon} me-2 mt-1"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">${data.message}</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>DOI:</strong> ${data.doi}<br>
+                                            <strong>EPMC ID:</strong> ${data.epmc_id}<br>
+                                            <strong>Indexed:</strong> ✅ Yes<br>
+                                            <strong>Full Text:</strong> ${data.full_text_available ? '✅ Available' : '❌ Not Available'}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Title:</strong> ${data.metadata.title.substring(0, 60)}...<br>
+                                            <strong>Authors:</strong> ${data.metadata.authors.substring(0, 40)}...<br>
+                                            <strong>Date:</strong> ${data.metadata.date}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                ${data.suggestion ? '<div class="mt-2"><small class="text-muted"><strong>Suggestion:</strong> ' + data.suggestion + '</small></div>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle"></i>
+                        <strong>Error:</strong> ${data.error}
+                        ${data.details ? '<br><small class="text-muted">' + data.details + '</small>' : ''}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            // Reset button
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = '<i class="fas fa-search"></i> Check Availability';
+            
+            statusDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Error:</strong> Failed to check DOI availability. Please try again.
+                    <br><small class="text-muted">Network error: ${error.message}</small>
+                </div>
+            `;
+        });
+    };
 
     // Initialize visibility
     updateInputMethodVisibility();

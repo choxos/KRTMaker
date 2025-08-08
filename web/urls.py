@@ -21,6 +21,9 @@ urlpatterns = [
     # Export functionality
     path('export/<str:session_id>/<str:format_type>/', views.export_krt, name='export_krt'),
     
+    # AJAX endpoints
+    path('check-doi/', views.check_doi_availability, name='check_doi_availability'),
+    
     # Feedback
     # path('feedback/', views.FeedbackView.as_view(), name='feedback'),  # TODO: Implement FeedbackView
     # path('feedback/<str:session_id>/', views.FeedbackView.as_view(), name='feedback_session'),  # TODO: Implement FeedbackView
