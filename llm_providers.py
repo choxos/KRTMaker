@@ -68,25 +68,61 @@ QUALITY STANDARDS:
 
 RESOURCE NAME PATTERNS (Extract from manuscript text using these patterns):
 
-ANTIBODIES:
-- Pattern: [Species] [polyclonal/monoclonal] anti-[Target] [optional: Clone info]
-- Examples: "Chicken polyclonal anti-MAP2", "Mouse monoclonal anti-Tyrosine Hydroxylase", "PE Mouse Anti-Human CD49e Clone IIA1", "Alexa Fluor 647 donkey anti-mouse IgG (H+L)"
+ANTIBODIES (1790 entries in real data):
+- Pattern: [Species] [polyclonal/monoclonal] anti-[Target] [optional: Clone/Conjugate info]
+- Examples: "Chicken polyclonal anti-MAP2", "Mouse monoclonal anti-Tyrosine Hydroxylase", "PE Mouse Anti-Human CD49e Clone IIA1", "Alexa Fluor 647 donkey anti-mouse IgG (H+L)", "Mouse monoclonal anti-Ki-67 antigen (clone MIB-1)", "PE-Cy7 Mouse Anti-Human CD184"
+- Common vendors: Abcam, BD Biosciences, Invitrogen, Cell Signaling Technology, BioLegend
+- Identifiers: Cat# + RRID format (e.g., "Cat# ab5392; RRID: AB_2138153")
 
-SOFTWARE:
-- Pattern: [Software Name] [Version in parentheses if available]
-- Examples: "CellRanger", "HTSeq (version 1.99.2)", "FastQC (version 0.11.5)", "STAR (version 2.5.0a)", "Seurat (version 4.0.0)"
+SOFTWARE/CODE (1690 entries in real data):
+- Pattern: [Software Name] [version in parentheses if available]
+- Examples: "CellRanger", "HTSeq (version 1.99.2)", "FastQC (version 0.11.5)", "STAR (version 2.5.0a)", "Seurat (version 4.0.0)", "DESeq2 (version 1.30.1)", "SingleCellExperiment", "EnhancedVolcano", "scVelo", "pheatmap"
+- Common sources: Author citations (e.g., "Anders et al.", "Bergen et al."), "10x Genomics", "Babraham Bioinformatics"
+- Identifiers: URLs to documentation, GitHub, CRAN, Bioconductor
 
-CHEMICALS/REAGENTS:
-- Pattern: [Specific product name] [optional: descriptive info]
-- Examples: "Fetal Bovine Serum (FBS)", "Target retrieval buffer", "Protease IV", "Human TNF alpha", "Opal 520", "Matrigel"
+CHEMICAL, PEPTIDE, OR RECOMBINANT PROTEIN (2385 entries - most common):
+- Pattern: [Specific product name] [optional: descriptive info/abbreviation]
+- Examples: "AMP1", "AMP2", "Target retrieval buffer", "Protease IV", "Human TNF alpha", "Mouse TNF alpha", "Human NURR1/NR4A2", "HRP blocker", "TSA buffer", "Wash buffer", "Fetal Bovine Serum (FBS)", "Opal 520", "Opal 570", "Opal 690", "Matrigel", "Accutase"
+- Common vendors: ACD Biosciences, Atlanta Biologicals, AkoyaBio, Corning, Sigma-Aldrich, Innovative Cell Technologies
+- Identifiers: Catalog numbers (e.g., "Cat#323101", "Cat#AT104-500")
 
-COMMERCIAL ASSAYS:
-- Examples: "RNAscopeTM Multiplex Fluorescent V2 kit", "SsoFast EvaGreen Supermix", "iScript Reverse Transcription Supermix"
+DATASETS (727 entries):
+- NEW datasets (source = "This study"): "Raw and analyzed data to the NCBI:GEO server (RNA-seq)", "One-photon microendoscopic raw data, CNMFE extracted maps and time series", "General descriptors of calcium activity in M1 and SMA cells", "Cell activity aligned to behavioral events", "Sequence analysis outputs", "Histology images", "Mitochondrial bioenergetic capacity: OCR and ECAR"
+- Identifiers: GEO accessions ("GEO: GSE216365"), DANDI archive, Zenodo DOIs
+- Common repositories: NCBI GEO, Zenodo, DANDI archive
 
-NEW RESOURCES (when source = "This study"):
-- Datasets: "Raw and analyzed data to the NCBI:GEO server (RNA-seq)", "Raw and analyzed data to the NCBI:GEO server (CRISPR-screen)"
-- Cell lines: "Human: NURR1-GFP reporter hESC", "Human: iCAS/NURR1-GFP hESC"
-- Oligonucleotides: "Human PTGFR2 PCR primer forward: GCTGCTTCTCATTGTCTCGG", "Human GAPDH qPCR primer forward: ATGTTCGTCATGGGTGTGAA"
+PROTOCOLS (961 entries):
+- NEW protocols (source = "This study"): "Surgery to inject viral vectors and implant GRIN lenses", "Miniscope calcium imaging data acquisition of cortical activity", "Arm reaching to touchscreen behavioral task", "Immunoperoxidase staining"
+- REUSE protocols: "Peripheral blood mononuclear cell Isolation"
+- Identifiers: Protocols.io DOIs (e.g., "https://doi.org/10.17504/protocols.io.e6nvw15w2lmk/v1")
+
+CRITICAL COMMERCIAL ASSAYS (297 entries):
+- Examples: "RNAscopeTM Multiplex Fluorescent V2 kit", "SsoFast EvaGreen Supermix", "iScript Reverse Transcription Supermix", "Click-iT TUNEL Alexa Fluor 488 Imaging Assay", "BCA protein assay kit"
+- Common vendors: ACD Biosciences, Bio-Rad, Invitrogen, Pierce
+- Identifiers: Catalog numbers (e.g., "323132", "172-5202", "170-8841")
+
+OLIGONUCLEOTIDES (334 entries - usually NEW):
+- Pattern: [Species] [Gene] [primer type]: [sequence]
+- Examples: "Human PTGFR2 PCR primer forward: GCTGCTTCTCATTGTCTCGG", "Human GAPDH qPCR primer forward: ATGTTCGTCATGGGTGTGAA", "TNFA PCR primer to detect TNFA KO forward: CAGTTCTCTTCCTCTCACATAC"
+- Source: Usually "This study" (custom designed)
+- Identifiers: Usually "No identifier exists" for custom primers
+
+EXPERIMENTAL MODEL: CELL LINE (387 entries):
+- NEW cell lines: "Human: NURR1-GFP reporter hESC", "Human: iCAS/NURR1-GFP hESC", "Human: TNFa KO/NURR1-GFP hESC"
+- REUSE cell lines: "Mouse: Nurr1-GFP ESC"
+- Pattern: [Species]: [descriptive name/modifications] [cell type]
+- Sources: NEW from "This study", REUSE from researchers (e.g., "McCoy and Tansey")
+
+RECOMBINANT DNA (723 entries):
+- Examples: "SGL40C.EFS.dTomato", "pSpCas9(BB)-2A-GFP (PX458)"
+- Common source: Addgene for reuse (e.g., "Cat#89395", "Cat#48138")
+
+VIRAL VECTORS (141 entries):
+- Common in neuroscience studies for gene delivery
+
+EXPERIMENTAL MODEL: ORGANISM/STRAIN (244 entries):
+- Pattern: [Species]: [strain/modification info]
+- Mix of NEW transgenic lines and REUSE established strains
 
 EXAMPLES OF COMPLETE ENTRIES:
 
