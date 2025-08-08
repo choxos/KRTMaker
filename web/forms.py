@@ -120,8 +120,50 @@ class KRTMakerForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set default model choices (Anthropic as default)
-        self.fields['model'].choices = [('', 'Select a model')] + self.ANTHROPIC_MODELS
+        
+        # Set model choices based on provider (if form has data)
+        provider = None
+        if self.data:
+            provider = self.data.get('provider')
+        elif self.initial:
+            provider = self.initial.get('provider')
+        
+        # Set appropriate model choices
+        if provider == 'gemini':
+            self.fields['model'].choices = [('', 'Select a model')] + self.GEMINI_MODELS
+        elif provider == 'openai_compatible':
+            self.fields['model'].choices = [('', 'Select a model')] + self.OPENAI_COMPATIBLE_MODELS
+        else:
+            # Default to Anthropic
+            self.fields['model'].choices = [('', 'Select a model')] + self.ANTHROPIC_MODELS
+    
+    def clean_model(self):
+        """Validate model choice based on the selected provider"""
+        model = self.cleaned_data.get('model')
+        provider = self.cleaned_data.get('provider')
+        
+        if not model:
+            return model
+        
+        # Get the appropriate model choices based on provider
+        if provider == 'anthropic':
+            valid_models = [choice[0] for choice in self.ANTHROPIC_MODELS]
+        elif provider == 'gemini':
+            valid_models = [choice[0] for choice in self.GEMINI_MODELS]
+        elif provider == 'openai_compatible':
+            valid_models = [choice[0] for choice in self.OPENAI_COMPATIBLE_MODELS]
+        else:
+            # If no provider specified, allow any model (shouldn't happen in normal flow)
+            all_models = []
+            all_models.extend([choice[0] for choice in self.ANTHROPIC_MODELS])
+            all_models.extend([choice[0] for choice in self.GEMINI_MODELS])
+            all_models.extend([choice[0] for choice in self.OPENAI_COMPATIBLE_MODELS])
+            valid_models = all_models
+        
+        if model and model not in valid_models:
+            raise forms.ValidationError(f"'{model}' is not a valid choice for provider '{provider}'.")
+        
+        return model
     
     base_url = forms.URLField(
         required=False,
