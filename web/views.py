@@ -55,6 +55,21 @@ class KRTMakerView(FormView):
     template_name = 'web/krt_maker.html'
     form_class = KRTMakerForm
     
+    def get_context_data(self, **kwargs):
+        """Add model choices to context for JavaScript synchronization"""
+        context = super().get_context_data(**kwargs)
+        
+        # Add model choices for JavaScript - ensures Django and JS stay synchronized
+        from .forms import KRTMakerForm
+        form = KRTMakerForm()
+        context['model_choices'] = {
+            'anthropic': form.ANTHROPIC_MODELS,
+            'gemini': form.GEMINI_MODELS,
+            'openai_compatible': form.OPENAI_COMPATIBLE_MODELS,
+        }
+        
+        return context
+    
     def form_valid(self, form):
         """Process the form and extract KRT"""
         # Generate unique session ID

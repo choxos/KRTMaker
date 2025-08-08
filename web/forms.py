@@ -145,23 +145,12 @@ class KRTMakerForm(forms.Form):
         if not model:
             return model
         
-        # Get the appropriate model choices based on provider
-        if provider == 'anthropic':
-            valid_models = [choice[0] for choice in self.ANTHROPIC_MODELS]
-        elif provider == 'gemini':
-            valid_models = [choice[0] for choice in self.GEMINI_MODELS]
-        elif provider == 'openai_compatible':
-            valid_models = [choice[0] for choice in self.OPENAI_COMPATIBLE_MODELS]
-        else:
-            # If no provider specified, allow any model (shouldn't happen in normal flow)
-            all_models = []
-            all_models.extend([choice[0] for choice in self.ANTHROPIC_MODELS])
-            all_models.extend([choice[0] for choice in self.GEMINI_MODELS])
-            all_models.extend([choice[0] for choice in self.OPENAI_COMPATIBLE_MODELS])
-            valid_models = all_models
+        # Use utility function for consistent validation
+        from .utils import validate_provider_model_combination
+        is_valid, error_message = validate_provider_model_combination(provider, model)
         
-        if model and model not in valid_models:
-            raise forms.ValidationError(f"'{model}' is not a valid choice for provider '{provider}'.")
+        if not is_valid:
+            raise forms.ValidationError(error_message)
         
         return model
     
