@@ -173,11 +173,11 @@ class SmartRecommendationEngine:
             ]
         }
     
-    async def recommend_alternatives(self, resource_name: str, resource_type: str = "",
-                                   context: Dict[str, Any] = None, max_recommendations: int = 5) -> List[ResourceRecommendation]:
+    def recommend_alternatives(self, resource_name: str, resource_type: str = "",
+                              context: Dict[str, Any] = None, max_recommendations: int = 5) -> List[ResourceRecommendation]:
         """Generate alternative resource recommendations"""
         # Simulate processing time
-        await self._simulate_async_delay()
+        self._simulate_delay()
         
         resource_lower = resource_name.lower().strip()
         recommendations = []
@@ -294,7 +294,7 @@ class SmartRecommendationEngine:
         
         return recommendations
     
-    async def _simulate_async_delay(self, min_delay: float = 0.2, max_delay: float = 0.8):
+    def _simulate_delay(self, min_delay: float = 0.2, max_delay: float = 0.8):
         """Simulate realistic processing time"""
         delay = random.uniform(min_delay, max_delay)
         time.sleep(delay)

@@ -167,12 +167,12 @@ def suggest_rrid(request):
         
         # Get suggestions using our RRID enhancement system
         try:
-            suggestions = asyncio.run(rrid_system.suggest_rrid(
+            suggestions = rrid_system.suggest_rrid(
                 resource_name=resource_name,
                 resource_type=resource_type,
                 vendor=vendor,
                 catalog_number=catalog_number
-            ))
+            )
             
             # Store suggestions in database
             stored_suggestions = []
@@ -283,7 +283,7 @@ def validate_rrid(request):
         
         # Perform fresh validation
         try:
-            validation_result = asyncio.run(rrid_system.validate_rrid(rrid))
+            validation_result = rrid_system.validate_rrid(rrid)
             
             # Store validation result
             expires_at = timezone.now() + timedelta(hours=24)  # Cache for 24 hours
@@ -374,12 +374,12 @@ def get_resource_recommendations(request):
         start_time = datetime.now()
         
         try:
-            recommendations = asyncio.run(recommendation_engine.recommend_alternatives(
+            recommendations = recommendation_engine.recommend_alternatives(
                 resource_name=resource_name,
                 resource_type=resource_type,
                 context=context,
                 max_recommendations=5
-            ))
+            )
             
             # Store recommendations in database
             stored_recommendations = []
@@ -483,7 +483,7 @@ def conversational_krt(request):
             )
             
             # Process the message
-            response_data = asyncio.run(conversational_interface.process_message(message, session_id))
+            response_data = conversational_interface.process_message(message, session_id)
             
             # Update the conversation session
             conv_session.add_message(
@@ -562,7 +562,7 @@ def browser_extension_suggest_rrid(request):
         data = json.loads(request.body)
         
         # Use the browser extension API
-        response_data = asyncio.run(browser_api.suggest_rrid_api(data))
+        response_data = browser_api.suggest_rrid_api(data)
         
         # Log usage
         AIEnhancementUsage.log_usage(
@@ -593,7 +593,7 @@ def browser_extension_validate_rrid(request):
         data = json.loads(request.body)
         
         # Use the browser extension API
-        response_data = asyncio.run(browser_api.validate_rrid_api(data))
+        response_data = browser_api.validate_rrid_api(data)
         
         # Log usage
         AIEnhancementUsage.log_usage(

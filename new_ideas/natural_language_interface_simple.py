@@ -106,10 +106,10 @@ class ConversationalKRTInterface:
             r'\d+\s*%',
         ]
     
-    async def process_message(self, message: str, session_id: str = None) -> Dict[str, Any]:
+    def process_message(self, message: str, session_id: str = None) -> Dict[str, Any]:
         """Process a natural language message and extract KRT information"""
         # Simulate processing time
-        await self._simulate_async_delay()
+        self._simulate_delay()
         
         # Clean and normalize the message
         message = message.lower().strip()
@@ -121,7 +121,7 @@ class ConversationalKRTInterface:
         entities = self._extract_entities(message)
         
         # Generate response based on intent and entities
-        response_data = await self._generate_response(intent, entities, message)
+        response_data = self._generate_response(intent, entities, message)
         
         return response_data
     
@@ -233,27 +233,27 @@ class ConversationalKRTInterface:
                 return match.group(0)
         return None
     
-    async def _generate_response(self, intent: str, entities: List[ExtractedEntity], 
-                               original_message: str) -> Dict[str, Any]:
+    def _generate_response(self, intent: str, entities: List[ExtractedEntity], 
+                          original_message: str) -> Dict[str, Any]:
         """Generate appropriate response based on intent and entities"""
         
         if intent == 'add_resource':
-            return await self._handle_add_resource(entities, original_message)
+            return self._handle_add_resource(entities, original_message)
         elif intent == 'modify_resource':
-            return await self._handle_modify_resource(entities, original_message)
+            return self._handle_modify_resource(entities, original_message)
         elif intent == 'delete_resource':
-            return await self._handle_delete_resource(entities, original_message)
+            return self._handle_delete_resource(entities, original_message)
         elif intent == 'validate_resource':
-            return await self._handle_validate_resource(entities, original_message)
+            return self._handle_validate_resource(entities, original_message)
         elif intent == 'export_krt':
-            return await self._handle_export_krt(entities, original_message)
+            return self._handle_export_krt(entities, original_message)
         elif intent == 'help':
-            return await self._handle_help_request(entities, original_message)
+            return self._handle_help_request(entities, original_message)
         else:
-            return await self._handle_clarification(entities, original_message)
+            return self._handle_clarification(entities, original_message)
     
-    async def _handle_add_resource(self, entities: List[ExtractedEntity], 
-                                 message: str) -> Dict[str, Any]:
+    def _handle_add_resource(self, entities: List[ExtractedEntity], 
+                            message: str) -> Dict[str, Any]:
         """Handle adding a resource to the KRT"""
         # Extract information from entities
         resource_name = self._get_entity_value(entities, 'resource_name')
@@ -299,8 +299,8 @@ class ConversationalKRTInterface:
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_modify_resource(self, entities: List[ExtractedEntity], 
-                                    message: str) -> Dict[str, Any]:
+    def _handle_modify_resource(self, entities: List[ExtractedEntity], 
+                               message: str) -> Dict[str, Any]:
         """Handle modifying an existing resource"""
         return {
             'response': "I can help you modify a resource. Which resource would you like to change, and what needs to be updated?",
@@ -311,8 +311,8 @@ class ConversationalKRTInterface:
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_delete_resource(self, entities: List[ExtractedEntity], 
-                                    message: str) -> Dict[str, Any]:
+    def _handle_delete_resource(self, entities: List[ExtractedEntity], 
+                               message: str) -> Dict[str, Any]:
         """Handle deleting a resource"""
         return {
             'response': "I can help you remove a resource from the table. Which specific resource should I delete?",
@@ -323,8 +323,8 @@ class ConversationalKRTInterface:
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_validate_resource(self, entities: List[ExtractedEntity], 
-                                      message: str) -> Dict[str, Any]:
+    def _handle_validate_resource(self, entities: List[ExtractedEntity], 
+                                 message: str) -> Dict[str, Any]:
         """Handle resource validation request"""
         return {
             'response': "I can help validate your resources. Please provide the resource name or RRID you'd like me to check.",
@@ -335,8 +335,8 @@ class ConversationalKRTInterface:
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_export_krt(self, entities: List[ExtractedEntity], 
-                               message: str) -> Dict[str, Any]:
+    def _handle_export_krt(self, entities: List[ExtractedEntity], 
+                          message: str) -> Dict[str, Any]:
         """Handle KRT export request"""
         return {
             'response': "Your KRT table is ready for export! You can download it as JSON, CSV, or Excel format. Use the export button to save your work.",
@@ -347,8 +347,8 @@ class ConversationalKRTInterface:
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_help_request(self, entities: List[ExtractedEntity], 
-                                 message: str) -> Dict[str, Any]:
+    def _handle_help_request(self, entities: List[ExtractedEntity], 
+                            message: str) -> Dict[str, Any]:
         """Handle help requests"""
         help_text = """I can help you create a Key Resources Table! Here's what you can do:
 
@@ -369,8 +369,8 @@ Just describe your resources in natural language and I'll build the table for yo
             'extracted_entities': [{'type': e.entity_type, 'value': e.value, 'confidence': e.confidence} for e in entities]
         }
     
-    async def _handle_clarification(self, entities: List[ExtractedEntity], 
-                                  message: str) -> Dict[str, Any]:
+    def _handle_clarification(self, entities: List[ExtractedEntity], 
+                             message: str) -> Dict[str, Any]:
         """Handle unclear messages requiring clarification"""
         clarifications = [
             "Could you provide more details about the resource?",
@@ -394,7 +394,7 @@ Just describe your resources in natural language and I'll build the table for yo
                 return entity.value
         return None
     
-    async def _simulate_async_delay(self, min_delay: float = 0.2, max_delay: float = 0.6):
+    def _simulate_delay(self, min_delay: float = 0.2, max_delay: float = 0.6):
         """Simulate realistic processing time"""
         delay = random.uniform(min_delay, max_delay)
         time.sleep(delay)

@@ -98,11 +98,11 @@ class RRIDEnhancementSystem:
             "RRID:INVALID": {"valid": False, "status": "invalid", "name": "Invalid RRID format"}
         }
     
-    async def suggest_rrid(self, resource_name: str, resource_type: str = "", 
-                          vendor: str = "", catalog_number: str = "") -> List[ResourceMatch]:
+    def suggest_rrid(self, resource_name: str, resource_type: str = "", 
+                    vendor: str = "", catalog_number: str = "") -> List[ResourceMatch]:
         """Generate RRID suggestions for a given resource"""
         # Simulate processing time
-        await self._simulate_async_delay()
+        self._simulate_delay()
         
         suggestions = []
         resource_lower = resource_name.lower().strip()
@@ -147,9 +147,9 @@ class RRIDEnhancementSystem:
         suggestions.sort(key=lambda x: x.confidence_score, reverse=True)
         return suggestions[:3]  # Return top 3 suggestions
     
-    async def validate_rrid(self, rrid: str) -> RRIDValidation:
+    def validate_rrid(self, rrid: str) -> RRIDValidation:
         """Validate an RRID against the database"""
-        await self._simulate_async_delay()
+        self._simulate_delay()
         
         # Clean up RRID format
         rrid = rrid.strip().upper()
@@ -229,7 +229,7 @@ class RRIDEnhancementSystem:
         pattern = r'^RRID:(AB_|SCR_|CVCL_|IMSR_)[A-Za-z0-9_]+$'
         return bool(re.match(pattern, rrid))
     
-    async def _simulate_async_delay(self, min_delay: float = 0.1, max_delay: float = 0.5):
+    def _simulate_delay(self, min_delay: float = 0.1, max_delay: float = 0.5):
         """Simulate realistic API response time"""
         delay = random.uniform(min_delay, max_delay)
         time.sleep(delay)  # Using synchronous sleep for simplicity
@@ -241,10 +241,10 @@ class BrowserExtensionAPI:
     def __init__(self, rrid_system: RRIDEnhancementSystem):
         self.rrid_system = rrid_system
     
-    async def suggest_rrid_api(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def suggest_rrid_api(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Browser extension RRID suggestion endpoint"""
         try:
-            suggestions = await self.rrid_system.suggest_rrid(
+            suggestions = self.rrid_system.suggest_rrid(
                 resource_name=data.get('resource_name', ''),
                 resource_type=data.get('resource_type', ''),
                 vendor=data.get('vendor', ''),
@@ -269,10 +269,10 @@ class BrowserExtensionAPI:
                 'error': str(e)
             }
     
-    async def validate_rrid_api(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_rrid_api(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Browser extension RRID validation endpoint"""
         try:
-            validation = await self.rrid_system.validate_rrid(data.get('rrid', ''))
+            validation = self.rrid_system.validate_rrid(data.get('rrid', ''))
             
             return {
                 'status': 'success',
