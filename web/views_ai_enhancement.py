@@ -39,10 +39,10 @@ if project_root not in sys.path:
 
 # Import our new AI enhancement systems
 try:
-    from new_ideas.rrid_enhancement_system import RRIDEnhancementSystem, BrowserExtensionAPI
-    from new_ideas.smart_recommendation_engine import SmartRecommendationEngine
-    from new_ideas.natural_language_interface import ConversationalKRTInterface
-    from new_ideas.cross_reference_validation import CrossReferenceValidator
+    from new_ideas.rrid_enhancement_system_simple import RRIDEnhancementSystem, BrowserExtensionAPI
+    from new_ideas.smart_recommendation_engine_simple import SmartRecommendationEngine
+    from new_ideas.natural_language_interface_simple import ConversationalKRTInterface
+    from new_ideas.cross_reference_validation_simple import CrossReferenceValidator
     from new_ideas.multimodal_ai_processor import MultimodalKRTProcessor
 except ImportError as e:
     logging.warning(f"Could not import AI enhancement modules: {e}")
