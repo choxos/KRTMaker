@@ -36,7 +36,6 @@ import os
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
 # Import our new AI enhancement systems
 try:
     from new_ideas.rrid_enhancement_system_simple import RRIDEnhancementSystem, BrowserExtensionAPI
@@ -171,12 +170,15 @@ def suggest_rrid(request):
         
         # Get suggestions using our RRID enhancement system
         try:
+            # Debug: Check which class type we're using
+            logger.info(f"Using RRID system type: {type(rrid_system)} from module: {rrid_system.__class__.__module__}")
             suggestions = rrid_system.suggest_rrid(
                 resource_name=resource_name,
                 resource_type=resource_type,
                 vendor=vendor,
                 catalog_number=catalog_number
             )
+            logger.info(f"RRID system returned {len(suggestions)} suggestions")
             
             # Store suggestions in database
             stored_suggestions = []
