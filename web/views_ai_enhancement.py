@@ -36,65 +36,62 @@ import os
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-# Import our new AI enhancement systems
+# Import our new AI enhancement systems - Force imports without try/catch
+import importlib
+import sys
+
+# Force reload modules if they exist
+modules_to_reload = [
+    'new_ideas.rrid_enhancement_system_simple',
+    'new_ideas.smart_recommendation_engine_simple', 
+    'new_ideas.natural_language_interface_simple',
+    'new_ideas.cross_reference_validation_simple'
+]
+
+for module_name in modules_to_reload:
+    if module_name in sys.modules:
+        importlib.reload(sys.modules[module_name])
+
+# Now import (this should succeed since we tested it works)
+from new_ideas.rrid_enhancement_system_simple import RRIDEnhancementSystem, BrowserExtensionAPI
+from new_ideas.smart_recommendation_engine_simple import SmartRecommendationEngine
+from new_ideas.natural_language_interface_simple import ConversationalKRTInterface
+from new_ideas.cross_reference_validation_simple import CrossReferenceValidator
+
+# Try to import multimodal processor, fall back if it fails
 try:
-    from new_ideas.rrid_enhancement_system_simple import RRIDEnhancementSystem, BrowserExtensionAPI
-    from new_ideas.smart_recommendation_engine_simple import SmartRecommendationEngine
-    from new_ideas.natural_language_interface_simple import ConversationalKRTInterface
-    from new_ideas.cross_reference_validation_simple import CrossReferenceValidator
     from new_ideas.multimodal_ai_processor import MultimodalKRTProcessor
 except ImportError as e:
-    logging.warning(f"Could not import AI enhancement modules: {e}")
-    # Create stub classes for development
-    class RRIDEnhancementSystem:
-        def __init__(self): pass
-        def suggest_rrid(self, *args, **kwargs): return []
-        def validate_rrid(self, *args, **kwargs): return type('ValidationResult', (), {'rrid': '', 'is_valid': False, 'status': 'error', 'resource_info': {}})()
-    
-    class SmartRecommendationEngine:
-        def __init__(self): pass
-        def recommend_alternatives(self, *args, **kwargs): return []
-    
-    class ConversationalKRTInterface:
-        def __init__(self, *args, **kwargs): pass
-        def process_message(self, *args, **kwargs): return {'response': 'AI not available', 'intent': 'error'}
-    
-    class CrossReferenceValidator:
-        def __init__(self): pass
-        def validate_resource(self, *args, **kwargs): return {'success': False, 'error': 'Not implemented'}
-    
+    logging.warning(f"Could not import MultimodalKRTProcessor: {e}")
+    # Create minimal stub for multimodal processor only
     class MultimodalKRTProcessor:
         def __init__(self, *args, **kwargs): pass
         def extract_from_pdf(self, *args, **kwargs): return []
-    
-    class BrowserExtensionAPI:
-        def __init__(self, *args, **kwargs): pass
-        def suggest_rrid_api(self, *args, **kwargs): return {'status': 'error', 'error': 'Not implemented'}
-        def validate_rrid_api(self, *args, **kwargs): return {'status': 'error', 'error': 'Not implemented'}
 
 logger = logging.getLogger(__name__)
 
 
 # Initialize AI enhancement systems
 logger.info("Initializing AI enhancement systems...")
-try:
-    rrid_system = RRIDEnhancementSystem()
-    recommendation_engine = SmartRecommendationEngine()
-    conversational_interface = ConversationalKRTInterface()
-    cross_validator = CrossReferenceValidator()
-    multimodal_processor = MultimodalKRTProcessor()
-    browser_api = BrowserExtensionAPI(rrid_system)
-    logger.info("AI enhancement systems initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize AI enhancement systems: {e}")
-    # Use stub systems
-    rrid_system = RRIDEnhancementSystem()
-    recommendation_engine = SmartRecommendationEngine()
-    conversational_interface = ConversationalKRTInterface()
-    cross_validator = CrossReferenceValidator()
-    multimodal_processor = MultimodalKRTProcessor()
-    browser_api = BrowserExtensionAPI(rrid_system)
-    logger.warning("Using stub AI enhancement systems")
+rrid_system = RRIDEnhancementSystem()
+recommendation_engine = SmartRecommendationEngine()
+conversational_interface = ConversationalKRTInterface()
+cross_validator = CrossReferenceValidator()
+multimodal_processor = MultimodalKRTProcessor()
+browser_api = BrowserExtensionAPI(rrid_system)
+
+# Test that we got the real classes, not stubs
+if hasattr(rrid_system, 'mock_rrid_database'):
+    logger.info("✅ Using REAL RRIDEnhancementSystem with mock database")
+else:
+    logger.warning("❌ Using STUB RRIDEnhancementSystem")
+
+if hasattr(conversational_interface, '_classify_intent'):
+    logger.info("✅ Using REAL ConversationalKRTInterface with NLP")
+else:
+    logger.warning("❌ Using STUB ConversationalKRTInterface")
+
+logger.info("AI enhancement systems initialized")
 
 
 class AIEnhancementDashboardView(TemplateView):
