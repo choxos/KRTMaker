@@ -1337,3 +1337,6 @@ class APIDocsView(TemplateView):
         context['version'] = '1.0'
         
         return context
+def browser_extension_download(request):
+    """Browser Extension Download page"""
+    return render(request, 'web/browser_extension.html')

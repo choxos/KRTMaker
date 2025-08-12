@@ -1,4 +1,5 @@
 from django.urls import path
+from django.shortcuts import render
 from . import views
 from .views_statistics import StatisticsView
 from . import views_ai_enhancement
@@ -57,4 +58,7 @@ urlpatterns = [
     # Browser Extension API
     path('api/browser/suggest-rrid/', views_ai_enhancement.browser_extension_suggest_rrid, name='api_browser_suggest_rrid'),
     path('api/browser/validate-rrid/', views_ai_enhancement.browser_extension_validate_rrid, name='api_browser_validate_rrid'),
+    
+    # Browser Extension Download
+    path('browser-extension/', lambda request: render(request, 'web/browser_extension_help.html'), name='browser_extension'),
 ]
