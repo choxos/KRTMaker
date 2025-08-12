@@ -7,7 +7,7 @@ cross-reference validation, and multimodal processing.
 """
 
 import json
-import asyncio
+# import asyncio  # No longer needed with synchronous AI modules
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
@@ -49,20 +49,20 @@ except ImportError as e:
     # Create stub classes for development
     class RRIDEnhancementSystem:
         def __init__(self): pass
-        async def suggest_rrid(self, *args, **kwargs): return []
-        async def validate_rrid(self, *args, **kwargs): return {'success': False, 'error': 'Not implemented'}
+        def suggest_rrid(self, *args, **kwargs): return []
+        def validate_rrid(self, *args, **kwargs): return type('ValidationResult', (), {'rrid': '', 'is_valid': False, 'status': 'error', 'resource_info': {}})()
     
     class SmartRecommendationEngine:
         def __init__(self): pass
-        async def recommend_alternatives(self, *args, **kwargs): return []
+        def recommend_alternatives(self, *args, **kwargs): return []
     
     class ConversationalKRTInterface:
         def __init__(self, *args, **kwargs): pass
-        async def process_message(self, *args, **kwargs): return {'response': 'AI not available', 'intent': 'error'}
+        def process_message(self, *args, **kwargs): return {'response': 'AI not available', 'intent': 'error'}
     
     class CrossReferenceValidator:
         def __init__(self): pass
-        async def validate_resource(self, *args, **kwargs): return {'success': False, 'error': 'Not implemented'}
+        def validate_resource(self, *args, **kwargs): return {'success': False, 'error': 'Not implemented'}
     
     class MultimodalKRTProcessor:
         def __init__(self, *args, **kwargs): pass
@@ -70,12 +70,14 @@ except ImportError as e:
     
     class BrowserExtensionAPI:
         def __init__(self, *args, **kwargs): pass
-        async def suggest_rrid_api(self, *args, **kwargs): return {'status': 'error', 'error': 'Not implemented'}
+        def suggest_rrid_api(self, *args, **kwargs): return {'status': 'error', 'error': 'Not implemented'}
+        def validate_rrid_api(self, *args, **kwargs): return {'status': 'error', 'error': 'Not implemented'}
 
 logger = logging.getLogger(__name__)
 
 
 # Initialize AI enhancement systems
+logger.info("Initializing AI enhancement systems...")
 try:
     rrid_system = RRIDEnhancementSystem()
     recommendation_engine = SmartRecommendationEngine()
@@ -83,6 +85,7 @@ try:
     cross_validator = CrossReferenceValidator()
     multimodal_processor = MultimodalKRTProcessor()
     browser_api = BrowserExtensionAPI(rrid_system)
+    logger.info("AI enhancement systems initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize AI enhancement systems: {e}")
     # Use stub systems
@@ -92,6 +95,7 @@ except Exception as e:
     cross_validator = CrossReferenceValidator()
     multimodal_processor = MultimodalKRTProcessor()
     browser_api = BrowserExtensionAPI(rrid_system)
+    logger.warning("Using stub AI enhancement systems")
 
 
 class AIEnhancementDashboardView(TemplateView):
