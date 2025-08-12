@@ -70,10 +70,10 @@ class CrossReferenceValidator:
             },
         }
     
-    async def validate_resource(self, resource_data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_resource(self, resource_data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate a resource across multiple databases"""
         # Simulate processing time
-        await self._simulate_async_delay()
+        self._simulate_delay()
         
         resource_id = resource_data.get('identifier', '')
         resource_type = resource_data.get('type', '').lower()
@@ -88,7 +88,7 @@ class CrossReferenceValidator:
         # Validate against each source
         for source in sources_to_check:
             if self.validation_sources[source]["active"]:
-                result = await self._validate_against_source(resource_id, source)
+                result = self._validate_against_source(resource_id, source)
                 validation_results.append(result)
                 overall_confidence += result.confidence
         
@@ -129,7 +129,7 @@ class CrossReferenceValidator:
             'validation_timestamp': datetime.now().isoformat()
         }
     
-    async def _validate_against_source(self, resource_id: str, source: str) -> ValidationResult:
+    def _validate_against_source(self, resource_id: str, source: str) -> ValidationResult:
         """Validate against a specific source"""
         # Simulate network delay
         response_time = self.validation_sources[source]["response_time"]
@@ -271,7 +271,7 @@ class CrossReferenceValidator:
         pattern = r'^RRID:(AB_|SCR_|CVCL_|IMSR_)[A-Za-z0-9_]+$'
         return bool(re.match(pattern, rrid))
     
-    async def _simulate_async_delay(self, min_delay: float = 0.1, max_delay: float = 0.3):
+    def _simulate_delay(self, min_delay: float = 0.1, max_delay: float = 0.3):
         """Simulate realistic processing time"""
         delay = random.uniform(min_delay, max_delay)
         time.sleep(delay)

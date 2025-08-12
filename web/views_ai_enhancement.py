@@ -183,11 +183,11 @@ def suggest_rrid(request):
                     vendor=vendor or suggestion.vendor,
                     catalog_number=catalog_number or suggestion.catalog_number,
                     suggested_rrid=suggestion.suggested_rrid,
-                    suggestion_type=suggestion.recommendation_type,
+                    suggestion_type='rrid_suggestion',
                     validation_status='valid',  # Assume valid for now
                     validation_source='rrid_enhancement_system',
                     confidence_score=suggestion.confidence_score,
-                    reasoning=suggestion.reasoning
+                    reasoning=suggestion.reasoning if hasattr(suggestion, 'reasoning') else 'AI generated suggestion'
                 )
                 stored_suggestions.append({
                     'id': rrid_suggestion.id,
@@ -237,7 +237,7 @@ def suggest_rrid(request):
             
             return JsonResponse({
                 'success': False,
-                'error': 'RRID suggestion service temporarily unavailable',
+                'error': f'RRID suggestion error: {str(e)}',
                 'suggestions': []
             })
             
