@@ -146,7 +146,29 @@
                             <i class="fas fa-code"></i> API
                         </a>
                     </li>
-
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-robot"></i> AI Features
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'web:ai_features' %}">
+                                <i class="fas fa-magic"></i> Overview
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'web:conversational_krt' %}">
+                                <i class="fas fa-comments"></i> Chat KRT
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'web:ai_dashboard' %}">
+                                <i class="fas fa-chart-line"></i> AI Dashboard
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="testRRIDSuggestion()">
+                                <i class="fas fa-search"></i> Test RRID Suggestions
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="testResourceRecommendation()">
+                                <i class="fas fa-lightbulb"></i> Test Recommendations
+                            </a></li>
+                        </ul>
+                    </li>
                 </ul>
                 
                 <ul class="navbar-nav">
@@ -213,6 +235,97 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AI Features JavaScript -->
+    <script>
+        // Test RRID Suggestion
+        async function testRRIDSuggestion() {
+            const testData = {
+                resource_name: "anti-beta-tubulin",
+                resource_type: "antibody",
+                vendor: "Abcam",
+                catalog_number: "ab6046"
+            };
+            
+            try {
+                const response = await fetch('/api/ai/suggest-rrid/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`RRID Suggestions (${result.total_found} found):\n\n` + 
+                          result.suggestions.map(s => 
+                              `${s.suggested_rrid} (${(s.confidence_score * 100).toFixed(0)}% confidence)\n${s.reasoning}`
+                          ).join('\n\n'));
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+        
+        // Test Resource Recommendation
+        async function testResourceRecommendation() {
+            const testData = {
+                resource_name: "DAPI",
+                resource_type: "chemical",
+                context: {
+                    applications: ["nuclear staining", "fluorescence microscopy"]
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/ai/recommend/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Resource Recommendations (${result.total_found} found):\n\n` + 
+                          result.recommendations.map(r => 
+                              `${r.recommended_resource} from ${r.recommended_vendor}\n` +
+                              `Type: ${r.recommendation_type}\n` +
+                              `Confidence: ${(r.confidence_score * 100).toFixed(0)}%\n` +
+                              `Reason: ${r.reasoning}`
+                          ).join('\n\n'));
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+        
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
     
     <!-- Custom JS -->
     <script>

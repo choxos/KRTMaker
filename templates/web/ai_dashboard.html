@@ -1,0 +1,279 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}AI Enhancement Dashboard - KRT Maker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-chart-line me-2"></i>AI Enhancement Dashboard</h1>
+        <div>
+            <button class="btn btn-outline-primary" onclick="refreshStats()">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                    <h4>{{ total_rrid_suggestions }}</h4>
+                    <p class="card-text">RRID Suggestions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-lightbulb fa-2x text-warning mb-2"></i>
+                    <h4>{{ total_recommendations }}</h4>
+                    <p class="card-text">Resource Recommendations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-comments fa-2x text-success mb-2"></i>
+                    <h4>{{ active_conversations }}</h4>
+                    <p class="card-text">Active Conversations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-2x text-info mb-2"></i>
+                    <h4>{{ total_validations }}</h4>
+                    <p class="card-text">Cross-Reference Validations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Statistics -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Daily Usage Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if usage_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Total Requests</th>
+                                    <th>Successful</th>
+                                    <th>Failed</th>
+                                    <th>Success Rate</th>
+                                    <th>Avg Response Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stats in usage_stats %}
+                                <tr>
+                                    <td>
+                                        {% if stats.feature_type == 'rrid_suggestion' %}
+                                            <i class="fas fa-search text-primary"></i> RRID Suggestions
+                                        {% elif stats.feature_type == 'resource_recommendation' %}
+                                            <i class="fas fa-lightbulb text-warning"></i> Recommendations
+                                        {% elif stats.feature_type == 'conversational_krt' %}
+                                            <i class="fas fa-comments text-success"></i> Conversational KRT
+                                        {% elif stats.feature_type == 'cross_validation' %}
+                                            <i class="fas fa-check-circle text-info"></i> Cross Validation
+                                        {% elif stats.feature_type == 'browser_extension' %}
+                                            <i class="fas fa-globe text-secondary"></i> Browser Extension
+                                        {% else %}
+                                            {{ stats.feature_type|title }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ stats.total_requests }}</td>
+                                    <td><span class="text-success">{{ stats.successful_requests }}</span></td>
+                                    <td><span class="text-danger">{{ stats.failed_requests }}</span></td>
+                                    <td>
+                                        {% if stats.total_requests > 0 %}
+                                            <span class="badge bg-{{ stats.badge_color }}">
+                                                {{ stats.success_rate_percent }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ stats.avg_response_time|floatformat:2 }}s</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No usage data available yet.</p>
+                        <p>Start using the AI features to see statistics here!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="testRRIDSuggestion()">
+                            <i class="fas fa-search me-2"></i>Test RRID Suggestion
+                        </button>
+                        <button class="btn btn-warning" onclick="testResourceRecommendation()">
+                            <i class="fas fa-lightbulb me-2"></i>Test Recommendation
+                        </button>
+                        <button class="btn btn-info" onclick="validateSampleRRID()">
+                            <i class="fas fa-check-circle me-2"></i>Test Validation
+                        </button>
+                        <a href="{% url 'web:conversational_krt' %}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Try Chat Interface
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>System Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">RRID Enhancement System</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Status</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Recommendation Engine</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Status</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Cross-Reference Validator</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Status</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Conversational Interface</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Status</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Multimodal Processor</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Status</span>
+                            <span class="badge bg-warning">Development</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Documentation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-code me-2"></i>API Endpoints
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>AI Enhancement APIs</h6>
+                            <ul class="list-unstyled">
+                                <li><code>POST /api/ai/suggest-rrid/</code> - Get RRID suggestions</li>
+                                <li><code>POST /api/ai/validate-rrid/</code> - Validate RRID</li>
+                                <li><code>POST /api/ai/recommend/</code> - Get resource recommendations</li>
+                                <li><code>POST /api/ai/chat/</code> - Conversational KRT interface</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Browser Extension APIs</h6>
+                            <ul class="list-unstyled">
+                                <li><code>POST /api/browser/suggest-rrid/</code> - Browser RRID suggestions</li>
+                                <li><code>POST /api/browser/validate-rrid/</code> - Browser RRID validation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'web:api_docs' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-book me-2"></i>View Full API Documentation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function refreshStats() {
+    // Reload the page to refresh statistics
+    window.location.reload();
+}
+
+// Include the validation test function from ai_features.html
+async function validateSampleRRID() {
+    const testData = {
+        rrid: "RRID:AB_2138153"
+    };
+    
+    try {
+        const response = await fetch('/api/ai/validate-rrid/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(testData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const validation = result.validation;
+            alert(`RRID Validation Result:\n\n` +
+                  `RRID: ${validation.rrid}\n` +
+                  `Status: ${validation.status.toUpperCase()}\n` +
+                  `Valid: ${validation.is_valid ? 'Yes' : 'No'}\n` +
+                  `Confidence: ${(validation.confidence_score * 100).toFixed(0)}%\n` +
+                  `Last Checked: ${new Date(validation.last_checked).toLocaleString()}\n` +
+                  `Source: ${validation.source}`);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

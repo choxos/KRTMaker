@@ -595,3 +595,386 @@ class AdminKRT(models.Model):
             'completion_rate': (completed / total * 100) if total > 0 else 0,
             'approval_rate': (approved / completed * 100) if completed > 0 else 0,
         }
+
+
+# AI Enhancement Models for Advanced Features
+
+class RRIDSuggestion(models.Model):
+    """Model to store RRID suggestions and validation results"""
+    
+    SUGGESTION_TYPES = [
+        ('functional_equivalent', 'Functional Equivalent'),
+        ('updated_version', 'Updated Version'),
+        ('alternative_vendor', 'Alternative Vendor'),
+        ('similar_resource', 'Similar Resource'),
+    ]
+    
+    VALIDATION_STATUS = [
+        ('valid', 'Valid'),
+        ('deprecated', 'Deprecated'),
+        ('invalid', 'Invalid'),
+        ('not_found', 'Not Found'),
+        ('needs_review', 'Needs Review'),
+    ]
+    
+    # Resource information
+    resource_name = models.CharField(max_length=500)
+    resource_type = models.CharField(max_length=100)
+    vendor = models.CharField(max_length=200, blank=True, null=True)
+    catalog_number = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Suggested RRID
+    suggested_rrid = models.CharField(max_length=100)
+    suggestion_type = models.CharField(max_length=30, choices=SUGGESTION_TYPES)
+    
+    # Validation results
+    validation_status = models.CharField(max_length=20, choices=VALIDATION_STATUS)
+    validation_source = models.CharField(max_length=100)  # scicrunch, antibody_registry, etc.
+    
+    # Confidence and metadata
+    confidence_score = models.FloatField()
+    reasoning = models.TextField()
+    additional_info = models.JSONField(default=dict)
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_validated = models.DateTimeField(auto_now=True)
+    usage_count = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-confidence_score', '-created_at']
+        indexes = [
+            models.Index(fields=['resource_name']),
+            models.Index(fields=['suggested_rrid']),
+            models.Index(fields=['validation_status']),
+            models.Index(fields=['confidence_score']),
+        ]
+    
+    def __str__(self):
+        return f"RRID Suggestion: {self.suggested_rrid} for {self.resource_name}"
+
+
+class ResourceRecommendation(models.Model):
+    """Model to store smart resource recommendations"""
+    
+    RECOMMENDATION_TYPES = [
+        ('functional_equivalent', 'Functional Equivalent'),
+        ('alternative_vendor', 'Alternative Vendor'),
+        ('updated_version', 'Updated Version'),
+        ('price_optimization', 'Price Optimization'),
+        ('availability_alternative', 'Availability Alternative'),
+    ]
+    
+    # Original resource
+    original_resource = models.CharField(max_length=500)
+    original_vendor = models.CharField(max_length=200, blank=True, null=True)
+    original_catalog = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Recommended resource
+    recommended_resource = models.CharField(max_length=500)
+    recommended_vendor = models.CharField(max_length=200)
+    recommended_catalog = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Recommendation metadata
+    recommendation_type = models.CharField(max_length=30, choices=RECOMMENDATION_TYPES)
+    similarity_score = models.FloatField()
+    confidence_score = models.FloatField()
+    reasoning = models.TextField()
+    
+    # Availability and pricing
+    availability_status = models.CharField(max_length=50, default='unknown')
+    price_comparison = models.JSONField(default=dict, blank=True)
+    scientific_evidence = models.JSONField(default=list, blank=True)
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    usage_count = models.PositiveIntegerField(default=0)
+    user_feedback = models.JSONField(default=list, blank=True)  # User ratings/feedback
+    
+    class Meta:
+        ordering = ['-confidence_score', '-created_at']
+        indexes = [
+            models.Index(fields=['original_resource']),
+            models.Index(fields=['recommended_resource']),
+            models.Index(fields=['recommendation_type']),
+            models.Index(fields=['confidence_score']),
+        ]
+    
+    def __str__(self):
+        return f"Recommend {self.recommended_resource} for {self.original_resource}"
+
+
+class ConversationalKRTSession(models.Model):
+    """Model to store conversational KRT creation sessions"""
+    
+    INTENT_TYPES = [
+        ('add_resource', 'Add Resource'),
+        ('modify_resource', 'Modify Resource'),
+        ('delete_resource', 'Delete Resource'),
+        ('validate_resource', 'Validate Resource'),
+        ('export_krt', 'Export KRT'),
+        ('help', 'Help Request'),
+        ('clarification', 'Clarification'),
+    ]
+    
+    # Session identification
+    session_id = models.CharField(max_length=32, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Current KRT state
+    current_krt_entries = models.JSONField(default=list)
+    pending_clarifications = models.JSONField(default=list)
+    
+    # User preferences and context
+    user_preferences = models.JSONField(default=dict)
+    conversation_history = models.JSONField(default=list)
+    last_intent = models.CharField(max_length=30, choices=INTENT_TYPES, blank=True, null=True)
+    
+    # Analytics
+    message_count = models.PositiveIntegerField(default=0)
+    resources_added = models.PositiveIntegerField(default=0)
+    clarifications_requested = models.PositiveIntegerField(default=0)
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_completed = models.BooleanField(default=False)
+    completion_method = models.CharField(max_length=50, blank=True, null=True)  # export, timeout, etc.
+    
+    class Meta:
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['session_id']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['updated_at']),
+        ]
+    
+    def __str__(self):
+        return f"Conversational KRT: {self.session_id}"
+    
+    def add_message(self, user_message, bot_response, intent=None, entities=None):
+        """Add a message to the conversation history"""
+        message = {
+            'timestamp': timezone.now().isoformat(),
+            'user_message': user_message,
+            'bot_response': bot_response,
+            'intent': intent,
+            'entities': entities or [],
+        }
+        
+        self.conversation_history.append(message)
+        self.message_count += 1
+        if intent:
+            self.last_intent = intent
+        self.save()
+
+
+class CrossReferenceValidation(models.Model):
+    """Model to store cross-reference validation results"""
+    
+    VALIDATION_STATUS = [
+        ('valid', 'Valid'),
+        ('invalid', 'Invalid'),
+        ('deprecated', 'Deprecated'),
+        ('inconsistent', 'Inconsistent'),
+        ('not_found', 'Not Found'),
+        ('error', 'Error'),
+        ('needs_review', 'Needs Review'),
+    ]
+    
+    SEVERITY_LEVELS = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+    
+    # Resource being validated
+    resource_identifier = models.CharField(max_length=200)
+    resource_type = models.CharField(max_length=100)
+    
+    # Validation results
+    overall_status = models.CharField(max_length=20, choices=VALIDATION_STATUS)
+    confidence_score = models.FloatField()
+    
+    # Individual database results
+    validation_results = models.JSONField(default=list)  # Results from each database
+    discrepancies = models.JSONField(default=list)  # List of discrepancies found
+    
+    # Recommendations and actions
+    recommendations = models.JSONField(default=list)
+    error_patterns = models.JSONField(default=list)  # Learned error patterns
+    
+    # Metadata
+    validation_sources = models.JSONField(default=list)  # Which databases were checked
+    response_times = models.JSONField(default=dict)  # Response time for each source
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()  # When this validation expires
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['resource_identifier']),
+            models.Index(fields=['overall_status']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"Validation: {self.resource_identifier} ({self.overall_status})"
+    
+    def is_expired(self):
+        """Check if this validation result has expired"""
+        return timezone.now() > self.expires_at
+
+
+class MultimodalProcessingResult(models.Model):
+    """Model to store results from multimodal AI processing"""
+    
+    PROCESSING_STATUS = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    # Link to KRT session
+    session = models.ForeignKey(KRTSession, on_delete=models.CASCADE, related_name='multimodal_results')
+    
+    # Processing configuration
+    model_name = models.CharField(max_length=100, default='layoutlmv3-base')
+    processing_mode = models.CharField(max_length=50, default='unified_text_image')
+    
+    # Input document analysis
+    total_pages = models.PositiveIntegerField()
+    pages_with_images = models.PositiveIntegerField(default=0)
+    pages_with_tables = models.PositiveIntegerField(default=0)
+    pages_with_figures = models.PositiveIntegerField(default=0)
+    
+    # Extracted resources by section type
+    text_resources = models.JSONField(default=list)
+    table_resources = models.JSONField(default=list)
+    figure_resources = models.JSONField(default=list)
+    supplementary_resources = models.JSONField(default=list)
+    
+    # Processing metadata
+    processing_time = models.FloatField(null=True, blank=True)
+    confidence_scores = models.JSONField(default=dict)  # Confidence by resource type
+    
+    # Document sections identified
+    document_sections = models.JSONField(default=list)
+    layout_analysis = models.JSONField(default=dict)
+    
+    # Status and results
+    status = models.CharField(max_length=20, choices=PROCESSING_STATUS, default='pending')
+    error_message = models.TextField(blank=True, null=True)
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['session']),
+            models.Index(fields=['status']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Multimodal Processing: {self.session.session_id}"
+    
+    @property
+    def total_resources_found(self):
+        """Get total number of resources found across all sections"""
+        return (len(self.text_resources) + 
+                len(self.table_resources) + 
+                len(self.figure_resources) + 
+                len(self.supplementary_resources))
+
+
+class AIEnhancementUsage(models.Model):
+    """Model to track usage of AI enhancement features"""
+    
+    FEATURE_TYPES = [
+        ('rrid_suggestion', 'RRID Suggestion'),
+        ('resource_recommendation', 'Resource Recommendation'),
+        ('conversational_krt', 'Conversational KRT'),
+        ('cross_validation', 'Cross-Reference Validation'),
+        ('multimodal_processing', 'Multimodal Processing'),
+        ('browser_extension', 'Browser Extension'),
+    ]
+    
+    # Feature usage
+    feature_type = models.CharField(max_length=30, choices=FEATURE_TYPES)
+    user_session = models.CharField(max_length=100, blank=True, null=True)  # Session or IP
+    
+    # Request details
+    request_data = models.JSONField(default=dict)
+    response_data = models.JSONField(default=dict)
+    
+    # Performance metrics
+    response_time = models.FloatField(null=True, blank=True)
+    success = models.BooleanField(default=True)
+    error_message = models.TextField(blank=True, null=True)
+    
+    # User feedback
+    user_rating = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5 stars
+    user_feedback = models.TextField(blank=True, null=True)
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['feature_type']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['success']),
+        ]
+    
+    def __str__(self):
+        return f"AI Usage: {self.feature_type} at {self.created_at}"
+    
+    @classmethod
+    def log_usage(cls, feature_type, request_data=None, response_data=None, 
+                  response_time=None, success=True, error_message=None, 
+                  user_session=None, ip_address=None, user_agent=None):
+        """Log usage of an AI enhancement feature"""
+        return cls.objects.create(
+            feature_type=feature_type,
+            user_session=user_session,
+            request_data=request_data or {},
+            response_data=response_data or {},
+            response_time=response_time,
+            success=success,
+            error_message=error_message,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+    
+    @classmethod
+    def get_daily_stats(cls, date=None):
+        """Get daily usage statistics"""
+        if not date:
+            date = timezone.now().date()
+        
+        daily_usage = cls.objects.filter(created_at__date=date)
+        
+        stats = {}
+        for feature_type, _ in cls.FEATURE_TYPES:
+            feature_usage = daily_usage.filter(feature_type=feature_type)
+            stats[feature_type] = {
+                'total_requests': feature_usage.count(),
+                'successful_requests': feature_usage.filter(success=True).count(),
+                'failed_requests': feature_usage.filter(success=False).count(),
+                'avg_response_time': feature_usage.exclude(response_time__isnull=True).aggregate(
+                    models.Avg('response_time')
+                )['response_time__avg'] or 0.0,
+            }
+        
+        return stats

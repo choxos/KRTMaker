@@ -1,0 +1,377 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}Conversational KRT Creation - KRT Maker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        height: 70vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .message {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .message.user {
+        justify-content: flex-end;
+    }
+    
+    .message.bot {
+        justify-content: flex-start;
+    }
+    
+    .message-content {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        position: relative;
+    }
+    
+    .message.user .message-content {
+        background: #007bff;
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+    }
+    
+    .message.bot .message-content {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-bottom-left-radius: 0.25rem;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .message.user .message-avatar {
+        background: #007bff;
+        color: white;
+        order: 2;
+    }
+    
+    .message.bot .message-avatar {
+        background: #28a745;
+        color: white;
+        order: 1;
+    }
+    
+    .chat-input {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .chat-input input {
+        flex: 1;
+        border-radius: 2rem;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+    }
+    
+    .chat-input button {
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .krt-preview {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .typing-indicator {
+        display: none;
+        align-items: center;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .typing-indicator.show {
+        display: flex;
+    }
+    
+    .typing-dots {
+        margin-left: 0.5rem;
+    }
+    
+    .typing-dots span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6c757d;
+        margin: 0 2px;
+        animation: typing 1.5s infinite;
+    }
+    
+    .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0%, 60%, 100% { opacity: 0.3; }
+        30% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center mb-4">
+        <h1><i class="fas fa-comments me-2"></i>Conversational KRT Creation</h1>
+        <p class="lead">Create Key Resources Tables through natural language conversation</p>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <strong>KRT Assistant:</strong> Hi! I'm here to help you create a Key Resources Table through conversation. 
+                    You can tell me about the resources you used in natural language, like:
+                    <br><br>
+                    • "I used anti-beta-tubulin antibody from Abcam, catalog number ab6046"
+                    <br>
+                    • "We included DAPI for nuclear staining at 1:1000 dilution"
+                    <br>
+                    • "The cells were cultured using ImageJ software"
+                    <br><br>
+                    What resources did you use in your research?
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message-avatar">🤖</div>
+            <span>KRT Assistant is typing</span>
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Tell me about your resources..." 
+                   onkeypress="if(event.key==='Enter') sendMessage()">
+            <button type="button" class="btn btn-primary" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="krt-preview" id="krtPreview" style="display: none;">
+        <h5><i class="fas fa-table me-2"></i>Current KRT Entries</h5>
+        <div id="krtTable"></div>
+        <div class="mt-3">
+            <button class="btn btn-success" onclick="exportKRT()">
+                <i class="fas fa-download me-2"></i>Export KRT
+            </button>
+            <button class="btn btn-secondary" onclick="clearKRT()">
+                <i class="fas fa-trash me-2"></i>Clear All
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let sessionId = '{{ session_id }}';
+let currentKRT = [];
+
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addMessage('user', message);
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        const response = await fetch('/api/ai/chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                message: message,
+                session_id: sessionId
+            })
+        });
+        
+        const result = await response.json();
+        
+        // Hide typing indicator
+        hideTypingIndicator();
+        
+        if (result.success) {
+            // Add bot response
+            addMessage('bot', result.response);
+            
+            // Update KRT if entries changed
+            if (result.krt_entries && result.krt_entries.length > 0) {
+                currentKRT = result.krt_entries;
+                updateKRTPreview();
+            }
+            
+            // Handle clarifications
+            if (result.needs_clarification && result.clarifications.length > 0) {
+                const clarificationText = result.clarifications.join('\n• ');
+                addMessage('bot', `I need some clarifications:\n• ${clarificationText}`);
+            }
+        } else {
+            addMessage('bot', 'Sorry, I encountered an error: ' + result.error);
+        }
+        
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage('bot', 'Sorry, I\'m having trouble connecting. Please try again.');
+        console.error('Chat error:', error);
+    }
+}
+
+function addMessage(type, content) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    
+    const avatar = type === 'user' ? '👤' : '🤖';
+    const label = type === 'user' ? 'You:' : 'KRT Assistant:';
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+            <strong>${label}</strong> ${content.replace(/\n/g, '<br>')}
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+    document.getElementById('typingIndicator').classList.add('show');
+    const messagesContainer = document.getElementById('chatMessages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    document.getElementById('typingIndicator').classList.remove('show');
+}
+
+function updateKRTPreview() {
+    const preview = document.getElementById('krtPreview');
+    const table = document.getElementById('krtTable');
+    
+    if (currentKRT.length === 0) {
+        preview.style.display = 'none';
+        return;
+    }
+    
+    preview.style.display = 'block';
+    
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Resource Type</th>
+                        <th>Resource Name</th>
+                        <th>Source</th>
+                        <th>Identifier</th>
+                        <th>New/Reuse</th>
+                        <th>Additional Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    currentKRT.forEach(entry => {
+        html += `
+            <tr>
+                <td>${entry['RESOURCE TYPE'] || ''}</td>
+                <td>${entry['RESOURCE NAME'] || ''}</td>
+                <td>${entry['SOURCE'] || ''}</td>
+                <td>${entry['IDENTIFIER'] || ''}</td>
+                <td><span class="badge ${entry['NEW/REUSE'] === 'new' ? 'bg-success' : 'bg-primary'}">${entry['NEW/REUSE'] || ''}</span></td>
+                <td>${entry['ADDITIONAL INFORMATION'] || ''}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    table.innerHTML = html;
+}
+
+function exportKRT() {
+    if (currentKRT.length === 0) {
+        alert('No KRT entries to export');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(currentKRT, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `krt_conversational_${sessionId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function clearKRT() {
+    if (confirm('Are you sure you want to clear all KRT entries?')) {
+        currentKRT = [];
+        updateKRTPreview();
+        addMessage('bot', 'KRT table cleared. Feel free to start adding resources again!');
+    }
+}
+
+// Focus on input when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('messageInput').focus();
+});
+</script>
+{% endblock %}

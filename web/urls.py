@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views_statistics import StatisticsView
+from . import views_ai_enhancement
 
 app_name = 'web'
 
@@ -41,4 +42,19 @@ urlpatterns = [
     
     # API endpoints
     # path('api/status/<str:session_id>/', views.api_status, name='api_status'),  # TODO: Implement api_status
+    
+    # AI Enhancement Features
+    path('ai/', views_ai_enhancement.AIFeaturesView.as_view(), name='ai_features'),
+    path('ai/dashboard/', views_ai_enhancement.AIEnhancementDashboardView.as_view(), name='ai_dashboard'),
+    path('ai/chat/', views_ai_enhancement.ConversationalKRTView.as_view(), name='conversational_krt'),
+    
+    # AI API Endpoints
+    path('api/ai/suggest-rrid/', views_ai_enhancement.suggest_rrid, name='api_suggest_rrid'),
+    path('api/ai/validate-rrid/', views_ai_enhancement.validate_rrid, name='api_validate_rrid'),
+    path('api/ai/recommend/', views_ai_enhancement.get_resource_recommendations, name='api_recommend_resources'),
+    path('api/ai/chat/', views_ai_enhancement.conversational_krt, name='api_conversational_krt'),
+    
+    # Browser Extension API
+    path('api/browser/suggest-rrid/', views_ai_enhancement.browser_extension_suggest_rrid, name='api_browser_suggest_rrid'),
+    path('api/browser/validate-rrid/', views_ai_enhancement.browser_extension_validate_rrid, name='api_browser_validate_rrid'),
 ]
