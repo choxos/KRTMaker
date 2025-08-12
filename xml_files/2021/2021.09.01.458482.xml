@@ -1,0 +1,2301 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS134265</article-id>
+<article-id pub-id-type="doi">10.1101/2021.09.01.458482</article-id>
+<article-id pub-id-type="archive">PPR390005</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Multiscale affinity maturation simulations to elicit broadly neutralizing antibodies against HIV</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Sprenger</surname>
+<given-names>Kayla G.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Conti</surname>
+<given-names>Simone</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>Victor</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chakraborty</surname>
+<given-names>Arup K.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A3">c</xref>
+<xref ref-type="aff" rid="A4">d</xref>
+<xref ref-type="aff" rid="A5">e</xref>
+<xref ref-type="aff" rid="A6">f</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Karplus</surname>
+<given-names>Martin</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+<xref ref-type="aff" rid="A7">g</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>Institute for Medical Engineering and Science, Massachusetts Institute of Technology (MIT), Cambridge, MA 02139</aff>
+<aff id="A2">
+<label>b</label>Department of Chemistry and Chemical Biology, Harvard, Cambridge, MA</aff>
+<aff id="A3">
+<label>c</label>Department of Chemical Engineering, MIT, Cambridge, MA 02139</aff>
+<aff id="A4">
+<label>d</label>Department of Physics, MIT, Cambridge, MA 02139</aff>
+<aff id="A5">
+<label>e</label>Ragon Institute of MGH, MIT and Harvard, Cambridge, MA 02139</aff>
+<aff id="A6">
+<label>f</label>Department of Chemistry, MIT, Cambridge, MA 02139</aff>
+<aff id="A7">
+<label>g</label>Laboratoire de Chimie Biophysique, Institut de Science et d'Ingénierie Supramoléculaires, Université de Strasbourg, 67000 Strasbourg, France</aff>
+<pub-date pub-type="nihms-submitted">
+<day>08</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>02</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The design of vaccines against highly mutable pathogens, such as HIV and influenza, requires a detailed understanding of how the adaptive immune system responds to encountering multiple variant antigens (Ags). Here, we describe a multiscale model of B cell receptor (BCR) affinity maturation that employs actual BCR nucleotide sequences and treats BCR/Ag interactions in atomistic detail. We apply the model to simulate the maturation of a broadly neutralizing Ab (bnAb) against HIV. Starting from a germline precursor sequence of the VRC01 anti-HIV Ab, we simulate BCR evolution in response to different vaccination protocols and different Ags, which were previously designed by us. The simulation results provide qualitative guidelines for future vaccine design and reveal unique insights into bnAb evolution against the CD4 binding site of HIV. Our model makes possible direct comparisons of simulated BCR populations with results of deep sequencing data, which will be explored in future applications.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Although great progress has been made in the development of therapeutics and annual vaccines against diseases such as HIV and influenza, respectively, the need for universal vaccines for these diseases remains high. Approximately 38 million people are still living with AIDS today [<xref ref-type="bibr" rid="R1">1</xref>], and up to 650,000 annual deaths globally are still attributed to influenza [<xref ref-type="bibr" rid="R2">2</xref>]. Unfortunately, such viruses undergo rapid mutations that can render the host immune response ineffective, greatly reducing vaccine efficacy. Special classes of antibodies (Abs) called “broadly neutralizing antibodies”, or bnAbs, have now been discovered that are effective against HIV [<xref ref-type="bibr" rid="R3">3</xref>] and influenza [<xref ref-type="bibr" rid="R4">4</xref>]. However, it remains unclear how to elicit them via vaccination. This is largely due to an incomplete understanding of how the immune system responds to encountering multiple variant Ags, a situation that can arise during infection with a rapidly evolving pathogen.</p>
+<p id="P3">B cell receptors (BCRs, or equivalently Abs) evolve through the evolutionary process of affinity maturation (AM) [<xref ref-type="bibr" rid="R5">5</xref>], which occurs within Germinal Centers (GCs). The large diversity of the human germline BCR repertoire implies that, after encountering an Ag, some BCRs will bind to the Ag, albeit weakly. If the binding affinity is above a certain threshold, those B cells will get activated, undergo replication inside the GC, and accumulate mutations in their BCRs. The resultant mutated B cells are continuously recycled and selected on the basis of their affinity for the Ag [<xref ref-type="bibr" rid="R5">5</xref>].</p>
+<p id="P4">In the presence of multiple Ags, which can be administered simultaneously or sequentially in a vaccine or be encountered naturally as mutated versions of the original infecting virus, B cells evolve to recognize each of the Ags to some extent. If the Ag binding sites (epitopes) presented to the immune system are sufficiently dissimilar, the activated memory B cells will experience conflicting selection forces, which have been described by a “frustration” parameter in our past work [<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R8">8</xref>]. Changing the degree of dissimilarity between the Ags administered in a vaccine has been used to modulate the level of frustration imposed on GC reactions, and can have the effect of focusing BCR responses on conserved Ag residues, leading to the elicitation of bnAbs [<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R8">8</xref>].</p>
+<p id="P5">Past computational studies have identified additional variables that influence the evolution of BCRs, including Ag concentration [<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R8">8</xref>] and the temporal pattern of Ag administration [<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R8">8</xref>]. However, it remains unclear how to set these variables to optimize bnAb production. Additionally, due to the coarse-graining used in past computational models of AM [<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R15">15</xref>], most of these models cannot make predictions about the actual BCR and Ag sequences that will best promote bnAb formation during AM.</p>
+<p id="P6">Several computational studies employed approximate AM schemes, in which Ab structures are used in protein docking, undergo multiple rounds of <italic>in silico</italic> mutagenesis, followed by evaluation of binding free energy changes using force field-based scoring functions [<xref ref-type="bibr" rid="R16">16</xref>–<xref ref-type="bibr" rid="R18">18</xref>]. These studies use nucleotide sequences to represent the BCRs, but do not explicitly include important aspects of AM such as clonal competition and interference. Additionally, mutations are introduced into the BCRs on an <italic>ad hoc</italic> basis, neglecting the mutational biases of activation-induced cytidine deaminase (AID [<xref ref-type="bibr" rid="R19">19</xref>]), the enzyme that induces mutations during AM. Therefore, such approaches are unlikely to serve as reliable guides for studying the effects of vaccines on BCR/Ab evolution.</p>
+<p id="P7">In this study, we describe a computational model of AM that (1) utilizes actual nucleotide sequences of BCRs and Ags, (2) employs an experimentally-informed model [<xref ref-type="bibr" rid="R19">19</xref>] for the identity and location of BCR nucleotide mutations introduced during AM, and (3) incorporates an efficient method to calculate BCR/Ag binding free energies. We believe this to be the most realistic model of AM currently available, which has the capacity to guide vaccine design efforts against highly mutable pathogens such as HIV and influenza.</p>
+<p id="P8">As an application of the model, we study the evolution of the germline precursor of VRC01, a potent bnAb against the CD4 binding site (CD4bs) of HIV, in response to vaccination with multiple rationally-designed [<xref ref-type="bibr" rid="R20">20</xref>] HIV-based Ags administered in different temporal patterns. As in our past work [<xref ref-type="bibr" rid="R8">8</xref>], we assume that the desired germline B cells have already been activated [<xref ref-type="bibr" rid="R21">21</xref>]. Our results show that administering Ags in a temporal pattern that continuously increases the amount of imposed frustration maximizes the mean breadth of the resultant BCRs. We also find that administering certain Ags leads BCRs to evolve mutations that increase their degree of interfacial amino acid composition/electrostatic pattern matching against the CD4bs. We propose that this is an important mechanism by which maturing BCRs develop high affinity for the CD4bs of HIV.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>Simulated affinity maturation</title>
+<p id="P9">A number of coarse-grained models to simulate AM are in the literature, many of which were developed within the past five years [<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R15">15</xref>]. These models use coarse-grained representations for the BCR and Ag sequences, without a clear connection to the constituent nucleotides or corresponding amino acids. Here, we started from a coarse-grained model [<xref ref-type="bibr" rid="R8">8</xref>] and introduced actual nucleotide and amino acid representations for the BCRs and Ags, respectively. The model starts by seeding the GC with known germline BCR sequences (see <xref ref-type="sec" rid="S7">Methods</xref> for details). We focus on HIV, and therefore seed the GC with the VRC01 germline [<xref ref-type="bibr" rid="R21">21</xref>] (VRC01GL) sequence, which is known to evolve into the potent bnAb VRC01. The founding B cell replicates without mutation or selection until the population reaches a size of 128 cells [<xref ref-type="bibr" rid="R22">22</xref>]. Then, the B cells start to accumulate mutations in their BCRs according to an AID-based mutation model [<xref ref-type="bibr" rid="R19">19</xref>], after which they compete for Ag and T cell help; 70% of the surviving B cells are selected randomly to undergo a new cycle of mutation and selection, and 30% exit as memory B cells [<xref ref-type="bibr" rid="R23">23</xref>]. The simulation ends when the B cell population recovers its initial size (successful outcome), or when all B cells die (unsuccessful outcome). In subsequent immunizations, the GC is seeded with three sequences randomly sampled from the memory BCR population produced during the previous immunization. An overview of the model is shown in <xref ref-type="fig" rid="F1">Fig. 1</xref>.</p>
+<p id="P10">To reduce the computational complexity, we limited mutations to the complementarity-determining regions (CDRs) of the BCRs, and we did not introduce framework mutations, which are more likely to affect BCR stability [<xref ref-type="bibr" rid="R24">24</xref>]. Lastly, to compute the BCR/Ag binding free energy, we first create atomic models of the BCR/Ag complex with Modeller [<xref ref-type="bibr" rid="R25">25</xref>], and then evaluate the binding free energy using scoring functions from the literature [<xref ref-type="bibr" rid="R26">26</xref>]. On a standard 16-core CPU, each binding free energy calculation takes approximately one minute, rendering the AM simulations – which can require upwards of 15,000 calculations/GC – feasible. Overall, for the production runs and analysis carried out in this work, we computed nearly one million binding free energies for unique BCR/Ag complexes.</p>
+</sec>
+<sec id="S4">
+<title>Temporal pattern of Ag administration influences the breadth of the BCRs</title>
+<p id="P11">We studied the outcomes of AM in response to 36 sequential vaccination protocols (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref> in the SI). The protocols are composed of a maximum of three sequential immunizations of four possible Ags, namely the wildtype BG505 SOSIP (WT) and three BG505-based derivatives designed to maximally promote the bnAb evolution against the CD4 binding site (CD4bs) of HIV [<xref ref-type="bibr" rid="R20">20</xref>]. These three designed Ags are identified as KR, EU, and HQ (see <xref ref-type="sec" rid="S7">Methods</xref>). The concentration profile was kept the same across all vaccination protocols (see <xref ref-type="sec" rid="S7">Methods</xref>); therefore, differences in simulation outcomes are due solely to differences in Ag sequences or temporal patterns of administration.</p>
+<p id="P12">Upon a single immunization with each of the four Ags, we find that the mean BCR breadth increases as follows: WT (breadth = 0.00) &lt; KR (breadth = 0.005) &lt; EU (breadth = 0.11) &lt; HQ (breadth = 0.15). These results show that the choice of administered Ag has a significant influence on breadth. We next investigated whether the mean BCR breadth could be optimized by administering these Ags in different temporal patterns (<xref ref-type="fig" rid="F2">Fig. 2A</xref>). Averaging the results across all 1-, 2-, or 3-Ag protocols, we find that the mean BCR breadth increases with the number of immunizations (breadth = 0.07, 0.39, and 0.73 for 1-, 2-, and 3-Ag protocols, respectively). However, the mean breadth is also observed to vary widely across the 2- or 3-Ag protocols, which shows that the temporal Ag administration pattern can have a significant impact on BCR breadth. We also find that the mean number of GC cycles is correlated with breadth (<xref ref-type="fig" rid="F2">Fig. 2B</xref>), as more GC cycles afford BCRs more time to accumulate mutations that confer breadth.</p>
+<p id="P13">To understand the effects on AM of changing the temporal Ag administration pattern, we calculated the frustration imposed on the GC reactions by the different vaccination protocols, which was defined as the opposite sign of the average binding free energy of the GC-seeding BCR(s) and the Ag administered in the subsequent immunization. As such, the “frustration” is really a metric of the extent to which the existing B cell population is thrown off of a previous steady state. The change in imposed frustration versus the change in mean BCR breadth between the current and former immunization is shown in <xref ref-type="fig" rid="F2">Fig. 2C</xref>. We find a positive correlation between the change in frustration and in the mean BCR breadth, with the increase being higher in each subsequent immunization (slopes reported in <xref ref-type="fig" rid="F2">Fig. 2C</xref>). In addition, with the current set of four Ags, we find that progressively fewer protocols result in actual increases in frustration (i.e., rather than smaller decreases; those to the right of zero on the x-axis) with each additional immunization. This could indicate that three sequential immunizations with these Ags are not necessary to elicit sufficiently high-breadth Abs. Mechanistically, this is because BCRs become increasingly capable of compensating for increasing frustration using strengthened interactions with conserved Ag residues. We demonstrated this by calculating the mean number of BCR mutations towards Ag residues that are considered to be conserved in the CD4bs [<xref ref-type="bibr" rid="R20">20</xref>] (see <xref ref-type="sec" rid="S7">Methods</xref> and <xref ref-type="supplementary-material" rid="SD1">Table S3</xref> in the SI). <xref ref-type="fig" rid="F2">Fig. 2D</xref> shows that the mean number of BCR mutations towards conserved Ag residues increases from 0.95 to 2.2 to 3.0 after one, two, and three immunizations, respectively. Consequently, we observe a strong positive correlation (R<sup>2</sup>=0.79) between the number of conserved site mutations and the mean BCR breadth.</p>
+<p id="P14">In summary, we find that the elicitation of bnAbs is strongly dependent on the temporal pattern of Ag administration. Specifically, we find that vaccination protocols that impose the greatest increases in frustration from one immunization to the next result in the greatest increases in breadth. The increased frustration results in longer GC reaction times, which allow BCRs more time to acquire mutations that confer breadth. These results are consistent with our past studies with coarse-grained models. [<xref ref-type="bibr" rid="R8">8</xref>,<xref ref-type="bibr" rid="R27">27</xref>]</p>
+</sec>
+<sec id="S5">
+<title>BnAbs employ interfacial composition and electrostatic pattern matching (ICM) to bind to the CD4bs of HIV</title>
+<p id="P15">To provide context for our simulation results, we performed a detailed analysis of the interfacial mutations that VRC01GL evolved <italic>in vivo</italic> during its maturation into its bnAb form, VRC01. Analyzing crystal structures of VRC01GL [<xref ref-type="bibr" rid="R21">21</xref>] and VRC01 [<xref ref-type="bibr" rid="R28">28</xref>] in complex with HIV-based Ags, 26 and 29 interfacial Ab residues, respectively, were identified to be within 4Å of the Ag. For both sets of residues, we determined the fraction of polar, apolar, acidic, and basic amino acids (<xref ref-type="fig" rid="F3">Fig. 3A</xref>, right; see <xref ref-type="sec" rid="S7">Methods</xref>). For the antigen, the same coarse-graining procedure was carried out on the interfacial residues of 106 HIV Ag sequences from the Seaman panel [<xref ref-type="bibr" rid="R29">29</xref>]. The results were then averaged across the panel (<xref ref-type="fig" rid="F3">Fig. 3A</xref>, left; see <xref ref-type="sec" rid="S7">Methods</xref>), in order to account for the highly mutable nature of HIV.</p>
+<p id="P16">Before AM, VRC01GL had significantly higher and lower fractions of polar and apolar interfacial residues than the CD4bs (<xref ref-type="fig" rid="F3">Fig. 3A</xref>). However, in the case of the affinity-matured Ab, VRC01, these two categories match much more closely those of the CD4bs. Moreover, the basic interfacial fraction increases from 4% in VRC01GL to 17% in VRC01, to match the acidic fraction of the CD4bs at 17%, and the acidic interfacial fraction decreases from 12% in VRC01GL to 10% in VRC01, to better match the basic fraction of the CD4bs at 7%. Overall, a trend towards interfacial composition and electrostatic pattern matching (ICM) was observed between the evolving VRC01 Ab and the Ag binding site.</p>
+<p id="P17">To validate these results, this analysis was performed on three other bnAbs targeting the CD4bs, for which both the germline and mature sequences were available: NIH45-46 [<xref ref-type="bibr" rid="R30">30</xref>,<xref ref-type="bibr" rid="R31">31</xref>], 3BNC60 [<xref ref-type="bibr" rid="R30">30</xref>], and CH103 [<xref ref-type="bibr" rid="R32">32</xref>] (see <xref ref-type="sec" rid="S7">Methods</xref>). <xref ref-type="fig" rid="F3">Fig. 3B</xref> shows that these additional Abs also employed ICM during their maturation. This is particularly interesting for CH103, which binds to the CD4bs in a significantly different pose than the other bnAbs we considered (<xref ref-type="supplementary-material" rid="SD1">Fig. S1</xref>). Overall, these results imply that ICM is likely to be a general mechanism employed during AM and is an observable that can be monitored in the simulations. In the SI, we explore the biological driving forces behind these results, which include differences in the mutability of the codons encoding different amino acid types at the interface, and the number of nucleotide mutations required to transition from one amino acid type to another.</p>
+<p id="P18">The degree of ICM of the <italic>in silico-</italic>produced BCRs was quantified using a chi-squared statistic χ<sup>2</sup>-based formula on 22 interfacial residues in each BCR sequence (see <xref ref-type="sec" rid="S7">Methods</xref>). The ICM score measures the summed deviation of the interfacial fraction of each amino acid type from its value in the CD4bs of HIV (n.b., the fraction of acidic residues is compared to the fraction of basic residues in the CD4bs, and vice versa; see Eqn. <xref ref-type="disp-formula" rid="FD3">3</xref>, <xref ref-type="disp-formula" rid="FD4">4</xref> in <xref ref-type="sec" rid="S7">Methods</xref>), subtracted from unity. The ICM scores calculated for VRC01GL and VRC01 are 0.73 and 0.99, respectively. Computing the mean ICM score for the 36 vaccination protocols, we find that among the protocols with the same first administered Ag, the resultant BCRs tend to increase their ICM scores with each subsequent immunization (<xref ref-type="fig" rid="F4">Fig. 4</xref>, <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref>), in line with the biological trends observed for the four bnAbs discussed above. Among protocols starting with each of the four Ags, those protocols in which the first administered Ag is EU, WT, or HQ consistently resulted in relatively low, intermediate, and high degrees of ICM, respectively. Protocols in which the first Ag was KR resulted in a wide range of ICM scores, implying that KR is overall a weak driver of ICM, despite the high average ICM score of the KR-KR protocol (0.92). Interestingly, we observe only a weak correlation between the degree of ICM and the mean breadth of the BCRs produced in the simulations (R<sup>2</sup>=0.17), though this correlation improves slightly upon reducing the stringency of the BCR breadth threshold (<xref ref-type="supplementary-material" rid="SD1">Fig. S3</xref>).</p>
+<p id="P19">To understand why some Ags elicit BCR populations with higher ICM scores over others, we decomposed the ICM scores in <xref ref-type="fig" rid="F4">Fig. 4</xref> into their individual components (i.e., changes in the interfacial fraction of each amino acid type in the BCR population over time). These results and the corresponding analysis are provided in the SI (<xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref>). The results show clear trends between the types of BCR mutations made and the corresponding ICM scores. For example, protocols beginning with the EU Ag typically resulted in acidic-to-polar mutations, leading to poor ICM scores. Conversely, protocols beginning with the HQ Ag typically resulted in polar-to-basic mutations, resulting in high ICM scores.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="discussion">
+<title>Discussion</title>
+<p id="P20">Conventional vaccination approaches to evolve antibodies (Abs) against pathogens such as HIV and influenza are largely unsuccessful due to high mutability or antigenic drift. Broadly neutralizing Abs (bnAbs) could overcome this challenge, though it remains unclear how to elicit them via vaccination. Consequently, research focus is shifting towards identifying vaccine design variables that can facilitate bnAb evolution during affinity maturation (AM); e.g., sequences and concentrations of the administered antigens (Ags) [<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R33">33</xref>–<xref ref-type="bibr" rid="R39">39</xref>]. Previous computational studies utilized coarse-grained representations for the B cell receptors (BCRs) and Ags. In this work, we developed a multiscale computational framework that models the AM of actual BCR sequences in response to vaccination with atomic-resolution Ags. This model enables future comparisons between simulations and experimental results from, e.g., deep sequencing of BCR repertoires.</p>
+<p id="P21">Changing the Ags and their concentrations during vaccination disrupts the normal progression of AM by perturbing the memory BCR population, imposing what we termed “frustration” as in our past work [<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R8">8</xref>]. Here, we manipulated the level of frustration by administering four variant Ags, three of which were explicitly designed to improve the breadth of the elicited anti-HIV Abs [<xref ref-type="bibr" rid="R20">20</xref>], in 36 different temporal patterns. Our results show that increasing the imposed frustration increases the number of GC cycles during which BCRs can accumulate breadth-conferring mutations. Increasing frustration counteracts the fact that BCR interactions with conserved Ag sites are strengthened with each subsequent immunization, effectively lowering the frustration. This finding is qualitatively consistent with results from our previous work with coarse-grained models [<xref ref-type="bibr" rid="R8">8</xref>,<xref ref-type="bibr" rid="R27">27</xref>] that showed increasing the frustration upon the second immunization imposed a stronger selection force on activated memory B cells to evolve additional mutations towards conserved Ag residues.</p>
+<p id="P22">The above comparison is only qualitative because many more simulations could be performed with the coarse-grained model due to the much lower computational cost, enabling conclusions about B cell survival rates. However, if trends from our past work hold true here as well, they would imply that rather than attempting to maximize the level of frustration in each immunization, there is an optimally increased level of frustration to impose (i.e., Ag sequence to use, in this case) in each immunization. Such an approach is predicted to simultaneously optimize the production of high-breadth Abs and B cell survival rates [<xref ref-type="bibr" rid="R8">8</xref>].</p>
+<p id="P23">An important finding from this work, which was not possible to obtain with previous coarse-grained models, is that the VRC01 bnAb evolved mutations at the interface that enabled interfacial composition/electrostatic pattern matching against the CD4bs itself. We showed that three other anti-CD4bs bnAbs also employed this mechanism – which we term ICM – during their evolution. Results from the AM simulations show that the produced BCRs also increase their degree of ICM over time, though the final degree of ICM achieved by the BCRs appears to depend strongly on the first Ag that they encounter. After immunizing with the first Ag, B cells are selected for mutations that improve their binding affinity to that particular Ag. The effect of these mutations on the degree of ICM varies widely depending on the Ag, in part because of the many possible affinity-increasing mutations. This effect is likely diminished for anti-HIV bnAbs due to the numerous strains of the virus they encounter over their many years of maturation.</p>
+<p id="P24">We discuss various driving forces behind ICM in the SI. In addition, better ICM may enable BCRs to more closely approach an Ag, thus allowing contacts with the conserved residues of the Ag. This, in turn, may increase the selection force to evolve mutations that bind better to the conserved residues, thus conferring breadth. Such a mechanism may promote bnAb evolution even though ICM per se does not correlate highly with breadth. Also, it remains unknown whether potent (but not necessarily broad) antibodies increase their degree of ICM during maturation. This would indicate that ICM is a more general feature of antibody evolution, a pattern matching mechanism which allows for general compatibility in the interactions between BCRs and Ags, before precise mutations are made to enable BCR binding to conserved Ag residues. Future longitudinal studies of bnAb evolution may help to shed light on this factor.</p>
+<p id="P25">In view of our results, we suggest that a promising route to a universal vaccine for HIV is to first administer an Ag that promotes BCR mutations which increase the degree of ICM against the CD4bs (although we acknowledge that designing such immunogens may be nontrivial). This step should be followed by sequential immunizations with Ags that have an optimal number of increasingly different amino acids in the variable residues surrounding the conserved residues to achieve an optimally increasing temporal frustration profile. This procedure is expected to optimize the breadth of the mature BCR/Ab population, and according to our past work [<xref ref-type="bibr" rid="R8">8</xref>], it will also maximize the produced bnAb titers.</p>
+<p id="P26">It is of high importance to understand how differences in Ag sequences lead to differences in the types of evolved BCR mutations. An advantage of our model is the ability to gain such molecular level insight by studying in detail the BCR/Ag complexes produced at various stages of AM. This would enable true Ag sequence design, future experimental testing of which would provide the ultimate assessment of how realistic our free energy estimator is for guiding the choice of actual Ags. While beyond the scope of the current work, such analyses and design studies are planned for the future.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<title>Methods</title>
+<p id="P27">We first describe the multiscale model used to simulate the affinity maturation (AM) of a B cell population in a germinal center (GC) in response to vaccination. Following this, details of the analysis protocols are presented.</p>
+<sec id="S8">
+<title>Seeding of the germinal center</title>
+<p id="P28">We assume that a germline (GL)-targeting scheme has occurred prior to vaccination to activate the desired bnAb precursor B cells, in the present case those of the VRC01 class [<xref ref-type="bibr" rid="R21">21</xref>]. Experimentally, a few to a hundred B cells have been shown to seed a GC [<xref ref-type="bibr" rid="R40">40</xref>]. Due to the sparsity of data currently available of VRC01 class precursor B cells bound to HIV-based antigens (Ags), we modeled the GCs initiated upon the first vaccine immunization as being seeded with a single VRC01 GL precursor B cell [<xref ref-type="bibr" rid="R21">21</xref>]. The nucleotide sequence of the B cell receptor (BCR) is input directly into the model, along with the amino acid sequence of the antigen(s) (Ag(s)) used for vaccination.</p>
+</sec>
+<sec id="S9">
+<title>Antigen sequences</title>
+<p id="P29">Four different Ag sequences were employed in the <italic>in silico</italic> vaccination schemes. These include three Ags (identified as KR, HQ and EU), and the sequence of the wildtype HIV BG505 SOSIP, which is referred to as WT. The three Ags KR, HQ and EU have been previously designed to have a high potential of eliciting bnAbs to the CD4bs when used in an HIV vaccine [<xref ref-type="bibr" rid="R20">20</xref>]. These are based on the WT sequence, with selected mutations introduced from the naturally-occurring Ags KR423280, HQ217523, and EU577271; see original reference for details on the design [<xref ref-type="bibr" rid="R20">20</xref>].</p>
+</sec>
+<sec id="S10">
+<title>B cell expansion and mutations in the dark zone</title>
+<p id="P30">After the GC has been seeded, the B cell population undergoes pure expansion (i.e., no mutation/selection) in what is known as the “dark zone” for approximately one week, to reach a population size of 128 cells in the simulation (2<sup>7</sup>). The gene encoding the enzyme activation-induced cytidine deaminase (AID) is then activated, facilitating the accumulation of mutations in the BCRs at a rate of roughly 0.14 mutations per sequence per division [<xref ref-type="bibr" rid="R41">41</xref>], with each B cell dividing on average twice per GC cycle [<xref ref-type="bibr" rid="R42">42</xref>]. As in our previous work [<xref ref-type="bibr" rid="R24">24</xref>], we set the probability of a mutation occurring in the complementarity-determining regions (CDRs) to 0.85 and in the framework regions (FRWs) to 0.15. However, to reduce the cost of the computational modeling, only CDR mutations were considered here to have an affect the BCR/Ag binding free energy. This was also necessary because our scoring function currently does not account for the additional complexities of many FRW mutations (e.g., effects on protein stability [<xref ref-type="bibr" rid="R24">24</xref>]). We also assume that 30% of all mutations are lethal to more closely mimic what has been shown to be the case in experiments [<xref ref-type="bibr" rid="R41">41</xref>].</p>
+</sec>
+<sec id="S11">
+<title>Mutation model</title>
+<p id="P31">Mutations in the BCR sequences are introduced by AID on the nucleotide level. Where and which mutations arise in the BCRs during each cycle of the GC reaction is largely a function of the dynamics of AID, which shows pronounced biases towards certain patterns or groups of nucleotides [<xref ref-type="bibr" rid="R19">19</xref>]. The tendency of a particular nucleotide in a BCR sequence to be mutated during AM depends primarily on the surrounding microsequence environment of that nucleotide; specifically, it has been shown to depend on the identities of the two neighboring nucleotides on either side in the sequence. [<xref ref-type="bibr" rid="R19">19</xref>] Yaari <italic>et al.</italic> [<xref ref-type="bibr" rid="R19">19</xref>] considered all possible combinations of such groups of five nucleotides, which they deemed “5-mers”, and determined the relative tendency (“mutability score”) of each 5-mer to be targeted for mutation by comparing the sequences of over 1 million Abs before and after AM [<xref ref-type="bibr" rid="R19">19</xref>]. In our model, for a given BCR sequence in a given GC cycle, we first determine all of the relevant 5-mers in a sliding window and look up their corresponding mutability scores. Next, we normalize this subset of mutability scores to convert them into probabilities. They are then used to determine the single nucleotide that will be mutated in the BCR sequence during that GC cycle. In a similar manner as described above, Yaari <italic>et al.</italic> also determined the probability that the central nucleotide in each 5-mer is mutated to each of the other nucleotides (i.e., to A, C, G, or T) [<xref ref-type="bibr" rid="R19">19</xref>]. After determining the single nucleotide to undergo mutation in a given BCR/GC cycle, these substitution probabilities are then used to sample the nucleotide.</p>
+</sec>
+<sec id="S12">
+<title>Selection, recycling, and differentiation</title>
+<p id="P32">After acquiring mutations in their receptors, B cells compete with other B cells for binding to the Ags and receiving support from T helper cells [<xref ref-type="bibr" rid="R22">22</xref>]. B cells whose receptors are able to bind more strongly to the Ags are in turn able to consume, break down, and display more Ags on their surface, which ultimately increases their chance of receiving productive proliferation signals from T helper cells [<xref ref-type="bibr" rid="R22">22</xref>]. B cells that internalize low levels of Ags do not interact productively with T helper cells and undergo apoptosis [<xref ref-type="bibr" rid="R43">43</xref>–<xref ref-type="bibr" rid="R45">45</xref>]. As in our past work [<xref ref-type="bibr" rid="R8">8</xref>], this behavior is modeled by <xref ref-type="disp-formula" rid="FD1">Equation 1</xref>: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mtext>internalize</mml:mtext>
+<mml:mo> </mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mtext>scale</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>E</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mo>−</mml:mo>
+</mml:msubsup>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>act</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mtext>scale</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>act</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>c<sub>i</sub>
+</italic> is the concentration of Ag <italic>i</italic>, <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>E</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the binding free energy between Ag <italic>i</italic> and B cell <italic>j, E<sub>act</sub>
+</italic> is the activation energy, and <italic>e<sub>scale</sub>
+</italic> is a pseudo inverse temperature. The activation energy for seeding a GC was chosen to be equal to the weakest binding free energy between the four Ags and VRC01GL – that of EU at -9.01 kcal/mol – such that all four Ags could induce an effective immune response. The value of <italic>e<sub>scale</sub>
+</italic> (5.8 (kcal/mol)<sup>-1</sup>), along with the value of the breadth threshold (-9.9 kcal/mol; see below), were adjusted such that a single immunization with any of the Ags would produce mostly low-breadth Abs (a breadth ≤ ∼0.15). The above condition mimics the fact that breadth is unlikely to result from a single immunization. This is demonstrated by the finding that in natural infection, bnAbs typically require several years to evolve, and that in vaccination studies with mice, they emerge only after several sequential immunizations with variant Ags [<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R33">33</xref>]. How the Ag concentrations, <italic>C<sub>i</sub>
+</italic>, used in the simulated immunization schemes were chosen and how the BCR/Ag binding free energies, <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>E</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> were calculated are described in the following sections.</p>
+<p id="P33">B cells that survive this first selection test continue on to compete for T cell help; the top 70% of binders are selected for T cell help. From this pool of B cells that are positively selected, 70% are then chosen randomly to be recycled back to the dark zone for additional rounds of mutation and selection to iteratively increase their affinity for the Ag [<xref ref-type="bibr" rid="R23">23</xref>]. The other 30% of B cells exit the GC to simulate differentiation into plasma and memory cells [<xref ref-type="bibr" rid="R23">23</xref>].</p>
+</sec>
+<sec id="S13">
+<title>Antigen concentration profiles</title>
+<p id="P34">The Ag concentration used in each successive immunization (c<sub>1</sub>=0.25, c<sub>2</sub>=0.05, c<sub>3</sub>=0.01) was chosen through trial-and-error to maximize the number of protocols for which we could obtain successful results (i.e., GC reactions that terminated due to recovery of the B cell population to its initial size of 128 B cells). In total, 48 protocols were initially considered: 4x3x2 unique 3-Ag protocols, 4x3 unique 2-Ag protocols, and 12 same-Ag protocols (4 3-Ag, 4 2-Ag protocols, and 4 single-Ag protocols). At the final chosen concentrations, we were able to obtain results for 36 of the 48 protocols; for the other 12 protocols, GC reactions did not terminate successfully. For example, after first immunizing with either WT or KR, B cell populations decreased rapidly, and did not recover after a second immunization with EU. Thus, we could not obtain results for the following 6 protocols: WT-EU, WT-EU-KR, WT-EU-HQ, KR-EU, KR-EU-WT, or KR-EU-HQ. Also, after first immunizing with HQ, the resultant B cell populations had matured sufficiently such that the B cell populations did not undergo any AM after subsequent administration of WT or HQ. Thus, we also could not obtain results for the following 5 protocols: HQ-WT, HQ-WT-KR, HQ-WT-EU, HQ-HQ, or HQ-HQ-HQ, and for WT-KR-HQ for similar reasons.</p>
+</sec>
+<sec id="S14">
+<title>Binding free energy and frustration calculations</title>
+<p id="P35">BCR/Ag binding free energies are computed on-the-fly during the AM simulations, enabled by an efficient pipeline of steps that make use of several pre-existing external resources. First, we convert the mutated nucleotide BCR sequences into amino acid sequences. We then use Modeller [<xref ref-type="bibr" rid="R25">25</xref>] to graft these mutated sequences and that of the particular Ag used for immunization onto the crystal structure of VRC01 in complex with an HIV-based Ag [<xref ref-type="bibr" rid="R28">28</xref>]. Twelve complexes are independently built with Modeller for each calculation to obtain reliable average estimates for the BCR/Ag binding free energy. Following this conversion of sequence to structure, the Rykunov-Fiser statistical pair potential [<xref ref-type="bibr" rid="R26">26</xref>] is used to compute the binding free energy; see the <xref ref-type="supplementary-material" rid="SD1">SI</xref> for more details. The resulting protocol shows a Pearson correlation coefficient with experimental binding affinity data of 0.74 and an RMSE of 0.59 kcal/mol. Although approximate, this protocol allows for the computation of one binding free energy in about one minute using a 16-core processor. For the set of simulations performed in this study, the above protocol was used to calculate the binding free energy of nearly 1 million unique BCR/Ag complexes.</p>
+<p id="P36">The calculated binding free energies were used directly in calculations of the level of frustration imposed on the GC reactions due to vaccination; since we did not change the concentration profiles across the protocols, changes in frustration could be linked directly to changes in Ag sequence or temporal pattern of administration. The frustration of a given immunization was defined as the opposite sign of the average binding free energy of the GC-seeding BCR(s) (germline BCR for 1-Ag protocols; memory BCRs for multi-Ag protocols) against the next-administered Ag, since stronger BCR/Ag binding free energies imposes less frustration by increasing the probability of internalizing Ag (see Eqn. <xref ref-type="disp-formula" rid="FD1">1</xref> in the Methods). The change in frustration, Δ<italic>F</italic> was then computed between the current and former immunizations (Δ<italic>F</italic>
+<sub>
+<italic>t</italic>=3-<italic>t</italic>=2</sub>, Δ<italic>F</italic>
+<sub>
+<italic>t</italic>=2-<italic>t</italic>=1</sub>, and Δ<italic>F</italic>
+<sub>
+<italic>t</italic>=1-<italic>t</italic>=0</sub>). With regard to the 1-Ag protocols, ‘former’ refers to a reference immunization with frustration set equal to the weakest binding free energy between VRC01GL and the four Ags (that of VRC01GL and WT, at - 9.32 kcal/mol), multiplied by -1.</p>
+</sec>
+<sec id="S15">
+<title>GC reaction termination</title>
+<p id="P37">The GC reaction terminates if either: (a) the B cell population recovers to its initial size of 128 B cells in the first immunization or 384 B cells in subsequent immunizations (see next section) – termed a successful reaction – or (b) if all of the B cells die. Simulations were rerun until two successful trials of each protocol were achieved.</p>
+</sec>
+<sec id="S16">
+<title>GC reseeding with memory B cells</title>
+<p id="P38">When multiple immunizations are simulated, the GC for the 2<sup>nd</sup> and 3<sup>rd</sup> rounds of affinity maturation are seeded with memory B cells output from the previous immunization. From experimental evidence it is known that the new GC is seeded by a variable number of B cells (tens to hundreds) [<xref ref-type="bibr" rid="R40">40</xref>]. In our simulations we used three, chosen at random from the pool of memory B cells. These are then allowed to proliferate in the dark zone without mutation until the B cell population reaches an initial size of 384 B cells (128 x 3). We note that the number of founding B cell clones is higher here than the number of B cells that were chosen to seed a GC upon the first immunization. Since we are not limited by the available experimental data, we increased this number to more accurately model the effects of clonal competition. Increasing this number much beyond three would be computationally intractable with the current model.</p>
+</sec>
+<sec id="S17">
+<title>Computing the breadth from the binding free energy</title>
+<p id="P39">The breadth of a BCR is defined as the fraction of Ags in a panel that can be neutralized by the Ab. We compute the binding breadth <italic>B</italic>, which is based on the binding free energy ΔG of the BCR for all Ags in the panel: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:msub>
+<mml:mi>G</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>&lt;</mml:mo>
+<mml:mi>Δ</mml:mi>
+<mml:msub>
+<mml:mi>G</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mo> </mml:mo>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P40">In this expression, <italic>N</italic> is the number of Ags in the panel, Δ<italic>G<sub>i</sub>
+</italic> is the binding free energy for the <italic>i</italic>-th Ag, and Δ<italic>G<sub>cutoff</sub>
+</italic> is an upper limit in the binding free energy above which the BCR is considered to be unable to bind to the Ag [<xref ref-type="bibr" rid="R46">46</xref>]. For the panel of Ags, we used the Seaman virus panel from the literature which is composed of 106 Ags [<xref ref-type="bibr" rid="R29">29</xref>]. To validate the binding free energy scoring function (see <xref ref-type="supplementary-material" rid="SD1">SI</xref> for additional validation details), we tested its ability to discriminate between the breadth of the mature VRC01 Ab from its putative germline VRC01GL Ab. This is of the utmost importance as the AM simulations are initiated from the germline BCR sequence, which then evolves over time into a more mature BCR sequence. We computed the binding free energy for VRC01 and VRC01GL for all 106 Ags in the Seaman panel and compared the two distributions (<xref ref-type="fig" rid="F5">Fig. 5</xref>). For the calculations, PDB 5FYJ [<xref ref-type="bibr" rid="R28">28</xref>] was used as the template. From <xref ref-type="fig" rid="F5">Fig. 5</xref>, we can see that the average binding free energy of the germline is shifted to higher values, indicating weaker binding, with a clear separation between the histograms for the mature and germline Abs. Using a cutoff binding free energy value of -9.9 kcal/mol, the computed breadth of the germline and mature Abs are 0.0 and 0.31, respectively. We note that lower thresholds lead to even greater separation between these values (e.g., a threshold of -9.7 kcal/mol leads to germline and mature Ab breadths of 0.0 and 0.64, respectively). However, -9.9 kcal/mol was found to be the best threshold to use to discriminate among the BCRs produced in the AM simulations, for which the binding affinity distributions were observed to vary widely depending on the temporal Ag administration protocol.</p>
+</sec>
+<sec id="S18">
+<title>
+<italic>In silico</italic> BCR (CD4bs) interfacial residue definition</title>
+<p id="P41">In the crystal structure of VRC01 in complex with HIV gp120, nine residues were found to be in direct contact (within 4Å) with glycans on the surface of the Ag (<xref ref-type="fig" rid="F6">Fig. 6A</xref>, right). Our scoring function for the BCR/Ag binding free energy was not parameterized to include the effect of glycans. Thus, we removed the glycan moieties from the structure files prior to the calculations and excluded these residues from our CD4bs interfacial Ab residue definition, which was used to determine the degree of interfacial composition matching of the BCRs from the AM simulations. We also excluded an additional two interfacial residues in VRC01GL that positionally aligned with these nine residues (<xref ref-type="fig" rid="F6">Fig. 6A</xref>, left). All other interfacial residues identified for VRC01GL and VRC01 were considered for a total of 22 residues (see <xref ref-type="supplementary-material" rid="SD1">Table S2</xref> in the SI). We note that inclusion of the 11 glycan-contacting residues in our calculations would lead to incorrect assessments of the degree of ICM achieved by the produced BCRs, because the driving force to evolve certain mutations against HIV glycans is not captured by our model. Despite the above residue exclusions, as shown in <xref ref-type="fig" rid="F6">Fig. 6B</xref>, the set of 22 interfacial residues is sufficient to capture the major trends in composition matching observed in <xref ref-type="fig" rid="F3">Fig. 3A</xref>, namely large increases in the basic and apolar interfacial fractions and a large decrease in the polar interfacial fraction. Amino acids were classified as follows: polar (S, T, C, Y, N, Q), apolar (G, A, V, L, I, M, W, F, P), acidic (D, E), and basic (K, R, H).</p>
+<p id="P42">BCR interfacial residues in contact with conserved Ag residues were similarly identified using VMD. A total of 15 Ab residues were identified to be within 4Å of one of eight conserved Ag residues in PDB code 5FYJ (see <xref ref-type="supplementary-material" rid="SD1">Table S3</xref> in the SI). These 15 residues represent 68% of the 22 total BCR interfacial residues listed in <xref ref-type="supplementary-material" rid="SD1">Table S2</xref>. The conserved Ag residues were identified by Conti et al. [<xref ref-type="bibr" rid="R20">20</xref>] as those for which the cost of mutational escape is high, according to the fitness landscape of HIV gp160 [<xref ref-type="bibr" rid="R47">47</xref>]. Consequently, these residues are generally highly conserved across many HIV strains and are commonly targeted by bnAbs against the CD4bs [<xref ref-type="bibr" rid="R20">20</xref>]. For each immunization of a given protocol, the number of BCR mutations that had arisen at one of the 15 identified residue positions was determined for each produced B cell clone to determine the extent of mutation towards conserved Ag sites. The results were then weighted by the size of each B cell clone and averaged across the two independent simulation trials.</p>
+</sec>
+<sec id="S19">
+<title>Interfacial composition/electrostatic pattern matching (ICM) calculations</title>
+<p id="P43">For the ICM analysis of anti-CD4bs bnAbs (see Results), the following crystallographic structures were used: PDB codes 4JPK and 5FYJ for the germline [<xref ref-type="bibr" rid="R21">21</xref>] and mature [<xref ref-type="bibr" rid="R28">28</xref>] forms of VRC01, respectively, and PDB codes 5IGX and 3U7Y for the germline [<xref ref-type="bibr" rid="R30">30</xref>] and mature [<xref ref-type="bibr" rid="R31">31</xref>] forms of NIH45-46, respectively. Only the structure of the germline [<xref ref-type="bibr" rid="R30">30</xref>] Ab is currently available for 3BNC60 (PDB code 5FEC), whereas only the structure of the mature [<xref ref-type="bibr" rid="R32">32</xref>] Ab is available for CH103 (PDB code 4JAN). To overcome the challenge of missing structural data, we noted that the binding interface for VRC01 and NIH45-46 does not change significantly upon Ab maturation. Assuming that this holds for the other Abs, the same structure was used for the germline and mature forms of 3BNC60 and CH103 to identify interfacial residues in each case.</p>
+<p id="P44">For the ICM analysis of the HIV CD4bs composition, interfacial Ag residues within 4Å of any Ab residue were identified from the crystal structures of multiple bnAbs in complex with HIV gp120, namely two structures of VRC01 (PDB codes 5FYJ [<xref ref-type="bibr" rid="R28">28</xref>] and 3NGB [<xref ref-type="bibr" rid="R49">49</xref>]), and one structure each of VRC18 (PDB code 4YDL [<xref ref-type="bibr" rid="R50">50</xref>]) and NIH45-46 (PDB code 3U7Y [<xref ref-type="bibr" rid="R31">31</xref>]). Sixteen common Ag interfacial residue indices were then identified across all of these data sets to isolate only the most conserved sites involved in Ab binding. These sites were used to determine the ICM of each of the 106 Ags on the Seaman virus panel [<xref ref-type="bibr" rid="R29">29</xref>], and the results were averaged across the panel.</p>
+<p id="P45">The equation for calculating the ICM score for the BCRs in a single B cell clone <italic>i</italic> is shown below: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>+</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>B</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>B</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>+</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>B</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>P, Ap, Ac,</italic> and <italic>B</italic> stand for polar, apolar, acidic, and basic amino acid types, respectively, <italic>χ<sub>i,k</sub>
+</italic> is the interfacial fraction of amino acid type <italic>k</italic> for clone <italic>i,</italic> and <italic>χ<sub>Ag,k</sub>
+</italic> is the average interfacial fraction of amino acid type <italic>k</italic> for the Ag panel.</p>
+<p id="P46">The ICM for an AM simulation is then defined as the average of the ICM scores of all individual clones (<italic>ICM<sub>i</sub>
+</italic>), weighted by the number of B cells in each clone (<italic>N<sub>i</sub>
+</italic>): <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M6">
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>M</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+<mml:mi>I</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Information</label>
+<media xlink:href="EMS134265-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67335" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S20">
+<title>Acknowledgements</title>
+<p>Financial support was provided by Lawrence Livermore National Laboratory under Grant 17-ERD-043 (LLC Award B620960), by the Ragon Institute of MGH, MIT, and Harvard University (K.G.S and A.K.C), and by the CHARMM Development Project (M.K.).</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="web">
+<source>UNAIDS Data 2018 | HIV/AIDS Data Hub for the Asia-Pacific Region</source>
+<date-in-citation>Cited 2021 Aug 4</date-in-citation>
+<comment>Available from: <ext-link ext-link-type="uri" xlink:href="https://www.aidsdatahub.org/resource/unaids-data-2018">https://www.aidsdatahub.org/resource/unaids-data-2018</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="web">
+<source>Influenza (Seasonal)</source>
+<date-in-citation>Cited 2021 Aug 4</date-in-citation>
+<comment>Available from: <ext-link ext-link-type="uri" xlink:href="https://www.who.int/news-room/fact-sheets/detail/influenza-(seasonal)">https://www.who.int/news-room/fact-sheets/detail/influenza-(seasonal)</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eroshkin</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Leblanc</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Weekes</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Post</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Rajput</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>BNAber: Database of broadly neutralizing HIV antibodies</article-title>
+<source>Nucleic Acids Res</source>
+<year>2014</year>
+<volume>42</volume>
+<fpage>1133</fpage>
+<lpage>1139</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Corti</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cameroni</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Guarino</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Kallewaard</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Lanzavecchia</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Tackling influenza with broadly neutralizing antibodies</article-title>
+<source>Curr Opin Virol</source>
+<year>2017</year>
+<volume>24</volume>
+<fpage>60</fpage>
+<lpage>69</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Victora</surname>
+<given-names>GD</given-names>
+</name>
+<name>
+<surname>Nussenzweig</surname>
+<given-names>MC</given-names>
+</name>
+</person-group>
+<article-title>Germinal centers</article-title>
+<source>Annu Rev Immunol</source>
+<year>2012</year>
+<month>Apr</month>
+<day>23</day>
+<volume>30</volume>
+<fpage>429</fpage>
+<lpage>457</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shaffer</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>PL</given-names>
+</name>
+<name>
+<surname>Kardar</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Optimal immunization cocktails can promote induction of broadly neutralizing Abs against highly mutable pathogens</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2016</year>
+<month>Nov</month>
+<day>8</day>
+<volume>113</volume>
+<fpage>E7039</fpage>
+<lpage>E7048</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mata-Fink</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kriegsman</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Hanson</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Irvine</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Eisen</surname>
+<given-names>HN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Manipulating the selection forces during affinity maturation to generate cross-reactive HIV antibodies</article-title>
+<source>Cell</source>
+<year>2015</year>
+<month>Feb</month>
+<day>12</day>
+<volume>160</volume>
+<fpage>785</fpage>
+<lpage>797</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sprenger</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Louveau</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Murugan</surname>
+<given-names>PM</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Optimizing immunization protocols to elicit broadly neutralizing antibodies</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2020</year>
+<month>Aug</month>
+<day>3</day>
+<volume>117</volume>
+<fpage>20077</fpage>
+<lpage>20087</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Shih</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Lan</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>A Stochastic model of the germinal center integrating local antigen competition, individualistic T–B interactions, and B cell receptor signaling</article-title>
+<source>J Immunol</source>
+<year>2016</year>
+<month>Aug</month>
+<day>15</day>
+<volume>197</volume>
+<fpage>1169</fpage>
+<lpage>1182</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chaudhury</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Reifman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wallqvist</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Simulation of B cell affinity maturation explains enhanced antibody cross-reactivity induced by the polyvalent malaria vaccine AMA1</article-title>
+<source>J Immunol</source>
+<year>2014</year>
+<month>Sep</month>
+<day>1</day>
+<volume>193</volume>
+<fpage>2073</fpage>
+<lpage>2086</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Optimal sequential immunization can focus antibody responses against diversity loss and distraction. Shakhnovich EI, editor</article-title>
+<source>PLOS Comput Biol</source>
+<year>2017</year>
+<month>Jan</month>
+<day>30</day>
+<volume>13</volume>
+<elocation-id>e1005336</elocation-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Childs</surname>
+<given-names>LM</given-names>
+</name>
+<name>
+<surname>Baskerville</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Cobey</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Trade-offs in antibody repertoires to complex antigens</article-title>
+<source>Philos Trans R Soc B Biol Sci</source>
+<year>2015</year>
+<month>Sep</month>
+<day>5</day>
+<volume>370</volume>
+<elocation-id>20140245</elocation-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Perelson</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Competitive exclusion by autologous antibodies can prevent broad HIV-1 antibodies from arising</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2015</year>
+<month>Sep</month>
+<day>15</day>
+<volume>112</volume>
+<fpage>11654</fpage>
+<lpage>11659</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Garg</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Desikan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Dixit</surname>
+<given-names>NM</given-names>
+</name>
+</person-group>
+<article-title>Preferential presentation of high-affinity immune complexes in germinal centers can explain how passive immunization improves the humoral response</article-title>
+<source>Cell Rep</source>
+<year>2019</year>
+<month>Oct</month>
+<day>13</day>
+<volume>29</volume>
+<fpage>3946</fpage>
+<lpage>3957</lpage>
+<elocation-id>e5</elocation-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robert</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Marschall</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Meyer-Hermann</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Induction of broadly neutralizing antibodies in Germinal Centre simulations</article-title>
+<source>Curr Opin Biotechnol</source>
+<year>2018</year>
+<volume>51</volume>
+<fpage>137</fpage>
+<lpage>145</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Homology modeling-based in silico affnity maturation improves the affnity of a nanobody</article-title>
+<source>Int J Mol Sci</source>
+<year>2019</year>
+<month>Sep</month>
+<day>1</day>
+<volume>20</volume>
+<elocation-id>4187</elocation-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Bai</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A sound strategy for homology modeling-based affinity maturation of a HIF-1α single-domain intrabody</article-title>
+<source>BioRxiv [Preprint]</source>
+<year>2020</year>
+<date-in-citation>cited 2021 Aug 4</date-in-citation>
+<fpage>20</fpage>
+<elocation-id>2020.05.14.096149</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.05.14.096149v1</pub-id>
+<comment>posted 2020 May 19</comment>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Soler</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Medagli</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Semrau</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Storici</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bajc</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>De Marco</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A consensus protocol for the in silico optimisation of antibody fragments</article-title>
+<source>Chem Commun</source>
+<year>2019</year>
+<month>Nov</month>
+<day>19</day>
+<volume>55</volume>
+<fpage>14043</fpage>
+<lpage>14046</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yaari</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Vander Heiden</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Uduman</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gadala-Maria</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gupta</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Joel</surname>
+<given-names>JN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Models of somatic hypermutation targeting and substitution based on synonymous mutations from high-throughput immunoglobulin sequencing data</article-title>
+<source>Front Immunol</source>
+<year>2013</year>
+<volume>4</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Conti</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kaczorowski</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Porter</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Andrabi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Burton</surname>
+<given-names>DR</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Design of immunogens to elicit broadly neutralizing antibodies against HIV targeting the CD4 binding site</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2021</year>
+<month>Mar</month>
+<day>2</day>
+<volume>118</volume>
+<elocation-id>e2018338118</elocation-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jardine</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Julien</surname>
+<given-names>J-P</given-names>
+</name>
+<name>
+<surname>Menis</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ota</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kalyuzhniy</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Rational HIV immunogen design to target specific germline B cell receptors</article-title>
+<source>Science</source>
+<year>2013</year>
+<month>May</month>
+<day>10</day>
+<volume>340</volume>
+<fpage>711</fpage>
+<lpage>716</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mesin</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Ersching</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Victora</surname>
+<given-names>GD</given-names>
+</name>
+</person-group>
+<article-title>Germinal center B cell dynamics</article-title>
+<source>Immunity</source>
+<year>2016</year>
+<month>Sep</month>
+<day>20</day>
+<volume>45</volume>
+<fpage>471</fpage>
+<lpage>482</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oprea</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Perelson</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Somatic mutation leads to efficient affinity maturation when centrocytes recycle back to centroblasts</article-title>
+<source>J Immunol</source>
+<year>1997</year>
+<month>Jun</month>
+<day>1</day>
+<volume>158</volume>
+<fpage>5155</fpage>
+<lpage>5162</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Louveau</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Role of framework mutations and antibody flexibility in the evolution of broadly neutralizing antibodies</article-title>
+<source>Elife</source>
+<year>2018</year>
+<month>Feb</month>
+<day>14</day>
+<volume>7</volume>
+<elocation-id>e33038</elocation-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Webb</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sali</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Comparative protein structure modeling using MODELLER</article-title>
+<source>Curr Protoc Bioinforma</source>
+<year>2016</year>
+<volume>54</volume>
+<fpage>5.6.1</fpage>
+<lpage>5.6.37</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rykunov</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Fiser</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>New statistical potential for quality assessment of protein models and a survey of energy functions</article-title>
+<source>BMC Bioinformatics</source>
+<year>2010</year>
+<month>Mar</month>
+<day>12</day>
+<volume>11</volume>
+<fpage>128</fpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ganti</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Mechanisms underlying vaccination protocols that may optimally elicit broadly neutralizing antibodies against highly mutable pathogens</article-title>
+<source>Phys Rev E</source>
+<year>2021</year>
+<volume>103</volume>
+<elocation-id>052408</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stewart-Jones</surname>
+<given-names>GBE</given-names>
+</name>
+<name>
+<surname>Soto</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lemmin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chuang</surname>
+<given-names>GY</given-names>
+</name>
+<name>
+<surname>Druz</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kong</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Trimeric HIV-1-Env structures define glycan shields from clades A, B, and G</article-title>
+<source>Cell</source>
+<year>2016</year>
+<month>May</month>
+<day>5</day>
+<volume>165</volume>
+<fpage>813</fpage>
+<lpage>826</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Seaman</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Janes</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hawkins</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Grandpre</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Devoy</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Giri</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tiered categorization of a diverse panel of HIV-1 Env pseudoviruses for assessment of neutralizing antibodies</article-title>
+<source>J Virol</source>
+<year>2010</year>
+<month>Feb</month>
+<day>1</day>
+<volume>84</volume>
+<fpage>1439</fpage>
+<lpage>1452</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Scharf</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>West</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Sievers</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for germline antibody recognition of HIV-1 immunogens</article-title>
+<source>Elife</source>
+<year>2016</year>
+<month>Mar</month>
+<day>21</day>
+<volume>5</volume>
+<elocation-id>e13783</elocation-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Diskin</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Scheid</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Marcovecchio</surname>
+<given-names>PM</given-names>
+</name>
+<name>
+<surname>West</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Increasing the potency and breadth of an HIV antibody by using structure-based rational design</article-title>
+<source>Science</source>
+<year>2011</year>
+<month>Dec</month>
+<day>2</day>
+<volume>334</volume>
+<fpage>1289</fpage>
+<lpage>1293</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liao</surname>
+<given-names>H-X</given-names>
+</name>
+<name>
+<surname>Lynch</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Alam</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Boyd</surname>
+<given-names>SD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Co-evolution of a broadly neutralizing HIV-1 antibody and founder virus</article-title>
+<source>Nature</source>
+<year>2013</year>
+<month>Apr</month>
+<day>3</day>
+<volume>496</volume>
+<fpage>469</fpage>
+<lpage>476</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Escolano</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Steichen</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Dosenovic</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kulp</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Golijanin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sok</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sequential immunization elicits broadly neutralizing anti-HIV-1 antibodies in Ig knockin nice</article-title>
+<source>Cell</source>
+<year>2016</year>
+<month>Sep</month>
+<day>8</day>
+<volume>166</volume>
+<fpage>1445</fpage>
+<lpage>1458</lpage>
+<elocation-id>e12</elocation-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Briney</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sok</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Jardine</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Kulp</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Skog</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Menis</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tailored immunogens direct affinity maturation toward HIV neutralizing antibodies</article-title>
+<source>Cell</source>
+<year>2016</year>
+<month>Sep</month>
+<day>8</day>
+<volume>166</volume>
+<fpage>1459</fpage>
+<lpage>1470</lpage>
+<elocation-id>e11</elocation-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tam</surname>
+<given-names>HH</given-names>
+</name>
+<name>
+<surname>Melo</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pelet</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Ruda</surname>
+<given-names>VM</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>MH</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sustained antigen availability during germinal center initiation enhances antibody responses to vaccination</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2016</year>
+<month>Oct</month>
+<day>25</day>
+<volume>113</volume>
+<fpage>E6639</fpage>
+<lpage>E6648</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malherbe</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Doria-Rose</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Misher</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Beckett</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Puryear</surname>
+<given-names>WB</given-names>
+</name>
+<name>
+<surname>Schuman</surname>
+<given-names>JT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sequential immunization with a subtype B HIV-1 envelope quasispecies partially mimics the in vivo development of neutralizing antibodies</article-title>
+<source>J Virol</source>
+<year>2011</year>
+<month>Jun</month>
+<volume>85</volume>
+<fpage>5262</fpage>
+<lpage>5274</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klasse</surname>
+<given-names>PJ</given-names>
+</name>
+<name>
+<surname>LaBranche</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Ketas</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Ozorowski</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Cupo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pugach</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sequential and simultaneous immunization of rabbits with HIV-1 envelope glycoprotein SOSIP.664 trimers from clades A, B and C</article-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Desrosiers</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<source>PLOS Pathog</source>
+<year>2016</year>
+<month>Sep</month>
+<day>14</day>
+<volume>12</volume>
+<elocation-id>e1005864</elocation-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mohan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Berman</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>S-M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B-Z</given-names>
+</name>
+</person-group>
+<article-title>Sequential immunizations with a panel of HIV-1 Env virus-like particles coach immune system to make broadly neutralizing antibodies</article-title>
+<source>Sci Rep</source>
+<year>2018</year>
+<month>Dec</month>
+<day>17</day>
+<volume>8</volume>
+<elocation-id>7807</elocation-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dosenovic</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>von Boehmer</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Escolano</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jardine</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Freund</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Gitlin</surname>
+<given-names>AD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Immunization for HIV-1 broadly neutralizing antibodies in human Ig knockin mice</article-title>
+<source>Cell</source>
+<year>2015</year>
+<month>Jun</month>
+<day>18</day>
+<volume>161</volume>
+<fpage>1505</fpage>
+<lpage>1515</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tas</surname>
+<given-names>JMJ</given-names>
+</name>
+<name>
+<surname>Mesin</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Pasqual</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Targ</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jacobsen</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Mano</surname>
+<given-names>YM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Visualizing antibody affinity maturation in germinal centers</article-title>
+<source>Science</source>
+<year>2016</year>
+<month>Mar</month>
+<day>4</day>
+<volume>351</volume>
+<fpage>1048</fpage>
+<lpage>1054</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berek</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Milstein</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Mutation drift and repertoire shift in the maturation of the immune response</article-title>
+<source>Immunol Rev</source>
+<year>1987</year>
+<month>Apr</month>
+<day>1</day>
+<volume>96</volume>
+<fpage>23</fpage>
+<lpage>41</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shakhnovich</surname>
+<given-names>EI</given-names>
+</name>
+</person-group>
+<article-title>Optimality of mutation and selection in germinal centers</article-title>
+<source>PLoS Comput Biol</source>
+<year>2010</year>
+<month>Jun</month>
+<day>3</day>
+<volume>6</volume>
+<elocation-id>e1000800</elocation-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Crotty</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>T follicular helper cell differentiation, function, and roles in disease</article-title>
+<source>Immunity</source>
+<year>2014</year>
+<month>Oct</month>
+<day>16</day>
+<volume>41</volume>
+<fpage>529</fpage>
+<lpage>542</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gitlin</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Shulman</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Nussenzweig</surname>
+<given-names>MC</given-names>
+</name>
+</person-group>
+<article-title>Clonal selection in the germinal centre by regulated proliferation and hypermutation</article-title>
+<source>Nature</source>
+<year>2014</year>
+<month>May</month>
+<day>4</day>
+<volume>509</volume>
+<fpage>637</fpage>
+<lpage>640</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Victora</surname>
+<given-names>GD</given-names>
+</name>
+<name>
+<surname>Schwickert</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Fooksman</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Kamphorst</surname>
+<given-names>AO</given-names>
+</name>
+<name>
+<surname>Meyer-Hermann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dustin</surname>
+<given-names>ML</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Germinal center dynamics revealed by multiphoton microscopy with a photoactivatable fluorescent reporter</article-title>
+<source>Cell</source>
+<year>2010</year>
+<month>Nov</month>
+<day>12</day>
+<volume>143</volume>
+<fpage>592</fpage>
+<lpage>605</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Conti</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Estimation of the breadth of CD4bs targeting HIV antibodies by molecular modeling and machine learning</article-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Wallqvist</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>PLOS Comput Biol</source>
+<year>2019</year>
+<month>Apr</month>
+<day>10</day>
+<volume>15</volume>
+<elocation-id>e1006954</elocation-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Louie</surname>
+<given-names>RHY</given-names>
+</name>
+<name>
+<surname>Kaczorowski</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<article-title>Fitness landscape of the human immunodeficiency virus envelope protein that is targeted by antibodies</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2018</year>
+<volume>115</volume>
+<fpage>E564</fpage>
+<lpage>E573</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Humphrey</surname>
+<given-names>William</given-names>
+</name>
+<name>
+<surname>Dalke</surname>
+<given-names>Andrew</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>VMD: Visual molecular dynamics</article-title>
+<source>J Mol Graph</source>
+<year>1996</year>
+<month>Feb</month>
+<volume>14</volume>
+<fpage>33</fpage>
+<lpage>38</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Georgiev</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>ZY</given-names>
+</name>
+<name>
+<surname>Dai</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Finzi</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for broad and potent neutralization of HIV-1 by antibody VRC01</article-title>
+<source>Science (80- )</source>
+<year>2010</year>
+<month>Aug</month>
+<day>13</day>
+<volume>329</volume>
+<fpage>811</fpage>
+<lpage>817</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lynch</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Acharya</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Doria-Rose</surname>
+<given-names>NA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural repertoire of HIV-1-neutralizing antibodies targeting the CD4 supersite in 14 donors</article-title>
+<source>Cell</source>
+<year>2015</year>
+<month>Jun</month>
+<day>5</day>
+<volume>161</volume>
+<fpage>1280</fpage>
+<lpage>1292</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Author Summary</title>
+</caption>
+<p>Vaccination has saved more lives than any other medical procedure, and the impending end of the COVID-19 pandemic is also due to the rapid development of highly efficacious vaccines. But, we do not have robust ways to develop vaccines against highly mutable pathogens. For example, there is no effective vaccine against HIV, and a universal vaccine against diverse strains of influenza is also not available. The development of immunization strategies to elicit antibodies that can neutralize diverse strains of highly mutable pathogens (so-called ‘broadly neutralizing antibodies’, or bnAbs) would enable the design of universal vaccines against such pathogens, as well as other viruses that may emerge in the future. In this paper, we present an agent-based model of affinity maturation – the Darwinian process by which antibodies evolve against a pathogen – that, for the first time, enables the <italic>in silico</italic> investigation of real germline nucleotide sequences of antibodies known to evolve into potent bnAbs, evolving against real amino acid sequences of HIV-based vaccine-candidate proteins. Our results provide new insights into bnAb evolution against HIV, and can be used to qualitatively guide the future design of vaccines against highly mutable pathogens.</p>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>Simulation framework for the AM model, highlighting new features. Amino acid (aa) and nucleotide (nt) sequences of the Ag and germline BCR, respectively, are input into the model in step I. During B cell proliferation and mutation (step II), a mutation model [<xref ref-type="bibr" rid="R19">19</xref>] is used to determine where and which mutations will occur in the BCR sequences; nts that have a higher mutability score (χ<sub>Mut</sub>) – which accounts for the effects of surrounding nts – have a greater chance of being selected for mutation. This is followed in step III by BCR/Ag binding free energy calculations, which utilize the program Modeller [<xref ref-type="bibr" rid="R25">25</xref>] and published statistical potentials [<xref ref-type="bibr" rid="R26">26</xref>]. Final steps in the model include a second selection step, recycling, and differentiation (details in text). BCR breadth is computed as the fraction of Ags in a panel for which the BCR binds above a chosen threshold (see <xref ref-type="sec" rid="S7">Methods</xref>).</p>
+</caption>
+<graphic xlink:href="EMS134265-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>Results from AM simulations.</title>
+<p>(A) mean BCR breadth of vaccination protocols with t=1, 2, and 3 single-Ag sequential immunizations, (B) mean BCR breadth vs. mean number of GC cycles, (C) changes in mean BCR breadth vs. changes in frustration between current (t) and former (t-1) immunizations, and (D) mean BCR breadth vs. mean number of mutations towards conserved Ag residues. Solid lines in (C) represent the linear fits used to calculate the R<sup>2</sup> values presented in the table below the graph. Error bars represent the standard deviation of two independent simulations of n=1,000 GC reactions (error bars for mean BCR breadth are only shown in (A) for clarity).</p>
+</caption>
+<graphic xlink:href="EMS134265-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>Anti-CD4bs bnAbs employ interfacial composition and electrostatic pattern matching (ICM) during AM.</title>
+<p>(A) Interfacial amino acid compositions of the CD4bs of HIV (left), VRC01GL (top right), and VRC01 (bottom right). (B) Interfacial amino acid compositions of germline Abs NIH45-46GL (top left), 3BNC60GL (top middle), and CH103GL (top right), and their bnAb counterparts (bottom row).</p>
+</caption>
+<graphic xlink:href="EMS134265-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Results from AM simulations: mean weighted degree of interfacial composition and electrostatic pattern matching (ICM) of all 1-, 2-, or 3-Ag protocols, sorted by the mean ICM score. Error bars represent the standard deviation of two independent simulations of n=1,000 GC reactions. Gray and black dotted lines indicate the respective values for VRC01GL and VRC01.</p>
+</caption>
+<graphic xlink:href="EMS134265-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<p>Binding free energy distributions of VRC01GL and VRC01 against a panel of 106 HIV antigens (Ags), using the scoring function developed in this work. A black dashed line indicates the threshold of -9.9 kcal/mol used to determine the breadth (B) of the BCRs. Note that the intermediate colored region arises from the overlap of the two distributions.</p>
+</caption>
+<graphic xlink:href="EMS134265-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig. 6</label>
+<caption>
+<title>Definition of interfacial BCR residues used to characterize AM simulations.</title>
+<p>(A) Visual Molecular Dynamics (VMD [<xref ref-type="bibr" rid="R48">48</xref>]) snapshots of (left) VRC01GL and (right) VRC01, in complex with HIV-based Ags. Ags are colored in opaque silver and Abs in transparent silver. Residues included in the <italic>in silico</italic> CD4bs interfacial residue definition are colored pink if overlapping between the two Abs and colored cyan otherwise, and interfacial residues excluded from the definition due to contact or alignment with HIV glycans (gray) are colored blue. (B) Coarse-grained interfacial amino acid composition of the CD4bs of HIV (left), and of VRC01GL (top right) and VRC01 (bottom right) for the residues shown in pink/cyan in (A), which mimic the biological trends shown in <xref ref-type="fig" rid="F3">Fig. 3A</xref>.</p>
+</caption>
+<graphic xlink:href="EMS134265-f006"/>
+</fig>
+</floats-group>
+</article>

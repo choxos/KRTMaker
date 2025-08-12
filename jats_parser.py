@@ -32,27 +32,33 @@ def extract_plain_text(tree: etree._ElementTree) -> str:
 
 def extract_sections(tree: etree._ElementTree) -> Dict[str, str]:
     sections: Dict[str, List[str]] = {}
-    for sec in tree.findall(".//sec"):
-        title_elem = sec.find("title")
+    
+    # Find sections with and without namespace
+    sec_elements = tree.findall(".//sec") + tree.findall(".//{http://jats.nlm.nih.gov}sec")
+    
+    for sec in sec_elements:
+        title_elem = sec.find("title") or sec.find("{http://jats.nlm.nih.gov}title")
         title = (
             title_elem.text.strip()
             if title_elem is not None and title_elem.text
             else ""
         )
+        
         # Extract all text content from the section, including nested sections
         para_texts: List[str] = []
         
-        # Get all paragraphs within this section (including nested ones)
-        for p in sec.findall(".//p"):
-            if p.text and p.text.strip():
-                para_texts.append(p.text.strip())
-            # Also get any text from child elements within paragraphs
+        # Get all paragraphs within this section (including nested ones) - with and without namespace
+        paragraphs = sec.findall(".//p") + sec.findall(".//{http://jats.nlm.nih.gov}p")
+        
+        for p in paragraphs:
+            # Get all text content from this paragraph
             for text in p.itertext():
-                if text and text.strip() and text.strip() not in [pt.strip() for pt in para_texts]:
+                if text and text.strip():
                     para_texts.append(text.strip())
         
         if title or para_texts:
             sections.setdefault(title or "Untitled", []).append(" ".join(para_texts))
+    
     return {k: "\n".join(vs) for k, vs in sections.items()}
 
 
@@ -67,8 +73,8 @@ def extract_external_links(tree: etree._ElementTree) -> List[str]:
 
 def extract_relevant_sections_for_llm(tree: etree._ElementTree) -> str:
     """
-    Extract only methods, results, and appendix sections for LLM processing.
-    This reduces API usage by focusing on content most likely to contain resource information.
+    Extract comprehensive content for LLM processing, including methods, results, appendices,
+    and sections that commonly contain KRT tables (after discussion, references, etc.).
     """
     # Patterns for sections we want to include
     methods_patterns = [
@@ -84,12 +90,20 @@ def extract_relevant_sections_for_llm(tree: etree._ElementTree) -> str:
     appendix_patterns = [
         "appendix", "supplementary methods", "supporting information", 
         "supplemental methods", "additional methods", "supplementary materials",
-        "supporting methods", "appendices"
+        "supporting methods", "appendices", "supplementary data"
+    ]
+    
+    # NEW: Patterns for sections that often contain KRT tables
+    krt_table_patterns = [
+        "key resources", "resource table", "resources", "reagents", "materials table",
+        "software table", "antibodies table", "data availability", "availability",
+        "reagent table", "key resource table", "table", "supplementary table"
     ]
     
     # Get all sections
     all_sections = extract_sections(tree)
     relevant_text_parts = []
+    found_sections = set()
     
     for section_title, section_content in all_sections.items():
         title_lower = section_title.lower().strip()
@@ -97,6 +111,7 @@ def extract_relevant_sections_for_llm(tree: etree._ElementTree) -> str:
         # Check if this is a methods section
         if any(pattern in title_lower for pattern in methods_patterns):
             relevant_text_parts.append(f"METHODS SECTION - {section_title}:\n{section_content}\n")
+            found_sections.add('methods')
             continue
             
         # Check if this is a results section (but exclude discussion)
@@ -119,12 +134,26 @@ def extract_relevant_sections_for_llm(tree: etree._ElementTree) -> str:
                     relevant_text_parts.append(f"RESULTS SECTION - {section_title}:\n" + '\n'.join(results_lines) + "\n")
             else:
                 relevant_text_parts.append(f"RESULTS SECTION - {section_title}:\n{section_content}\n")
+            found_sections.add('results')
             continue
             
         # Check if this is an appendix section
         if any(pattern in title_lower for pattern in appendix_patterns):
             relevant_text_parts.append(f"APPENDIX SECTION - {section_title}:\n{section_content}\n")
+            found_sections.add('appendix')
             continue
+            
+        # NEW: Check if this section likely contains KRT tables
+        if any(pattern in title_lower for pattern in krt_table_patterns):
+            relevant_text_parts.append(f"KRT/TABLE SECTION - {section_title}:\n{section_content}\n")
+            found_sections.add('krt_tables')
+            continue
+    
+    # NEW: Extract tables from anywhere in the document, especially after discussion/references
+    table_content = extract_tables_and_end_content(tree)
+    if table_content:
+        relevant_text_parts.append(f"TABLES AND END CONTENT:\n{table_content}\n")
+        found_sections.add('tables')
     
     # If no relevant sections found, fall back to extracting from the body
     if not relevant_text_parts:
@@ -134,16 +163,77 @@ def extract_relevant_sections_for_llm(tree: etree._ElementTree) -> str:
         # Look for method-like content patterns
         method_indicators = ["protocol", "procedure", "antibod", "reagent", "software", "analysis", "statistical"]
         if any(indicator in body_text.lower() for indicator in method_indicators):
-            relevant_text_parts.append(f"EXTRACTED CONTENT (Methods/Results):\n{body_text[:50000]}\n")
+            relevant_text_parts.append(f"EXTRACTED CONTENT (Methods/Results):\n{body_text[:75000]}\n")
     
     # Join all relevant sections
     result = "\n".join(relevant_text_parts).strip()
     
-    # If still no content, return first 50k characters as fallback
+    # If still no content, return first 75k characters as fallback (increased from 50k)
     if not result:
-        result = extract_plain_text(tree)[:50000]
+        result = extract_plain_text(tree)[:75000]
     
     return result
+
+
+def extract_tables_and_end_content(tree: etree._ElementTree) -> str:
+    """
+    Extract table content and content from the end of the document where KRT tables are often placed.
+    This includes content after discussion, references, and any standalone tables.
+    """
+    content_parts = []
+    
+    # 1. Extract all table elements with their captions (with and without namespace)
+    table_wraps = tree.findall(".//table-wrap") + tree.findall(".//{http://jats.nlm.nih.gov}table-wrap")
+    
+    for table in table_wraps:
+        table_id = table.get("id", "")
+        
+        # Get table caption (with and without namespace)
+        caption_elem = (table.find(".//caption") or 
+                       table.find(".//{http://jats.nlm.nih.gov}caption"))
+        caption_text = ""
+        if caption_elem is not None:
+            caption_text = " ".join(caption_elem.itertext()).strip()
+        
+        # Get table content (with and without namespace)
+        table_elem = (table.find(".//table") or 
+                     table.find(".//{http://jats.nlm.nih.gov}table"))
+        table_text = ""
+        if table_elem is not None:
+            table_text = " ".join(table_elem.itertext()).strip()
+        
+        if caption_text or table_text:
+            content_parts.append(f"TABLE {table_id}:\nCaption: {caption_text}\nContent: {table_text}\n")
+    
+    # 2. Extract content from sections that commonly appear after main text
+    all_sections = extract_sections(tree)
+    end_section_patterns = [
+        "acknowledgment", "acknowledgments", "funding", "author contribution", 
+        "data availability", "conflicts of interest", "supplementary", "additional files",
+        "tables", "figures", "legends", "competing interests", "ethics", "consent"
+    ]
+    
+    for section_title, section_content in all_sections.items():
+        title_lower = section_title.lower().strip()
+        if any(pattern in title_lower for pattern in end_section_patterns):
+            # Check if this section contains table-like content
+            content_lower = section_content.lower()
+            if any(indicator in content_lower for indicator in 
+                  ["table", "resource", "antibod", "software", "reagent", "protocol", "dataset"]):
+                content_parts.append(f"END SECTION - {section_title}:\n{section_content}\n")
+    
+    # 3. Look for any standalone table content in the back matter (with and without namespace)
+    back_matter = tree.find(".//back") or tree.find(".//{http://jats.nlm.nih.gov}back")
+    if back_matter is not None:
+        back_text = " ".join(back_matter.itertext()).strip()
+        if back_text and len(back_text) > 100:  # Only include if substantial content
+            # Check if it contains resource-related keywords
+            back_lower = back_text.lower()
+            if any(keyword in back_lower for keyword in 
+                  ["table", "resource", "antibod", "software", "reagent", "material", "protocol"]):
+                content_parts.append(f"BACK MATTER:\n{back_text}\n")
+    
+    return "\n".join(content_parts).strip()
 
 
 def extract_title_and_abstract(

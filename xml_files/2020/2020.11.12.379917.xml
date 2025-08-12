@@ -1,0 +1,1733 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS104138</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.12.379917</article-id>
+<article-id pub-id-type="archive">PPR237564</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Identifying and prioritizing potential human-infecting viruses from their genome sequences</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Mollentze</surname>
+<given-names>Nardus</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Babayan</surname>
+<given-names>Simon A.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Streicker</surname>
+<given-names>Daniel G.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Medical Research Council – University of Glasgow Centre for Virus Research, Glasgow, G61 1QH, United Kingdom</aff>
+<aff id="A2">
+<label>2</label>Institute of Biodiversity, Animal Health and Comparative Medicine, College of Medical, Veterinary and Life Sciences, University of Glasgow, Glasgow, G12 8QQ, United Kingdom</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>nardus.mollentze@glasgow.ac.uk</email> (NM)</corresp>
+<fn id="FN1" fn-type="con">
+<p id="P1">
+<bold>Author contributions:</bold>
+</p>
+<p id="P2">Conceptualization: D.G.S., S.A.B.; Data curation: D.G.S, N.M.; Formal analysis: N.M.; Visualization: N.M.; Writing – original draft: N.M.; Writing – review &amp; editing: D.G.S., S.A.B., N.M.</p>
+</fn>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>14</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>12</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P3">Determining which animal viruses may be capable of infecting humans is currently intractable at the time of their discovery, precluding prioritization of high-risk viruses for early investigation and outbreak preparedness. Given the increasing use of genomics in virus discovery and the otherwise sparse knowledge of the biology of newly-discovered viruses, we developed machine learning models that identify candidate zoonoses solely using signatures of host range encoded in viral genomes. Within a dataset of 861 viral species with known zoonotic status, our approach outperformed models based on the phylogenetic relatedness of viruses to known human-infecting viruses (AUC = 0.773), distinguishing high-risk viruses within families that contain a minority of human-infecting species and identifying putatively undetected or so far unrealized zoonoses. Analyses of the underpinnings of model predictions suggested the existence of generalisable features of viral genomes that are independent of virus taxonomic relationships and that may preadapt viruses to infect humans. Our model reduced a second set of 645 animal-associated viruses that were excluded from training to 272 high and 41 very high-risk candidate zoonoses and showed significantly elevated predicted zoonotic risk in viruses from non-human primates, but not other mammalian or avian host groups. A second application showed that our models could have identified SARS-CoV-2 as a relatively high-risk coronavirus strain and that this prediction required no prior knowledge of zoonotic SARS-related coronaviruses. Genome-based zoonotic risk assessment provides a rapid, low-cost approach to enable evidence-driven virus surveillance and increases the feasibility of downstream biological and ecological characterisation of viruses.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P4">Most emerging infectious diseases of humans are caused by viruses that originate from other animal species. Identifying these zoonotic threats prior to emergence is a major challenge since only a small minority of the estimated 1.67 million animal viruses may infect humans [<xref ref-type="bibr" rid="R1">1</xref>–<xref ref-type="bibr" rid="R3">3</xref>]. Existing models of human infection risk rely on viral phenotypic information that is unknown for newly discovered viruses (e.g., the diversity of species a virus can infect) or that vary insufficiently to discriminate risk at the virus species or strain level (e.g., replication in the cytoplasm), limiting their predictive value before the virus in question has been characterised [<xref ref-type="bibr" rid="R4">4</xref>–<xref ref-type="bibr" rid="R6">6</xref>]. Since most viruses are now discovered using untargeted genomic sequencing, often involving many simultaneous discoveries with limited phenotypic data, an ideal approach would quantify the relative risk of human infectivity upon relevant exposure from sequence data alone. By identifying high risk viruses warranting further investigation, such predictions could alleviate the growing imbalance between the rapid pace of virus discovery and lower throughput field and laboratory research needed to comprehensively evaluate risk.</p>
+<p id="P5">Current models can identify well-characterised human-infecting viruses from genomic sequences [<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R8">8</xref>]. However, by training algorithms on very closely related viruses (i.e., strains of the same species) and potentially omitting secondary characteristics of viral genomes linked to infection capability, such models are less likely to find signals of zoonotic status that generalise across viruses. Consequently, predictions may be highly sensitive to substantial biases in current knowledge of viral diversity [<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R9">9</xref>].</p>
+<p id="P6">Empirical and theoretical evidence suggests that generalisable signals of human infectivity might exist within viral genomes. Viruses associated with broad taxonomic groups of animal reservoirs (e.g., primates versus rodents) can be distinguished using aspects of their genome composition, including dinucleotide, codon, and amino acid biases [<xref ref-type="bibr" rid="R10">10</xref>]. Whether such measures of viral genome composition are specific enough to distinguish host range at the species level remains unclear, but their specificity might arise through several commonly hypothesised mechanisms. First, aspects of antiviral immunity that target nucleotide motifs in viral genomes might select for common mutations in diverse human-associated viruses [<xref ref-type="bibr" rid="R11">11</xref>,<xref ref-type="bibr" rid="R12">12</xref>]. For example, the depletion of CpG dinucleotides in vertebrate-infecting RNA virus genomes may have arisen to evade zinc-finger antiviral protein (ZAP), an interferon-stimulated gene (ISG) that initiates the degradation of CpG-rich RNA molecules [<xref ref-type="bibr" rid="R12">12</xref>]. While ZAP occurs widely among vertebrates, increasingly recognized lineage-specificity in vertebrate antiviral defences opens the possibility that analogous, undescribed nucleic-acid targeting defences might be human (or primate) specific [<xref ref-type="bibr" rid="R13">13</xref>]. Second, the frequencies of specific codons in virus genomes often resemble those of their reservoir hosts, possibly owing to increased efficiency and/or accuracy of mRNA translation [<xref ref-type="bibr" rid="R14">14</xref>]. By driving genome compositional similarity to human-adapted viruses or to the human genome, such processes may preadapt viruses for human infection [<xref ref-type="bibr" rid="R15">15</xref>,<xref ref-type="bibr" rid="R16">16</xref>]. Finally, even in the absence of mechanisms that assert common selective pressures on divergent viral genomes, the phylogenetic relatedness of viruses could allow prediction of the potential for human infectivity since closely related viruses are generally assumed to share common phenotypes and host range. However, despite being a common rule of thumb for virus risk assessment, to our knowledge, whether evolutionary proximity to viruses with known human infection ability predicts zoonotic status remains untested.</p>
+<p id="P7">We aimed to develop machine learning models which use features engineered from viral and human genome sequences to predict the probability that any animal-infecting virus will infect humans given biologically relevant exposure (here, zoonotic potential). Using a large dataset of viruses which had previously been assessed for human infection ability based on published reports, we first build models which assess zoonotic potential based on virus taxonomy and/or phylogenetic relatedness to known human-infecting viruses and contrast these models to alternatives based on hypothesized selective pressures on viral genome composition which favour human infectivity. We then apply the best-performing model to explore patterns in the predicted zoonotic potential of additional virus genomes sampled from a range of species.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P8">We collected a single representative genome sequence from 861 RNA and DNA virus species spanning 36 viral families that contain animal-infecting species (<xref ref-type="supplementary-material" rid="SD2">S1 Fig</xref>). We labelled each virus as being capable of infecting humans or not using published reports as ground truth, and trained models to classify viruses accordingly. These classifications of human infectivity were obtained by merging three previously published datasets which reported data at the virus species level and therefore did not consider potential for variation in host range within virus species [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R9">9</xref>,<xref ref-type="bibr" rid="R17">17</xref>]. Importantly, given diagnostic limitations and the likelihood that not all viruses capable of human infection have had opportunities to emerge and be detected, viruses not reported to infect humans may represent unrealized, undocumented, or genuinely non-zoonotic species. Identifying potential or undocumented zoonoses within our data was an <italic>a priori</italic> goal of our analysis.</p>
+<p id="P9">We first evaluated whether phylogenetic proximity to human-infecting viruses predictably elevates zoonotic potential. Gradient boosted machine (GBM) classifiers trained on virus taxonomy or the frequency of human-infecting viruses among close relatives identified by sequence similarity searches (“phylogenetic neighbourhood”, defined using nucleotide BLAST [<xref ref-type="bibr" rid="R10">10</xref>]) outperformed chance (median area under the receiver-operating characteristic curve [AUC<sub>m</sub>] = 0.604 and 0.558, respectively), but were no better than manually ranking novel viruses by the proportion of human-infecting viruses in each family (“taxonomy-based heuristic”, AUC<sub>m</sub> = 0.596, <xref ref-type="fig" rid="F1">Fig 1A</xref>). This indicates that relatedness-based models were not only unable to identify novel zoonoses which are not close relatives of known human-infecting viruses, but were also largely unable to accurately distinguish risk among closely related viruses (<xref ref-type="supplementary-material" rid="SD2">S2 Fig</xref>). Moreover, the performance of these models depended on the data available for model training, sometimes performing worse than chance, making them highly sensitive to current knowledge of viral diversity.</p>
+<p id="P10">We next quantified the performance of GBMs trained on genome composition (i.e., codon usage biases, amino acid biases, and dinucleotide biases), calculated either directly from viral genomes (“viral genomic features”) or based on the similarity of viral genome composition to that of three distinct sets of human gene transcripts (“human similarity features”): interferon-stimulated genes (ISGs), housekeeping genes, and all other genes. We hypothesized that if viruses need to adapt to either evade innate immune surveillance for foreign nucleic acids or to optimise gene expression in humans, they should resemble ISGs since both tend to be expressed concomitantly in virus-infected cells. We selected two additional sets comprising non-ISG housekeeping genes and all remaining genes to explore whether signals were specific to ISGs. GBMs trained using genome composition feature sets performed similarly when tested separately (AUC<sub>m</sub> = 0.688–0.701) and consistently outperformed models based on relatedness alone (both the taxonomy-based heuristic and machine learning models trained on virus taxonomy or phylogenetic neighbourhood, <xref ref-type="fig" rid="F1">Fig 1A</xref>). Combining all four genome composition feature sets further improved, and reduced variance in, performance (AUC<sub>m</sub> = 0.740, <xref ref-type="fig" rid="F1">Fig 1A</xref>), suggesting that measures of similarity to human transcripts contained information unavailable from viral genomic features alone. In contrast, adding relatedness features to this combined model reduced accuracy (AUC<sub>m</sub> = 0.726) and increased variance (<xref ref-type="fig" rid="F1">Fig 1A</xref>). Averaging output probabilities over the best 100 out of 1000 iterations of training on random test/train splits of the data (a process akin to bagging, using ranking performance on non-target viruses to select high performing models) further improved the combined genome feature-based model (AUC = 0.773, <xref ref-type="fig" rid="F1">Fig 1B</xref>).</p>
+<p id="P11">To estimate model sensitivity and specificity, we converted the mean of predicted probabilities of human infection from the bagged model into binary classifications (i.e., human infecting or not), predicting viruses with predicted probabilities &gt; 0.293 as human-infecting. This cut-off balanced sensitivity and specificity (both 0.705, <xref ref-type="fig" rid="F1">Fig 1C</xref>), though in principle, higher or lower cut-offs could be selected to prioritize reduction of false positives or false negatives, respectively (<xref ref-type="fig" rid="F1">Fig 1B</xref>). These binary predictions correctly identified 71.9% of viruses which predominately or exclusively infect humans and 69.7% of zoonotic viruses as human infecting, though performance varied among viral families (<xref ref-type="fig" rid="F1">Fig 1C</xref>, <xref ref-type="supplementary-material" rid="SD2">S3 Fig</xref>). Since binary classifications ignore both the variability between iterations and the rank of viruses relative to each other, we further converted predicted probabilities of zoonotic potential into four zoonotic potential categories, describing the overlap of confidence intervals with the 0.293 cut-off from above (low: entire 95% confidence interval [CI] of predicted probability ≤ cut-off; medium: mean prediction ≤ cut-off, but CI crosses it; high: mean prediction &gt; cut-off, but CI crosses it; very high: entire CI &gt; cut-off). Under this scheme, the majority (92%) of known human-infecting viruses were predicted to have either medium (21.5%), high (47.1%) or very high (23.4%) zoonotic potential, while only 8% (N=21) had low zoonotic potential (<xref ref-type="supplementary-material" rid="SD2">S4 Fig</xref>, <xref ref-type="supplementary-material" rid="SD1">S1 Table</xref>). Fourteen viruses not currently considered to infect humans by our criteria were predicted to have very high zoonotic potential (<xref ref-type="supplementary-material" rid="SD2">S5 Fig</xref>), although at least three of these (<italic>Aura virus</italic>, <italic>Ndumu virus</italic> and <italic>Uganda S virus</italic>) have serological evidence of human infection [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R17">17</xref>], suggesting they may be valid zoonoses rather than model misclassifications. Across the full dataset, 77.2% of viruses predicted to have very high zoonotic potential were known to infect humans (<xref ref-type="supplementary-material" rid="SD1">S1 Table</xref>). Consequently, studies aimed at confirming human infectivity (e.g., by attempting to infect human-derived cell lines or by serological testing of humans in high-risk populations) while screening viruses in the order suggested by our ranking would have found 23.4% of all known human-infecting viruses in this dataset after screening just the very high zoonotic potential viruses (9.2% of all viruses). More generally, 50% of known human-infecting viruses would have been found after screening the top-ranked 23.3% of viruses, and 75% after screening the top 48% of viruses (<xref ref-type="fig" rid="F1">Fig 1D</xref>). In contrast, if relying only on relatedness to known zoonoses, confirming the first 50% of currently-known zoonoses would have required screening either 40.2% (taxonomy-based model) or 41.5% (phylogenetic neighbourhood-based model) of viruses; a 1.7 to 1.8-fold increase in effort compared to our best model (<xref ref-type="supplementary-material" rid="SD2">S6 Fig</xref>).</p>
+<p id="P12">Since genome composition features partly track viral evolutionary history [<xref ref-type="bibr" rid="R10">10</xref>], it is conceivable that our models made predictions by reconstructing taxonomy more accurately than the phylogenetic neighbourhood estimator or in more detail than available to the taxonomy-based model. We therefore compared dendrograms that clustered viruses by either taxonomy, raw genomic features, or the relative influence of each genomic feature on the model prediction for each virus (here estimated using the SHAP algorithm of [<xref ref-type="bibr" rid="R18">18</xref>], and hence termed SHAP values in the rest of this manuscript). As high levels of similarity in SHAP values between viruses would indicate that they share similar predictions for the same reasons, we therefore analysed to what extent such similar uses of the same genomic features followed known taxonomic patterns. While dendrograms using raw feature values closely correlated with virus taxonomy for both human-infecting and other viruses (Baker’s [<xref ref-type="bibr" rid="R19">19</xref>] γ = 0.617 and 0.492 respectively, p &lt; 0.001), dendrograms of SHAP similarity had 10.28-and 2.07-fold reduced correlations with virus taxonomy (γ = 0.060 and 0.238, although this was still more correlated than expected by chance, p ≤ 0.008; <xref ref-type="supplementary-material" rid="SD2">S7 Fig</xref>). Among human-infecting viruses, correlations between SHAP similarity-based clustering and virus taxonomy weakened at deeper taxonomic levels, even though the input genomic features provided sufficient information to partially reconstruct virus taxonomy at the realm, kingdom and phylum levels (<xref ref-type="supplementary-material" rid="SD2">S8 Fig</xref>). These results indicate that more taxonomic information was available than was utilised by the trained model to predict human infection ability. Interestingly, dendrograms of SHAP similarity showed that even viruses with different genome types – indicating ancient evolutionary divergence or separate origins – clustered together (<xref ref-type="fig" rid="F2">Fig 2A</xref>). Alongside earlier observations on classifier performance (<xref ref-type="fig" rid="F1">Fig 1A</xref>), this suggests that the genome composition-based model outperformed relatedness-based approaches because it found common viral genome features that increase the capacity for human infection across diverse viruses.</p>
+<p id="P13">Although our analysis was not designed to conclusively identify biological mechanisms underlying genomic predictors of human infection, we nevertheless were able to explore emergent patterns relating to how specific genome composition features and groups of features relate to human infectivity. We first compared the relative influence of features from different genome composition categories (i.e., genomic features versus the three sets of human similarity features). Representatives of all genome composition categories were retained in the final model, though we found some evidence that compositional similarity to human housekeeping genes and ISGs influenced predictions more strongly than unreferenced viral genomic features (<xref ref-type="fig" rid="F2">Fig 2B–C</xref>; <xref ref-type="supplementary-material" rid="SD1">S1 Text</xref>). We next explored the influence of individual features on model predictions in more detail. Unsurprisingly, given that GBMs are designed to make predictions from large numbers of weakly informative features [<xref ref-type="bibr" rid="R20">20</xref>], no single feature stood out as the driving force and many features formed correlated clusters (<xref ref-type="fig" rid="F2">Fig 2D</xref> &amp; <xref ref-type="supplementary-material" rid="SD2">S9 Fig</xref>). More interestingly, many features had complex, non-linear relationships with human infection (<xref ref-type="supplementary-material" rid="SD2">S10 Fig</xref>), such that increased similarity to human gene transcripts did not always increase the likelihood of infecting humans (<xref ref-type="supplementary-material" rid="SD1">S1 Text</xref>). We speculate this might reflect trade-offs between different features within viral genomes or context dependencies whereby both mimicry of human transcripts (e.g., for improved translation efficiency) or divergence from human transcripts (e.g., for evasion of nucleotide motif-targeting defences) may occur for different features (<xref ref-type="supplementary-material" rid="SD1">S1 Text</xref>).</p>
+<p id="P14">Finally, we carried out two case studies to illustrate the utility of our prediction framework. First, we used the combined genome feature-based model to rank 758 virus species which were not present in our training data. We included all species in the most recent ICTV taxonomy release (#35, 24 April 2020) belonging to animal-infecting virus families and which were originally discovered or sequenced from mammals (including humans), birds, two insect orders containing common virus vectors (Diptera and Ixodida), or where the sampled host was not reported. This dataset contained representatives from 38 viral families, including 2 (<italic>Anelloviridae</italic> and <italic>Genomoviridae</italic>) which were not present in data used to train our model. In total, 70.8% of viruses sampled from humans were correctly identified as having either very high (N=36) or high zoonotic potential (N=44; <xref ref-type="fig" rid="F3">Fig 3A</xref>). The remaining human-associated viruses were primarily classified as medium zoonotic potential (N=30), with 3 species predicted to have low zoonotic potential (<italic>Mammalian orthoreovirus</italic> and <italic>Human associated gemykibivirus 2</italic> and <italic>3</italic>; <xref ref-type="fig" rid="F3">Fig 3A</xref>). Within the viral families never previously seen by our model, the majority of human-associated anelloviruses (39/45, 86.6%) were correctly identified as having either very high or high zoonotic potential, consistent with the conclusion that viral genomic features which enhance human infectivity can generalise across viral families. In contrast, all 6 human-associated genomoviruses were classified as either medium or low zoonotic potential. The lower performance on genomoviruses may reflect the unusual genomic structure of this family (circular, single stranded DNA) which was poorly represented in training (only 2 representatives from the <italic>Circoviridae</italic> family; <xref ref-type="supplementary-material" rid="SD2">S1 Fig</xref>) and may impose different selective forces. Further, the small genome sizes of genomoviruses (2.2– 2.4kb) may complicate calculation of genomic features due to the low number of nucleotides, dinucleotides and codons available (cf. <xref ref-type="supplementary-material" rid="SD2">S3 Fig</xref>). Among the 645 viruses with unknown human infectivity that were sequenced from non-human animal or potential vector samples, 45.0% were predicted to have either very high (N=41) or high zoonotic potential (N=272; <xref ref-type="supplementary-material" rid="SD2">S11 Fig</xref> &amp; <xref ref-type="supplementary-material" rid="SD1">S1 Table</xref>). The very high zoonotic potential category was dominated by <italic>Papillomaviridae</italic> (34.1%) and <italic>Peribunyaviridae</italic> (19.5%).</p>
+<p id="P15">We next used a beta regression model to explore how predictions of zoonotic potential varied among host and viral groups. As expected given the performance on our training and evaluation data (<xref ref-type="fig" rid="F1">Fig 1</xref>), the 113 virus species that were sequenced from human samples scored consistently higher than those detected in other hosts (p &lt; 0.001; <xref ref-type="fig" rid="F3">figs. 3A</xref> &amp; <xref ref-type="fig" rid="F4">4D</xref>). Although viruses from putatively high risk host groups including bats, rodents and artiodactyls formed a large fraction of our holdout data (with viruses from bats outnumbering even those from humans, <xref ref-type="supplementary-material" rid="SD2">S11 Fig</xref>), they did not have elevated predicted probabilities of being zoonotic (<xref ref-type="fig" rid="F4">Fig 4C</xref>), and no differences were detected at higher host taxonomic levels (<xref ref-type="fig" rid="F4">Fig 4A – B</xref>). This highlights a potential disparity between current sampling efforts for virus discovery/reporting and the distribution of zoonotic risk. In contrast, viruses linked to primates had higher predicted probabilities of infecting humans, even after accounting for human-associated viruses and the effects of virus family (<xref ref-type="fig" rid="F3">Figs 3</xref> – <xref ref-type="fig" rid="F4">4</xref> &amp; <xref ref-type="supplementary-material" rid="SD2">S11 Fig</xref>). That genome composition-based models predicted elevated zoonotic potential in non-human primate-associated viruses despite receiving no information on sampled host further supports host-mediated selective processes as a biological basis for our model’s predictions. In addition to relatively rare and small host effects, we observed more pervasive positive and negative effects of virus family on predicted zoonotic status (<xref ref-type="fig" rid="F4">Fig 4E</xref>). Taken together, our results are consistent with the expectation that the relatively close phylogenetic proximity of non-human primates may facilitate virus sharing with humans and suggest that this may in part reflect common selective pressures on viral genome composition in both humans and non-human primates. However, broad differences among other animal groups appear to have less influence on zoonotic potential than virus characteristics [<xref ref-type="bibr" rid="R9">9</xref>].</p>
+<p id="P16">Our second case study used coronaviruses to explore the ability of our combined genome feature-based model to distinguish different virus species within the same family and different genomes within a single virus species. Specifically, we predicted the zoonotic potential of all currently recognized coronavirus species, along with 62 human and animal-derived genomes of <italic>Severe acute respiratory syndrome-related coronavirus</italic> (SARS coronavirus), a species which includes many well-known viruses, including SARS-CoV, SARS-CoV-2, and related sarbecoviruses. All known human-infecting coronaviruses were classified as either medium or high zoonotic potential (<xref ref-type="fig" rid="F5">Fig 5A</xref>). We also identified two additional animal-associated coronaviruses – <italic>Alphacoronavirus 1</italic> and the recently described <italic>Sorex araneus coronavirus T14</italic> – as being at least as, or more likely to be capable of infecting humans than known, high ranking, human-infecting coronaviruses; these should be considered high priority for further research. While this manuscript was in revision, a recombinant <italic>Alphacoronavirus 1</italic> was detected in nasopharyngeal swabs from pneumonia patients, further strengthening the case that this species may be zoonotic [<xref ref-type="bibr" rid="R21">21</xref>]. We further observed variation in predicted zoonotic potential within coronavirus genera which was consistent with our current understanding of these viruses. <italic>Alphacoronavirus</italic> and <italic>Betacoronavirus</italic> (the genera which contain known human-infecting species) also contained non-zoonotic species that were correctly predicted to have low zoonotic potential, while the majority of delta- and gammacoronaviruses received relatively low predictions (<xref ref-type="fig" rid="F5">Fig 5A</xref>). These findings further illustrate the capacity of our models to discriminate risk below the virus family or genus levels.</p>
+<p id="P17">Within SARS coronavirus, most genomes (85.5%) were classified as having medium zoonotic potential, including the causal agent of the 2003 outbreak (<xref ref-type="fig" rid="F5">Fig 5B</xref>). Interestingly however, SARS-CoV-2 (the causative agent of the current COVID-19 pandemic), the closely related RaTG13 from a rhinolophid bat, and all 5 closely-related pangolin-associated isolates tested were predicted to have high zoonotic potential (although confidence intervals between all sarbecoviruses tested overlapped, <xref ref-type="fig" rid="F5">Fig 5B</xref>). Importantly, these predictions were made using iterations of our model which excluded the 2003 SARS-CoV genome or any other sarbecovirus from training. This finding, together with our observation that relatively few other animal-infecting, allegedly non-zoonotic coronaviruses had similarly high scores, suggests that the elevated risk of SARS-CoV-2 and closely-related genomes discovered in animals could have been anticipated via sequencing-based surveillance and might have led to actionable research or surveillance prior to the zoonotic emergence of any sarbecovirus (<xref ref-type="fig" rid="F5">Fig 5</xref>).</p>
+</sec>
+<sec id="S3" sec-type="discussion">
+<title>Discussion</title>
+<p id="P18">In an age of rapid, genomic-based virus discovery, rational prioritization of research and surveillance activities has been an unresolved challenge. While approaches to prioritise known, relatively well-characterised viruses based on a range of common risk factors have been developed [<xref ref-type="bibr" rid="R4">4</xref>–<xref ref-type="bibr" rid="R6">6</xref>], the large number of viruses still being discovered presents a bottleneck for the very characterisation needed to apply such prioritisation schemes, necessitating use of expert opinion or surrogate data from related species [<xref ref-type="bibr" rid="R6">6</xref>]. Our findings show that the zoonotic potential of viruses can be inferred to a surprisingly large extent from their genome sequence, outperforming current alternatives. Indeed, our results suggest that routine proxies of zoonotic risk which can be applied to poorly characterised viruses including virus taxonomy and relative phylogenetic proximity to human-infecting species [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R9">9</xref>,<xref ref-type="bibr" rid="R22">22</xref>] have limited discriminatory power. This has far-reaching implications for how risk is perceived – while it is intuitive to assume that novel viruses which are closely related to known human-infecting viruses are a threat, to our knowledge this assumption had never been tested. Worryingly, with some training datasets such relatedness-based models performed worse than random guessing (AUC &lt; 0.5, <xref ref-type="fig" rid="F1">Fig 1A</xref>), suggesting that the current incomplete knowledge of virus diversity could lead to entirely incorrect priorities under such approaches. In contrast, models that exploited features of viral genomes that were at least partly independent of virus taxonomy both generalised predictions across divergent viruses and provided capacity to discriminate risk among closely related virus species.</p>
+<p id="P19">In requiring only a genome sequence, our approach has quantitative and qualitative advantages over alternative models for zoonotic risk assessment. The most comprehensive alternative model requires virus species-level information on publication count (a proxy for study effort), the diversity of hosts infected, whether or not the virus is vector borne, and the ability to replicate in the cytoplasm [<xref ref-type="bibr" rid="R5">5</xref>]. We estimate similar predictive performance for this model (AUC<sub>m</sub> = 0.770) using a subset of only mammalian viruses (see methods). However, neither study effort nor knowledge of host range are available for novel viruses, and restricting this model to factors which might reasonably be inferred from virus taxonomy (vector borne status and ability to replicate in the cytoplasm) performs considerably worse (AUC<sub>m</sub> = 0.647) than our approach. We were unable to compare the performance of our model to a more recently developed prioritisation system based on ecological variables weighted by expert opinion, as metrics of performance were not provided and could not be calculated for a comparable set of viruses with known zoonotic status [<xref ref-type="bibr" rid="R6">6</xref>]. Although we emphasize that the viruses included and study objectives differed, that genome-based ranking seems to perform comparably to or better than currently-available alternatives that require far more, and often unavailable, data highlights the surprisingly informative signals of human infection-ability contained within viral genomes. Crucially, from the perspective of virus risk assessment, models based purely on genome sequences can be applied much earlier to identify many potential zoonoses immediately after virus discovery and genome sequencing, when data on most other risk factors are still unknown. Ultimately, genome-based rankings could be combined with data on additional known risk factors as they become available [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R6">6</xref>].</p>
+<p id="P20">By highlighting viruses with the greatest potential to become zoonotic, genome-based ranking allows further ecological and virological characterisation to be targeted more effectively. Indeed, studying viruses in the order suggested by genome-based ranking would find many zoonotic viruses much earlier than current taxonomic or phylogenetically-informed approaches (<xref ref-type="fig" rid="F1">Fig 1D</xref> &amp; <xref ref-type="supplementary-material" rid="SD2">S6 Fig</xref>). Nevertheless, we acknowledge that even after applying our models, considerable numbers of viruses may need to undergo confirmatory testing (e.g. infectivity experiments on human-derived cell lines [<xref ref-type="bibr" rid="R23">23</xref>]) before significant further research investments, and this need will only increase with ongoing virus discovery. Although these numbers are more manageable considering that experimental validation will be dispersed across virus taxonomic groups which will be studied by different experts, efforts to increase the success rates of virus isolation (a prerequisite for current <italic>in vitro</italic> validation methods) and to create systems for high-throughput virus host range testing are clearly needed to improve the efficiency of this process [<xref ref-type="bibr" rid="R23">23</xref>,<xref ref-type="bibr" rid="R24">24</xref>]. Such efforts could further generate valuable feedback data; iteratively improving model performance and consequently reducing the relative proportion of new viruses requiring additional laboratory testing.</p>
+<p id="P21">Several lines of evidence – including SHAP clustering of viruses with different genome organizations, accurate prediction of human-infecting viruses from families withheld from training, and the prediction of the zoonotic risk of SARS-CoV-2 when withholding data from other zoonotic sarbecoviruses – suggested that our models make predictions using genomic features that predict human infection across divergent virus taxa. From a practical standpoint, this is a major advantage since it means that our model borrows information across families and might therefore anticipate the zoonotic potential of viruses which, due to their rarity or lack of historical precedent, would not otherwise be considered high risk (sometimes referred to as Disease X) [<xref ref-type="bibr" rid="R25">25</xref>]. From a broader evolutionary standpoint, the putative existence of convergently evolved features in viral genomes which seem to predispose human infection is a discovery which deserves further mechanistic study. Encouragingly, a substantial literature in vaccine development facilitates genome-wide synonymous recoding of viral genome composition and has established that these changes can dramatically affect viral fitness [<xref ref-type="bibr" rid="R26">26</xref>,<xref ref-type="bibr" rid="R27">27</xref>]. Our results provide a path by which analogous approaches could test how the features we identified affect viral host range in general and human infection ability in particular. Doing so may reveal novel mechanisms of viral adaptation to humans, which might represent both biologically-verified risk factors for the improvement of future models of zoonotic potential and potential therapeutic targets.</p>
+<p id="P22">We used single exemplar genomes from each virus species to maximise the likelihood of discovering generalisable signatures of human infection while avoiding performance measures which would be over-optimistic for novel viruses. A potential drawback of this approach was that we omitted substantial viral diversity which is not yet formally recognized by the ICTV [<xref ref-type="bibr" rid="R3">3</xref>]. However, we contend that including currently unrecognized viruses is unlikely to improve the predictions of our models because: (a) most will be non-human infecting (an already over-represented class) and hence provide little additional information, (b) those which do infect humans will not generally be known to do so due to a lack of historic testing, adding misleading signals, and (c) the predictive features identified often span across families, reducing the impacts of taxonomic gaps. The use of single genomes does however mean that the ranks produced here pertain only to the specific genomes tested (in most cases, the NCBI reference sequence, <xref ref-type="supplementary-material" rid="SD1">S1 Table</xref>), and may not apply equally across all strains within a species (<xref ref-type="fig" rid="F5">Fig 5B</xref>). We also stress that our model predicts baseline zoonotic <italic>potential</italic> (i.e., ability to infect humans), which ultimately will be modulated by ecological opportunities for emergence [<xref ref-type="bibr" rid="R28">28</xref>,<xref ref-type="bibr" rid="R29">29</xref>]. Further, the societal impact of emergence will depend on capacity for human to human spread and on the severity of human disease, which likely require additional non-genomic data to anticipate [<xref ref-type="bibr" rid="R28">28</xref>,<xref ref-type="bibr" rid="R30">30</xref>].</p>
+<p id="P23">In summary, we have constructed a genomic model that can retrospectively or prospectively predict the probability that viruses will be able to infect humans. The success of our models required aspects of genome composition calculated both directly from viral genomes and in units of similarity to human transcripts, and some viruses were predicted to be zoonotic due to common genomic traits despite ancient evolutionary divergence. This highlights the potential existence of currently unknown phenotypic consequences of viral genome composition that appear to influence viral host range across divergent viral families. Independently of the mechanisms involved, the performance of our models shows how increasingly ubiquitous and low-cost genome sequence data can inform decisions on virus research and surveillance priorities at the earliest stage of virus discovery with virtually no extra financial or time investment.</p>
+</sec>
+<sec id="S4" sec-type="materials | methods">
+<title>Materials and methods</title>
+<sec id="S5">
+<title>Data</title>
+<p id="P24">Although our primary interest was in zoonotic transmission, we trained models to predict the ability to infect humans in general, reasoning that patterns found in viruses predominately maintained by human-to-human transmission may contain genomic signals which also apply to zoonotic viruses. Data on the ability to infect humans were obtained by merging the data of [<xref ref-type="bibr" rid="R5">5</xref>], [<xref ref-type="bibr" rid="R9">9</xref>], and [<xref ref-type="bibr" rid="R17">17</xref>], which contain species-level records of reported human infections, resulting in a final dataset of 861 virus species from 36 families. In all cases, only viruses detected in humans by either PCR or sequencing were considered to have proven ability to infect humans. All viruses for which no such reports were found were considered to not infect humans (as long as they were assessed for potential human infection by at least one of the studies above), although we emphasise that many of these viruses are poorly characterised and could therefore be unrecognized or unreported zoonoses. We therefore expect our models to further improve as these and new viruses become better characterised. For figures, human-infecting viruses were further separated into primarily human-transmitted viruses and zoonotic viruses, based on virus reservoirs recorded in [<xref ref-type="bibr" rid="R9">9</xref>]. Human-infecting viruses for which the reservoir remains unknown were assumed to be zoonotic, while viruses with both a human and non-human reservoir cycle (e.g., <italic>Dengue virus</italic>) were recorded as primarily human-transmitted, reflecting the primary source of human infection. A representative genome was selected for each virus species, giving preference to sequences from the RefSeq database wherever possible. RefSeq sequences that had annotation issues, represented extensively passaged isolates, or were otherwise not judged to be representative of the naturally circulating virus were replaced with alternative genomes.</p>
+</sec>
+<sec id="S6">
+<title>Features</title>
+<p id="P25">We compared the predictive power of all classifiers to that which could be obtained through knowledge of a virus’ taxonomic position alone. This captures the intuitive expectation that viruses can be risk-assessed based on knowledge of the human-infection abilities of their closest known relatives. To formalise this idea, we first created a simple heuristic which ranks viruses based on the proportion of other viruses in the same family which are known to infect humans (‘<italic>taxonomy-based heuristic</italic>’ in <xref ref-type="fig" rid="F1">Fig 1</xref>). Viral family was chosen as the level of comparison because not all viruses are classified in a scheme which includes subfamilies, while lower taxonomic levels suffer from limited sample size. To further characterise the predictive power of virus taxonomy, we also included potential predictor variables (here termed <italic>features</italic>) describing virus taxonomy when training classifiers. These included the proportion of human infecting viruses in each family (calculated from species in the training data only) along with categorical features describing the phylum, subphylum, class, subclass, order, suborder, and family to which each species was assigned (‘<italic>taxonomic feature set’</italic>, 8 features). This information was taken from version 2018b of the ICTV master species list (<ext-link ext-link-type="uri" xlink:href="https://talk.ictvonline.org/files/master-species-lists/">https://talk.ictvonline.org/files/master-species-lists/</ext-link>). To capture taxonomic effects at finer resolution, we summarised the human infection ability of the closest relatives of each virus in the training data (following [<xref ref-type="bibr" rid="R10">10</xref>], here termed the ‘<italic>phylogenetic neighbourhood feature set</italic>’, 2 features). To calculate these features, the genome (or genome segments, where applicable) of each virus species was nucleotide BLASTed against a database containing genomes or genome segments for all species in the training data. All BLAST matches with e-value ≤ 0.001 were retained and used to calculate the proportion of human-infecting viruses in the phylogenetic neighbourhood of each virus (excluding the current species). We also calculated a ‘distance-corrected’ version of this proportion by re-weighting matches according to the proportion of nucleotides <italic>p</italic> matching the genome of the focal virus:
+<disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>C</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+where <italic>N</italic> is the number of retained blast matches for the focal virus species, and <italic>x<sub>i</sub>
+</italic> = 1 if matching species <italic>i</italic> is able to infect humans and equals 0 otherwise. Both the raw and distance-corrected proportion were used in unison to define the phylogenetic neighbourhood, allowing classifiers to pick the most informative representation or to combine both pieces of information if needed. In cases where a virus received no matches with e-value ≤ 0.001, both proportions were set to NA to reflect the fact that no information about the phylogenetic neighbourhood was available. This occurred for an average of 2% of viruses in each random training and test set (see below).</p>
+<p id="P26">Various features summarising the compositional biases in each virus genome were calculated as described in [<xref ref-type="bibr" rid="R10">10</xref>]. These included codon usage biases, amino acid biases, dinucleotide biases across the entire genome, dinucleotide biases across coding regions only, dinucleotide biases spanning the bridges between codons (i.e. across base 3 of the preceding codon and base 1 of the current codon), and dinucleotide biases at non-bridge positions (‘<italic>viral genomic features</italic>’, 146 features). Similarity features to human RNA transcripts were obtained by first calculating the above compositional biases for human genes. For each gene, the sequence of the canonical transcript was obtained from version 96 of Ensembl [<xref ref-type="bibr" rid="R31">31</xref>]. Genes were divided into three mutually exclusive sets, encompassing interferon stimulated genes (ISGs, taken from [<xref ref-type="bibr" rid="R13">13</xref>]; N = 2054), non-ISG housekeeping genes ([<xref ref-type="bibr" rid="R32">32</xref>]; N=3172), and remaining genes (N=9565). The distribution of observed values for each genome feature was summarised across all genes in a set by calculating an empirical probability density function using version 2.3.1 of the EnvStats library in R version 3.5.1 [<xref ref-type="bibr" rid="R33">33</xref>]. The final similarity score for each genome feature of each virus was then calculated by evaluating this density function at the value observed in the virus genome, giving the probability of observing this value among the transcripts of the set of human genes in question (<xref ref-type="supplementary-material" rid="SD2">S12 Fig</xref>). This yielded three feature sets termed ‘<italic>similarity to ISGs</italic>’, ‘<italic>similarity to housekeeping genes</italic>’ and ‘<italic>similarity to remaining genes</italic>’, each containing 146 features.</p>
+</sec>
+<sec id="S7">
+<title>Training</title>
+<p id="P27">Gradient boosted classification trees were trained using the xgboost and caret libraries (versions 0.90 and 6.0-85, respectively) in R [<xref ref-type="bibr" rid="R34">34</xref>,<xref ref-type="bibr" rid="R35">35</xref>]. Note that while we separate primarily human-transmitted viruses and zoonotic viruses in some figures, these viruses were considered a single class during training. Thus, models were trained to distinguish viruses known to infect humans from those with no reports of human infection.</p>
+<p id="P28">A range of models were trained using different combinations of the individual feature sets described above. To reduce run-times and potential overfitting in subsequent steps, features were subjected to a pre-screening step to remove those with little or no predictive value. During this pre-screening step, models were trained on a random selection of 70% of the data using all features within the respective feature group (e.g., all ISG similarity features). Training sets were selected using stratified sampling (i.e., selecting positive and negative examples separately) to retain the observed frequencies of positive (known human-infecting) and negative (not known to infect humans) virus species. We were unable to additionally stratify training set selection by virus family due to the small numbers of species in many families. All hyperparameters were kept at their default values, except for the number of training rounds, which was fixed at 150. The importance of each feature was summarised across 100 iterations in which the same features were used to train a model on different samples of the full dataset, and the <italic>N</italic> most predictive features were retained. A range of possible values for <italic>N</italic> was evaluated by combining all feature sets and using the selected features to optimize and train a final set of model iterations as described below. The final value of <italic>N</italic> = 125 was chosen as the point at which additional features provided no further improvement in performance, measured as the area under the receiver-operating characteristic curve (AUC; <xref ref-type="supplementary-material" rid="SD2">S13 Fig</xref>). Here, AUC measures the probability that a randomly chosen human-infecting virus would be ranked higher than a randomly chosen virus which has not been reported to infect humans. When a given feature set or combination of feature sets comprised &lt; 125 features, all features were retained.</p>
+<p id="P29">Final models were trained using reduced feature sets. To assess the variability in accuracy across different training sets, training was repeated 100 times [<xref ref-type="bibr" rid="R10">10</xref>]. In each iteration, training was performed on a random, class-stratified selection of 70% of the available data (here, the <italic>training set</italic>). Output probabilities were calibrated using half the remaining data (<italic>calibration set</italic>, again selected randomly and stratified by human infection status), leaving 15% of the full dataset for evaluation of model predictions (<italic>test set</italic>). In each iteration, hyperparameters were selected using 5-fold cross-validation on the training set, searching across a random grid of 500 hyperparameter combinations. This cross-validation was adaptive, evaluating each parameter combination on a minimum of 3 folds before continuing cross-validation only with the most promising candidates [<xref ref-type="bibr" rid="R35">35</xref>]. The parameter combination maximising AUC across folds was selected and used to train a final model on the entire training set. This model was then used to produce quantitative scores for each species in the calibration and test sets.</p>
+<p id="P30">Next, outputs were calibrated to allow interpretation as probabilities using the beta calibration method of [<xref ref-type="bibr" rid="R36">36</xref>]. A calibration model was fit to scores obtained for the calibration set using version 0.1.0 of the betacal R package. The fitted calibration model was used to produce final output probabilities for virus species in the test set. Finally, to summarise predicted probabilities from the same model trained on different training sets, we averaged the calibrated probabilities across the best-performing iterations (a process with similarities to bagging [<xref ref-type="bibr" rid="R10">10</xref>]; 1000 iterations performed). Bagging of virus species from the training data relied on the best 10% of iterations in which each virus occurred in the test set. As such, the focal virus had no influence on the training or calibration of the iterations used in bagging. Further, the performance of each model iteration was re-calculated while excluding the focal species from the test set, to prevent accurate prediction of the focal virus from influencing the choice of iterations used for bagging. When predicting the probability of human infectivity for viruses that were completely separated from training (i.e., those in our first case study), we used the best 10% of iterations overall.</p>
+<p id="P31">Calculating phylogenetic neighbourhood features represented a bottleneck in the iterative training strategy described above, because each iteration had a different reference BLAST database, corresponding to the specific training set selected. This would have required repeating BLAST searches at every iteration. To overcome this, a single all-against-all blast search was performed, with search results and e-values subsequently corrected in each iteration to emulate the result that would have been obtained when blasting only against the current training dataset. Specifically, e-values were re-calculated as described in [<xref ref-type="bibr" rid="R37">37</xref>]:
+<disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:msup>
+<mml:mn>2</mml:mn>
+<mml:mrow>
+<mml:msup>
+<mml:mi>S</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+where <italic>m</italic> is the length of the query sequence (in nucleotides), <italic>n</italic> is the total number of nucleotides in the training set (i.e., the size of the database searched), and <italic>S</italic>' is bitscore for this particular alignment in the original blast search.</p>
+</sec>
+<sec id="S8">
+<title>Feature importance and clustering</title>
+<p id="P32">To assess the variability in feature importance while accounting for all viruses, feature importance was assessed across all 1000 iterations produced for bagging above. In each iteration, the influence of features was assessed using SHAP values, an approximation of Shapley values which here describe the change in the predicted log odds of infecting humans attributable to each genome composition feature used in the final model [<xref ref-type="bibr" rid="R18">18</xref>]. In each iteration, this produced a SHAP value for each virus–feature combination. The overall importance of each feature was calculated as the mean of absolute SHAP values across all viruses in the training set of a given iteration [<xref ref-type="bibr" rid="R38">38</xref>].</p>
+<p id="P33">Because features tended to be highly correlated, we also report importance values for clusters of correlated features, with the importance of each cluster for individual viruses calculated as the sum of absolute SHAP values across all features in a cluster:
+<disp-formula id="FD3">
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+where <italic>I</italic>
+<sub>
+<italic>c,j,i</italic>
+</sub> is the importance of feature cluster <italic>c</italic> in determining the output score of virus <italic>j</italic> in iteration <italic>i</italic>, <italic>N</italic>
+<sub>
+<italic>c</italic>
+</sub> is the number of features in this cluster, and <italic>S</italic>
+<sub>
+<italic>f,i,j</italic>
+</sub> is the SHAP value for feature <italic>f</italic>. The overall importance of each feature cluster in a given iteration was then calculated as the mean of these importance values across all viruses in the training data of that iteration:
+<disp-formula id="FD4">
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>J</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P34">Feature clusters were obtained by affinity propagation clustering, which seeks to identify discrete clusters of features centred around a representative feature (the <italic>exemplar</italic> feature) [<xref ref-type="bibr" rid="R39">39</xref>]. Features were clustered using pairwise Spearman correlations as the similarity measure, using version 1.4.8 of the apcluster library in R [<xref ref-type="bibr" rid="R40">40</xref>].</p>
+<p id="P35">To further explore patterns in feature importance across virus species, we followed a strategy similar to [<xref ref-type="bibr" rid="R38">38</xref>], clustering viruses based on the average SHAP values assigned to individual features for each virus across all iterations:
+<disp-formula id="FD5">
+<mml:math id="M5">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>S</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P36">These values were used to calculate the pairwise Euclidean distances between all virus species using version 2.1.0 of the cluster library in R [<xref ref-type="bibr" rid="R41">41</xref>]. Viruses were then clustered using agglomerative hierarchical clustering, calculating distances between clusters as the mean distance between all points in the respective clusters (i.e., UPGMA clustering). To explore patterns common to viruses from each class, clustering was performed separately for known human infecting and other viruses.</p>
+<p id="P37">To compare this explanation-based clustering with virus taxonomy, we also constructed a dendrogram based on taxonomic assignments as recorded in version 2018b of the ICTV master species list, using all taxonomic levels from phylum to subgenus. Since some levels of the ICTV taxonomy are not used consistently across all viruses, missing taxonomic levels were interpolated to ensure accurate representation of the underlying taxonomy. For example, for viruses which are not classified in a scheme which includes subfamilies, the next level downstream – genus – was repeated, thereby treating each genus as belonging to a distinct subfamily. Categorical taxonomic assignments were used to calculate pairwise Gower distances between virus species [<xref ref-type="bibr" rid="R42">42</xref>], before performing agglomerative hierarchical clustering as described above. We also assessed the ability of underlying genome feature values to reconstruct virus taxonomy by performing hierarchical clustering on a Euclidean distance matrix calculated directly from all genome composition features (i.e., the unreferenced genome, ISG similarity, housekeeping gene similarity and remaining gene similarity feature sets). The similarity between dendrograms was assessed using the gamma correlation index of [<xref ref-type="bibr" rid="R19">19</xref>], as implemented in dendextend version 1.12.0 in R [<xref ref-type="bibr" rid="R43">43</xref>]. A null distribution for this statistic was calculated by randomly shuffling the labels (i.e., virus species names) of both dendrograms 1000 times. To assess the taxonomic depth at which dendrograms were concordant, the Fowlkes-Mallows index was calculated at each possible cut-point in the dendrograms being compared [<xref ref-type="bibr" rid="R44">44</xref>], again using the dendextend library. As before, a null distribution was generated by randomly shuffling the labels of both dendrograms 1000 times.</p>
+</sec>
+<sec id="S9">
+<title>Ranking holdout viruses</title>
+<p id="P38">To illustrate the use of our models in practice, the best performing model (i.e. the bagged model trained using the best 125 features selected from among all genome composition-based feature sets, here termed the ‘<italic>combined genome feature-based model</italic>’) was used to generate predictions for a set of held out viruses. We included all virus species recognized in the latest version of the ICTV taxonomy (release #35, 2019; <ext-link ext-link-type="uri" xlink:href="https://talk.ictvonline.org/taxonomy">https://talk.ictvonline.org/taxonomy</ext-link>) which were from families known to contain species that infect animals but which did not occur in our training data because they were absent from the previously described databases of human infection ability used to form the training data [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R9">9</xref>,<xref ref-type="bibr" rid="R17">17</xref>]. These included all 36 families represented in the training data, plus <italic>Anelloviridae</italic> and <italic>Genomoviridae</italic>. Names of viruses in the training data were updated to the latest taxonomy and checked for matches in the corresponding ICTV master species list before extracting non-matching species. For each species, the genome sequence referenced in the ICTV virus metadata resource corresponding to this version of the taxonomy (<ext-link ext-link-type="uri" xlink:href="https://talk.ictvonline.org/taxonomy/vmr">https://talk.ictvonline.org/taxonomy/vmr</ext-link>) was retrieved and used to calculate genome composition features as described above. The host from which each virus genome was generated was obtained from either the corresponding GenBank entry, the publication first describing the sequence, or the ArboCat database. This host information was used to further subset viruses to include only those sampled from birds, mammals, Diptera (which includes common vectors such as mosquitos and sandflies) and Ixodida (ticks), or for which the sampled host could not be identified. Scoring was performed using each of the top 10% out of 1000 iterations, as described above, and averaged to obtain the final output probability. Confidence intervals for these mean probabilities were calculated as the 2.5% and 97.5% quantiles of probabilities output by the top 10% of classifiers. Tests for the effects of virus family and sampled host on the predicted probability of infecting humans were performed by fitting a beta regression model using version 1.8-27 of the mgcv library in R. This model fitted the mean predicted probability for each virus as a function of whether a human host was sampled, whether the sample derived from arthropods (both binary fixed effects), random effects for the taxonomic order and class of sampled hosts, and a random effect for virus family. Partial effects plots were generated using code from [<xref ref-type="bibr" rid="R9">9</xref>].</p>
+</sec>
+<sec id="S10">
+<title>Evaluating existing model performance</title>
+<p id="P39">To compare the performance of our models to previously published ecological models, we downloaded the fitted models of [<xref ref-type="bibr" rid="R5">5</xref>]. The best viral traits model fitted while excluding serological detections (termed “stringent data” in [<xref ref-type="bibr" rid="R5">5</xref>], N = 408) was then subjected to a testing regime similar to that used for our models. Across 100 iterations, models were re-fit using a randomly selected subset consisting of 85% of the virus species used in [<xref ref-type="bibr" rid="R5">5</xref>]. Each fitted model was then used to predict probabilities of being zoonotic for the remaining 15% of species. This matched the evaluation strategy used for our own models (as reported in <xref ref-type="fig" rid="F1">Fig 1A</xref>), with 85% of the data used during training and calibration, leaving 15% of the data to test model accuracy. Predictions from each iteration were used to calculate AUC using version 1.2.0 of the ModelMetrics package in R.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>S1 Table</label>
+<media xlink:href="EMS104138-supplement-S1_Table.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67011" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary material</label>
+<media xlink:href="EMS104138-supplement-Supplementary_material.pdf" mimetype="application" mime-subtype="pdf" id="N67020" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S11">
+<title>Acknowledgments</title>
+<p>We thank Laura Bergner, Richard Orton, Andrew Shaw, Sam Wilson and David Robertson for helpful discussions and suggestions. D.G.S. and N.M. were supported by a Wellcome Senior Research Fellowship (217221/Z/19/Z). Additional funding was provided by the Medical Research Council through program grants MC_UU_12014/8 and MC_UU_12014/12. The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.</p>
+</ack>
+<sec id="S12" sec-type="data-availability">
+<title>Data and materials availability</title>
+<p id="P40">Data and code related to this paper are available at: <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4271479">https://doi.org/10.5281/zenodo.4271479</ext-link>
+</p>
+</sec>
+<fn-group>
+<fn id="FN2" fn-type="conflict">
+<p id="P41">
+<bold>Competing interests:</bold>
+</p>
+<p id="P42">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Carroll</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Daszak</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wolfe</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>GF</given-names>
+</name>
+<name>
+<surname>Morel</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Morzaria</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The global virome project</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>359</volume>
+<fpage>872</fpage>
+<lpage>874</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aap7463</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<article-title>Pandemics: spend on surveillance, not prediction</article-title>
+<source>Nature</source>
+<year>2018</year>
+<volume>558</volume>
+<fpage>180</fpage>
+<lpage>182</lpage>
+<pub-id pub-id-type="doi">10.1038/d41586-018-05373-w</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wille</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Geoghegan</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>How accurately can we assess zoonotic risk?</article-title>
+<source>PLOS Biology</source>
+<year>2021</year>
+<volume>19</volume>
+<elocation-id>e3001135</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.pbio.3001135</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pulliam</surname>
+<given-names>JRC</given-names>
+</name>
+<name>
+<surname>Dushoff</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Ability to replicate in the cytoplasm predicts zoonotic transmission of livestock viruses</article-title>
+<source>The Journal of Infectious Diseases</source>
+<year>2009</year>
+<volume>199</volume>
+<fpage>565</fpage>
+<lpage>568</lpage>
+<pub-id pub-id-type="doi">10.1086/596510</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Olival</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Hosseini</surname>
+<given-names>PR</given-names>
+</name>
+<name>
+<surname>Zambrana-Torrelio</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ross</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Bogich</surname>
+<given-names>TL</given-names>
+</name>
+<name>
+<surname>Daszak</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Host and viral traits predict zoonotic spillover from mammals</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>546</volume>
+<fpage>646</fpage>
+<lpage>650</lpage>
+<pub-id pub-id-type="doi">10.1038/nature22975</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grange</surname>
+<given-names>ZL</given-names>
+</name>
+<name>
+<surname>Goldstein</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Anthony</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gilardi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Daszak</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ranking the risk of animal-to-human spillover for newly discovered viruses</article-title>
+<source>PNAS</source>
+<year>2021</year>
+<volume>118</volume>
+<pub-id pub-id-type="doi">10.1073/pnas.2002324118</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Cai</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Rapid identification of human-infecting viruses</article-title>
+<source>Transboundary and Emerging Diseases</source>
+<year>2019</year>
+<volume>66</volume>
+<fpage>2517</fpage>
+<lpage>2522</lpage>
+<pub-id pub-id-type="doi">10.1111/tbed.13314</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bartoszewicz</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Seidel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Renard</surname>
+<given-names>BY</given-names>
+</name>
+</person-group>
+<article-title>Interpretable detection of novel human viruses from genome sequencing data</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<elocation-id>2020.01.29.925354</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.01.29.925354</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mollentze</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>Viral zoonotic risk is homogenous among taxonomic orders of mammalian and avian reservoir hosts</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>9423</fpage>
+<lpage>9430</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1919176117</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babayan</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Orton</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>Predicting reservoir hosts and arthropod vectors from evolutionary signatures in RNA virus genomes</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>362</volume>
+<fpage>577</fpage>
+<lpage>580</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aap9072</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rothenburg</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brennan</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Species-Specific Host–Virus Interactions: Implications for Viral Host Range and Virulence</article-title>
+<source>Trends in Microbiology</source>
+<year>2020</year>
+<volume>28</volume>
+<fpage>46</fpage>
+<lpage>56</lpage>
+<pub-id pub-id-type="doi">10.1016/j.tim.2019.08.007</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Takata</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Gonçalves-Carneiro</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zang</surname>
+<given-names>TM</given-names>
+</name>
+<name>
+<surname>Soll</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>York</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Blanco-Melo</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CG dinucleotide suppression enables antiviral defence targeting non-self RNA</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>550</volume>
+<fpage>124</fpage>
+<lpage>127</lpage>
+<pub-id pub-id-type="doi">10.1038/nature24039</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shaw</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Hughes</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Behdenna</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Singer</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Dennis</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Fundamental properties of the mammalian innate immune system revealed by multispecies comparison of type I interferon responses</article-title>
+<source>PLoS Biology</source>
+<year>2017</year>
+<volume>15</volume>
+<fpage>1</fpage>
+<lpage>23</lpage>
+<pub-id pub-id-type="doi">10.1371/journal.pbio.2004086</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jenkins</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>The extent of codon usage bias in human RNA viruses and its evolutionary origin</article-title>
+<source>Virus Research</source>
+<year>2003</year>
+<volume>92</volume>
+<fpage>1</fpage>
+<lpage>7</lpage>
+<pub-id pub-id-type="doi">10.1016/S0168-1702(02)00309-X</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greenbaum</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Levine</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Bhanot</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Rabadan</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Patterns of Evolution and Host Gene Mimicry in Influenza and Other RNA Viruses</article-title>
+<source>PLOS Pathogens</source>
+<year>2008</year>
+<volume>4</volume>
+<elocation-id>e1000079</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1000079</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shackelton</surname>
+<given-names>LA</given-names>
+</name>
+<name>
+<surname>Parrish</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary Basis of Codon Usage and Nucleotide Composition Bias in Vertebrate DNA Viruses</article-title>
+<source>J Mol Evol</source>
+<year>2006</year>
+<volume>62</volume>
+<fpage>551</fpage>
+<lpage>563</lpage>
+<pub-id pub-id-type="doi">10.1007/s00239-005-0221-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Woolhouse</surname>
+<given-names>MEJ</given-names>
+</name>
+<name>
+<surname>Brierley</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Epidemiological characteristics of human-infective RNA viruses</article-title>
+<source>Scientific Data</source>
+<year>2018</year>
+<volume>5</volume>
+<elocation-id>180017</elocation-id>
+<pub-id pub-id-type="doi">10.1038/sdata.2018.17</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Lundberg</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>S-I</given-names>
+</name>
+</person-group>
+<chapter-title>A Unified Approach to Interpreting Model Predictions</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Guyon</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Luxburg</surname>
+<given-names>UV</given-names>
+</name>
+<name>
+<surname>Bengio</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wallach</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Fergus</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Vishwanathan</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Advances in Neural Information Processing Systems</source>
+<year>2017</year>
+<fpage>4765</fpage>
+<lpage>4774</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baker</surname>
+<given-names>FB</given-names>
+</name>
+</person-group>
+<article-title>Stability of Two Hierarchical Grouping Techniques Case 1: Sensitivity to Data Errors</article-title>
+<source>Journal of the American Statistical Association</source>
+<year>1974</year>
+<volume>69</volume>
+<fpage>440</fpage>
+<lpage>445</lpage>
+<pub-id pub-id-type="doi">10.2307/2285675</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Friedman</surname>
+<given-names>JH</given-names>
+</name>
+</person-group>
+<article-title>Greedy function approximation: A gradient boosting machine</article-title>
+<source>The Annals of Statistics</source>
+<year>2001</year>
+<volume>29</volume>
+<fpage>1189</fpage>
+<lpage>1232</lpage>
+<pub-id pub-id-type="doi">10.1214/aos/1013203451</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vlasova</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Diaz</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Damtie</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Xiu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Toh</surname>
+<given-names>T-H</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>JS-Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Novel Canine Coronavirus Isolated from a Hospitalized Pneumonia Patient, East Malaysia</article-title>
+<source>Clinical Infectious Diseases</source>
+<year>2021</year>
+<date-in-citation>cited 31 May 2021</date-in-citation>
+<pub-id pub-id-type="doi">10.1093/cid/ciab456</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Washburne</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Crowley</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Becker</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Olival</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Taylor</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>VJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Taxonomic patterns in the zoonotic potential of mammalian viruses</article-title>
+<source>PeerJ</source>
+<year>2018</year>
+<volume>6</volume>
+<elocation-id>e5979</elocation-id>
+<pub-id pub-id-type="doi">10.7717/peerj.5979</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Letko</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Seifert</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Olival</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Plowright</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>VJ</given-names>
+</name>
+</person-group>
+<article-title>Bat-borne virus diversity, spillover and emergence</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2020</year>
+<volume>18</volume>
+<fpage>461</fpage>
+<lpage>471</lpage>
+<pub-id pub-id-type="doi">10.1038/s41579-020-0394-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Letko</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Marzi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Functional assessment of cell entry and receptor usage for SARS-CoV-2 and other lineage B betacoronaviruses</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>562</fpage>
+<lpage>569</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0688-y</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="book">
+<collab>World Health Organization</collab>
+<source>2018 Annual review of diseases prioritized under the Research and Development Blueprint</source>
+<publisher-loc>Geneva, Switzerland</publisher-loc>
+<publisher-name>World Health Organization</publisher-name>
+<year>2018</year>
+<comment>Available: <ext-link ext-link-type="uri" xlink:href="https://www.who.int/news-room/events/detail/2018/02/06/default-calendar/2018-annual-review-of-diseases-prioritized-under-the-research-anddevelopment-blueprint">https://www.who.int/news-room/events/detail/2018/02/06/default-calendar/2018-annual-review-of-diseases-prioritized-under-the-research-anddevelopment-blueprint</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Coleman</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Papamichail</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Skiena</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Futcher</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wimmer</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Mueller</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Virus Attenuation by Genome-Scale Changes in Codon Pair Bias</article-title>
+<source>Science</source>
+<year>2008</year>
+<volume>320</volume>
+<fpage>1784</fpage>
+<lpage>1787</lpage>
+<pub-id pub-id-type="doi">10.1126/science.1155761</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martínez</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Jordan-Paiz</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Franco</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Nevot</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Synonymous Virus Genome Recoding as a Tool to Impact Viral Fitness</article-title>
+<source>Trends in Microbiology</source>
+<year>2016</year>
+<volume>24</volume>
+<fpage>134</fpage>
+<lpage>147</lpage>
+<pub-id pub-id-type="doi">10.1016/j.tim.2015.11.002</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morse</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Mazet</surname>
+<given-names>JAK</given-names>
+</name>
+<name>
+<surname>Woolhouse</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Parrish</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Carroll</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Karesh</surname>
+<given-names>WB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Prediction and prevention of the next pandemic zoonosis</article-title>
+<source>The Lancet</source>
+<year>2012</year>
+<volume>380</volume>
+<fpage>1956</fpage>
+<lpage>1965</lpage>
+<pub-id pub-id-type="doi">10.1016/S0140-6736(12)61684-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Plowright</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Parrish</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>McCallum</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hudson</surname>
+<given-names>PJ</given-names>
+</name>
+<name>
+<surname>Ko</surname>
+<given-names>AI</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>AL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pathways to zoonotic spillover</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2017</year>
+<volume>15</volume>
+<fpage>502</fpage>
+<lpage>510</lpage>
+<pub-id pub-id-type="doi">10.1038/nrmicro.2017.45</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Geoghegan</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Senior</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Giallonardo</surname>
+<given-names>FD</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>Virological factors that increase the transmissibility of emerging human viruses</article-title>
+<source>PNAS</source>
+<year>2016</year>
+<volume>113</volume>
+<fpage>4170</fpage>
+<lpage>4175</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1521582113</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cunningham</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Achuthan</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Akanni</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Allen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Amode</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Armean</surname>
+<given-names>IM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ensembl 2019</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D745</fpage>
+<lpage>D751</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gky1113</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eisenberg</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Levanon</surname>
+<given-names>EY</given-names>
+</name>
+</person-group>
+<article-title>Human housekeeping genes, revisited</article-title>
+<source>Trends in Genetics</source>
+<year>2013</year>
+<volume>29</volume>
+<fpage>569</fpage>
+<lpage>574</lpage>
+<pub-id pub-id-type="doi">10.1016/j.tig.2013.05.010</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Millard</surname>
+<given-names>SP</given-names>
+</name>
+</person-group>
+<source>EnvStats: an R package for environmental statistics</source>
+<publisher-loc>New York</publisher-loc>
+<publisher-name>Springer</publisher-name>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Guestrin</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<source>XGBoost: A Scalable Tree Boosting System</source>
+<conf-name>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<conf-loc>San Francisco, California</conf-loc>
+<conf-sponsor>USA: Association for Computing Machinery</conf-sponsor>
+<year>2016</year>
+<fpage>785</fpage>
+<lpage>794</lpage>
+<pub-id pub-id-type="doi">10.1145/2939672.2939785</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuhn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Building Predictive Models in <italic>R</italic> Using the caret Package</article-title>
+<source>Journal of Statistical Software</source>
+<year>2008</year>
+<volume>28</volume>
+<pub-id pub-id-type="doi">10.18637/jss.v028.i05</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kull</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Filho</surname>
+<given-names>TMS</given-names>
+</name>
+<name>
+<surname>Flach</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Beyond sigmoids: How to obtain well-calibrated probabilities from binary classifiers with beta calibration</article-title>
+<source>Electron J Statist</source>
+<year>2017</year>
+<volume>11</volume>
+<fpage>5052</fpage>
+<lpage>5080</lpage>
+<pub-id pub-id-type="doi">10.1214/17-EJS1338SI</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Altschul</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<chapter-title>The Statistics of Sequence Similarity Scores</chapter-title>
+<source>BLAST documentation</source>
+<date-in-citation>cited 2 Sep 2020</date-in-citation>
+<comment>[Internet] Available: <ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html">https://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lundberg</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Erion</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>DeGrave</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Prutkin</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Nair</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>From local explanations to global understanding with explainable AI for trees</article-title>
+<source>Nature Machine Intelligence</source>
+<year>2020</year>
+<volume>2</volume>
+<fpage>56</fpage>
+<lpage>67</lpage>
+<pub-id pub-id-type="doi">10.1038/s42256-019-0138-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frey</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Dueck</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Clustering by Passing Messages Between Data Points</article-title>
+<source>Science</source>
+<year>2007</year>
+<volume>315</volume>
+<fpage>972</fpage>
+<lpage>976</lpage>
+<pub-id pub-id-type="doi">10.1126/science.1136800</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bodenhofer</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Kothmeier</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hochreiter</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>APCluster: an R package for affinity propagation clustering</article-title>
+<source>Bioinformatics</source>
+<year>2011</year>
+<volume>27</volume>
+<fpage>2463</fpage>
+<lpage>2464</lpage>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btr406</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Maechler</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rousseeuw</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Struyf</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hubert</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hornik</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>cluster: Cluster analysis basics and extensions</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gower</surname>
+<given-names>JC</given-names>
+</name>
+</person-group>
+<article-title>A General Coefficient of Similarity and Some of Its Properties</article-title>
+<source>Biometrics</source>
+<year>1971</year>
+<volume>27</volume>
+<fpage>857</fpage>
+<pub-id pub-id-type="doi">10.2307/2528823</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Galili</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>dendextend: an R package for visualizing, adjusting and comparing trees of hierarchical clustering</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<fpage>3718</fpage>
+<lpage>3720</lpage>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btv428</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fowlkes</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Mallows</surname>
+<given-names>CL</given-names>
+</name>
+</person-group>
+<article-title>A Method for Comparing Two Hierarchical Clusterings</article-title>
+<source>Journal of the American Statistical Association</source>
+<year>1983</year>
+<volume>78</volume>
+<fpage>553</fpage>
+<pub-id pub-id-type="doi">10.2307/2288117</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DeLong</surname>
+<given-names>ER</given-names>
+</name>
+<name>
+<surname>DeLong</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Clarke-Pearson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Comparing the Areas under Two or More Correlated Receiver Operating Characteristic Curves: A Nonparametric Approach</article-title>
+<source>Biometrics</source>
+<year>1988</year>
+<volume>44</volume>
+<fpage>837</fpage>
+<pub-id pub-id-type="doi">10.2307/2531595</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Fast Implementation of DeLong's Algorithm for Comparing the Areas Under Correlated Receiver Operating Characteristic Curves</article-title>
+<source>IEEE Signal Processing Letters</source>
+<year>2014</year>
+<volume>21</volume>
+<fpage>1389</fpage>
+<lpage>1393</lpage>
+<pub-id pub-id-type="doi">10.1109/LSP.2014.2337313</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig 1</label>
+<caption>
+<title>Machine learning prediction of human infectivity from viral genomes.</title>
+<p>(A) Violins and boxplots show the distribution of AUC scores across 100 replicate test sets. (B) Receiver-operating characteristic curves showing the performance of the model trained on all genome composition feature sets across 1000 iterations (grey) and performance of the bagged model derived from the top 10% of iterations (green). Points indicate discrete probability cut-offs for categorizing viruses as human-infecting. (C – D) show binary predictions and discrete zoonotic potential categories from the bagged model, using the cut-off which balanced sensitivity and specificity (0.293). (C) Heatmap showing the proportion of predicted viruses in each category. (D) Cumulative discovery of human-infecting species when viruses are prioritised for downstream confirmation in the order suggested by the bagged model. Dotted lines highlight the proportion of all viruses in the training and evaluation data which need to be screened to detect a given proportion of known human-infecting viruses. Background colour highlights the assigned zoonotic potential categories of individual viruses encountered (red: very high, orange: high, yellow: medium, green: low).</p>
+</caption>
+<graphic xlink:href="EMS104138-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig 2</label>
+<caption>
+<title>Genomic determinants of human-infecting viruses.</title>
+<p>(A) SHAP value clustering of viruses known to infect humans (primarily human-associated, dark purple, and zoonotic, pink) and those with no known history of human infection (blue) shows that similar features predicted human infection across viruses with different genome types (rows). A second set of panels shows the predicted probability of infecting humans for each virus, with the dashed line indicating the cut-off which balances sensitivity and specificity. (B) Relative importance of individual features in shaping predictions, determined by ranking features by the mean of absolute SHAP values across all viruses. Grey lines represent individual features; boxplots show the median, 25<sup>th</sup>/75<sup>th</sup> percentiles and range of ranks for each feature set. (C) Difference in ranks of features when both unreferenced (“Unref.”) and similarity to human genomes (“Sim.”) forms were retained in the final model. Lines are coloured according to the highest ranked representation in each pairwise comparison; colours as in B. (D) Composition of the top 25 most important clusters of correlated features shaping predictions. Discrete clusters of correlated features were identified by affinity propagation clustering. Clusters are shown ranked by the combined effect magnitude of constituent features, defined as the sum of mean absolute SHAP values for all features in the cluster, and the exemplar feature of each cluster is provided on the right axis. Bars represent means (± SEM) across 1000 iterations and are shaded by the proportion of the cluster from each feature set; colours as in B.</p>
+</caption>
+<graphic xlink:href="EMS104138-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig 3</label>
+<caption>
+<title>Probability of human infection predicted from holdout viral genomes.</title>
+<p>(A) Predicted probability of human infection for 758 virus species which were not in the training data. Colours show the assigned zoonotic potential categories, with an additional panel showing the host or vector group each virus genome was sampled from. Tick marks along the top edge of the first panel show the location of virus genomes sampled from humans, while a dashed line shows the cut-off which balanced sensitivity and specificity in the training data. The top 25 viruses which were not sampled from humans (contained within the grey box) are illustrated in more detail in (B). Bars show the 95% interquantile range of predicted probabilities across the best-performing 10% of iterations (based on the training data), while a solid line (A) or circles (B) show the mean predicted probability from these iterations.</p>
+</caption>
+<graphic xlink:href="EMS104138-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig 4</label>
+<caption>
+<title>Factors correlated with the probability of human infection predicted from holdout viral genomes.</title>
+<p>Partial effects plots are shown for a beta regression model attempting to explain the mean probability assigned by the bagged model to all viruses in <xref ref-type="fig" rid="F3">Fig 3A</xref>, accounting for whether or not the genome predicted was sequenced from arthropods (as opposed to chordates, A), random effects for the taxonomic class and order of sampled hosts (B – C), whether the sequence derived from a human sample (D), and a random effect for the virus family represented (E). Points indicate partial residuals, while lines and shaded areas respectively show the maximum likelihood and 95% confidence interval of partial effects. Confidence intervals which do not include zero are highlighted in blue.</p>
+</caption>
+<graphic xlink:href="EMS104138-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig 5</label>
+<caption>
+<title>Probability of human infection predicted from Coronavirus genomes.</title>
+<p>(A) Predictions for currently recognized <italic>Coronaviridae</italic> species and for 3 variants of <italic>Severe Acute Respiratory Syndrome-related coronavirus</italic>: SARS-CoV (isolate HSZ-Cc, sampled early in the 2003 pandemic), SARS-CoV-2 (isolate Wuhan-Hu-1, sampled early in the current pandemic), and the closely related RaTG13 (sampled from <italic>Rhinolophus affinis</italic> in 2013). A dendrogram illustrates taxonomic relationships, with abbreviated genus names annotated on the right. Arrows highlight known human-infecting species. Asterisks indicate species absent from the training data, also present in <xref ref-type="fig" rid="F3">Fig 3A. (B)</xref> Predictions for different representatives of <italic>Severe acute respiratory syndrome-related coronavirus</italic>. The isolation source of animal-associated genomes is indicated in parentheses. A maximum likelihood phylogeny illustrates relationships and was created as described in [<xref ref-type="bibr" rid="R6">6</xref>]. The outgroup, BtKy72 (sampled in Kenya in 2007), is not shown. MERS-CoV = <italic>Middle East respiratory syndrome-related coronavirus</italic>; <italic>M. ricketti</italic> CoV Sax-2011 = <italic>Myotis ricketti alphacoronavirus Sax-2011</italic>; NL63-related bat CoV = <italic>NL63-related bat coronavirus strain BtKYNL63-9b</italic>; <italic>N. velutinus</italic> CoV SC-2013 = <italic>Nyctalus velutinus alphacoronavirus SC-2013</italic>; <italic>R. ferrumequinum</italic> CoV HuB-2013 = <italic>Rhinolophus ferrumequinum alphacoronavirus HuB-2013</italic>. In both panels, bars show the 95% interquantile range of predicted probabilities across the best-performing 10% of iterations excluding the species being predicted, while circles show the mean predicted probability from these iterations.</p>
+</caption>
+<graphic xlink:href="EMS104138-f005"/>
+</fig>
+</floats-group>
+</article>

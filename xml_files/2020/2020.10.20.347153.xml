@@ -1,0 +1,2645 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS100985</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.20.347153</article-id>
+<article-id pub-id-type="archive">PPR228801</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>selfRL: Two-Level Self-Supervised Transformer Representation Learning for Link Prediction of Heterogeneous Biomedical Networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Xiaoqi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>Yaning</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Liao</surname>
+<given-names>Xiangke</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Lenli</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Fei</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Peng</surname>
+<given-names>Shaoliang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>College of Computer Science and Electronic Engineering, Hunan University, Changsha 410082, China</aff>
+<aff id="A2">
+<label>2</label>Computer Network Information Center, Chinese Academy of Sciences, Beijing 100850, China</aff>
+<aff id="A3">
+<label>3</label>School of Computer Science, National University of Defense Technology, Changsha 410073, China</aff>
+<aff id="A4">
+<label>4</label>Peng Cheng Lab, Shenzhen 518000, China</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>To whom correspondence should be addressed: Fei Li (<email>pitta-cus@gmail.com</email>), and Shaoliang Peng (<email>slpeng@hnu.edu.cn</email>)</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>25</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>21</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Predicting potential links in heterogeneous biomedical networks (HBNs) can greatly benefit various important biomedical problem. However, the self-supervised representation learning for link prediction in HBNs has been slightly explored in previous researches. Therefore, this study proposes a two-level self-supervised representation learning, namely selfRL, for link prediction in heterogeneous biomedical networks. The meta path detection-based self-supervised learning task is proposed to learn representation vectors that can capture the global-level structure and semantic feature in HBNs. The vertex entity mask-based self-supervised learning mechanism is designed to enhance local association of vertices. Finally, the representations from two tasks are concatenated to generate high-quality representation vectors. The results of link prediction on six datasets show selfRL outperforms 25 state-of-the-art methods. In particular, selfRL reveals great performance with results close to 1 in terms of AUC and AUPR on the NeoDTI-net dataset. In addition, the PubMed publications demonstrate that nine out of ten drugs screened by selfRL can inhibit the cytokine storm in COVID-19 patients. In summary, selfRL provides a general frame-work that develops self-supervised learning tasks with unlabeled data to obtain promising representations for improving link prediction.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">In recent decades, networks have been widely used to represent biomedical entities (as nodes) and their relations (as edges). Predicting potential links in heterogeneous biomedical networks (HBNs) can be beneficial to various significant biology and medicine problems, such as target identification, drug repositioning, and adverse drug reaction predictions. For example, network-based drug repositioning methods have already offered promising insights to boost the effective treatment of COVID-19 disease (<xref ref-type="bibr" rid="R47">Zeng et al. 2020</xref>; <xref ref-type="bibr" rid="R43">Xiaoqi et al. 2020</xref>), since it outbreak in December of 2019. Many network-based learning approaches have been developed to facilitate link prediction in HBNs. In particularly, network representation learning methods, that aim at converting high-dimensionality networks into a low-dimensional space while maximally preserve structural properties (<xref ref-type="bibr" rid="R10">Cui et al. 2019</xref>), have provided effective and potential paradigms for link prediction (<xref ref-type="bibr" rid="R40">Wang et al. 2018</xref>; <xref ref-type="bibr" rid="R20">Li et al. 2017</xref>).</p>
+<p id="P3">Nevertheless, most of the network representation learning-based link prediction approaches heavily depend on a large amount of labeled data. The requirement of large-scale labeled data may not be met in many real link prediction for biomedical networks (<xref ref-type="bibr" rid="R32">Su et al. 2020</xref>). To address this issue, many studies have focused on developing unsupervised representation learning algorithms that use the network structure and vertex attributes to learn low-dimension vectors of nodes in networks (<xref ref-type="bibr" rid="R46">Yuxiao et al. 2020</xref>), such as GraRep (<xref ref-type="bibr" rid="R7">Cao, Lu, and Xu 2015</xref>), TADW (<xref ref-type="bibr" rid="R8">Cheng et al. 2015</xref>), LINE (<xref ref-type="bibr" rid="R34">Tang et al. 2015</xref>), and struc2vec (<xref ref-type="bibr" rid="R28">Ribeiro, Saverese, and Figueiredo 2017</xref>). However, these network presentation learning approaches are aimed at homogeneous network, and cannot applied directly to the HBNs. Therefore, a growth number of studies have integrated meta paths, which are able to capture topological structure feature and relevant semantic, to develop representation learning approaches for heterogeneous information networks. Dong <italic>et al.</italic> used meta path based random walk and then leveraged a skip-gram model to learn node representation (<xref ref-type="bibr" rid="R12">Dong, Chawla, and Swami 2017</xref>). Shi <italic>et al.</italic> proposed a fusion approach to integrate different representations based on different meta paths into a single representation (<xref ref-type="bibr" rid="R30">Shi et al. 2019</xref>). Ji <italic>et al.</italic> developed the attention-based meta path fusion for heterogeneous information network embedding (<xref ref-type="bibr" rid="R17">Ji, Shi, and Wang 2018</xref>). Wang <italic>et al.</italic> proposed a meta path-driven deep representation learning for a heterogeneous drug network (<xref ref-type="bibr" rid="R43">Xiaoqi et al. 2020</xref>). Unfortunately, most of the meta path-based network representation approaches focused on preserving vertex-level information by formalizing meta paths and then leveraging a word embedding model to learn node representation. Therefore, the global-level structure and semantic information among vertices in heterogeneous networks is hard to be fully modeled. In addition, these representation approaches is not specially designed for link prediction, thus resulting in learning an inexplicit representation for link prediction.</p>
+<p id="P4">On the other hand, self-supervised learning, which is a form of unsupervised learning, has been receiving more and more attention. Self-supervised representation learning formulates some pretext tasks using only unlabeled data to learn representation vector without any manual annotations (<xref ref-type="bibr" rid="R42">Xiao et al. 2020</xref>). Self-supervised representation learning technologies have been widely use for various domains, such as natural language processing, computer vision, and image processing. However, very few approaches have been generalized for HBNs because the structure and semantic information of heterogeneous networks is significantly differ between domains, and the model trained on a pretext task may be unsuitable for link prediction tasks. Based on the above analysis, there are two main problems in link prediction based on network representation learning. The first one is how to design a self-supervised representation learning approach based on a great amount of unlabeled data to learn low-dimension vectors that integrate the different-view structure and semantic information of HBNs. The second one is how to ensure the pretext tasks in self-supervised representation learning be beneficial for link prediction of HBNs.</p>
+<p id="P5">In order to overcome the mentioned issues, this study proposes a two-level self-supervised representation learning (selfRL) for link prediction in heterogeneous biomedical networks. First, a meta path detection self-supervised learning mechanism is developed to train a deep Transformer encoder for learning low-dimensional representations that capture the path-level information on HBNs. Meanwhile, selfRL integrates the vertex entity mask task to learn local association of vertices in HBNs. Finally, the representations from the entity mask and meta path detection is concatenated for generating the embedding vectors of nodes in HBNs. The results of link prediction on six datasets show that the proposed selfRL is superior to 25 state-of-the-art methods.</p>
+<p id="P6">In summary, the contributions of the paper are listed below: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P7">We proposed a two-level self-supervised representation learning method for HBNs, where this study integrates the meta path detection and vertex entity mask self-supervised learning task based on a great number of unlabeled data to learn high quality representation vector of vertices.</p>
+</list-item>
+<list-item>
+<p id="P8">The meta path detection self-supervised learning task is developed to capture the global-level structure and semantic feature of HBNs. Meanwhile, vertex entity-masked model is designed to learn local association of nodes. Therefore, the representation vectors of selfRL integrate two-level structure and semantic feature of HBNs.</p>
+</list-item>
+<list-item>
+<p id="P9">The meta path detection task is specifically designed for link prediction. The experimental results indicate that selfRL outperforms 25 state-of-the-art methods on six datasets. In particular, selfRL reveals great performance with results close to 1 in terms of AUC and AUPR on the NeoDTI-net dataset.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S2">
+<title>Related work</title>
+<sec id="S3">
+<title>Heterogeneous biomedical network</title>
+<p id="P10">A heterogeneous biomedical network is defined as <italic>G</italic> = (<italic>V, E</italic>) where <italic>V</italic> denotes a biomedical entity set, and <italic>E</italic> represents a biomedical link set. In a heterogeneous biomedical network, using a mapping function of vertex type <italic>ϕ</italic>(<italic>v</italic>): <italic>V</italic> → <italic>A</italic> and a mapping function of relation type <italic>ψ</italic>(<italic>e</italic>): <italic>E</italic> → <italic>R</italic> to associate each vertex <italic>v</italic> and each edge <italic>e</italic>, respectively. <italic>A</italic> and <italic>R</italic> denote the sets of the entity and relation types, where |<italic>A</italic>| + |<italic>R</italic>| &gt; 2.</p>
+</sec>
+<sec id="S4">
+<title>The schema of heterogeneous biomedical network</title>
+<p id="P11">For a given heterogeneous network <italic>G</italic> = (<italic>V, E</italic>), the network schema <italic>T<sub>G</sub>
+</italic> can be defined as a directed graph defined over object types <italic>A</italic> and link types <italic>R</italic>, that is, <italic>T</italic>
+<sub>
+<italic>G</italic>
+</sub> = (<italic>A, R</italic>). The schema of a heterogeneous biomedical network expresses all allowable relation types between different type of vertices, as shown in <xref ref-type="fig" rid="F1">Figure 1</xref>.</p>
+</sec>
+<sec id="S5">
+<title>Network representation learning</title>
+<p id="P12">Network representation learning plays a significant role in various network analysis tasks, such as community detection, link prediction, and node classification. Therefore, network representation learning has been receiving more and more attention during recent decades. Network representation learning aims at learning low-dimensional representations of network vertices, such that proximities between them in the original space are preserved (<xref ref-type="bibr" rid="R10">Cui et al. 2019</xref>).</p>
+<p id="P13">The network representation learning approaches can be roughly categorized into three groups: matrix factorization-based network representation learning approaches, random walk-based network representation learning approaches, and neural network-based network representation learning approaches (<xref ref-type="bibr" rid="R45">Yue et al. 2019</xref>). The matrix factorization-based network representation learning methods extract an adjacency matrix, and factorize it to obtain the representation vectors of vertices, such as, Laplacian eigenmaps (<xref ref-type="bibr" rid="R3">Belkin and Niyogi 2002</xref>) and the locally linear embedding methods (<xref ref-type="bibr" rid="R29">Roweis and Saul 2000</xref>). The traditional matrix factorization has many variants that often focus on factorizing the high-order data matrix, such as, GraRep (<xref ref-type="bibr" rid="R7">Cao, Lu, and Xu 2015</xref>) and HOPE (<xref ref-type="bibr" rid="R26">Ou et al. 2016</xref>). Inspired by the word2vec (<xref ref-type="bibr" rid="R25">Mikolov et al. 2013</xref>) model, many random walk-based representation learning models have been proposed recently, including DeepWalk (<xref ref-type="bibr" rid="R27">Perozzi, Alrfou, and Skiena 2014</xref>), node2vec (<xref ref-type="bibr" rid="R15">Grover and Leskovec 2016</xref>), and metapath2vec/metapath2vec++ (<xref ref-type="bibr" rid="R12">Dong, Chawla, and Swami 2017</xref>), in which a network is transformed into node sequences. These models were later extended by struc2vec (<xref ref-type="bibr" rid="R28">Ribeiro, Saverese, and Figueiredo 2017</xref>) for the purpose of better modeling the structural identity. Over the past years, neural network models have been widely used in various domains, and they have also been applied to the network representation learning areas. In neural network-based network representation learning, different methods adopt different learning architectures and various network information as input. For example, the LINE (<xref ref-type="bibr" rid="R34">Tang et al. 2015</xref>) aims at embedding by preserving both local and global network structure properties. The SDNE (<xref ref-type="bibr" rid="R38">Wang, Cui, and Zhu 2016</xref>) and DNGR (<xref ref-type="bibr" rid="R6">Cao 2016</xref>) were developed using deep autoencoder architecture. The GraphGAN (<xref ref-type="bibr" rid="R39">Wang et al. 2017</xref>) adopts generative adversarial networks to model the connectivity of nodes.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="methods">
+<title>Method</title>
+<p id="P14">Predicting potential links in HBNs can greatly benefit various important biomedical problems. This study proposes selfRL that is a two-level self-supervised representation learning algorithm, to improve the quality of link prediction. The flowchart of the proposed selfRL is shown in <xref ref-type="fig" rid="F2">Figure 2</xref>. Considering meta path reflecting heterogeneous characteristics and rich semantics, selfRL first uses a random walk strategy guided by meta-paths to generate node sequences that are treated as the true paths of HBNs. Meanwhile, an equal number of false paths is produced by randomly replacing some of the nodes in each of true path. Then, based on the true paths, this work proposes vertex entity masked as self-supervised learning task to train deep Transformer encoder for learning entity-level representations. In addition, a meta path detection-based self-supervised learning task based on all true and false paths is designed to train a deep Transformer encoder for learning path-level representation vectors. Finally, the representations obtained from the two-level self-supervised learning task are concatenated to generate the embedding vectors of vertices in HBNs, and then are used for link prediction.</p>
+<sec id="S7">
+<title>Meta path detection-based self-supervised learning task</title>
+<sec id="S8">
+<title>True path generation</title>
+<p id="P15">A meta-path is a composite relation denoting a sequence of adjacent links between nodes <italic>A</italic>
+<sub>1</sub> and <italic>A</italic>
+<sub>
+<italic>i</italic>
+</sub> in a heterogeneous network, and can be expressed in the form of <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mover>
+<mml:mo>→</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mover>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mover>
+<mml:mo>→</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mover>
+<mml:mo>…</mml:mo>
+<mml:mover>
+<mml:mo>→</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mover>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula>, where <italic>R</italic>
+<sub>
+<italic>i</italic>
+</sub> represents a schema between two objects. Different adjacent links indicate distinct semantics. In this study, all the meta paths are reversible, and no longer than four nodes. This is based on the results of the previous studies that meta paths longer than four nodes may be too long to contribute to the informative feature (<xref ref-type="bibr" rid="R13">Fu et al. 2016</xref>). In addition, Sun <italic>et al.</italic> have suggested that short meta paths are good enough, and that long meta paths may even reduce the quality of semantic meanings (<xref ref-type="bibr" rid="R33">Sun et al. 2011</xref>).</p>
+<p id="P16">In this work, each network vertex and meta path are regarded as vocabulary and sentence, respectively. Indeed, a large percentage of meta paths are biased to highly visible objects. Therefore, three key steps are defined to keep a balance between different semantic types of meta paths, and they are as follows: (1) generate all sequences according to meta paths whose positive and reverse directional sampling probabilities are the same and equal to 0.5. (2) count the total number of meta paths of each type, and calculate their median value (<italic>N</italic>); (3) randomly select <italic>N</italic> paths if the total number of meta paths of each type is larger than <italic>N</italic>; otherwise, select all sequences. The selected paths are able to reflect topological structures and interaction mechanisms between vertices in HBNs, and will be used to design self-supervised learning task to learn low-dimensional representations of network vertices.</p>
+</sec>
+<sec id="S9">
+<title>False path generation</title>
+<p id="P17">The paths selected using the above procedure are treated as the true paths in HBNs. The equal number of false paths are produced by randomly replacing some nodes in each of the true paths. In other words, each true path corresponds to a false path. There is no relation between the permutation nodes and context in false paths, and the number of replaced nodes is less than the length of the current path. For instance, a true path (i.e., D3 P8 D4 E9) is shown in <xref ref-type="fig" rid="F2">Figure 2(B)</xref>. During the generation procedure of false paths, the 1st and 3rd tokens that correspond to D3 and D4, respectively, are randomly chosen, and two nodes from the HBNs which correspond to D2 and D1, respectively, are also randomly chosen. If there is a relationship between D2 and P8, node D3 is replaced with P2. If there is a relationship between D2 and P8, another node from the network is chosen until the mentioned conditions are satisfied. Similarly, node D4 is replaced with D1, because there are no relations between D1 and E9 (or P8). Finally, the path (i.e., D2 P8 D1 E9) is treated as a false path.</p>
+</sec>
+<sec id="S10">
+<title>Meta path detection</title>
+<p id="P18">In general language understanding evaluation, the Corpus of Linguistic Acceptability (CoLA) is a binary classification task, where the goal is to predict whether a sentence is linguistically acceptable or not (<xref ref-type="bibr" rid="R37">Wang et al. 2019</xref>). In addition, Perozzi <italic>et al.</italic> have suggested that paths generated by short random walks can be regarded as short sentences (<xref ref-type="bibr" rid="R27">Perozzi, Alrfou, and Skiena 2014</xref>). Inspired by their work, this study assumes that true paths can be treated as linguistically acceptable sentences, while the false paths can be regarded as linguistically unacceptable sentences. Based on this hypothesis, we proposes the meta path detection task where the goal is to predict whether a path is acceptable or not. In the proposed selfRL, a set of true and false paths is fed into the deep Transformer encoder for learning path-level representation vector. selfRL maps a path of symbol representations to the output vector of continuous representations that is fed into the softmax function to predict whether a path is a true or false path.</p>
+<p id="P19">Apparently, the only distinction between true and false paths is whether there is an association between nodes of path sequence. Therefore, the meta path detection task is the extension of the link prediction to a certain extent. Especially, when a path includes only two nodes, the meta path detection is equal to the link prediction. For instance, judging whether a path is a true or false path, e.g., D1 S5 in Figure B, is the same as predicting whether there is a relation between D1 and S5. However, the meta path detection task is generally more difficult compared to link prediction, because it requires the understanding of long-range composite relationships between vertices of HBNs. Therefore, the meta path detection-based self-supervised learning task encourages to capturing high-level structure and semantic information in HBNs, thus facilitating the performance of link prediction.</p>
+</sec>
+</sec>
+<sec id="S11">
+<title>Vertex entity mask-based self-supervised learning task</title>
+<p id="P20">In order to capture the local information on HBNs, this study develops the vertex entity mask-based self-supervised learning task, where nodes in true paths are randomly masked, and then predicting those masked nodes. The vertex entity mask task has been widely applied to natural language processing. However, using the vertex entity mask task to drive the heterogeneous biomedical network representation model is a less explored research. In this work, the vertex entity mask task fellows the implementation described in the BERT, and the implementation is almost identical to the original (<xref ref-type="bibr" rid="R11">Devlin et al. 2018</xref>). In brief, 15% of the vertex entities in true paths are randomly chosen for prediction. For each selected vertex entity, there are three different operations for improving the model generalization performance. The selected vertex entity is replaced with the ¡MASK¿ token for 80% time, and is replaced with a random node for 10% time. Furthermore, it has 10% chance to keep the original vertex.</p>
+<p id="P21">Finally, the masked path is used for training a deep Transformer encoder model according to the vertex entity mask task where the last hidden vectors corresponding to the mask vertex entities are fed into the softmax function to predict their original vertices with cross entropy loss. The vertex entity mask task can keep a local contextual representation of every vertex.</p>
+</sec>
+<sec id="S12">
+<title>Two-level representations vector</title>
+<p id="P22">The vertex entity mask-based self-supervised learning task captures the local association of the vertex in HBNs. The meta path detection-based self-supervised learning task enhances the global-level structure and semantic features of the HBNs. Therefore, the two-level representations are concatenated as the final embedding vectors that integrate structure and semantics information on HBNs from different level, as shown in <xref ref-type="fig" rid="F2">Figure 2(F)</xref>.</p>
+</sec>
+<sec id="S13">
+<title>Network architecture of selfRL</title>
+<p id="P23">The model of selfRL is a deep Transformer encoder, and the implementation is almost identical to the original (<xref ref-type="bibr" rid="R35">Vaswani et al. 2017</xref>). The selfRL follows the overall architecture that includes the stacked self-attention and point-wise, fully connected layers, and softmax function, as shown in <xref ref-type="fig" rid="F3">Figure 3</xref>.</p>
+<sec id="S14">
+<title>Multi-head attention</title>
+<p id="P24">An attention function can be described as mapping a query vectors and a set of key-value pairs to an output vectors. The multi-head attention leads that the model can jointly attend to view from various embedding subspaces at various positions. <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>M</mml:mi>
+<mml:mi>H</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>Q</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>K</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>V</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mi>C</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msup>
+<mml:mi>W</mml:mi>
+<mml:mi>O</mml:mi>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>W</italic>
+<sup>
+<italic>O</italic>
+</sup> is a parameter matrices, and <italic>h</italic>
+<sub>
+<italic>i</italic>
+</sub> is the attention function of <italic>i</italic>-th subspace, and is given as follows: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>Attention</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>K</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mi>softmax</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msubsup>
+<mml:mi>K</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mtext>T</mml:mtext>
+</mml:msubsup>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>Q</mml:mi>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>Q</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>K</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>K</mml:mi>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>K</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>V</mml:mi>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>V</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> respectively denotes the query, key, and value representations of the <italic>i</italic>-th subspace, and <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>Q</mml:mi>
+</mml:msubsup>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>K</mml:mi>
+</mml:msubsup>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula>, and <inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>W</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>V</mml:mi>
+</mml:msubsup>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula> is parameter matrices which represent that <italic>Q, K</italic>, and <italic>V</italic> are transformed into <italic>h</italic>
+<sub>
+<italic>i</italic>
+</sub> subspaces, and <italic>d</italic> and <inline-formula>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> represent the dimensionality of the model and <italic>h</italic>
+<sub>
+<italic>i</italic>
+</sub> sub-model.</p>
+</sec>
+<sec id="S15">
+<title>Position-wise feed-forward network</title>
+<p id="P25">In addition to multi-head attention layers, the proposed selfRL model include a fully connected feed-forward network, which includes two linear transformations with a ReLU activation function, is given as follows: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M8">
+<mml:mrow>
+<mml:mi>FFN</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>max</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P26">There are the same the linear transformations for various positions, while these linear transformations use various parameters from layer to layer.</p>
+</sec>
+<sec id="S16">
+<title>Residual connection</title>
+<p id="P27">For each sub-layer, a residual connection and normalization mechanism are employed. That is, the output of each sub-layer is given as follows: <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M9">
+<mml:mrow>
+<mml:mi>y</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>x</italic> and <italic>F</italic> (<italic>x</italic>) stand for input and the transformational function of each sub-layer, respectively.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S17" sec-type="results">
+<title>Result</title>
+<p id="P28">In this work, the performance of selfRL is evaluated comprehensively by link prediction on six datasets. The results of selfRL is also compared with the results of 25 methods.</p>
+<sec id="S18">
+<title>Datasets</title>
+<p id="P29">Six datasets, including NeoDTI-Net, deepDR-Net, CTD-DDA, STRING-PPI, DrugBank-DDI, and NDFRT-DDA are used in the experiments; NeoDTI-Net and deepDR-Net were proposed in NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>) and deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>), and the other datasets were proposed in BioNEV (<xref ref-type="bibr" rid="R45">Yue et al. 2019</xref>). Among these datasets, NeoDTI-Net and deepDR-Net are complex biomedical networks that are connected by multiple types of relations; the other datasets are single biomedical networks that include only one type of edge. It is worth noting that the deepDR-Net includes four types of objects (i.e., target, drug, disease, and side-effect), and four types of links (i.e., drug-drug interaction (DDI), drug-target interaction (DTI), drug-disease association (DDA), and drug-side-effect association (DSA). However, in the original deepDR database (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>), there are 12 types of vertices and 11 types of edges. The node and edge statistics of all datasets are shown in <xref ref-type="table" rid="T1">Table 1</xref>. The construction of each network can be found in NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>), deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>), and BioNEV (<xref ref-type="bibr" rid="R45">Yue et al. 2019</xref>).</p>
+</sec>
+<sec id="S19">
+<title>Baseline methods</title>
+<p id="P30">For NeoDTI-Net datasets, the performance of selfRL is compared with those of seven state-of-the-art methods, including MSCMF (<xref ref-type="bibr" rid="R44">Yang et al. 2019</xref>), HNM (<xref ref-type="bibr" rid="R21">Lim et al. 2019</xref>), NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>), DTINet (<xref ref-type="bibr" rid="R22">Luo et al. 2017</xref>), BLM-NII (<xref ref-type="bibr" rid="R24">Mei et al. 2013</xref>), DT-Hybrid (<xref ref-type="bibr" rid="R2">Alaimo et al. 2013</xref>), and NetLapRLS (<xref ref-type="bibr" rid="R41">Xia et al. 2010</xref>). The details on how to set the hyperparameters in above baseline approaches can be found in NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>). For deepDR-Net datasets, the link prediction results generated by selfRL are compared with that of seven baseline algorithms, including deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>), DTINet (<xref ref-type="bibr" rid="R22">Luo et al. 2017</xref>), kernelized Bayesian matrix factorization (KBMF) (<xref ref-type="bibr" rid="R14">Gonen and Kaski 2014</xref>), support vector machine (SVM) (<xref ref-type="bibr" rid="R9">Cortes and Vapnik 1995</xref>), random forest (RF) (<xref ref-type="bibr" rid="R19">L 2001</xref>), random walk with restart (RWR) (<xref ref-type="bibr" rid="R5">Cao et al. 2014</xref>), and Katz (<xref ref-type="bibr" rid="R31">Singhblom et al. 2013</xref>). The details of the baseline approaches and hyperparameters selection can be seen in deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>). For single network datasets, selfRL is compared with 11 network representation methods, that is Laplacian (<xref ref-type="bibr" rid="R4">Belkin and Niyogi 2003</xref>), singular value decomposition (SVD), graph factorization (GF) (<xref ref-type="bibr" rid="R1">Ahmed et al. 2013</xref>), HOPE (<xref ref-type="bibr" rid="R26">Ou et al. 2016</xref>), Grarep (<xref ref-type="bibr" rid="R7">Cao, Lu, and Xu 2015</xref>), DeepWalk (<xref ref-type="bibr" rid="R27">Perozzi, Alrfou, and Skiena 2014</xref>), node2vec (<xref ref-type="bibr" rid="R15">Grover and Leskovec 2016</xref>), struc2vec (<xref ref-type="bibr" rid="R28">Ribeiro, Saverese, and Figueiredo 2017</xref>), LINE (<xref ref-type="bibr" rid="R34">Tang et al. 2015</xref>), SDNE (<xref ref-type="bibr" rid="R38">Wang, Cui, and Zhu 2016</xref>), and GAE (<xref ref-type="bibr" rid="R18">Kipf and Welling 2016</xref>). More implementation details can be found in BioNEV (<xref ref-type="bibr" rid="R45">Yue et al. 2019</xref>). The hyperparameters selection of baseline methods were set to default values, and the original data of NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>), deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>), and BioNEV (<xref ref-type="bibr" rid="R45">Yue et al. 2019</xref>) were used in the experiments.</p>
+</sec>
+<sec id="S20">
+<title>Experiment settings and evaluations</title>
+<p id="P31">The parameters of the proposed selfRL follows those of the BERT (<xref ref-type="bibr" rid="R11">Devlin et al. 2018</xref>) which the number of Transformer blocks (<italic>L</italic>), the number of self-attention heads (<italic>A</italic>), and the hidden size (<italic>H</italic>) is set to 12, 12, and 768, respectively. For the NeoDTI-Net dataset, the embedding vectors are fed into the inductive matrix completion model (IMC) (<xref ref-type="bibr" rid="R16">Jain and Dhillon 2013</xref>) to predict DTI. The number of negative samples that are randomly chosen from negative pairs, is ten times that of positive samples according to the guidelines in NeoDTI (<xref ref-type="bibr" rid="R36">Wan et al. 2018</xref>). Then, to reduce the data bias, the ten-fold cross-validation is performed repeatedly ten times, and the average value is calculated. For the deepDR-Net dataset, a collective variational autoencoder (cVAE) is used to predict DDA. All positive samples and the same number of negative samples that is randomly selected from unknown pairs are used to train and test the model according to the guidelines in deepDR (<xref ref-type="bibr" rid="R48">Zeng et al. 2019</xref>). Then, five-fold crossvalidation is performed repeatedly 10 times. For NeoDTI-Net and deepDR-Net datasets, the area under precision recall (AUPR) curve and the area under receiver operating characteristic (AUC) curve are adopted to evaluate the link prediction performance generated by all approaches. For other datasets, the representation vectors are fed into the Logistic Regression binary classifier for link prediction, the training set (80%) and the testing set (20%) consisted of the equal number of positive samples and negative samples that is randomly selected from all the unknown interactions according to the guidelines in BioNEV. The performance of different methods is evaluated by accuracy (ACC), AUC, and F1 score.</p>
+</sec>
+<sec id="S21">
+<title>Result and analysis on complex heterogeneous network</title>
+<p id="P32">The overall performances of all methods for DTI prediction on the NeoDTI-Net dataset are presented in <xref ref-type="fig" rid="F4">Figure 4</xref>. selfRL shows great results with the AUC and AUPR value close to 1, and significantly outperformed the baseline methods. In particular, NeoDTI and DTINet were specially developed for the NeoDTI-Net dataset. However, selfRL is still superior to both NeoDTI and DTINet, improving the AUPR by approximately 10% and 15%, respectively.</p>
+<p id="P33">The results of DDA prediction of selfRL and baseline methods are represented in <xref ref-type="fig" rid="F5">Figure 5</xref>. These experimental results demonstrate that selfRL generates better results of the DDA prediction on the deepDR-Net dataset than the baseline methods. However, selfRL achieves the improvements in term of AUC and AUPR less than 2%. A major reason for such a poor superiority of the selfRL to the other methods is that selfRL considers only four types of objects and edges. However, deepDR included 12 types of vertices and 11 types of edges of drug-related data. In addition, deepDR specially integrated multi-modal deep autoencoder (MDA) and cVAE model to improve the DDA prediction on the deepDR-Net dataset. Unfortunately, the selfRL+cVAE combination maybe reduce the original balance between the MDA and cVAE.</p>
+<p id="P34">The above results and analysis indicate that the proposed selfRL is a powerful network representation approach for complex heterogeneous networks, and that can achieve very promising results in link prediction. Such a good performance of the proposed selfRL is due to the following facts: (1) selfRL designs a two-level self-supervised learning task to integrate the local association of a node and the global level information of HBNs. (2) meta path detection self-supervised learning task that is an extension of link prediction, is specially designed for link prediction. In particular, path detection of two nodes is equal to link prediction. Therefore, the representation generated by meta path detection is able to facilitate the link prediction performance. (3) selfRL uses meta paths to integrate the structural and semantic features of HBNs.</p>
+</sec>
+<sec id="S22">
+<title>Result and analysis on single network</title>
+<p id="P35">In this section, the link prediction results on four single network datasets are presented to further verify the representation performance of the proposed selfRL. The link prediction results of selfRL and baseline methods on four single network datasets are listed in <xref ref-type="table" rid="T2">Table 2</xref>, and the best results are marked in <bold>boldface</bold>. selfRL shows higher accuracy in link prediction on four single networks compared to the other 11 baseline approaches. Especially, the proposed selfRL can achieves an approximately 2% improvement in terms of AUC and ACC over the second best method on the STRING-PPI dataset. The AUC value of link prediction on the NDFRT-DDA dataset is improved from 0.963 to 0.971 when selfRL is compared with GraRep. However, GraRep only achieves an enhancement of 0.001 compared to LINE that is the third best method on the STRING-PPI dataset. Therefore, the improvement of selfRL is significant in comparison to the enhancement of GraRep compared to LINE. Meanwhile, we also notice that selfRL have poor superiority to the second best method on the CTD-DDA and DrugBank-DDI datasets. One possible reason for this result can be that the structure and semantic of the CTD-DDA and DrugBank-DDI datasets are simple and monotonous, so most of the network representation approaches are able to achieve good performance on them. Consequently, The proposed selfRL is a potential representation method for the single network datasets, and can contribute to link prediction by introducing a two-level self-supervised learning task.</p>
+</sec>
+<sec id="S23">
+<title>Performance of selfRL by ablation analysis</title>
+<p id="P36">In the NeoDTI and deepDR, low-dimensional representations of nodes in HBNs are first learned by network representation approaches, and then are fed into classifier models for predicting potential link among vertices. To further examine the contribution of the network representation approaches, the low-dimensional representation vector is fed into SVM that is a traditional and popular classifier for link prediction. The experimental results of these combinations are shown in <xref ref-type="table" rid="T3">Table 3</xref>. selfRL achieves the best performance in link prediction for complex heterogeneous networks, providing a great improvement of over 10% with regard to AUC and AUPR compared to the NeoDTI and deepDR. With the change of classifiers, the result of sel-fRL in link prediction reduced from 0.988 to 0.962 on the NeoDTI-Net dataset, while the AUC value of NeoDTI approximately reduce by 9%. Interestingly, The results on the deepDR-Net dataset are similar. Therefore, the experimental results indicate that the network representation performance of selfRL is more robust and better than those of the other embedding approaches. This is mainly because selfRL integrates a two-level self-supervised learning model to fuse the rich structure and semantic information from different views. Meanwhile, path detection is an extension of link prediction, yielding to better representation in link prediction.</p>
+</sec>
+<sec id="S24">
+<title>selfRL-based drug repositioning for anti-inflammatory response in COVID-19</title>
+<p id="P37">The emergence and rapid expansion of COVID-19 have posed a global health threat. Recent studies have demonstrated that the cytokine storm, namely the excessive inflammatory response, is a key factor leading to death in patients with COVID-19. Therefore, it is urgent and important to discover potential drugs that prevent the cytokine storm in COVID-19 patients. Meanwhile, it has been proven that interleukin(IL)-6 is a potential target of anti-inflammatory response, and drugs targeting IL-6 are promising agents blocking cytokine storm for severe COVID-19 patients (<xref ref-type="bibr" rid="R23">Mehta et al. 2020</xref>). In the experiments, selfRL is used for drug repositioning for COVID-19 disease which aim to discovery agents binding to IL-6 for blocking cytokine storm in patients. The low-dimensional representation vectors generated by selfRL are fed into the IMC algorithm for predicting the confidence scores between IL-6 and each drug in NeoDTI-Net dataset. Then, the top-10 agents with the highest confidence scores are selected as potential therapeutic agents for COVID-19 patients. The 10 candidate drugs and their anti-inflammatory mechanisms of action <italic>in silico</italic> is shown in <xref ref-type="table" rid="T4">Table 4</xref>.</p>
+<p id="P38">The knowledge from PubMed publications demonstrates that nine out of ten drugs are able to reduce the release and express of IL-6 for exerting anti-inflammatory effects <italic>in silico</italic>. Meanwhile, there are three drugs (i.e., dasatinib, carvedilol, and indomethacin) that inhibit the release of IL-6 by reducing the mRNA levels of IL-6. However, imatinib inhibits the function of human monocytes to prevent the expression of IL-6. In addition, although the anti-inflammatory mechanisms of action of five agents (i.e., arsenic trioxide, irbesartan, amiloride, propranolol, sorafenib) are uncertain, these agents can still reduce the release or expression of IL-6 for preforming anti-inflammatory effects. Therefore, the top ten agents predicted by selfRL-based drug repositioning is able to be used for inhibiting cytokine storm in patients with COVID-19, and should be taken into consideration in clinical studies on COVID-19. These results further indicate that the proposed selfRL is a powerful network representation learning approach, and can facilitate the link prediction in HBNs.</p>
+</sec>
+<sec id="S25">
+<title>Different level representation performance analysis of selfRL</title>
+<p id="P39">In this study, selfRL uses Transformer encoders to learn representation vectors by the proposed vertex entity mask and meta path detection tasks. Meanwhile, the entity- and path-level representations are concatenated for generating the embedding vector of nodes in HBNs. In order to demonstrate the contribution of the different level representation, this work compared selfRL with several representation combinations of the last hidden (LH) or last two hidden (LTH) layers of the trained Transformer. The link prediction result of different level representations are shown in <xref ref-type="table" rid="T5">Table 5</xref>. selfRL achieves the best performance. Meanwhile, the results show that the two-level representation are superior to the single level representation. Interestingly, the concatenation of vectors from the LTH layers is beneficial to improving the link prediction performance compared to the mean value of the vectors from the LTH layers for each level representation model. This is intuitive since two-level representation can fuse the structural and semantic information from different views in HBNs. Meanwhile, larger number of dimensions can provide more and richer information.</p>
+</sec>
+</sec>
+<sec id="S26" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P40">This study proposes a two-level self-supervised representation learning, termed selfRL, for link prediction in heterogeneous biomedical networks. The proposed selfRL designs a meta path detection-based self-supervised learning task, and integrates vertices entity-level mask tasks to capture the rich structure and semantics from two-level views of HBNs. The results of link prediction indicate that selfRL is superior to 25 state-of-the-art approaches on six datasets. In the future, we will design more self-supervised learning tasks with unable data to improve the representation performance of the model. In addition, we will also developed the effective multi-task learning framework in the proposed model.</p>
+</sec>
+</body>
+<back>
+<ack id="S27">
+<title>Acknowledgments</title>
+<p>This work was supported by National Key R&amp;D Program of China 2017YFB0202602, 2018YFC0910405, 2017YFC1311003, 2016YFC1302500, 2016YFB0200400, 2017YFB0202104; NSFC Grants 81973244, U19A2067, 61772543, U1435222, 61625202, 61272056; Science Foundation for Distinguished Young Scholars of Human Province (2020JJ2009); The Funds of Peng Cheng Lab, State Key Laboratory of Chemo/Biosensing and Chemometrics; the Fundamental Research Funds for the Central Universities, and Guangdong Provincial Department of Science and Technology under grant No. 2016B090918122.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Ahmed</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shervashidze</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Narayanamurthy</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Josifovski</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Smola</surname>
+<given-names>AJ</given-names>
+</name>
+</person-group>
+<article-title>Distributed large-scale natural graph factorization</article-title>
+<conf-name>22nd International Conference on World Wide Web</conf-name>
+<year>2013</year>
+<fpage>37</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alaimo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pulvirenti</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Giugno</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ferro</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Drug-target interaction prediction through domain-tuned network-based inference</article-title>
+<source>Bioinformatics</source>
+<year>2013</year>
+<volume>29</volume>
+<issue>16</issue>
+<fpage>2004</fpage>
+<lpage>2008</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Belkin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Niyogi</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Laplacian Eigenmaps and Spectral Techniques for Embedding and Clustering</article-title>
+<source>Advances in Neural Information Processing Systems</source>
+<year>2002</year>
+<volume>14</volume>
+<issue>6</issue>
+<fpage>585</fpage>
+<lpage>591</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Belkin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Niyogi</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Laplacian Eigenmaps for dimensionality reduction and data representation</article-title>
+<source>Neural Computation</source>
+<year>2003</year>
+<volume>15</volume>
+<issue>6</issue>
+<fpage>1373</fpage>
+<lpage>1396</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cao</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pietras</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Doroschak</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Schaffner</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Cowen</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Hescott</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>New directions for diffusion-based network prediction of protein function: incorporating pathways with confidence</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>12</issue>
+<fpage>219</fpage>
+<lpage>227</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Cao</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>deep neural network for learning graph representations</article-title>
+<conf-name>Thirtieth AAAI Conference on Artificial Intelligence</conf-name>
+<publisher-name>AAAI Publications</publisher-name>
+<year>2016</year>
+<fpage>1145</fpage>
+<lpage>1152</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<source>Grarep: Learning graph representations with global structural information</source>
+<year>2015</year>
+<fpage>891</fpage>
+<lpage>900</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhiyuan</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Deli</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Maosong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>EY</given-names>
+</name>
+</person-group>
+<article-title>Network Representation Learning with Rich Text Information</article-title>
+<conf-name>24th International Joint Conference on Artificial Intelligence</conf-name>
+<year>2015</year>
+<fpage>2111</fpage>
+<lpage>2117</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cortes</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Vapnik</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Support-Vector Networks</article-title>
+<source>Machine Learning</source>
+<year>1995</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cui</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>A Survey on Network Embedding</article-title>
+<source>IEEE Transactions on Knowledge and Data Engineering</source>
+<year>2019</year>
+<volume>31</volume>
+<issue>5</issue>
+<fpage>833</fpage>
+<lpage>852</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Devlin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>M-W</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Toutanova</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</article-title>
+<source>arXiv preprint 1810.04805</source>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chawla</surname>
+<given-names>NV</given-names>
+</name>
+<name>
+<surname>Swami</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Meta-path2vec: Scalable Representation Learning for Heterogeneous Networks</article-title>
+<conf-name>Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<year>2017</year>
+<fpage>135</fpage>
+<lpage>144</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Ding</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Seal</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bolton</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Predicting drug target interactions using meta-path-based semantic network analysis</article-title>
+<source>BMC bioinformatics</source>
+<year>2016</year>
+<volume>17</volume>
+<fpage>160</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gonen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kaski</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Kernelized Bayesian Matrix Factorization</article-title>
+<source>IEEE Transactions on Pattern Analysis and Machine Intelligence</source>
+<year>2014</year>
+<volume>36</volume>
+<issue>10</issue>
+<fpage>2047</fpage>
+<lpage>2060</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Grover</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Leskovec</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>node2vec: Scalable Feature Learning for Networks</article-title>
+<conf-name>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<year>2016</year>
+<fpage>855</fpage>
+<lpage>64</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Dhillon</surname>
+<given-names>IS</given-names>
+</name>
+</person-group>
+<article-title>Provable inductive matrix completion</article-title>
+<source>arXiv preprint 1306.0626</source>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Ji</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Attention Based Meta Path Fusion forHeterogeneous Information Network Embedding</article-title>
+<conf-name>Pacific Rim International Conference on Artificial Intelligence</conf-name>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kipf</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Welling</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Variational Graph Auto-Encoders</article-title>
+<source>arXiv:Machine Learning</source>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>L</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Random Forests</article-title>
+<source>Machine Learning</source>
+<year>2001</year>
+<volume>45</volume>
+<issue>1</issue>
+<fpage>5</fpage>
+<lpage>32</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Mei</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<source>DeepCas: An End-to-end Predictor of Information Cascades</source>
+<year>2017</year>
+<fpage>577</fpage>
+<lpage>586</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lim</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ryu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Choe</surname>
+<given-names>YJ</given-names>
+</name>
+<name>
+<surname>Ham</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>WY</given-names>
+</name>
+</person-group>
+<article-title>Predicting Drug-Target Interaction Using a Novel Graph Neural Network with 3D Structure-Embedded Graph Representation</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2019</year>
+<volume>59</volume>
+<issue>9</issue>
+<fpage>3981</fpage>
+<lpage>3988</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>XB</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>YQ</given-names>
+</name>
+<name>
+<surname>Kuang</surname>
+<given-names>WH</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>LG</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>JY</given-names>
+</name>
+</person-group>
+<article-title>A network integration approach for drug-target interaction prediction and computational drug repositioning from heterogeneous information</article-title>
+<source>Nature communications</source>
+<year>2017</year>
+<volume>8</volume>
+<issue>1</issue>
+<comment>573</comment>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mehta</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Mcauley</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sanchez</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Tattersall</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Manson</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>COVID-19: consider cytokine storm syndromes and immunosuppression</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kwoh</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Drug?target interaction prediction by learning from local information and neighbors</article-title>
+<source>Bioinformatics</source>
+<year>2013</year>
+<volume>29</volume>
+<issue>2</issue>
+<fpage>238</fpage>
+<lpage>245</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mikolov</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Sutskever</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Corrado</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Dean</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Distributed Representations of Words and Phrases and their Compositionality</source>
+<year>2013</year>
+<fpage>3111</fpage>
+<lpage>3119</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Ou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Asymmetric Transitivity Preserving Graph Embedding</article-title>
+<conf-name>22nd ACM SIGKDD International Conference on Knowledge Discovery and DataMining</conf-name>
+<year>2016</year>
+<fpage>1105</fpage>
+<lpage>1114</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Perozzi</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Alrfou</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Skiena</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>DeepWalk: Online Learning of Social Representations</article-title>
+<conf-name>Proceedings of the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<publisher-name>KDD, ACM</publisher-name>
+<year>2014</year>
+<fpage>701</fpage>
+<lpage>710</lpage>
+<comment>’14</comment>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ribeiro</surname>
+<given-names>LFR</given-names>
+</name>
+<name>
+<surname>Saverese</surname>
+<given-names>PHP</given-names>
+</name>
+<name>
+<surname>Figueiredo</surname>
+<given-names>DR</given-names>
+</name>
+</person-group>
+<article-title>struc2vec: Learning Node Representations from Structural Identity</article-title>
+<source>knowledge discovery and data mining</source>
+<year>2017</year>
+<fpage>385</fpage>
+<lpage>394</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roweis</surname>
+<given-names>ST</given-names>
+</name>
+<name>
+<surname>Saul</surname>
+<given-names>LK</given-names>
+</name>
+</person-group>
+<article-title>Nonlinear Dimensionality Reduction by Locally Linear Embedding</article-title>
+<source>Science</source>
+<year>2000</year>
+<volume>290</volume>
+<issue>5500</issue>
+<fpage>2323</fpage>
+<lpage>2326</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>WX</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>PS</given-names>
+</name>
+</person-group>
+<article-title>Heterogeneous Information Network Embedding for Recommendation</article-title>
+<source>IEEE Transactions on Knowledge and Data Engineering</source>
+<year>2019</year>
+<volume>31</volume>
+<issue>2</issue>
+<fpage>357</fpage>
+<lpage>370</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Singhblom</surname>
+<given-names>UM</given-names>
+</name>
+<name>
+<surname>Natarajan</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Tewari</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>JO</given-names>
+</name>
+<name>
+<surname>Dhillon</surname>
+<given-names>IS</given-names>
+</name>
+<name>
+<surname>Marcotte</surname>
+<given-names>EM</given-names>
+</name>
+</person-group>
+<article-title>Prediction and Validation of Gene-Disease Associations Using Methods Inspired by Social Network Analyses</article-title>
+<source>PLOS ONE</source>
+<year>2013</year>
+<volume>8</volume>
+<issue>5</issue>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Su</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Tong</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Network embedding in biomedical data science</article-title>
+<source>Briefings in Bioinformatics</source>
+<year>2020</year>
+<volume>21</volume>
+<issue>1</issue>
+<fpage>182</fpage>
+<lpage>197</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>YZ</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>XF</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>TY</given-names>
+</name>
+</person-group>
+<article-title>Pathsim: Meta path-based top-k similarity search in heterogeneous information networks</article-title>
+<source>Proceedings of the VLDB Endowment</source>
+<year>2011</year>
+<volume>4</volume>
+<fpage>992</fpage>
+<lpage>1003</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Qu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mei</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>LINE: Large-scale Information Network Embedding</article-title>
+<conf-name>the 24th International Conference on World Wide Web</conf-name>
+<year>2015</year>
+<fpage>1067</fpage>
+<lpage>1077</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaswani</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shazeer</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Parmar</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Uszkoreit</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Jones</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Gomez</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Kaiser</surname>
+<given-names>Lu</given-names>
+</name>
+<name>
+<surname>Polosukhin</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<source>Attention is All you Need</source>
+<year>2017</year>
+<fpage>5998</fpage>
+<lpage>6008</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wan</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hong</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>NeoDTI: neural integration of neighbor information from a heterogeneous network for discovering new drug-target interactions</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>35</volume>
+<issue>1</issue>
+<fpage>104</fpage>
+<lpage>111</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Michael</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Levy</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Bowman</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding</article-title>
+<conf-name>International Conference on Learning Representations</conf-name>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Structural Deep Network Embedding</article-title>
+<conf-name>the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<year>2016</year>
+<fpage>1225</fpage>
+<lpage>1234</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>GraphGAN: Graph Representation Learning with Generative Adversarial Nets</article-title>
+<source>arXiv: Learning</source>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>SHINE:Signed Heterogeneous Information Network Embedding for Sentiment Link Prediction</article-title>
+<conf-name>11th ACM International Conference on Web Search and Data Mining</conf-name>
+<year>2018</year>
+<fpage>592</fpage>
+<lpage>600</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xia</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>STC</given-names>
+</name>
+</person-group>
+<article-title>Semi-supervised drug-protein interaction prediction from heterogeneous biological spaces</article-title>
+<source>BMC Systems Biology</source>
+<year>2010</year>
+<volume>4</volume>
+<issue>2</issue>
+<fpage>1</fpage>
+<lpage>16</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xiao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fanjin</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhenyu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhaoyu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jing</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Jie</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Self-supervised Learning: Generative or Contrastive</article-title>
+<source>arXiv</source>
+<year>2020</year>
+<pub-id pub-id-type="arxiv">2006.08218</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xiaoqi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Xin</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>LI</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>Network Representation Learning-Based Drug Mechanism Discovery and Anti-Inflammatory Response Against COVID-19</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.26434/chemrxiv.12531314</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>A novel approach for drug response prediction in cancer cell lines via network representation learning</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<issue>9</issue>
+<fpage>1527</fpage>
+<lpage>1535</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yue</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Parthasarathy</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Moosavinasab</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>YG</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Graph embedding on biomedical networks: methods, applications and evaluations</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>36</volume>
+<issue>4</issue>
+<fpage>1241</fpage>
+<lpage>1251</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Yuxiao</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Ziniu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kuansan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yizhou</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jie</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Heterogeneous Network Representation Learning</article-title>
+<conf-name>Proceedings of the 29th International Joint Conference on Artificial Intelligence</conf-name>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R47">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zeng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Karypis</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Repurpose Open Data to Discover Therapeutics for COVID-19 Using Deep Learning</article-title>
+<source>Journal of Proteome Research</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1021/acs.jproteome.0c00316</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zeng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Nussinov</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>deepDR: a network-based deep learning approach to in silico drug repositioning</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<issue>24</issue>
+<fpage>5191</fpage>
+<lpage>5198</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Schema of the heterogeneous biomedical network that includes four types of vertices (i.e., drug, protein, disease, and side-effect).</title>
+</caption>
+<graphic xlink:href="EMS100985-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>The flowchart of the proposed selfRL where the circle, triangle, rhombus, and pentagon denote the different types of node entities in the heterogeneous biomedical network.</title>
+</caption>
+<graphic xlink:href="EMS100985-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Model architecture of selfRL.</title>
+</caption>
+<graphic xlink:href="EMS100985-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>The DTI prediction results of selfRL and baseline methods for NeoDTI-Net dataset.</title>
+</caption>
+<graphic xlink:href="EMS100985-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>The DDA prediction results of selfRL and baseline methods for deepDR-Net dataset.</title>
+</caption>
+<graphic xlink:href="EMS100985-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>The node and edge statistics of the datasets. Here, DDI, DTI, DSA, DDA, PDA, PPI represent the drug-drug interaction, drug-target interaction, drug-side-effect association, and drug-disease association, protein-disease association and protein-protein interaction, respectively.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="top" align="center">Network</th>
+<th valign="top" align="center">Type of nodes</th>
+<th valign="top" align="center">Type of edges</th>
+<th valign="top" align="center">Number of nodes</th>
+<th valign="top" align="center">Number of deges</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="center">NeoDTI-Net</td>
+<td valign="top" align="center">drug, protein, disease, side-effect</td>
+<td valign="top" align="center">DDI, DTI, DDA, DSA, PPI, PDA</td>
+<td valign="top" align="center">12,015</td>
+<td valign="top" align="center">1,895,445</td>
+</tr>
+<tr>
+<td valign="top" align="center">deepDR-Net</td>
+<td valign="top" align="center">drug, protein, disease, side-effect</td>
+<td valign="top" align="center">DDI, DTI, DDA, DDA</td>
+<td valign="top" align="center">16,677</td>
+<td valign="top" align="center">686,298</td>
+</tr>
+<tr>
+<td valign="top" align="center">CTD-DDA</td>
+<td valign="top" align="center">drug, disease</td>
+<td valign="top" align="center">DDA</td>
+<td valign="top" align="center">12,765</td>
+<td valign="top" align="center">92,813</td>
+</tr>
+<tr>
+<td valign="top" align="center">NDFRT-DDA</td>
+<td valign="top" align="center">drug, disease</td>
+<td valign="top" align="center">DDA</td>
+<td valign="top" align="center">13,545</td>
+<td valign="top" align="center">56,515</td>
+</tr>
+<tr>
+<td valign="top" align="center">DrugBank-DDI</td>
+<td valign="top" align="center">drug</td>
+<td valign="top" align="center">DDI</td>
+<td valign="top" align="center">2,191</td>
+<td valign="top" align="center">242,027</td>
+</tr>
+<tr>
+<td valign="top" align="center">STRING-PPI</td>
+<td valign="top" align="center">protein</td>
+<td valign="top" align="center">PPI</td>
+<td valign="top" align="center">15,131</td>
+<td valign="top" align="center">359,776</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Results of link prediction of selfRL and baseline methods on CTD-DDA, NDFRT-DDA, DrugBank-DDI, and STRING-PPI datasets.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="middle" align="center" rowspan="2">Method</th>
+<th valign="top" align="center" colspan="3" style="border-bottom: solid thin">CTD-DDA</th>
+<th valign="top" align="center" colspan="3" style="border-bottom: solid thin">NDFRT-DDA</th>
+<th valign="top" align="center" colspan="3" style="border-bottom: solid thin">DrugBank-DDI</th>
+<th valign="top" align="center" colspan="3" style="border-bottom: solid thin">STRING-PPI</th>
+</tr>
+<tr>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">ACC</th>
+<th valign="top" align="center">F1</th>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">ACC</th>
+<th valign="top" align="center">F1</th>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">ACC</th>
+<th valign="top" align="center">F1</th>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">ACC</th>
+<th valign="top" align="center">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="center">selfRL</td>
+<td valign="top" align="center">
+<bold>0.966</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.906</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.907</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.971</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.938</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.939</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.930</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.853</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.858</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.926</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.856</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.858</bold>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">Laplician</td>
+<td valign="top" align="center">0.856</td>
+<td valign="top" align="center">0.793</td>
+<td valign="top" align="center">0.802</td>
+<td valign="top" align="center">0.930</td>
+<td valign="top" align="center">0.917</td>
+<td valign="top" align="center">0.921</td>
+<td valign="top" align="center">0.796</td>
+<td valign="top" align="center">0.720</td>
+<td valign="top" align="center">0.729</td>
+<td valign="top" align="center">0.639</td>
+<td valign="top" align="center">0.596</td>
+<td valign="top" align="center">0.586</td>
+</tr>
+<tr>
+<td valign="top" align="center">SVD</td>
+<td valign="top" align="center">0.936</td>
+<td valign="top" align="center">0.855</td>
+<td valign="top" align="center">0.854</td>
+<td valign="top" align="center">0.779</td>
+<td valign="top" align="center">0.707</td>
+<td valign="top" align="center">0.700</td>
+<td valign="top" align="center">0.919</td>
+<td valign="top" align="center">0.837</td>
+<td valign="top" align="center">0.837</td>
+<td valign="top" align="center">0.867</td>
+<td valign="top" align="center">0.794</td>
+<td valign="top" align="center">0.790</td>
+</tr>
+<tr>
+<td valign="top" align="center">GF</td>
+<td valign="top" align="center">0.884</td>
+<td valign="top" align="center">0.808</td>
+<td valign="top" align="center">0.805</td>
+<td valign="top" align="center">0.720</td>
+<td valign="top" align="center">0.660</td>
+<td valign="top" align="center">0.655</td>
+<td valign="top" align="center">0.882</td>
+<td valign="top" align="center">0.720</td>
+<td valign="top" align="center">0.802</td>
+<td valign="top" align="center">0.810</td>
+<td valign="top" align="center">0.746</td>
+<td valign="top" align="center">0.747</td>
+</tr>
+<tr>
+<td valign="top" align="center">HOPE</td>
+<td valign="top" align="center">0.951</td>
+<td valign="top" align="center">0.886</td>
+<td valign="top" align="center">0.887</td>
+<td valign="top" align="center">0.949</td>
+<td valign="top" align="center">0.928</td>
+<td valign="top" align="center">0.931</td>
+<td valign="top" align="center">0.923</td>
+<td valign="top" align="center">0.844</td>
+<td valign="top" align="center">0.846</td>
+<td valign="top" align="center">0.839</td>
+<td valign="top" align="center">0.764</td>
+<td valign="top" align="center">0.764</td>
+</tr>
+<tr>
+<td valign="top" align="center">GraRep</td>
+<td valign="top" align="center">0.960</td>
+<td valign="top" align="center">0.899</td>
+<td valign="top" align="center">0.900</td>
+<td valign="top" align="center">0.963</td>
+<td valign="top" align="center">0.931</td>
+<td valign="top" align="center">0.934</td>
+<td valign="top" align="center">0.925</td>
+<td valign="top" align="center">0.845</td>
+<td valign="top" align="center">0.846</td>
+<td valign="top" align="center">0.894</td>
+<td valign="top" align="center">0.823</td>
+<td valign="top" align="center">0.822</td>
+</tr>
+<tr>
+<td valign="top" align="center">DeepWalk</td>
+<td valign="top" align="center">0.929</td>
+<td valign="top" align="center">0.866</td>
+<td valign="top" align="center">0.864</td>
+<td valign="top" align="center">0.783</td>
+<td valign="top" align="center">0.710</td>
+<td valign="top" align="center">0.709</td>
+<td valign="top" align="center">0.921</td>
+<td valign="top" align="center">0.840</td>
+<td valign="top" align="center">0.842</td>
+<td valign="top" align="center">0.884</td>
+<td valign="top" align="center">0.813</td>
+<td valign="top" align="center">0.814</td>
+</tr>
+<tr>
+<td valign="top" align="center">node2vec</td>
+<td valign="top" align="center">0.911</td>
+<td valign="top" align="center">0.838</td>
+<td valign="top" align="center">0.835</td>
+<td valign="top" align="center">0.819</td>
+<td valign="top" align="center">0.742</td>
+<td valign="top" align="center">0.741</td>
+<td valign="top" align="center">0.902</td>
+<td valign="top" align="center">0.819</td>
+<td valign="top" align="center">0.819</td>
+<td valign="top" align="center">0.828</td>
+<td valign="top" align="center">0.758</td>
+<td valign="top" align="center">0.756</td>
+</tr>
+<tr>
+<td valign="top" align="center">struc2vec</td>
+<td valign="top" align="center">0.965</td>
+<td valign="top" align="center">0.903</td>
+<td valign="top" align="center">0.903</td>
+<td valign="top" align="center">0.958</td>
+<td valign="top" align="center">0.913</td>
+<td valign="top" align="center">0.921</td>
+<td valign="top" align="center">0.904</td>
+<td valign="top" align="center">0.826</td>
+<td valign="top" align="center">0.830</td>
+<td valign="top" align="center">0.909</td>
+<td valign="top" align="center">0.838</td>
+<td valign="top" align="center">0.841</td>
+</tr>
+<tr>
+<td valign="top" align="center">LINE</td>
+<td valign="top" align="center">0.965</td>
+<td valign="top" align="center">0.904</td>
+<td valign="top" align="center">0.904</td>
+<td valign="top" align="center">0.962</td>
+<td valign="top" align="center">0.934</td>
+<td valign="top" align="center">0.935</td>
+<td valign="top" align="center">0.905</td>
+<td valign="top" align="center">0.825</td>
+<td valign="top" align="center">0.829</td>
+<td valign="top" align="center">0.859</td>
+<td valign="top" align="center">0.788</td>
+<td valign="top" align="center">0.795</td>
+</tr>
+<tr>
+<td valign="top" align="center">SDNE</td>
+<td valign="top" align="center">0.935</td>
+<td valign="top" align="center">0.863</td>
+<td valign="top" align="center">0.861</td>
+<td valign="top" align="center">0.944</td>
+<td valign="top" align="center">0.896</td>
+<td valign="top" align="center">0.897</td>
+<td valign="top" align="center">0.911</td>
+<td valign="top" align="center">0.833</td>
+<td valign="top" align="center">0.838</td>
+<td valign="top" align="center">0.884</td>
+<td valign="top" align="center">0.813</td>
+<td valign="top" align="center">0.814</td>
+</tr>
+<tr>
+<td valign="top" align="center">GAE</td>
+<td valign="top" align="center">0.937</td>
+<td valign="top" align="center">0.857</td>
+<td valign="top" align="center">0.856</td>
+<td valign="top" align="center">0.813</td>
+<td valign="top" align="center">0.735</td>
+<td valign="top" align="center">0.730</td>
+<td valign="top" align="center">0.917</td>
+<td valign="top" align="center">0.836</td>
+<td valign="top" align="center">0.840</td>
+<td valign="top" align="center">0.900</td>
+<td valign="top" align="center">0.827</td>
+<td valign="top" align="center">0.829</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Performances of selfRL and baseline methods compared with the traditional SVM classifier on NeoDTI-Net and DeepDR-Net datasets, respectively.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="middle" align="center" rowspan="2">Method</th>
+<th valign="top" align="center" colspan="2" style="border-bottom: solid thin">NeoDTI-Net</th>
+<th valign="middle" align="center" rowspan="2">Method</th>
+<th valign="top" align="center" colspan="2" style="border-bottom: solid thin">DeepDR-Net</th>
+</tr>
+<tr>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">AUPR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="center">selfRL</td>
+<td valign="top" align="center">
+<bold>0.962</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.948</bold>
+</td>
+<td valign="top" align="center">selfRL</td>
+<td valign="top" align="center">
+<bold>0.887</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.899</bold>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">NeoDTI</td>
+<td valign="top" align="center">0.855</td>
+<td valign="top" align="center">0.883</td>
+<td valign="top" align="center">DeepDR</td>
+<td valign="top" align="center">0.773</td>
+<td valign="top" align="center">0.779</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<p>Ten high-confidence drugs and their anti-inflammatory mechanisms of action <italic>in silico</italic>. NA denotes that the anti-inflammatory ability of agents has not been found in PubMed publications.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="top" align="center">No.</th>
+<th valign="top" align="center">Drugbank ID</th>
+<th valign="top" align="center">Drug Name</th>
+<th valign="top" align="center">Anti-inﬂammatory mechanism of action</th>
+<th valign="top" align="center">PMID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="center">1</td>
+<td valign="top" align="center">DB01254</td>
+<td valign="top" align="center">Dasatinib</td>
+<td valign="top" align="left">Reducing the mRNA levels</td>
+<td valign="top" align="center">19786067</td>
+</tr>
+<tr>
+<td valign="top" align="center">2</td>
+<td valign="top" align="center">DB00619</td>
+<td valign="top" align="center">Imatinib</td>
+<td valign="top" align="left">Inhibiting the function of human monocytes</td>
+<td valign="top" align="center">21938724, 15661041</td>
+</tr>
+<tr>
+<td valign="top" align="center">3</td>
+<td valign="top" align="center">DB01169</td>
+<td valign="top" align="center">Arsenic trioxide</td>
+<td valign="top" align="left">Unclear</td>
+<td valign="top" align="center">22465848, 16638192</td>
+</tr>
+<tr>
+<td valign="top" align="center">4</td>
+<td valign="top" align="center">DB01136</td>
+<td valign="top" align="center">Carvedilol</td>
+<td valign="top" align="left">Reducing the mRNA levels</td>
+<td valign="top" align="center">27746314, 12048901, 17420794</td>
+</tr>
+<tr>
+<td valign="top" align="center">5</td>
+<td valign="top" align="center">DB01029</td>
+<td valign="top" align="center">Irbesartan</td>
+<td valign="top" align="left">Unclear</td>
+<td valign="top" align="center">15655130, 15867169</td>
+</tr>
+<tr>
+<td valign="top" align="center">6</td>
+<td valign="top" align="center">DB00539</td>
+<td valign="top" align="center">Toremifene</td>
+<td valign="top" align="left">NA</td>
+<td valign="top" align="center">NA</td>
+</tr>
+<tr>
+<td valign="top" align="center">7</td>
+<td valign="top" align="center">DB00594</td>
+<td valign="top" align="center">Amiloride</td>
+<td valign="top" align="left">Unclear</td>
+<td valign="top" align="center">8770057</td>
+</tr>
+<tr>
+<td valign="top" align="center">8</td>
+<td valign="top" align="center">DB00571</td>
+<td valign="top" align="center">Propranolol</td>
+<td valign="top" align="left">Unclear</td>
+<td valign="top" align="center">31849395, 31542162, 28114591</td>
+</tr>
+<tr>
+<td valign="top" align="center">9</td>
+<td valign="top" align="center">DB00328</td>
+<td valign="top" align="center">Indomethacin</td>
+<td valign="top" align="left">Reducing the mRNA levels</td>
+<td valign="top" align="center">1611085, 14991990, 32412158</td>
+</tr>
+<tr>
+<td valign="top" align="center">10</td>
+<td valign="top" align="center">DB00398</td>
+<td valign="top" align="center">Sorafenib</td>
+<td valign="top" align="left">Unclear</td>
+<td valign="top" align="center">31387809, 30154433</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<p>The DTI and DDA prediction result of selfRL and baseline methods on the NeoDTI-Net and DeepDR-Net datasets. The MLTH and CLTH stand for the mean and concatenation values of representation from the last two hidden layers, respectively. ATLRe denotes the mean value of the two-level representation from the last hidden layer.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="middle" align="center" colspan="2" rowspan="2">Different level vector</th>
+<th valign="top" align="center" colspan="2" style="border-bottom: solid thin">NeoDTI-Net</th>
+<th valign="top" align="center" colspan="2" style="border-bottom: solid thin">DeepDR-Net</th>
+</tr>
+<tr>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">AUC</th>
+<th valign="top" align="center">AUPR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="center"/>
+<td valign="top" align="center">LH</td>
+<td valign="top" align="center">0.911</td>
+<td valign="top" align="center">0.898</td>
+<td valign="top" align="center">0.774</td>
+<td valign="top" align="center">0.785</td>
+</tr>
+<tr>
+<td valign="top" align="center">entity-level</td>
+<td valign="top" align="center">ALTH</td>
+<td valign="top" align="center">0.913</td>
+<td valign="top" align="center">0.902</td>
+<td valign="top" align="center">0.796</td>
+<td valign="top" align="center">0.808</td>
+</tr>
+<tr>
+<td valign="top" align="center" style="border-bottom: solid thin"/>
+<td valign="top" align="center" style="border-bottom: solid thin">CLTH</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.916</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.907</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.797</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.809</td>
+</tr>
+<tr>
+<td valign="top" align="center"/>
+<td valign="top" align="center">LH</td>
+<td valign="top" align="center">0.832</td>
+<td valign="top" align="center">0.822</td>
+<td valign="top" align="center">0.781</td>
+<td valign="top" align="center">0.781</td>
+</tr>
+<tr>
+<td valign="top" align="center">path-level</td>
+<td valign="top" align="center">ALTH</td>
+<td valign="top" align="center">0.828</td>
+<td valign="top" align="center">0.810</td>
+<td valign="top" align="center">0.802</td>
+<td valign="top" align="center">0.805</td>
+</tr>
+<tr>
+<td valign="top" align="center" style="border-bottom: solid thin"/>
+<td valign="top" align="center" style="border-bottom: solid thin">CLTH</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.866</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.853</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.804</td>
+<td valign="top" align="center" style="border-bottom: solid thin">0.809</td>
+</tr>
+<tr>
+<td valign="top" align="center"/>
+<td valign="top" align="center">ATLRe</td>
+<td valign="top" align="center">0.956</td>
+<td valign="top" align="center">0.941</td>
+<td valign="top" align="center">0.872</td>
+<td valign="top" align="center">0.875</td>
+</tr>
+<tr>
+<td valign="top" align="center">Two-level</td>
+<td valign="top" align="center">selfRL</td>
+<td valign="top" align="center">
+<bold>0.962</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.948</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.887</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.899</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

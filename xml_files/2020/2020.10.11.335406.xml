@@ -1,0 +1,1031 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS98311</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.11.335406</article-id>
+<article-id pub-id-type="archive">PPR225022</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Unsupervised explainable AI for simultaneous molecular evolutionary study of forty thousand SARS-CoV-2 genomes</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Ikemura</surname>
+<given-names>Toshimichi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Wada</surname>
+<given-names>Kennosuke</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Wada</surname>
+<given-names>Yoshiko</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Iwasaki</surname>
+<given-names>Yuki</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Abe</surname>
+<given-names>Takashi</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Nagahama Institute of Bio-Science and Technology, Nagahama, Shiga-ken 526-0829, Japan</aff>
+<aff id="A2">
+<label>2</label>National Institute of Genetics, Mishima, Shizuoka-ken 411-8540, Japan</aff>
+<aff id="A3">
+<label>3</label>Faculty of Engineering, Niigata University, Niigata-ken 950-2181, Japan</aff>
+<author-notes>
+<corresp id="CR1">
+<email>t_ikemura@nagahama-i-bio.ac.jp</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>15</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>12</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Unsupervised AI (artificial intelligence) can obtain novel knowledge from big data without particular models or prior knowledge and is highly desirable for unveiling hidden features in big data. SARS-CoV-2 poses a serious threat to public health and one important issue in characterizing this fast-evolving virus is to elucidate various aspects of their genome sequence changes. We previously established unsupervised AI, a BLSOM (batch-learning SOM), which can analyze five million genomic sequences simultaneously. The present study applied the BLSOM to the oligonucleotide compositions of forty thousand SARS-CoV-2 genomes. While only the oligonucleotide composition was given, the obtained clusters of genomes corresponded primarily to known main clades and internal divisions in the main clades. Since the BLSOM is explainable AI, it reveals which features of the oligonucleotide composition are responsible for clade clustering. The BLSOM has powerful image display capabilities and enables efficient knowledge discovery about viral evolutionary processes.</p>
+</abstract>
+<kwd-group>
+<kwd>COVID-19</kwd>
+<kwd>big data</kwd>
+<kwd>oligonucleotide</kwd>
+<kwd>zoonotic virus</kwd>
+<kwd>viral adaptation</kwd>
+<kwd>PCR primer</kwd>
+<kwd>therapeutic oligonucleotide</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">To confront the global threat of COVID-19<sup>
+<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>
+</sup>, many SARS-CoV-2 genome sequences have been rapidly decoded and promptly released through the GISAID database<sup>
+<xref ref-type="bibr" rid="R3">3</xref>
+</sup>. To characterize this virus in various ways, we must implement diverse research methods such as AI (artificial intelligence), that are suitable for big data analyses. Unsupervised machine learning can obtain new information from big data without particular models or presumptions and is highly desirable for mining big data. We previously established a BLSOM (batch-learning self-organizing map) for oligonucleotide compositions, which can reveal various new characteristics of genome sequences<sup>
+<xref ref-type="bibr" rid="R4">4</xref>,<xref ref-type="bibr" rid="R5">5</xref>
+</sup>.</p>
+<p id="P3">Oligonucleotide composition varies significantly among species, even those with the same genome G+C%, and is called the genome signature<sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup>. When we constructed a BLSOM for oligonucleotide compositions in fragment sequences (e.g., 10 kb) from a wide variety of species, the sequences were clustered (self-organized) primarily according to species, despite no species information being used during machine learning<sup>
+<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. Importantly, the BLSOM is suitable for large-scale analysis and has been used to analyze five million genomic fragments from over one thousand genera<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>. In addition, the BLSOM is explainable AI and can reveal the drivers of species-specific clustering (self-organization).</p>
+<p id="P4">Many host factors (e.g., nucleotide pools, proteins and RNAs) and antiviral mechanisms (e.g., antibodies, cytotoxic T cells and interferons) are involved in viral growth and infection<sup>
+<xref ref-type="bibr" rid="R9">9</xref>,<xref ref-type="bibr" rid="R10">10</xref>
+</sup>. Since human cells may not present ideal growth conditions for zoonotic viruses that have invaded from nonhuman hosts, efficient growth and human-human transmission will likely require changes in the viral genome. To study this viral adaptation, we previously analyzed time-series changes in the mono- and oligonucleotide compositions of four zoonotic RNA viruses (influenza virus<sup>
+<xref ref-type="bibr" rid="R11">11</xref>,<xref ref-type="bibr" rid="R12">12</xref>
+</sup>, Zaire ebolavirus<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>, MERS coronavirus<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup> and SARS-CoV-2<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>) and identified time-series directional changes that were detectable even on a monthly basis.</p>
+<p id="P5">In the case of fast-evolving RNA viruses, diversity within the viral population arises rapidly as the epidemic progresses and subpopulation structure forms, and the GISAID consortium has defined seven main clades, and Mercatelli and Giorgi (2020)<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup> have recently conducted a large-scale search for prevalent mutations worldwide. In the present study, over 40,000 genomes of SARS-CoV-2 are analyzed by using BLSOMs with oligonucleotides of various lengths. The BLSOM is a sequence alignment-free method, and during machine learning, only the oligonucleotide composition of each viral genome is given. Therefore, clustering is performed basing only on the similarity of oligonucleotide compositions. By trying various oligonucleotide lengths, we obtained conditions for separating the known clades with high accuracy. Since the BLSOM is explicable AI, it can identify the features of oligonucleotide compositions responsible for the separation. Since the BLSOM method is based on a completely different principle than conventional clade assignment based on sequence alignment, additional information can be obtained.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>BLSOM for 1 ~ 6-mers</title>
+<p id="P6">In the present study, over forty thousand SARS-CoV-2 genomes, which have been isolated from December 2019 to June 2020, were analyzed; polyA-tail was removed prior to all analyses. <xref ref-type="fig" rid="F1">Figure 1</xref> shows the BLSOM results for the mono- to hexanucleotide compositions in the viral genomes; importantly, only the composition was used in the learning process. The total number of nodes (grid points) was set to 1/20 of the total number of viral genomes (40,450); therefore, each node had an average of 20 genomes. After learning, to determine if the separation by the BLSOM was related to known clads, grid points containing genomes of a single clade were colored to indicate each clade, and grid points containing those of multiple clades were displayed in black. <xref ref-type="fig" rid="F1">Figure 1</xref> shows that most grid points in the mononucleotide BLSOM are black, indicating that the genome sequences are not separated by clade. However, for greater than dinucleotide lengths, the separation by clade gradually becomes clear. While each node has 20 genomes on average, and even though grids containing at least one genome belonging to another clade are marked in black, a major portion of the grids in the BLSOM for 4- to 6-mers are colored, showing the good classification power of the BLSOM. We thus tested oligonucleotides longer than 6-mers.</p>
+</sec>
+<sec id="S4">
+<title>BLSOM for 7-mers</title>
+<p id="P7">For 7-mers, the BLSOM handles 16,384 (the 7th power of 4) variables, and for efficient analysis, some modification of PCA used to set the initial state for machine learning is required, as described in the Methods. The BLSOM with this minor modification provides good separation by clade (<xref ref-type="fig" rid="F2">Fig. 2ai</xref>). BLSOM is explainable AI and can provide information about the oligonucleotides responsible for the clustering (<xref ref-type="fig" rid="F2">Fig. 2aii</xref>); the representative vector for each node is composed of 16,384 variables, and the contribution levels of the variables at each node can be visualized by a heatmap: high (red), moderate (white) and low (blue)<sup>
+<xref ref-type="bibr" rid="R16">16</xref>
+</sup>. In <xref ref-type="fig" rid="F2">Fig. 2aii</xref>, two examples of 7-mers are presented; UAGCGCU has a high occurrence (red) primarily in GH zones (mandarin orange), whereas GAGCGCU, which differs from the former by one underlined base, has a low occurrence (blue) there. When considering all 7-mer patterns (refer to Supplementary Fig. S1), we observed multiple cases in which occurrence levels visualized as red/blue were reversed for a pair of 7-mers with a one-base difference, as shown in <xref ref-type="fig" rid="F2">Fig. 2aii</xref>. Notably, these reverse patterns were primarily observed for individual clade territories, indicating that one-base differences may be related to mutations involved in clade separation.</p>
+</sec>
+<sec id="S5">
+<title>Necessity for dimension reduction</title>
+<p id="P8">Notably, most 7-mers existed in multiple copies in the viral genomes; therefore, a one-base difference giving the red/blue reverse pattern could not be connected uniquely to a mutation in the viral genome. In other words, extending the oligonucleotide length until most k-mers were present as one copy per genome should allow us to connect one-base differences to mutations. Accordingly, we calculated the occurrences of long oligonucleotides in the viral genomes, and when the length was extended to 15-mers, most showed one copy per genome. The 15-mers, however, included over one billion types (the 15th power of 4), and even for those that appeared in the viral genomes, there were more than 0.3 million types. A strategy for dimension reduction is essential for efficient analyses; then we examined the effects of dimension reduction on clade separation by testing 7-mers again.</p>
+<p id="P9">In Supplementary Fig. S1, most 7-mers are red/blue all over and very locally dotted with blue/red, respectively. These 7-mers are thought to correspond to sequences that have not mutated in most strains or that arose by mutations but remain in only a small number of strains. The oligonucleotides whose frequency in the viral population has not significantly changed with time should not be involved in the formation of main subpopulations, such as the main clades. To exclude these numerous 7-mers and select those that have changed significantly in occurrence during the pandemic, we first tabulated viral strains for each month of collection and calculated the 7-mer occurrence frequency therein. To compare the frequencies in the June (2020) and December (2019) populations, we next selected 7-mers whose frequency in the June population increased/decreased by at least 0.1 compared with that in the December population. We constructed a BLSOM with these 255 selected 7-mers (<xref ref-type="fig" rid="F2">Fig. 2b</xref>). Even using a very minor portion of the 7-mers (255/16384 = 0.016), good separation by clade was observed, but the mutual separation of L, S and V clades, which are prevalent in Asia, was poor. This should be because strains belonging to these clades were very minor in the June population.</p>
+<p id="P10">To study evolutionary processes throughout the epidemic phase, we must consider an intermediate phase and choose the March population here; then we selected 7-mers whose frequency in the March population increased/decreased by at least 0.1 compared with that in the December population. The 334 obtained 7-mers were combined with the June 7-mers used in <xref ref-type="fig" rid="F2">Fig. 2b</xref>. After excluding duplicates, we constructed a BLSOM for the 377 remaining 7-mers. Importantly, the BLSOM separation (<xref ref-type="fig" rid="F3">Fig. 3ci</xref>) was clearer than that observed when using 16384 types of 7-mers (<xref ref-type="fig" rid="F3">Fig. 3ai</xref>), and the red/blue reverse pattern was clearly connected to clade separation; for four clades, <xref ref-type="fig" rid="F2">Fig. 2cii</xref> presents a pair of red/blue patterns corresponding to a pair of 7-mers with a one-base difference, and Supplementary Fig. S2 presents all red/blue patterns. Since the dimension-reduction strategy appeared to be useful, we applied it to the 15-mer BLSOM.</p>
+</sec>
+<sec id="S6">
+<title>BLSOM for 15-mers</title>
+<p id="P11">Most 15-mers have only one copy in the viral genome as mentioned above. More precisely, ten 15-mers have had two copies since December 2019, and the two copies are present in almost all strains until June, so these 15-mers are unrelated to mutations with significant changes in population frequency during the pandemic. As performed for 7-mers in <xref ref-type="fig" rid="F2">Fig. 2c</xref>, we selected 15-mers whose frequency in the March/June population increased/decreased by at least 0.1 compared with that in the December population and obtained 587 different 15-mers.</p>
+<p id="P12">Because a maximum of one copy of these 15-mers was present in the genome, the occurrence frequency of a given 15-mer in a certain population corresponds to the frequency of the strains having the 15-mer sequence. The BLSOM with the 587 different 15-mers (<xref ref-type="fig" rid="F3">Fig. 3a</xref>) showed good separation by clade. While each node has 50 genomes on average, and even though grids containing at least one genome belonging to another clade are marked in black, a major portion of the grids are colored. Next, we will examine why this good separation was obtained by focusing only on these 15-mers.</p>
+</sec>
+<sec id="S7">
+<title>15-mers with rapidly changing population frequencies</title>
+<p id="P13">The novel characteristic of evolutionary study of this fast-evolving virus is near-future prediction and verification on a monthly basis. We previously performed a time-series analysis of 20-mer occurrences in over ten thousand SARS-CoV-2 strains isolated from December 2019 to April 2020 and identified seven mutations rapidly increasing in population frequency<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>; for all 20-mers, we created a histogram of increase levels in the April population compared with the December population and identified the rapidly increasing mutations. Here, we conducted a similar histogram analysis of over 250,000 types of 15-mers found in over forty thousand viral genomes; we analyzed the occurrence level of each 15-mer on a monthly basis. <xref ref-type="fig" rid="F3">Figure 3b</xref> is a histogram of the differences in 15-mer frequency between the June and December populations.</p>
+<p id="P14">On the horizontal axis, the frequency difference relative to December is displayed, and on the vertical axis, the number of 15-mer types with the frequency difference in a 0.04 range is displayed. In the first histogram, the numbers of 15-mer types are displayed as normal values. In the center, where the frequency difference is close to zero, there is a very high peak, showing that most 15-mers underwent little change in population frequency from December; i.e., most 15-mer sequences did not mutated, or if they did, they did not spread significantly in the population. These 15-mers are not responsible for formation of main subpopulations such as main clades.</p>
+<p id="P15">In the other histogram, the vertical axis is displayed logarithmically to show low values. Interestingly, there are clear characteristic peaks near both ends where the increase/decrease in frequency exceeds 0.9 (colored in dark and light brown, respectively), which has a logarithmic value of 1.778 (= 60); i.e., 60 types of 15-mers that belong to the dark/light brown peak have drastically increased/decreased in population frequency, respectively. The BLASTn analysis of a total of 120 types of the 15-mers against a standard viral genome sequence<sup>
+<xref ref-type="bibr" rid="R17">17</xref>,<xref ref-type="bibr" rid="R18">18</xref>
+</sup> showed that these 120 types were related to four mutations, which correspond to four of the seven mutations that were previously found to be rapidly increasing in population frequency<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>. Since the fifteen 15-mers with one mutation can be represented as one 29-mer sequence, the pre- and postmutation sequences of the 29-mers are presented in Supplementary Fig. S3. In the upper and lower panels of <xref ref-type="fig" rid="F3">Fig. 3ci</xref>, the monthly population frequencies of the increasing/decreasing 15-mers are arranged according to the elapsed month. Since these 15-mers are the pairs produced by mutations, the two panels show symmetrical time-series changes. Notably, these mutations were previously found to increase monotonically to a frequency of 0.84 until April and continued to increase to 0.94 until June, supporting the monotonic increase tend reported in the previous study<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>.</p>
+</sec>
+<sec id="S8">
+<title>Reverse red/blue patterns for 15-mers</title>
+<p id="P16">In the BLSOM shown in <xref ref-type="fig" rid="F3">Fig. 3a</xref>, the representative vector for each node is composed of 587 variables, and the contribution level of each variable at each node can be visualized by a red/blue heatmap (<xref ref-type="fig" rid="F3">Fig. 3cii</xref>). Since fifteen pairs of 15-mers related to one mutation showed primarily the same red/blue patter, one example of each mutation is presented in <xref ref-type="fig" rid="F3">Fig. 3cii</xref>; the upper and lower panels show the patterns for the pre- and postmutation 15-mers, respectively. Notably, for the four mutations, very similar red/blue reverse patterns were observed, which correspond to the separation of G (red), GH (mandarin orange) and GR (yellow green) territories from L (green), S (cyan) and V (blue) territories of the Asian-type. In addition to dark and light brown peaks in the logarithmic histogram, characteristic peaks are also observed at positions apart from the central peaks, whose increases/decreases exceed 0.2, and are specified by dark/light blue; the number of peaks on the increase side (dark blue) is smaller than that on the decrease side (light blue), and the BLASTn analysis of 15-mers belonging to the dark blue peaks revealed that they are related to the two mutations (M5 and M7 in <xref ref-type="table" rid="T1">Table 1</xref>), which were also reported previously<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>. In <xref ref-type="fig" rid="F3">Fig. 3di</xref>, the time-series changes of increasing and decreasing 15-mers are plotted in the same panel.</p>
+</sec>
+<sec id="S9">
+<title>Mutations involved in main clade separation</title>
+<p id="P17">We next explain details of the six mutations described in <xref ref-type="fig" rid="F3">Fig. 3</xref>. <xref ref-type="table" rid="T1">Table 1</xref> lists the nucleotide and amino-acid changes and the clade territories in the BLSOM where the mutated sequences are located (i.e., the red region in the heatmap) along with the day of first isolation of the strain with the respective mutation. When the red region corresponds primarily to the entire territory of a certain clad, the suffix “a” is added, and when the red region is a part of a certain clade territory but is a continuous zone, “i” and “ii” are used to distinguish the separate zone. In addition, when the red areas are scattered in a clade, they are noted by “p”. The sequences with the first four mutations (M1-4) are specified as Ga, GHa and GRa, because the mutated sequences exist in the entire areas of G, GH and GR; these mutations are thought to relate to the separation of G and its offspring GH and GR, which are prevalent in Europe, from the Asian-types L, S and V. The first isolation date for these mutations was 1/24 in Sichuan or Zhejiang in China, and the second isolation date was 1/28 in Germany or Lishui in China. The sequences with the M5 or M7 mutation were localized in GHa or GRa, respectively, showing that the mutations should relate to the separation of GH and GR from G; the first isolation date of M5 and M7 was 2/4 in the USA and 2/16 in England, respectively.</p>
+</sec>
+<sec id="S10">
+<title>Consistency in identifying mutations with the phylogenetic clustering method</title>
+<p id="P18">With a phylogenetic method using NUCMER<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> for sequence alignment, Mercatelli and Giorgi (2020)<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup> have conducted a large-scale search for common mutations worldwide and compared them with ten known mutations that have been associated with main clade separation by the GISAID consortium. The genomic positions of the ten mutations are shown in bold in the Relation column in <xref ref-type="table" rid="T1">Table 1</xref>, and when our identified locations matched the mutations reported by Mercatelli and Giorgi (2020)<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>, they were underlined. Our analysis relies only on BLSOM, histogram and time-series analyses of oligonucleotide composition, all of which are sequence alignment-free methods. The degree to which these different methods give similar results is important for knowing the reliability of the method. The six mutations assigned in the analysis of <xref ref-type="fig" rid="F3">Fig. 3c</xref> and d were found to be among the ten known mutations and thus were underlined. Notably, in <xref ref-type="fig" rid="F3">Fig. 3c</xref> and d, the 15-mers whose increase/decrease was remarkable to others and exceeded 0.2 in the histogram of <xref ref-type="fig" rid="F3">Fig. 3bii</xref> were analyzed. Since the BLSOM shown in <xref ref-type="fig" rid="F3">Fig. 3a</xref> targeted the 15-mers with an increase/decrease of at least 0.1, it contains all of these prominent 15-mers, resulting in a good separation according to main clades. In addition, since the BLSOM targeted the 15-mers with an increase/decrease of at least 0.1, the time-series change and heatmap pattern can be obtained for more 15-mers than those analyzed in <xref ref-type="fig" rid="F3">Fig. 3c and d</xref>, and <xref ref-type="fig" rid="F4">Fig. 4a</xref>~g present the additional results showing the reverse pattern for both the time-series change and the heatmap diagram. In <xref ref-type="fig" rid="F4">Figs. 4a</xref> for M6 and 4b for M8, differential parts of the GH territory are red, showing the internal branching of GH; M6 first appeared on 2/4 in the USA, and M8 appeared on 2/28 in Canada. In <xref ref-type="fig" rid="F4">Fig. 4c</xref> for M9, the red area covers the V territory, and this mutation was first isolated on 1/17 in Yunnan and among the ten mutations. <xref ref-type="fig" rid="F4">Figures 4d</xref> for M10 and 4e for M11 show that the red area covers the S territory, indicating that the two mutations, which first appeared in the same strain isolated on 1/5 in Wuhan, are related to the S separation. Since M11 (but not M10) is a synonymous mutation and has been lost in some S-clade strains since 1/23, M11 may be a hitchhiker-type neutral mutation that has increased with M10.</p>
+<p id="P19">In the case of M12 (<xref ref-type="fig" rid="F4">Fig. 4f</xref>), a part of the V and S territories, as well as a very minor part of the GR territory, is red; this is a synonymous mutation of Tyr and may have occurred independently. In the case of M13 (<xref ref-type="fig" rid="F4">Fig. 4g</xref>), it is red locally at L, G, and GH; for L, it first appeared on 1/23 in Guangdong, for G on 3/5 in the USA and for GHiip on 3/15 in India and Saudi Arabia. Notably, the strains that appeared in the GHiip territory are prevalent in Asia and overlap, in the BLSOM, with or are adjacent to the Asia-prevalent G strains that also have the M13, showing that the position within on the map reflects similarities in the presence of mutations other than those contributing to the main clade separation. Since this is a nonsynonymous mutation from Ser to Leu and continues to increase monotonically over time, it appears to be a functionally beneficial mutation. This mutation (M13) and M8, which are not among mutations reported by Mercatelli and Giorgi (2020)<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>, have increased in frequency mainly since May. Collectively, the three mutations (M7, 9 and 11) are also among the ten mutations related to the main clade separation; therefore, nine mutations analyzed so far were among the ten mutations, and the remaining one (M0 in <xref ref-type="table" rid="T1">Table 1</xref>) will be discussed in the Discussion section. Notably, AI can separate the V clade from others without the 15-mers related to M0, and this type of information should be important for identifying the mutation essential for separation of the respective clades.</p>
+</sec>
+<sec id="S11">
+<title>Decreasing 15-mers with no increasing pairs</title>
+<p id="P20">In the histogram in <xref ref-type="fig" rid="F4">Fig. 4bii</xref>, a higher number of peaks are observed on the decreasing side (specified by light blue) than on the increasing side (specified by dark blue), showing that many decreasing 15-mers were present. BLASTn analysis showed that these 15-mers were derived primarily from the beginning part of the 5’ UTR or the end part of the 3’ UTR. Many strains isolated in the early epidemic stage have been sequenced to near the start and end of the genome, but with the rapid pandemic spread, a large number of genomes for which the sequences in UTRs are undetermined have accumulated in the GISAID, and this had resulted in a time-series decrease for both end sequences. This decrease was due to artificial manipulation, and there was no relationship between heatmap patterns and clade territories (data not shown).</p>
+<p id="P21">However, there was a peculiar group of 15-mers in the S gene, which showed a time-series decrease, but there was no pair showing an increase. In the heatmap, there was a characteristic blue pattern but not a red one (<xref ref-type="fig" rid="F4">Fig. 4h</xref>); the small blue regions were scattered among multiple clade territories, showing that the genomes lacking the 15-mers of interest were scattered there. Since there was no paired red pattern in the heatmap and no pair increasing in the time-series analysis, the 15-mers decreasing in <xref ref-type="fig" rid="F4">Fig. 4h</xref> may not be due to mutation. When the sequences located in the small blue areas were investigated, two consecutive bases in the S gene were registered as unknown bases (NN); CCUU (24980-24983) was registered as CNNU: N1 in <xref ref-type="table" rid="T1">Table 1</xref>. When the total number of Ns in the genomes with the CNNU was examined, there was no tendency for the number to be higher than in other genomes. Therefore, this genomic site is considered to be difficult to sequence or inaccurate for sequencing; the CNNU sequence was observed in genomes of five different clades. Even in RNA viral genomes, modifications such as methylation are known to occur and their functions are drawing attention<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup>, and some modifications may inhibit the proper progression of reverse transcriptase, resulting in sequencing difficulty. If the CNNU in the S gene is caused by RNA modification, the BLSOM will become a method for searching for such special genomic sites.</p>
+</sec>
+</sec>
+<sec id="S12" sec-type="discussion">
+<title>Discussion</title>
+<p id="P22">The analyses shown in <xref ref-type="fig" rid="F3">Figs. 3</xref> and <xref ref-type="fig" rid="F4">4</xref> identified nine mutations, which were among the ten known mutations assigned by the phylogenetic clustering method based on sequence alignment. To explore the remaining one (denoted as M0 in <xref ref-type="table" rid="T1">Table 1</xref>), we analyzed time-series changes of fifteen 15-mers harboring the M0 mutation and found that their population frequency was 0.15 in February but only 0.09 in March and did not increase thereafter (data not shown). Because our analysis was based on 15-mers whose frequency increased/decreased to at least 0.1 in the March/June population, the M0 mutation was excluded from the analysis. To check this explanation, the increase/decrease level was reduced to 0.05, and the 2087 types of 15-mers obtained were used for additional BLSOM analysis (Supplementary Fig. S4). The reverse patterns of the red/blue heatmap and the time-series change were just as expected (data not shown), proving that the present AI method produce the result totally consistent with that of the phylogenetic clustering method. Notably, during AI assignment, the V clade separation was achieved even without the M0-related 15-mers, and this type of information should clarify the importance of individual mutations that contribute to each clade separation. The BLSOM of 2087 types of 15-mers with an increase/decrease of at least 0.05 should assign the mutations related to much more detailed subgroupings in each clade. Since the BLSOM has a powerful visualization ability, it can also provide information concerning genomic sites that are difficult to sequence (e.g., N1 in <xref ref-type="table" rid="T1">Table 1</xref> and <xref ref-type="fig" rid="F4">Fig. 4h</xref>) for various reasons, including possible RNA modifications.</p>
+<p id="P23">Even during preparation of the present manuscript, many genome sequences of SARS-CoV-2 accumulated in the GISAID database. This appears to be a research difficulty but should provide a unique advantage. For the fast-evolving RNA virus, the near-future prediction and verification cycle can be realized, although the elementary process of molecular evolution is based on random mutation. This is because the time-series directional changes have been observed on a monthly basis most likely due to the viral adaptation for efficient growth in human cells. Near-future prediction and verification should be the most direct ways to test the reliability of the obtained results, models and ideas, providing a new paradigm for molecular evolutionary studies. Taking this view into consideration, we will proceed with the discussion.</p>
+<p id="P24">In the present 15-mer analysis, we focused on the March/June population for the middle/final period and obtained 587 types of 15-mers that increased/decreased in population frequency by at least 0.1. When strains isolated later this year become available, our successive strategy will be to search for new 15-mers that increased/decreased their frequency by at least 0.1 (or 0.05) compared with that in December and construct a BLSOM of 15-mers including these newly obtained ones. A trial analysis of 3700 recently downloaded genomes isolated in August revealed only one new mutation that increased in frequency to 0.1 in the August population. This mutation had a frequency of 0.09 in June that increased to 0.12 in August; therefore, the corresponding 15-mers were included in the BLSOM presented in Supplementary Fig. S4. In the corresponding heatmap, red/blue inversion was observed within the GR territory, showing that it was an internal branch of GR. The mutation was an amino acid substitution: I120F in the gene encoding nsp2.</p>
+<p id="P25">The phylogenetic method based on sequence alignment is a well-established and irreplaceable method for molecular evolutionary studies. The presently developed sequence alignment-free method is suitable for analyzing a massive amount of sequence data and can analyze over five million sequences simultaneously<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>; notably, this method is highly robust against sequencing errors, and therefore, no special pretreatment is required. Furthermore, the BLSOM is unsupervised AI that can be used without special models or presumptions, and has powerful visualization capabilities that enable efficient knowledge discovery from big data. Evolutionary studies have entered the era of big data, and the present method can complement phylogenetic methods based on sequence alignment, especially for a massive number of sequences.</p>
+</sec>
+<sec id="S13" sec-type="methods">
+<title>Methods</title>
+<sec id="S14">
+<title>Genome sequences</title>
+<p id="P26">Genome sequences of human SARS-CoV-2 were downloaded from the GISAI database (<ext-link ext-link-type="uri" xlink:href="https://www.gisaid.org/epiflu-applications/next-hcov-19-app/">https://www.gisaid.org/epiflu-applications/next-hcov-19-app/</ext-link>)<sup>
+<xref ref-type="bibr" rid="R3">3</xref>
+</sup>; sequences belonging to the complete genome, high-coverage and human categories were downloaded on July 20, 2020. We used all SARS-CoV-2 genome sequences (40,450) after removing their polyA-tails. Although a significant number of viral sequences contained many Ns (undetermined nucleotides), we did not conduct any special preprocessing because in big data analyses, such as word-count analyses, the effects of erroneous data appear to naturally decrease with an increase in dataset size. In the Discussion section, 3708 sequences isolated in August are additionally analyzed. The word-count program can be obtained from <email>k_wada@nagahama-i-bio.ac.jp</email>.</p>
+</sec>
+<sec id="S15">
+<title>BLSOM</title>
+<p id="P27">The SOM developed by Kohonen et al. (1966)<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> is an unsupervised neural network algorithm that implements characteristic nonlinear projection from the high-dimensional space of input data onto a two-dimensional array of weight vectors. We previously modified the conventional SOM for genome informatics to make the learning process and resulting map independent of data-input order and established a BLSOM<sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. The BLSOM for oligonucleotide composition was constructed as described previously<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>; initial vectorial data for the BLSOM were defined as the first and second components from PCA (principal component analysis). Because PCA can detect basic properties of genomic sequences, such as G+C%, global patterns of oligonucleotide BLSOMs, in which various learning parameters and the number of sequences per node are changed, resembled each other<sup>
+<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R16">16</xref>
+</sup>. However, PCA requires a very long calculation time for k-mers of a large number of sequences (approximately 40,000 sequences in this case) when k&gt;6. During machine learning, distance calculation is performed for sequence data and nodes (e.g., 1/50 of the number of sequences), and the calculation time is dramatically reduced. In other words, for 7-mer or longer oligonucleotides, the PCA process used only to determine the initial state requires a much longer computation time than machine learning, making efficient high-dimensional analysis difficult. To solve this problem of 7-mers in PCA, 1/100 of the sequences were randomly selected, and the PCA result obtained for these sequences was used to set the initial state. BLSOM programs were obtained from <email>k_wada@nagahama-i-bio.ac.jp</email> and <ext-link ext-link-type="uri" xlink:href="http://bioinfo.ie.niigata-u.ac.jp/?BLSOMviewer#jc96a619">http://bioinfo.ie.niigata-u.ac.jp/?BLSOMviewer#jc96a619</ext-link>.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgements</title>
+<p>We gratefully acknowledge the authors submitting their sequences from GISAID’s Database. We gratefully acknowledge also the valuable comments of Dr. Yashushi Hiromi of National Institute of Genetics (Mishima). This work was supported by JSPS KAKENHI Grant Number 18K07151, by AMED under Grant Number JP20he0622033 and by COVID-19 Counterplan Research Project (supervised by Prof. Tatsumi Hirata, NIG) from the Research Organization of Information and Systems (ROIS).</p>
+<sec id="S17">
+<title>Funding</title>
+<p>This work was supported by JSPS KAKENHI Grant Number 18K07151.</p>
+</sec>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P28">
+<bold>Author contributions</bold>
+</p>
+<p id="P29">T.I. and T.A. designed this project and conducted genome analysis. K.W., Y.W. and Y.I. developed computer programs. T.I. wrote the manuscript. All authors participate in the discussion through the project.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P30">
+<bold>Competing interests</bold>
+</p>
+<p id="P31">The authors declare no competing interests.</p>
+</fn>
+<fn id="FN3">
+<p id="P32">
+<bold>Additional information</bold>
+</p>
+<p id="P33">Supplementary Figs. S1-S4.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="web">
+<collab>World Health Organization</collab>
+<article-title>Coronavirus Disease (COVID-2019)</article-title>
+<source>Situation Reports</source>
+<year>2020</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019">https://www.who.int/emergencies/diseases/novel-coronavirus-2019</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>ZL</given-names>
+</name>
+</person-group>
+<article-title>Characteristics of SARS-CoV-2 and COVID-19</article-title>
+<source>Nat Rev Microbiol</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1038/s41579-020-00459-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Global Challenges</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kanaya</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Analysis of codon usage diversity of bacterial genes with a self-organizing map (SOM) - characterization of horizontally transferred genes with emphasis on the E. coli O157 genome</article-title>
+<source>Gene</source>
+<year>2001</year>
+<volume>276</volume>
+<fpage>89</fpage>
+<lpage>99</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abe</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Informatics for unveiling hidden genome signatures</article-title>
+<source>Genome Res</source>
+<year>2003</year>
+<volume>13</volume>
+<fpage>693</fpage>
+<lpage>702</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Karlin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Campbell</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Mrazek</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Comparative DNA analysis across diverse genomes</article-title>
+<source>Annu Rev Genet</source>
+<year>1998</year>
+<volume>32</volume>
+<fpage>185</fpage>
+<lpage>225</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abe</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Novel phylogenetic studies of genomic sequence fragments derived from uncultured microbe mixtures in environmental and clinical samples</article-title>
+<source>DNA Res</source>
+<volume>12</volume>
+<fpage>281</fpage>
+<lpage>90</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abe</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Batch-learning self-organizing map identifies horizontal gene transfer candidates and their origins in entire genomes</article-title>
+<source>Front Microbiol</source>
+<year>2020</year>
+<month>Jul</month>
+<day>3</day>
+<volume>11</volume>
+<fpage>1486</fpage>
+<pub-id pub-id-type="doi">10.3389/fmicb.2020.01486</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>García-Sastre</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Inhibition of interferon-mediated antiviral responses by influenza A viruses and other negative-strand RNA viruses</article-title>
+<source>Virology</source>
+<year>2001</year>
+<volume>279</volume>
+<fpage>375</fpage>
+<lpage>384</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Randall</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Goodbourn</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Interferons and viruses: an interplay between induction, signalling, antiviral responses and virus countermeasures</article-title>
+<source>J Gen Virol</source>
+<year>2008</year>
+<volume>89</volume>
+<fpage>1</fpage>
+<lpage>47</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Iwasaki</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Prediction of directional changes of influenza A virus genome sequences with emphasis on pandemic H1N1/09 as a model case</article-title>
+<source>DNA Res</source>
+<year>2011</year>
+<volume>18</volume>
+<fpage>125</fpage>
+<lpage>136</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Iwasaki</surname>
+</name>
+<etal/>
+</person-group>
+<article-title>Novel bioinformatics strategies for prediction of directional sequence changes in influenza virus genomes and for surveillance of potentially hazardous strains</article-title>
+<source>BMC Infect Dis</source>
+<year>2013</year>
+<month>Aug</month>
+<day>21</day>
+<volume>13</volume>
+<fpage>386</fpage>
+<pub-id pub-id-type="doi">10.1186/1471-2334-13-386</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wada</surname>
+</name>
+<etal/>
+</person-group>
+<article-title>Directional and reoccurring sequence change in zoonotic RNA virus genomes visualized by time-series word count</article-title>
+<source>Sci Rep</source>
+<year>2016</year>
+<month>Nov</month>
+<day>3</day>
+<volume>6</volume>
+<comment>36197</comment>
+<pub-id pub-id-type="doi">10.1038/srep36197</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wada</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wada</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ikemura</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Time-series analyses of directional sequence changes in SARS-CoV-2 genomes and an efficient search method for candidates for advantageous mutations for growth in human cells</article-title>
+<source>Gene X</source>
+<year>2020</year>
+<month>Dec</month>
+<volume>5</volume>
+<comment>100038, Epub Aug 6 (2020</comment>
+<pub-id pub-id-type="doi">10.1016/j.gene.2020.100038</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mercatelli</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Giorgi</surname>
+<given-names>FM</given-names>
+</name>
+</person-group>
+<article-title>Geographic and Genomic Distribution of SARS-CoV-2 Mutations</article-title>
+<source>Front Microbiol</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>1800</fpage>
+<comment>Published online 2020 Jul 22, PMCID: PMC7387429</comment>
+<pub-id pub-id-type="doi">10.3389/fmicb.2020.01800</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abe</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Self-Organizing Map (SOM) unveils and visualizes hidden sequence characteristics of a wide range of eukaryote genomes</article-title>
+<source>Gene</source>
+<year>2006</year>
+<month>Jan</month>
+<day>3</day>
+<volume>365</volume>
+<fpage>27</fpage>
+<lpage>34</lpage>
+<pub-id pub-id-type="doi">10.1016/j.gene.2005.09.040</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>265</fpage>
+<lpage>269</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The establishment of reference sequence for SARS-CoV-2 and variation analysis</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<month>Jun</month>
+<volume>92</volume>
+<issue>6</issue>
+<fpage>667</fpage>
+<lpage>674</lpage>
+<comment>Epub 2020 Mar 20 (2020</comment>
+<pub-id pub-id-type="doi">10.1002/jmv.25762</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Delcher</surname>
+<given-names>AL</given-names>
+</name>
+</person-group>
+<article-title>Fast algorithms for large-scale genome alignment and comparison</article-title>
+<source>Nucl Acids Res</source>
+<year>2002</year>
+<volume>30</volume>
+<fpage>2478</fpage>
+<lpage>2483</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Horn</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Sarnow</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Making the Mark: The Role of Adenosine Modifications in the Life Cycle of RNA Viruses</article-title>
+<source>Cell Host Microbe</source>
+<year>2017</year>
+<volume>21</volume>
+<fpage>661</fpage>
+<lpage>669</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kohonen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Oja</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Simula</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Visa</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kangas</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Engineering applications of the self-organizing map</article-title>
+<source>Proc IEEE</source>
+<year>1996</year>
+<volume>84</volume>
+<fpage>1358</fpage>
+<lpage>1384</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>BLSOMs for 1~6-mers.</title>
+<p>BLSOMs were constructed for mono- to hexa-nucleotide compositions in 40,450 genome sequences. The total number of nodes was set to 1/20 of the total number of viral genomes. Grid points that include sequences from more than one clade are indicated in black, and those containing sequences from a single clade are indicated in a clade-specific color: G (<styled-content style="color:#FF0000">■</styled-content>), GH (<styled-content style="color:#FFAA00">■</styled-content>), GR (<styled-content style="color:#AAFF00">■</styled-content>), L (<styled-content style="color:#00FF00">■</styled-content>), S (<styled-content style="color:#00AAFF">■</styled-content>) and V (<styled-content style="color:#0000FF">■</styled-content>). Sequences of the O clade (other and unclassified clades) were included in the BLSOM calculation but excluded from the final display; i.e., if a sequence belonging to the O clade is mixed with sequences belonging to a main clade, the node is colored according to the main clade.</p>
+</caption>
+<graphic xlink:href="EMS98311-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>BLSOM for 7-mers.</title>
+<p>(<bold>a</bold>) BLSOM and heatmap. The total number of nodes was set to 1/50 of the total number of viral genomes. (i) Nodes are colored as described in <xref ref-type="fig" rid="F1">Fig. 1</xref>. (ii) The top panel shows the GH territory (<styled-content style="color:#FFAA00">■</styled-content>) on the BLSOM. The middle and bottom panels show heatmaps of UAGCGCU and GAGCGCU, respectively, which differ only in the underlined base. (<bold>b</bold>) BLSOMs for 255 different 7-mers. Nodes are colored as described in <xref ref-type="fig" rid="F1">Fig. 1</xref>. (<bold>c</bold>) BLSOMs for 377 different 7-mers. (i) Nodes are colored as described in <xref ref-type="fig" rid="F1">Fig. 1</xref>. (ii) The top four panels show the four different territories colored as described in <xref ref-type="fig" rid="F1">Fig. 1</xref>. The middle and bottom panels show heatmaps of four pairs of 7-mers with a one-base difference.</p>
+</caption>
+<graphic xlink:href="EMS98311-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>BLSOM and histogram analysis of 15-mers.</title>
+<p>(<bold>a</bold>) BLSOM of 15-mers. The number of nodes was set as described in <xref ref-type="fig" rid="F2">Fig. 2a</xref>. (<bold>b</bold>) Histogram of the increase/decrease level of each 15-mer frequency in the June population compared to the December population. The vertical axis shows normal numbers or logarithms (Log). Here, nonexistence in the logarithmic display is shown expediently as 0; the dark-and light-brown (blue) bars in the histogram indicate data showing the largest (the second largest) class of the increase/decrease, respectively. (<bold>c</bold>) Changes in the monthly occurrences of 15-mers and their heatmap patterns. (i) The upper and lower panels plot the monthly occurrences of 15-mers according to the elapsed month, which are related to the M1~4 mutations in <xref ref-type="table" rid="T1">Table 1</xref> (see also Supplementary Fig. S3) and indicated by dark and light brown in b, respectively. Since there is little difference among the sixty 15-mers, the relationship between each 15-mer and the colored symbol was not described. (ii) Heatmaps of four pairs of 15-mers with a one-base difference; the four in the upper and lower panels show heatmaps of the pre- and postmutation sequences. (<bold>d</bold>) (i) The upper and lower panels plot monthly occurrences of a group of fifteen 15-mers belonging to the second largest class specified by dark and light blue, respectively. Here, the pre- and postmutation 15-mers are plotted in the same figure: M5 and M7 mutations in <xref ref-type="table" rid="T1">Table 1</xref>. (ii) Heatmaps of two pairs of 15-mers with one-base differences are placed next to the corresponding time-series diagram.</p>
+</caption>
+<graphic xlink:href="EMS98311-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Change in monthly occurrences of 15-mers and their heatmaps. Nine time-series diagrams and heatmaps are presented as described in <xref ref-type="fig" rid="F3">Fig. 3d</xref>.</p>
+</caption>
+<graphic xlink:href="EMS98311-f004"/>
+</fig>
+<table-wrap id="T1" orientation="portrait" position="float">
+<label>Table 1</label>
+<table frame="below" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Mutation</th>
+<th align="left" valign="top">Gene</th>
+<th align="left" valign="top">Protein</th>
+<th align="left" valign="top">AA change</th>
+<th align="left" valign="top">Nucleotide change</th>
+<th align="left" valign="top">Relation</th>
+<th align="left" valign="top">L</th>
+<th align="left" valign="top">S</th>
+<th align="left" valign="top">V</th>
+<th align="left" valign="top">G</th>
+<th align="left" valign="top">GH</th>
+<th align="left" valign="top">GR</th>
+<th align="left" valign="top">1st apear</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">M1</td>
+<td align="left" valign="top">5’UTR</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">5’UTR, -25C→U</td>
+<td align="left" valign="top">
+<underline>
+<bold>C241U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Ga</td>
+<td align="left" valign="top">GHa</td>
+<td align="left" valign="top">GRa</td>
+<td align="left" valign="top">Sichuan, 1/24</td>
+</tr>
+<tr>
+<td align="left" valign="top">M2</td>
+<td align="left" valign="top">ORF1ab</td>
+<td align="left" valign="top">nsp3</td>
+<td align="left" valign="top">F106</td>
+<td align="left" valign="top">UAC → UAU</td>
+<td align="left" valign="top">
+<underline>
+<bold>C3037U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Ga</td>
+<td align="left" valign="top">GHa</td>
+<td align="left" valign="top">GRa</td>
+<td align="left" valign="top">Sichuan &amp; Zhejiang, 1/24</td>
+</tr>
+<tr>
+<td align="left" valign="top">M3</td>
+<td align="left" valign="top">ORF1ab</td>
+<td align="left" valign="top">RNA-dependent RNA polymerase</td>
+<td align="left" valign="top">P323L</td>
+<td align="left" valign="top">CCU → CUU</td>
+<td align="left" valign="top">
+<underline>
+<bold>C14408U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Ga</td>
+<td align="left" valign="top">GHa</td>
+<td align="left" valign="top">GRa</td>
+<td align="left" valign="top">Zhejiang, 1/24</td>
+</tr>
+<tr>
+<td align="left" valign="top">M4</td>
+<td align="left" valign="top">S</td>
+<td align="left" valign="top">surface glycoprotein</td>
+<td align="left" valign="top">D614G</td>
+<td align="left" valign="top">GAU → GGU</td>
+<td align="left" valign="top">
+<underline>
+<bold>A23403G</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Ga</td>
+<td align="left" valign="top">GHa</td>
+<td align="left" valign="top">GRa</td>
+<td align="left" valign="top">Sichuan &amp; Zhejiang, 1/24</td>
+</tr>
+<tr>
+<td align="left" valign="top">M5</td>
+<td align="left" valign="top">ORF3a</td>
+<td align="left" valign="top">ORF3a protein</td>
+<td align="left" valign="top">Q57H</td>
+<td align="left" valign="top">GAG → CAU</td>
+<td align="left" valign="top">
+<underline>
+<bold>G25563U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">GHa</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">USA, 2/4</td>
+</tr>
+<tr>
+<td align="left" valign="top">M6</td>
+<td align="left" valign="top">ORF1ab</td>
+<td align="left" valign="top">nsp2</td>
+<td align="left" valign="top">T85I</td>
+<td align="left" valign="top">ACC → AUC</td>
+<td align="left" valign="top">
+<underline>C1059U</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">GHi</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">USA, 2/4</td>
+</tr>
+<tr>
+<td align="left" valign="top">M7</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">nucleocapsid phosphcprctein</td>
+<td align="left" valign="top">RG203_2D4KR</td>
+<td align="left" valign="top">AGGGGA → AAACGA</td>
+<td align="left" valign="top">
+<underline>
+<bold>GGG28881AAC</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">GRa</td>
+<td align="left" valign="top">England, 2/16</td>
+</tr>
+<tr>
+<td align="left" valign="top">M8</td>
+<td align="left" valign="top">orf1ab</td>
+<td align="left" valign="top">3′-to-5′ exonuclease</td>
+<td align="left" valign="top">L280L</td>
+<td align="left" valign="top">CUA → UUA</td>
+<td align="left" valign="top">C18877U</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">GHiip</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Canada, 2/28</td>
+</tr>
+<tr>
+<td align="left" valign="top">M9</td>
+<td align="left" valign="top">ORF1ab</td>
+<td align="left" valign="top">nsp6</td>
+<td align="left" valign="top">L37F</td>
+<td align="left" valign="top">UUG → UUU</td>
+<td align="left" valign="top">
+<underline>
+<bold>G11083U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Va</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Yunnan, 1/17</td>
+</tr>
+<tr>
+<td align="left" valign="top">M10</td>
+<td align="left" valign="top">ORF8</td>
+<td align="left" valign="top">ORF8 protein</td>
+<td align="left" valign="top">L84S</td>
+<td align="left" valign="top">UUA → UCA</td>
+<td align="left" valign="top">
+<underline>
+<bold>U28144C</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Sa</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Wuhan, 1/5</td>
+</tr>
+<tr>
+<td align="left" valign="top">M11</td>
+<td align="left" valign="top">orf1ab</td>
+<td align="left" valign="top">nsp4</td>
+<td align="left" valign="top">S76S</td>
+<td align="left" valign="top">AGC → AGU</td>
+<td align="left" valign="top">
+<underline>
+<bold>C8782U</bold>
+</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Sa</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Wuhan, 1/5</td>
+</tr>
+<tr>
+<td align="left" valign="top">M12</td>
+<td align="left" valign="top">orf1ab</td>
+<td align="left" valign="top">RNA-dependent RNA polymerase</td>
+<td align="left" valign="top">Y55Y</td>
+<td align="left" valign="top">UAC → UAU</td>
+<td align="left" valign="top">
+<underline>C14805U</underline>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Sp</td>
+<td align="left" valign="top">Vi</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">England, 2/9</td>
+</tr>
+<tr>
+<td align="left" valign="top">M13</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">nucleocapsid phosphoprotein</td>
+<td align="left" valign="top">S194L</td>
+<td align="left" valign="top">UCA → UUA</td>
+<td align="left" valign="top">C28B54U</td>
+<td align="left" valign="top">Lip</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Gp</td>
+<td align="left" valign="top">GHiip</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Hong Kong, 2/2</td>
+</tr>
+<tr>
+<td align="left" valign="top">N1</td>
+<td align="left" valign="top">S</td>
+<td align="left" valign="top">surface glycoprotein</td>
+<td align="left" valign="top">P1140</td>
+<td align="left" valign="top">CT24981NN</td>
+<td align="left" valign="top">CCUU → CNNU</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">Gp</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">GRp</td>
+<td align="left" valign="top">USA 377</td>
+</tr>
+<tr>
+<td align="left" valign="top">M0</td>
+<td align="left" valign="top">ORF3a</td>
+<td align="left" valign="top">ORF3a protein</td>
+<td align="left" valign="top">G251V</td>
+<td align="left" valign="top">GGU → GUU</td>
+<td align="left" valign="top">
+<bold>(G26144U)</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<p id="P40">The numbering of the fust seven imitations (M1~7) is according to the previous study<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>. N1 is not a mutation.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,2768 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS101541</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.27.356758</article-id>
+<article-id pub-id-type="archive">PPR230537</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>A skyline birth-death process for inferring the population size from a reconstructed tree with occurrences</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Andréoletti</surname>
+<given-names>Jérémy</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zwaans</surname>
+<given-names>Antoine</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Warnock</surname>
+<given-names>Rachel C. M.</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Aguirre-Fernández</surname>
+<given-names>Gabriel</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Barido-Sottani</surname>
+<given-names>Joëlle</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gupta</surname>
+<given-names>Ankit</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>Tanja</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Manceau</surname>
+<given-names>Marc</given-names>
+</name>
+</contrib>
+</contrib-group>
+<aff id="A1">Department of Biosystems Science and Engineering, ETH Zürich, Basel, Switzerland</aff>
+<aff id="A2">GeoZentrum Nordbayern, Friedrich-Alexander-Universität Erlangen-Nürnberg, Germany</aff>
+<aff id="A3">Paleontological Institute and Museum, University of Zürich, Zürich, Switzerland</aff>
+<aff id="A4">Department of Ecology, Evolution and Organismal Biology, Iowa State University, Ames, USA</aff>
+<pub-date pub-type="nihms-submitted">
+<day>28</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>27</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Phylodynamic models generally aim at jointly inferring phylogenetic relationships, model parameters, and more recently, population size through time for clades of interest, based on molecular sequence data. In the fields of epidemiology and macroevolution these models can be used to estimate, respectively, the past number of infected individuals (prevalence) or the past number of species (paleodiversity) through time. Recent years have seen the development of “total-evidence” analyses, which combine molecular and morphological data from extant and past sampled individuals in a unified Bayesian inference framework. Even sampled individuals characterized only by their sampling time, i.e. lacking morphological and molecular data, which we call <italic>occurrences</italic>, provide invaluable information to reconstruct past population sizes.</p>
+<p id="P2">Here, we present new methodological developments around the Fossilized Birth-Death Process enabling us to (i) efficiently incorporate occurrence data while remaining computationally tractable and scalable; (ii) consider piecewise-constant birth, death and sampling rates; and (iii) reconstruct past population sizes, with or without knowledge of the underlying tree. We implement our method in the RevBayes software environment, enabling its use along with a large set of models of molecular and morphological evolution, and validate the inference workflow using simulations under a wide range of conditions.</p>
+<p id="P3">We finally illustrate our new implementation using two empirical datasets stemming from the fields of epidemiology and macroevolution. In epidemiology, we apply our model to the Covid-19 outbreak on the Diamond Princess ship. We infer the total prevalence throughout the outbreak, by taking into account jointly the case count record (occurrences) along with viral sequences for a fraction of infected individuals. In macroevolution, we present an empirical case study of cetaceans. We infer the diversity trajectory using molecular and morphological data from extant taxa, morphological data from fossils, as well as numerous fossil occurrences. Our case studies highlight that the advances we present allow us to further bridge the gap between between epidemiology and pathogen genomics, as well as paleontology and molecular phylogenetics.</p>
+</abstract>
+<kwd-group>
+<kwd>skyline birth-death process</kwd>
+<kwd>epidemiology</kwd>
+<kwd>macroevolution</kwd>
+<kwd>phylogenetics</kwd>
+<kwd>fossils</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P4">Birth-death processes are stochastic processes used to model population dynamics with two main parameters, the birth rate and the death rate, which are respectively the rate at which new individuals appear, and the rate at which individuals are removed from the process. In macroevolution, these two rates correspond to the speciation and extinction rates, while in epidemiology they correspond to the transmission and recovery rates. These processes already enjoy a long history of applications in evolutionary biology. In the first half of the twentieth century, <xref ref-type="bibr" rid="R63">Yule (1925)</xref> introduces them in the field with macroevolutionary applications in mind, to model the number of species within genera. <xref ref-type="bibr" rid="R24">Kendall (1948)</xref> then derives analytically the transition probabilities for linear birth-death processes, and discusses their use in the context of evolutionary biology, with a special focus on epidemiology. Ground-breaking work by <xref ref-type="bibr" rid="R35">Nee et al. (1994)</xref> followed on the probability density of the <italic>reconstructed tree</italic> in a linear birth-death process, i.e. the tree obtained by pruning all extinct lineages from the full genealogical history of the process (see <xref ref-type="fig" rid="F1">Fig. 1A</xref>). The linear birth-death process was then later extended to allow rates to vary in different parts of the tree (<xref ref-type="bibr" rid="R2">Alfaro et al. 2009</xref>), over time (<xref ref-type="bibr" rid="R34">Morlon et al. 2011</xref>), or depending on some character of interest (<xref ref-type="bibr" rid="R25">Maddison et al. 2007</xref>).</p>
+<p id="P5">Although diversification histories inferred from extant species sometimes agree with those inferred from the fossil record (<xref ref-type="bibr" rid="R34">Morlon et al. 2011</xref>; <xref ref-type="bibr" rid="R62">Xing et al. 2014</xref>; <xref ref-type="bibr" rid="R49">Silvestro et al. 2018</xref>), there largely remains a gap between these two approaches in macroevolution (<xref ref-type="bibr" rid="R28">Marshall 2017</xref>). On the one hand, extant species provide invaluable information regarding the dynamics of the diversification process, especially close to the present. On the other hand, the fossil record, albeit scarce, could much better inform extinction estimates (<xref ref-type="bibr" rid="R39">Quental and Marshall 2010</xref>). An extension introduced by <xref ref-type="bibr" rid="R50">Stadler (2010)</xref> and dubbed the <italic>Fossilized Birth-Death Process</italic> (FBD) (<xref ref-type="bibr" rid="R18">Heath et al. 2014</xref>) has allowed us to model jointly extant and extinct taxa along the same tree, and thus helped bridge the gap between paleontology and molecular phylogenetics. In this model, each species can be sampled throughout its lifetime at a fixed rate, and appear in the reconstructed tree (see <xref ref-type="fig" rid="F1">Fig. 1B</xref>). The probability density of the resulting phylogeny is derived in closed-form, and has been successfully used as a prior in Bayesian phylodynamic analyses to study the diversification history of hymenopterans (<xref ref-type="bibr" rid="R64">Zhang et al. 2015</xref>), as well as the penguins (<xref ref-type="bibr" rid="R12">Gavryushkina et al. 2016</xref>). The same model was also used in the context of epidemiology, where infected individuals can as well be sampled throughout the infectious period and appear in the reconstructed tree <xref ref-type="bibr" rid="R54">Stadler et al. (2013)</xref>. Finally, model extensions have been introduced to help take into account the age of species (i.e. stratigraphic ranges) or, in the context of epidemiology, an extended period of infection (<xref ref-type="bibr" rid="R53">Stadler et al. 2018</xref>).</p>
+<p id="P6">An important feature of many standard paleontological datasets, is that only a fraction of fossils have been thoroughly described and are associated with morphological data. Similarly, in standard epidemiological surveys, only a fraction of the recorded case count data is typically sequenced. In this paper, we call <italic>samples with character data</italic> the subset of samples with either morphological data or molecular data, and <italic>occurrences</italic> the recorded samples without character data. This data, while providing no useful information regarding the topology of the tree, still contain invaluable information regarding the underlying population size (see <xref ref-type="fig" rid="F1">Fig. 1C</xref>). For this reason, they have long been used in paleontology to infer diversity trajectories (<xref ref-type="bibr" rid="R42">Raup 1972</xref>; <xref ref-type="bibr" rid="R45">Sepkoski et al. 1981</xref>), and even preservation, origination and extinction rates in an alternative Bayesian setting (<xref ref-type="bibr" rid="R48">Silvestro et al. 2014</xref>, <xref ref-type="bibr" rid="R47">2019</xref>). Some authors have analyzed occurrences in the standard FBD-based Bayesian framework, considering them as leaves in the tree with missing character data, and integrating over the unknown topology (<xref ref-type="bibr" rid="R18">Heath et al. 2014</xref>; <xref ref-type="bibr" rid="R13">Gavryushkina et al. 2014</xref>; <xref ref-type="bibr" rid="R37">O'Reilly and Donoghue 2020</xref>). However, in the event both samples with character data and occurrence data are available, applying the standard FBD model requires making the assumption that both sets of data were generated under the same process and with the same rate. A second step towards integrating these occurrences was performed by <xref ref-type="bibr" rid="R58">Vaughan et al. (2019)</xref>, who explicitly modeled an additional sampling process for occurrences, allowing for the joint analysis of the observation of a phylogeny and a record of occurrences (see <xref ref-type="fig" rid="F1">Fig. 1D</xref>). <xref ref-type="bibr" rid="R58">Vaughan et al. (2019)</xref> additionally proposed an inference framework based on the use of a particle filter to compute the likelihood. <xref ref-type="bibr" rid="R41">Rasmussen et al. (2011)</xref> presents another method based on a particle filtering algorithm to consider occurrences and trees in tandem, although in a coalescent framework instead of a birth-death framework. <xref ref-type="bibr" rid="R15">Gupta et al. (2019)</xref> built on previous work by <xref ref-type="bibr" rid="R58">Vaughan et al. (2019)</xref> and described soon after a fast algorithm to compute the likelihood of the data, focusing on a special case of the model where all individuals sampled through time are removed from the process upon sampling. Finally, under the same model assumptions, <xref ref-type="bibr" rid="R27">Manceau et al. (2019)</xref> presented a method to compute the population size distribution conditioned on a reconstructed tree and a record of occurrences.</p>
+<p id="P7">In this paper, we extend these last two methods to include piecewise-constant parameters, allowing us to explicitly incorporate known variation in birth, death and sampling rates through time. We implement our work as a new distribution, coined the Occurrence Birth Death Process (OBDP), available in the Bayesian phylogenetic software RevBayes (<xref ref-type="bibr" rid="R23">Höhna et al. 2016</xref>) to compute the joint probability density of a tree and a record of occurrences. This can readily be used to sample the posterior of trees and population sizes through time, given an observed record of occurrences and a list of samples with character data attached. We illustrate the versatility of the method on two empirical datasets coming from the fields of epidemiology and macroevolution. In epidemiology, we infer the prevalence through time for the Covid-19 outbreak on the Diamond Princess cruise ship, based on the joint observation of molecular sequences and case count data. In macroevolution, we infer the diversity through time in the Cetacean clade, based on the joint observation of molecular data for extant species, morphological character data for some fossils and some extant species, and the record of fossil occurrences available on the Paleobiology Database.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<label>2</label>
+<title>Material and methods</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Phylodynamic model</title>
+<p id="P8">We consider that a population of individuals starts at the time of origin <italic>t<sub>or</sub>
+</italic> with one individual, and evolves through time under a birth-death process with piecewise constant birth rate, <italic>λ<sub>t</sub>
+</italic>, and death rate, <italic>μ<sub>t</sub>
+</italic>. Three different sampling schemes are successively applied along the process. First, individuals can be sampled through time and be included in the tree, with piecewise-constant sampling rate <italic>ψ<sub>t</sub>
+</italic>. Second, they can be sampled through time as raw <italic>occurrences</italic> not included in the tree, with piecewise-constant sampling rate <italic>ω<sub>t</sub>
+</italic>. Third, individuals reaching present time are included in the tree with a fixed probability <italic>ρ</italic>. Finally, upon sampling, individuals are removed with a piecewise-constant probability of removal <italic>r<sub>t</sub>
+</italic>.</p>
+<p id="P9">As a result of these three sampling steps, we observe a reconstructed tree &#119983;, which is the tree spanning all <italic>ψ</italic>-sampled and <italic>ρ</italic>-sampled individuals, as well as a record of occurrences &#119978;, which is a timeline recording successive <italic>ω</italic>-sampling events. We aim at (i) computing the probability density of (&#119983;, &#119978;), which will play the role of the phylodynamic likelihood in our Bayesian framework, and (ii) compute the probability distribution of the total number of lineages in the process at time <italic>t</italic>, <italic>I<sub>t</sub>
+</italic>, conditioned on the observed (&#119983;, &#119978;). Note that the number of lineages in &#119983; at time <italic>t</italic>, denoted <italic>k<sub>t</sub>
+</italic>, is an obvious lower-bound of the total number of individuals in the process at time <italic>t</italic>, <italic>I<sub>t</sub>
+</italic>. For this reason, we are targeting the probability distribution ℙ(<italic>I<sub>t</sub>
+</italic> = <italic>k<sub>t</sub>
+</italic> + <italic>i</italic>), where <italic>i</italic> stands for the number of hidden individuals.</p>
+<p id="P10">In <xref ref-type="supplementary-material" rid="SD1">Appendix A</xref>, we extend the method introduced by <xref ref-type="bibr" rid="R27">Manceau et al. (2019)</xref> to include piecewise-constant parameters in computing two quantities. First, defining <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mo>↑</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> as the tree and record of occurrences constrained to [<italic>t, t<sub>or</sub>
+</italic>], we aim at numerically computing the joint probability of the partial tree and occurrence record between time <italic>t</italic> and the origin, and the total number of lineages at time <italic>t</italic>, <disp-formula id="FD1">
+<label>(2.1)</label>
+<mml:math id="M2">
+<mml:mo>∀</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>ℕ</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>M</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>≔</mml:mo>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> which can be used to compute, upon reaching present day <italic>t</italic> = 0, <inline-formula>
+<mml:math id="M3">
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>&#119978;</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>M</mml:mi>
+<mml:mn>0</mml:mn>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</inline-formula>.</p>
+<p id="P11">Second, <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> as the tree and record of occurrences constrained to [0, <italic>t</italic>], we aim at numerically computing the probability of the partial tree and occurrence record between time <italic>t</italic> and the present, conditioned on the total number of lineages at time <italic>t</italic>, <disp-formula id="FD2">
+<label>(2.2)</label>
+<mml:math id="M5">
+<mml:mo>∀</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>ℕ</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mspace width="0.4em"/>
+<mml:msubsup>
+<mml:mi>L</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>≔</mml:mo>
+<mml:mi>ℙ</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> which can as well be used to compute, upon reaching the time of origin <italic>t</italic>
+<sub>or</sub>, <inline-formula>
+<mml:math id="M6">
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mi>or</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>.</p>
+<p id="P12">We derive initializing conditions and Master equations governing the evolution of <italic>M<sub>t</sub>
+</italic> and <italic>L<sub>t</sub>
+</italic> through time and compute these quantities by numerically evaluating the system ordinary differential equations (<xref ref-type="supplementary-material" rid="SD1">Appendix A</xref>). Note that in this numerical evaluation, we have to make one approximation namely, assume a maximal population size <italic>N</italic> (while in theory the population size may become arbitrarily large). In practice, <italic>N</italic> must be chosen large enough to cover most of the high-density support of the <italic>L<sub>t</sub>
+</italic> and <italic>M<sub>t</sub>
+</italic> probability distributions to avoid biasing calculations. Finally, provided we know both quantities at time <italic>t</italic>, the probability distribution <italic>K<sub>t</sub>
+</italic> of the total number of individuals living at time <italic>t</italic> is given by, <disp-formula id="FD3">
+<label>(2.3)</label>
+<mml:math id="M7">
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>K</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>≔</mml:mo>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mspace width="0.4em"/>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mspace width="1.9em"/>
+<mml:mtext>α</mml:mtext>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mspace width="1.9em"/>
+<mml:mtext>α</mml:mtext>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mspace width="1.9em"/>
+<mml:mi>α</mml:mi>
+<mml:msubsup>
+<mml:mi>L</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+<mml:msubsup>
+<mml:mi>M</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula> where the last equality is due to the Markov property of the process. We summarize all the notation introduced above in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Bayesian inference framework</title>
+<p id="P13">We consider a Bayesian inference framework with additional model layers for character data evolution along the reconstructed tree &#119983;. For epidemiology applications, we superimpose a model of molecular evolution, leading to the observation of a sequence alignment for both extant and extinct taxa in &#119983;. For macroevolution applications, we superimpose (i) a model of morphological evolution, leading to the observation of character data for both extant and extinct taxa in &#119983;, and (ii) a model of molecular evolution, leading to the observation of a sequence alignment for extant taxa only. Summarizing all (molecular and morphological) character data together as &#119964;, and all model parameters as <italic>θ,</italic> the target posterior distribution of reconstructed trees &#119983; and model parameters <italic>θ</italic> can be written as the product of the phylodynamic likelihood, the likelihood of character data given &#119983; and θ, and prior probabilities: <disp-formula id="FD4">
+<label>(2.4)</label>
+<mml:math id="M8">
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mn>&#119978;</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>&#119964;</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mtext>α</mml:mtext>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+<mml:mo>|</mml:mo>
+<mml:mi>θ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119964;</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P14">First, we sample this posterior distribution using a Metropolis-Hastings MCMC. Second, the posterior probability distribution of the ancestral population size can be written as, <disp-formula id="FD5">
+<label>(2.5)</label>
+<mml:math id="M9">
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>|</mml:mo>
+<mml:mi>&#119964;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:mrow>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>|</mml:mo>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>ℙ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>&#119983;</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mtext>&#119978;</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mi>&#119964;</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> and is thus numerically computed as the arithmetic mean of <italic>K<sub>t</sub>
+</italic> over the trace of the posterior of (&#119983;, <italic>θ</italic>).</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>Numerical implementation</title>
+<p id="P15">We implement our model in RevBayes (<xref ref-type="bibr" rid="R23">Höhna et al. 2016</xref>, <xref ref-type="bibr" rid="R22">2017</xref>), an open-source software for Bayesian inference in phylogenetics. RevBayes is fully based on graphical models (<xref ref-type="bibr" rid="R21">Höhna et al. 2014</xref>), a unified framework for representing complex probabilistic models in the form of graphs where nodes correspond to model variables and edges of their probabilistic relationships. It allows the user to construct interactively their own phylogenetic graphical model in the Rev language, by combining the hundreds of available models of nucleotide substitution, rate variation across sites and along the tree, and tree priors proposed in the literature (see <xref ref-type="supplementary-material" rid="SD1">Supp Fig. S6B</xref> for an illustration with our model). Our three key additions consist of (i) introducing the OBDP distribution (<xref ref-type="supplementary-material" rid="SD1">Supp Fig S6A</xref>) into RevBayes, so that everyone can use it with their own graphical models; (ii) implementing the core algorithms responsible for computing the quantities <italic>L<sub>t</sub>
+</italic> and <italic>M<sub>t</sub>
+</italic> through time and eventually the final log-likelihood; and (iii) including a function to generate the posterior probability distribution of the ancestral population size through time.</p>
+<p id="P16">
+<xref ref-type="fig" rid="F2">Figure 2</xref> summarizes the full workflow to go from the raw data &#119978;, &#119964; to the inferred reconstructed tree &#119983;, model parameters <italic>θ</italic> and diversity trajectories <italic>I<sub>t</sub>
+</italic>.</p>
+</sec>
+<sec id="S6">
+<label>2.4</label>
+<title>Validation of the method</title>
+<sec id="S7">
+<label>2.4.1</label>
+<title>Direct likelihood comparison</title>
+<p id="P17">We verify that the phylodynamic likelihood computed using <italic>L<sub>t</sub>
+</italic> or <italic>M<sub>t</sub>
+</italic> coincides with (i) previous RevBayes implementations (<xref ref-type="bibr" rid="R22">Höhna et al. 2017</xref>; <xref ref-type="bibr" rid="R19">Heath et al. 2019</xref>) of linear birth-death processes that are special cases of our framework, when no occurrences are included and <italic>r</italic> = <italic>ω</italic> = 0, and (ii) an earlier Python implementation of the likelihood with constant parameters (<xref ref-type="bibr" rid="R27">Manceau et al. 2019</xref>). We use a small fixed dataset and compute the likelihood using (i), (ii) and our implementation, under a wide range of parameters which are listed in <xref ref-type="fig" rid="F3">Figure 3</xref>.</p>
+</sec>
+<sec id="S8">
+<label>2.4.2</label>
+<title>Qualitative validation on simulated datasets</title>
+<p id="P18">Time-forward simulations of two full OBD processes were performed to produce two datasets. On the first one (dataset 1), we simulated morphological data for past samples, and both morphological and molecular data for extant samples, mimicking a macroevolution scenario. On the second one (dataset 2), we simulated only molecular data for all samples. Parameter values and the full model specifications are described in <xref ref-type="supplementary-material" rid="SD1">Supp Mat C</xref>. We used the RevBayes implementation to infer back the parameter values along with the reconstructed tree and population sizes. We performed this validation as a blind test, with two of us being in charge of conducting the analysis, and remaining ignorant of the true simulated scenarios.</p>
+</sec>
+<sec id="S9">
+<label>2.4.3</label>
+<title>Quantitative validation of the MCMC implementation</title>
+<p id="P19">We follow a procedure called Simulation-Based Calibration (<xref ref-type="bibr" rid="R56">Talts et al. 2018</xref>) for validating our MCMC implementation. It consists in the following three steps: (i) we define priors (<xref ref-type="table" rid="T2">Table 2</xref>) for all the involved parameters and simulate 1000 parameter sets, trees with sampled fossils, occurrences and genetic sequences (100 nucleotides long); (ii) for each simulated dataset, we use the same priors to infer the posterior distribution of reconstructed trees and parameters; and (iii) we compute the proportion of datasets for which the true (simulated) parameter values fall within a 100<italic>α</italic>% credible interval of the posterior distribution, for a range of <italic>α</italic> values (19 evenly spaced between 0.05 and 0.95). If the MCMC is correctly sampling the posterior distribution, the proportion of posterior credible intervals recovering the truth should be close to <italic>α</italic>.</p>
+</sec>
+</sec>
+<sec id="S10">
+<label>2.5</label>
+<title>Covid data analysis</title>
+<sec id="S11">
+<label>2.5.1</label>
+<title>Molecular and occurrence dataset</title>
+<p id="P20">We use the model implementation with piecewise constant rates to perform a phylodynamic analysis of the SARS-CoV-2 epidemic aboard the Diamond Princess cruise ship, a well-documented outbreak from February 2020. The outbreak is an example of a closely monitored, geographically constrained closed population, and thus constitutes an ideal case study of the disease dynamics and the mitigation policies undertaken (<xref ref-type="bibr" rid="R26">Mallapaty 2020</xref>).</p>
+<p id="P21">The sequenced data used for this analysis consists of a set of 71 full length viral genomes collected between February 15th and February 17th, all acquired from GISAID (<xref ref-type="bibr" rid="R46">Shu and McCauley 2017</xref>). Acknowledgements for laboratories that contributed the genome sequences used in this analysis are given in <xref ref-type="supplementary-material" rid="SD1">Supp. Mat. E.1</xref>. All available sequences were aligned to reference genome MN908947 and sites subject to low sequencing accuracy were masked. Following the standard NextStrain (<xref ref-type="bibr" rid="R16">Hadfield et al. 2018</xref>) pipeline, sites 13402, 24389 and 24390 as well as 150 bases at the ends of the genomes were masked, thought to be sequencing artefacts that would bias the alignment.</p>
+<p id="P22">In this example, we define occurrences as patients testing positive for SARS-CoV-2 using polymerase chain-reaction (PCR) detection methods, recorded as case counts. These case counts, i.e. the daily reports of new cases, along with the total number of samples tested were published by the Japanese Ministry of Work throughout the outbreak; case counts were then compiled in the JHU CSSE database (<xref ref-type="bibr" rid="R8">Dong et al. 2020</xref>). Out of all 712 cases detected amongst passengers, we focus on the 705 cases detected while guests were still aboard the cruise ship, from the beginning of the cruise on January 20th until February 27th. Sequencing dates and case counts were communicated as daily reports throughout the outbreak. For all report entries, exact dates were randomly assigned to all occurrences within each day. Additionally, we shift dates by a day to account for the delay between sampling and reporting of the PCR results. The full dataset, in its original and processed formats, is presented in <xref ref-type="supplementary-material" rid="SD1">Supplementary Figure S12</xref>.</p>
+</sec>
+<sec id="S12">
+<label>2.5.2</label>
+<title>Model assumptions</title>
+<p id="P23">The model parametrisation allows us to examine two complementary aspects of the temporal change in epidemic spread. First, we estimate the effective reproductive number across all time intervals of interest. The reproductive number is the expected number of secondary cases produced by a single infected individual and is a standard epidemiological parameter, quantified in our model as <inline-formula>
+<mml:math id="M10">
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mi>λ</mml:mi>
+<mml:mrow>
+<mml:mi>μ</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>ω</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>ψ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>. Second, we infer the corresponding prevalence trajectories, aiming to gain insight into the number of potentially undetected patients that are thought to make up a significant proportion of the infected population (<xref ref-type="bibr" rid="R33">Mizumoto et al. 2020</xref>).</p>
+<p id="P24">To achieve these two goals, we make full use of the skyline implementation of our model by allowing independent shifts for each rate parameter. In doing so, we closely follow the exact timeline of events of the outbreak. We first incorporate information regarding the testing and sequencing procedures. The testing strategy was initiated by Japanese authorities after a first guest was confirmed positive for SARS-CoV-2 on February 3rd. It was then extended to asymptomatic passengers from February 11th onward. Sequencing of some of the viral samples was then performed between February 15th and February 17th. To these 4 sampling parameters shifts, we additionally introduce another shift for the birth rate λ before the start of mandatory cabin isolation, on February 5th, producing the full timeline of <italic>m</italic> = 5 intervals.</p>
+<p id="P25">Reports of the total number of samples tested were assembled to adjust prior means for <italic>ω</italic> + <italic>ψ</italic> on different time intervals, and account for the extension of testing to asymptotic passengers. In total, testing efforts yielded 4066 samples over the entire period of interest, with 3622 of them being obtained after February 11th. All other settings and priors used in this analysis are presented in detail in Supp. <xref ref-type="supplementary-material" rid="SD1">Supplementary Table S7</xref>.</p>
+</sec>
+</sec>
+<sec id="S13">
+<label>2.6</label>
+<title>Cetacean data analysis</title>
+<sec id="S14">
+<label>2.6.1</label>
+<title>Context</title>
+<p id="P26">Cetaceans are a group of marine mammals, represented by 89 living species, that possess a remarkable and well-studied fossil record (<xref ref-type="bibr" rid="R11">Fordyce 2009</xref>). Their history can be summarized by three main phases (<xref ref-type="bibr" rid="R30">Marx et al. 2016</xref>), (i) starting 53 Ma, a 10 Myr land-to-sea transition accompanied by drastic morphological transformations in the archaeocetes (stem cetaceans), (ii) the emergence of neocetes (crown cetaceans, including filter-feeding mysticetes and echolocating odontocetes) at the Eocene-Oligocene boundary (34 Ma) and their radiation up to a Mid-Miocene peak (12 Ma) followed by (iii) a sharp decline in diversity in the last 4-6 Ma.</p>
+<p id="P27">Several studies have already attempted to estimate the diversity trajectory of cetaceans, using the fossil record (<xref ref-type="bibr" rid="R57">Uhen and Pyenson 2007</xref>), molecular phylogenies (<xref ref-type="bibr" rid="R34">Morlon et al. 2011</xref>) or both (<xref ref-type="bibr" rid="R29">Marx and Fordyce 2015</xref>); but even the latter total-evidence study did not include all fossil occurrences in its analyses. The initial huge discrepancies between the history inferred from the fossil record and from molecular phylogenies (<xref ref-type="bibr" rid="R39">Quental and Marshall 2010</xref>) have been partially bridged, but including occurrences may help provide a more reliable time-calibrated tree and a robust diversity trajectory estimation.</p>
+</sec>
+<sec id="S15">
+<label>2.6.2</label>
+<title>Molecular, morphological and occurrence datasets</title>
+<p id="P28">The data can be subdivided in three parts: molecular, morphological, and occurrences. Datasets were collected and analysed separately and are stored on the Open Science Framework (<ext-link ext-link-type="uri" xlink:href="https://osf.io">https://osf.io</ext-link>) (<xref ref-type="bibr" rid="R1">Aguirre-Fernández et al. 2020</xref>). Molecular data comes from <xref ref-type="bibr" rid="R55">Steeman et al. (2009)</xref>, and comprises 6 mitochondrial and 9 nuclear genes, for 87 of the 89 accepted extant cetacean species. Morphological data was obtained from <xref ref-type="bibr" rid="R5">Churchill et al. (2018)</xref>, the most recent version of a widely-used dataset first produced by <xref ref-type="bibr" rid="R14">Geisler and Sanders (2003)</xref>. After merging 2 taxa that are now considered synonyms on the Paleobiology Database (PBDB) and removing 3 outgroups that would have violated our model's assumptions, it now contains 327 variable morphological characters for 27 extant and 90 fossil taxa (mostly identified at the species level but 21 remain undescribed). In order to speed up the analysis we further excluded the undescribed specimens and reduced this dataset to the generic level by selecting the most complete specimen in each genera. Indeed, the computing cost increases quadratically with the maximum number of hidden lineages <italic>N</italic>, to the point of becoming the bottleneck in our MCMC when <italic>N</italic> &gt; 100. Given that a mid-Miocene peak diversity between 100 and 220 species is expected (<xref ref-type="bibr" rid="R39">Quental and Marshall 2010</xref>), with less than 100 observed lineages in our inferred tree at that time, <italic>N</italic> should therefore be about 150. Inferring instead the tree of cetacean genera allows us to reduce <italic>N</italic> to 70 hidden lineages. The final dataset thus contains 41 extant and 62 extinct genera.</p>
+<p id="P29">Occurrences come from the PBDB (data archive 9, M. D. Uhen) on May 11, 2020. The dataset initially consisted of all 4678 cetacean occurrences, but the cetacean fossil record is known to be subject to several biases (<xref ref-type="bibr" rid="R57">Uhen and Pyenson 2007</xref>; <xref ref-type="bibr" rid="R30">Marx et al. 2016</xref>; <xref ref-type="bibr" rid="R7">Dominici et al. 2020</xref>). A detailed exploration (see <xref ref-type="supplementary-material" rid="SD1">Supp. Mat. D</xref>) of this occurrence dataset revealed several notable biases. First, an artefactual cluster of occurrences in very recent times, combined with other expected Pleistocene biases (<xref ref-type="bibr" rid="R7">Dominici et al. 2020</xref>), led us to remove all Late Pleistocene and Holocene occurrences. Second, we detected substantial variations in fossil recovery per time unit across lineages (see <xref ref-type="supplementary-material" rid="SD1">Supp. Fig. S10</xref>) resulting from oversampling of some species and localities, possibly due to greater abundance or spatiotemporal biases (<xref ref-type="bibr" rid="R7">Dominici et al. 2020</xref>). This observation violates our assumption of identical fossil sampling rates among taxa during a given interval. In order to reduce this bias, we retained occurrences identified at the genus level and further aggregated all occurrences belonging to an identical genus found at the same geological formation. Occurrences for which the geological formation was not specified, we used geoplate data combined with stratigraphic interval. This resulted in a total of 968 occurrences retained for the analysis.</p>
+</sec>
+<sec id="S16">
+<label>2.6.3</label>
+<title>Model assumptions</title>
+<p id="P30">Each fossil comes along with a stratigraphic age uncertainty interval. Reducing this interval to either the midpoint, or a uniformly drawn point, has been shown to lead to serious biases in the divergence time estimates (<xref ref-type="bibr" rid="R4">Barido-Sottani et al. 2019</xref>). We instead follow the same procedure as <xref ref-type="bibr" rid="R19">Heath et al. (2019)</xref> and apply a uniform prior for the age of fossils with morphological characters, within the bounds of their stratigraphic age uncertainty. As a result, the age of a fossil included in the tree can slide within this interval during the MCMC.</p>
+<p id="P31">Based on previous work showing huge discrepancies in mutation rates between odontocetes and mysticetes (<xref ref-type="bibr" rid="R9">Dornburg et al. 2012</xref>), and generally between nuclear and mitochondrial sequences (<xref ref-type="bibr" rid="R3">Allio et al. 2017</xref>) we partitioned between the two types of sequences and considered a relaxed clock across the tree.</p>
+<p id="P32">Much less biological knowledge is available about the dynamics of morphological characters (<xref ref-type="bibr" rid="R60">Wright 2019</xref>). We thus chose a minimal substitution model and partitioned the alignment in order to treat separately characters that are represented by a different number of states.</p>
+<p id="P33">All prior distributions are fully detailed in <xref ref-type="supplementary-material" rid="SD1">Supp. Table S6</xref>.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S17" sec-type="results">
+<label>3</label>
+<title>Results</title>
+<sec id="S18">
+<label>3.1</label>
+<title>Validation of the method</title>
+<sec id="S19">
+<label>3.1.1</label>
+<title>Direct Likelihood Comparison</title>
+<p id="P34">We illustrate in <xref ref-type="fig" rid="F3">Figure 3</xref> the perfect agreement with likelihood values computed using previous functions under a wide range of parameters, for both <italic>L<sub>t</sub>
+</italic> and <italic>M<sub>t</sub>
+</italic> traversal algorithms.</p>
+</sec>
+<sec id="S20">
+<label>3.1.2</label>
+<title>Qualitative Validation on simulated datasets</title>
+<p id="P35">On <xref ref-type="fig" rid="F4">Figure 4</xref>, we superimpose the true, simulated, trajectory of the total number of individuals, together with the inferred posterior distribution. Most importantly, the true trajectory falls within, or is very close to the boundaries, of the 95% posterior credibility interval at any point in time.</p>
+<p id="P36">On both datasets, the topology of the tree was also well recovered but divergence dates do not always perfectly match (see <xref ref-type="supplementary-material" rid="SD1">Supp. Mat. Supplementary Figure S9</xref>). Due to a greater amount of data in genetic sequences of both past and extant individuals, the divergence dates have been better inferred on dataset 2 as compared to dataset 1.</p>
+</sec>
+<sec id="S21">
+<label>3.1.3</label>
+<title>Quantitative Validation of the Diversity Inference</title>
+<p id="P37">
+<xref ref-type="fig" rid="F5">Figure 5</xref> shows a good correspondence between the proportion of posterior credible intervals containing the true parameter value and the width of the credible interval. This indicates that the MCMC is properly calibrated, i.e. samples adequately the targeted posterior distribution.</p>
+</sec>
+</sec>
+<sec id="S22">
+<label>3.2</label>
+<title>Reproductive number and prevalence in the Covid outbreak</title>
+<p id="P38">
+<xref ref-type="fig" rid="F6">Figure 6</xref> shows the raw data, as well as the estimates of the total prevalence and reproductive number through time. The instantaneous prevalence is typically always slightly lower than the total number of cases sampled each day, which corresponds to the sum of all sampled (and likely removed) individuals over a one-day period. The reproductive number is inferred with very high uncertainty in the beginning of the epidemic, when very few cases were observed, and with a much higher precision in the second part of the process. It decreases synchronously with the launching of non-pharmaceutical interventions in early February (i.e. testing effort and cabin quarantine).</p>
+</sec>
+<sec id="S23">
+<label>3.3</label>
+<title>Total diversity in the Cetacean clade</title>
+<p id="P39">
+<xref ref-type="fig" rid="F7">Figure 7</xref> shows the inferred diversity of cetacean genera over the past 50 Myr. The diversity curve indicates an Early-Eocene origin followed by a monotonous diversification up to a first Mid-Miocene peak (12 Ma), before reaching its maximum in the Pliocene (3.5 Ma) with almost 70 inferred genera. The last million years correspond to a sharp decline leading to the 41 extant genera.</p>
+</sec>
+</sec>
+<sec id="S24" sec-type="discussion">
+<label>4</label>
+<title>Discussion</title>
+<sec id="S25">
+<label>4.1</label>
+<title>Technical achievements and limitations</title>
+<p id="P40">In this paper, we extend the work of <xref ref-type="bibr" rid="R15">Gupta et al. (2019)</xref> and <xref ref-type="bibr" rid="R27">Manceau et al. (2019)</xref> to consider piecewise-constant rates through time, and implement the Occurrence Birth-Death Process in the popular phylogenetic inference software RevBayes. This enables us to simultaneously incorporate numerous occurrences without character data, together with taxa for which we have genetic sequences and/or morphological characters. In addition to using the OBDP as a tree prior for inferring epidemiological or macroevolutionary parameters, tree topology and divergence dates, it allows users to compute the posterior probability distribution of the population size through time, in a post-MCMC analysis (see workflow in <xref ref-type="fig" rid="F2">Fig. 2</xref>). We validate the framework, both qualitatively and quantitatively, and illustrate its use in the fields of epidemiology and macroevolution.</p>
+<p id="P41">The likelihood computation can be very fast when lineages become extinct upon sampling (<italic>r</italic> = 1), relying on the results of <xref ref-type="bibr" rid="R15">Gupta et al. (2019)</xref>. In practice, this assumption only makes sense for some epidemiological applications, when infected individuals can self-quarantine and be safely assumed to be removed from the process. For macroevolutionary applications, the <italic>r</italic> parameter typically equals zero, and the likelihood computation relies on a more computationally intensive method to numerically solve Master equations (see details in <xref ref-type="supplementary-material" rid="SD1">Supp. Mat. A</xref>).</p>
+<p id="P42">More work is thus needed to help speed up the likelihood computation when <italic>r</italic> ≠ 1, on datasets for which a large number of hidden lineages is expected. This will be especially important for further applications in macroevolution and paleobiology, as many data sets feature thousands of fossils occurrences.</p>
+</sec>
+<sec id="S26">
+<label>4.2</label>
+<title>Covid-19 Diamond Princess epidemic</title>
+<p id="P43">The application of our method to the study of a thoroughly documented outbreak highlights the versatility of our model implementation. The ability to incorporate both incidence data and pathogen sequences, in combination with temporal information constitutes one of the first few instances of the use of a <italic>total evidence</italic> approach for the inference of epidemiological trajectories.</p>
+<p id="P44">In fact, encouraging conclusions can be drawn from both our parameter estimates and the corresponding trajectory inference. First, the reproductive number is inferred to be 4.33 in the absence of any intervention and detection, during the first 15 days of the cruise (see <xref ref-type="fig" rid="F6">Fig. 6B</xref>). These values are consistent with previous studies estimating the basic reproductive number <italic>R</italic>
+<sub>0</sub> between 2.5 and 3.5 for the global pandemic (<xref ref-type="bibr" rid="R51">Stadler 2020a</xref>), and 3.53 for the Diamond Princess outbreak before quarantine (<xref ref-type="bibr" rid="R52">Stadler 2020b</xref>). Second, we infer a decrease in the reproductive number, that remains near or below 1 in the last 23 days of the time period of interest, suggesting that the epidemic was contained by measures taken. Interestingly, we note that this decrease is driven by the sampling and removal of individuals from the infectious population, with the total sampling rate going up from 1.41 to 1.79 days<sup>−1</sup>, after February 11th (see <xref ref-type="supplementary-material" rid="SD1">Figure S13</xref> for detailed timeline). This extended sampling, stemming partly from the decision to test asymptomatic passengers, results in occurrences having a visible impact on the reconstructed prevalence curve. This underlines successful integration of both sequence and occurrence data, and the added value brought about by this new implementation.</p>
+<p id="P45">Biases inherent to many epidemiological data sets indicate important areas for development. For instance, sampling of outbreaks is most often carried out with the aim of quickly monitoring the disease, without rigorously following a protocol. This can result in inconsistent sampling and reporting strategies, with gaps and/or missing data. Due to a 24 hours reporting delay for this dataset, the first detected case was, for example, originally placed after the start of the quarantine. We tried to meticulously remove as many such biases as possible, but our framework could be improved in the future to account for these.</p>
+<p id="P46">Other potential biases include the effect of population structure — the Diamond princess outbreak is likely to have spread in at least two distinct sub-populations: guests and crew members (<xref ref-type="bibr" rid="R36">Nishiura 2020</xref>) — and density dependence — the outbreak being in a closed, geographically constrained population (<xref ref-type="bibr" rid="R43">Rocklöv et al. 2020</xref>). Further developments of the method to cover these scenarios could provide even better insight into the dynamics of this outbreak.</p>
+</sec>
+<sec id="S27">
+<label>4.3</label>
+<title>Past cetacean diversity</title>
+<p id="P47">Molecular and paleontological data come with their inherent limitations, e.g. lack of information about extinct lineages for the former and substantial spatiotemporal biases for the latter. Combining them into a single analysis may gather enough signal to mitigate these limitations, but special attention should be paid to model assumptions. We have endeavoured to respect these constraints, by (i) correcting occurrence distribution sampling biases, and (ii) making the most of the piecewise-constant parameter framework to include shifts in diversification rates, as detected previously (<xref ref-type="bibr" rid="R40">Rabosky 2014</xref>), as well as shifts in fossilization rates corresponding to the well-established low preservation rates in the Early Oligocene (Rupelian), Early Miocene (Aquitalian) and End Miocene (Messinian) (<xref ref-type="bibr" rid="R30">Marx et al. 2016</xref>).</p>
+<p id="P48">The emerging patterns of cetacean generic diversification in <xref ref-type="fig" rid="F7">Figure 7</xref> are coherent with previous estimates (<xref ref-type="bibr" rid="R57">Uhen and Pyenson 2007</xref>; <xref ref-type="bibr" rid="R34">Morlon et al. 2011</xref>; <xref ref-type="bibr" rid="R29">Marx and Fordyce 2015</xref>): (i) the “boom and bust” dynamics of prolonged diversification followed by a recent decline is recovered, and (ii) estimated generic richness is higher than the incomplete raw generic counts, as expected. The diversification of cetaceans, starting in the Eocene and accelerating in the Neogene, has been associated by previous authors with the development of the Antarctic Circumpolar Current (ACC) that fuelled a diatom radiation, via nutrient supply, prompting the diversification of bulk filtering cetaceans. The diversity drop in the last 4 million years has been linked to the global climate deterioration and the Northern Hemisphere glaciation, which coincides with the final establishment of modern mysticete gigantism and long-distance migration. Our inferred diversity trajectory (<xref ref-type="fig" rid="F7">Fig. 7</xref>) is compatible with these hypotheses. On the other hand, the distinct second peak with maximum diversity in the Pliocene is unexpected and will require further investigation. Similar to applications in epidemiology, insights into macroevolution based on our novel framework will also benefit from developments that account for biases in fossil sampling, e.g. spatial and temporal biases (<xref ref-type="bibr" rid="R6">Close et al. 2020</xref>).</p>
+</sec>
+<sec id="S28">
+<label>4.4</label>
+<title>New avenues for phylogenetics</title>
+<p id="P49">Over the last decade, the field of phylogenetics has expanded considerably with the development of the Fossilized Birth-Death Process and related extensions, of which the Occurrence Birth-Death Process is the latest instance. As a result, the long-standing opposition between molecular-based and fossil-based macroevolutionary inferences is in the process of being bridged, and case count records can be analyzed jointly with sequencing data in epidemiology applications. Many extant clades with a relatively rich paleontological record — e.g. turtles, sharks, angiosperms — as well as outbreak surveillance data, could benefit from this new method to infer reliable phylogenies and diversity/prevalence trajectories.</p>
+<p id="P50">Future progress could be made to couple birth rates with abiotic drivers, such as biogeography (see also work on multitype birth-death processes <xref ref-type="bibr" rid="R44">Scire et al. (2020)</xref>), or biotic drivers such as density-dependence (see also <xref ref-type="bibr" rid="R10">Etienne et al. (2012)</xref>). Going even further down the mechanistic road for macroevolutionary applications, stratigraphic palaeobiology could even become an explicit part of diversification models, by considering the accumulation of sediments over finer time and spatial scales (<xref ref-type="bibr" rid="R38">Patzkowsky and Holland 2012</xref>). Birth-death process models also exist for the analysis of stratigraphic ranges, or paleontological data only (<xref ref-type="bibr" rid="R53">Stadler et al. 2018</xref>; <xref ref-type="bibr" rid="R47">Silvestro et al. 2019</xref>), further expanding the potential of phylogenetic models in quantitative paleobiology. We anticipate that these approaches will all benefit from combining paleontological and molecular data.</p>
+<p id="P51">Overall, our two empirical applications demonstrate that a phylogenetic framework can be successfully applied to recover both the past outbreak prevalence and the past paleodiversity. In contrast to alternative approaches, it maximises the use of available evidence, since it uniquely allows us to combine genetic an morphological character data, together with occurrences. Further, our inference method relies on a generating model, incorporating explicit assumptions about the processes giving rise to our data, including sampling, and is prospectively much more flexible than alternative approaches to mitigating sampling biases.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Appendix</label>
+<media xlink:href="EMS101541-supplement-Appendix.pdf" mimetype="application" mime-subtype="pdf" id="N67636" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aguirre-Fernández</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Warnock</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Benites-Palomino</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Andréoletti</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Manceau</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Cetacean timeline</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alfaro</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Santini</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Brock</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Alamillo</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Dornburg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Rabosky</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Carnevale</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Harmon</surname>
+<given-names>LJ</given-names>
+</name>
+</person-group>
+<article-title>Nine exceptional radiations plus high turnover explain species diversity in jawed vertebrates</article-title>
+<source>P Natl Acad Sci USA</source>
+<year>2009</year>
+<volume>106</volume>
+<fpage>13410</fpage>
+<lpage>13414</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Allio</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Donega</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Galtier</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Nabholz</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<chapter-title>Large Variation in the Ratio of Mitochondrial to Nuclear Mutation Rate across Animals: Implications for Genetic Diversity and the Use of Mitochondrial DNA as a Molecular Marker</chapter-title>
+<source>Molecular Biology and Evolution</source>
+<publisher-name>Oxford Academic</publisher-name>
+<year>2017</year>
+<volume>34</volume>
+<fpage>2762</fpage>
+<lpage>2772</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Barido-Sottani</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Aguirre-Fernández</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Hopkins</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Warnock</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<chapter-title>Ignoring stratigraphic age uncertainty leads to erroneous estimates of species divergence times under the fossilized birth-death process</chapter-title>
+<source>Proceedings of the Royal Society B: Biological Sciences</source>
+<publisher-name>Royal Society</publisher-name>
+<year>2019</year>
+<volume>286</volume>
+<comment>20190685</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Churchill</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Geisler</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Beatty</surname>
+<given-names>BL</given-names>
+</name>
+<name>
+<surname>Goswami</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Evolution of cranial telescoping in echolocating whales (cetacea: Odontoceti)</article-title>
+<source>Evolution</source>
+<year>2018</year>
+<volume>72</volume>
+<fpage>1092</fpage>
+<lpage>1108</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Close</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Benson</surname>
+<given-names>RB</given-names>
+</name>
+<name>
+<surname>Saupe</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Clapham</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Butler</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>The spatial structure of phanerozoic marine animal diversity</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>368</volume>
+<fpage>420</fpage>
+<lpage>424</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dominici</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Danise</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cau</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Freschi</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>The awkward record of fossil whales</article-title>
+<source>Earth-Science Reviews</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Gardner</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>An interactive web-based dashboard to track covid-19 in real time</article-title>
+<source>The Lancet infectious diseases</source>
+<year>2020</year>
+<volume>20</volume>
+<fpage>533</fpage>
+<lpage>534</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Dornburg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Brandley</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>McGowen</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Near</surname>
+<given-names>TJ</given-names>
+</name>
+</person-group>
+<chapter-title>Relaxed Clocks and Inferences of Heterogeneous Patterns of Nucleotide Substitution and Divergence Time Estimates across Whales and Dolphins (Mammalia: Cetacea)</chapter-title>
+<source>Molecular Biology and Evolution</source>
+<publisher-name>Oxford Academic</publisher-name>
+<year>2012</year>
+<volume>29</volume>
+<fpage>721</fpage>
+<lpage>736</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Etienne</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Haegeman</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Aze</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Pearson</surname>
+<given-names>PN</given-names>
+</name>
+<name>
+<surname>Purvis</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Phillimore</surname>
+<given-names>AB</given-names>
+</name>
+</person-group>
+<article-title>Diversity-dependence brings molecular phylogenies closer to agreement with the fossil record</article-title>
+<source>Proceedings of the Royal Society B: Biological Sciences</source>
+<year>2012</year>
+<volume>279</volume>
+<fpage>1300</fpage>
+<lpage>1309</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Fordyce</surname>
+<given-names>RE</given-names>
+</name>
+</person-group>
+<chapter-title>Cetacean Fossil Record</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Perrin</surname>
+<given-names>WF</given-names>
+</name>
+<name>
+<surname>Würsig</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Thewissen</surname>
+<given-names>JGM</given-names>
+</name>
+</person-group>
+<source>Encyclopedia of Marine Mammals</source>
+<edition>Second Edition</edition>
+<publisher-loc>London</publisher-loc>
+<publisher-name>Academic Press</publisher-name>
+<year>2009</year>
+<fpage>207</fpage>
+<lpage>215</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gavryushkina</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Ksepka</surname>
+<given-names>DT</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Welch</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+</person-group>
+<article-title>Bayesian total-evidence dating reveals the recent crown radiation of penguins</article-title>
+<source>Systematic Biology</source>
+<year>2016</year>
+<volume>66</volume>
+<fpage>57</fpage>
+<lpage>73</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gavryushkina</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Welch</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+</person-group>
+<article-title>Bayesian inference of sampled ancestor trees for epidemiology and fossil calibration</article-title>
+<source>PLoS computational biology</source>
+<year>2014</year>
+<volume>10</volume>
+<fpage>e1003919</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Geisler</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Sanders</surname>
+<given-names>AE</given-names>
+</name>
+</person-group>
+<article-title>Morphological Evidence for the Phylogeny of Cetacea</article-title>
+<source>Journal of Mammalian Evolution</source>
+<year>2003</year>
+<volume>10</volume>
+<fpage>23</fpage>
+<lpage>129</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gupta</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Manceau</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vaughan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Khammash</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>The probability distribution of the reconstructed phylogenetic tree with occurrence data</article-title>
+<source>bioRxiv</source>
+<year>2019</year>
+<comment>679365</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Megill</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Huddleston</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Potter</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Callender</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Sagulenko</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bedford</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Neher</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>He</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lau</surname>
+<given-names>EH</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lau</surname>
+<given-names>YC</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>JY</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Temporal dynamics in viral shedding and transmissibility of covid-19</article-title>
+<source>Nature medicine</source>
+<year>2020</year>
+<volume>26</volume>
+<fpage>672</fpage>
+<lpage>675</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Huelsenbeck</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>The fossilized birth-death process for coherent calibration of divergence-time estimates</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2014</year>
+<volume>111</volume>
+<fpage>2957</fpage>
+<lpage>2966</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Wright</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>RevBayes: Combined-Evidence Analysis and the Fossilized Birth-Death Process for Stratigraphic Range Data</article-title>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Höhna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>RevBayes: Simple Diversification Rate Estimation</article-title>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Höhna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Boussau</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Landis</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Ronquist</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Huelsenbeck</surname>
+<given-names>JP</given-names>
+</name>
+</person-group>
+<article-title>Probabilistic Graphical Model Representation in Phylogenetics</article-title>
+<source>Systematic Biology</source>
+<year>2014</year>
+<volume>63</volume>
+<fpage>753</fpage>
+<lpage>771</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Höhna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Landis</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic Inference Using RevBayes</article-title>
+<source>Current Protocols in Bioinformatics</source>
+<year>2017</year>
+<volume>57</volume>
+<fpage>6.16.1</fpage>
+<lpage>6.16.34</lpage>
+<comment>eprint: <ext-link ext-link-type="uri" xlink:href="https://currentprotocols.onlinelibrary.wiley.com/doi/pdf/10.1002/cpbi.22">https://currentprotocols.onlinelibrary.wiley.com/doi/pdf/10.1002/cpbi.22</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Höhna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Landis</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Boussau</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Lartillot</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>BR</given-names>
+</name>
+<name>
+<surname>Huelsenbeck</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Ronquist</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>RevBayes: Bayesian Phylogenetic Inference Using Graphical Models and an Interactive Model-Specification Language</article-title>
+<source>Systematic Biology</source>
+<year>2016</year>
+<volume>65</volume>
+<fpage>726</fpage>
+<lpage>736</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kendall</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>On the generalized ‘birth-and-death’ process</article-title>
+<source>Ann Math Stat</source>
+<year>1948</year>
+<volume>19</volume>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maddison</surname>
+<given-names>WP</given-names>
+</name>
+<name>
+<surname>Midford</surname>
+<given-names>PE</given-names>
+</name>
+<name>
+<surname>Otto</surname>
+<given-names>SP</given-names>
+</name>
+</person-group>
+<article-title>Estimating a binary character's effect on speciation and extinction</article-title>
+<source>Systematic Biology</source>
+<year>2007</year>
+<volume>56</volume>
+<fpage>701</fpage>
+<lpage>710</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mallapaty</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>What the cruise-ship outbreaks reveal about covid-19</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>580</volume>
+<fpage>18</fpage>
+<lpage>18</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Manceau</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gupta</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Vaughan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>The probability distribution of ancestral population size under birth-death processes</article-title>
+<source>bioRxiv</source>
+<year>2019</year>
+<comment>679365</comment>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Marshall</surname>
+<given-names>CR</given-names>
+</name>
+</person-group>
+<article-title>Five palaeobiological laws needed to understand the evolution of the living biota</article-title>
+<source>Nature Ecology &amp; Evolution</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>1</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Marx</surname>
+<given-names>FG</given-names>
+</name>
+<name>
+<surname>Fordyce</surname>
+<given-names>RE</given-names>
+</name>
+</person-group>
+<chapter-title>Baleen boom and bust: a synthesis of mysticete phylogeny, diversity and disparity</chapter-title>
+<source>Royal Society Open Science</source>
+<publisher-name>Royal Society</publisher-name>
+<year>2015</year>
+<volume>2</volume>
+<comment>140434</comment>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Marx</surname>
+<given-names>FG</given-names>
+</name>
+<name>
+<surname>Lambert</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Uhen</surname>
+<given-names>MD</given-names>
+</name>
+</person-group>
+<chapter-title>Cetacean Paleobiology</chapter-title>
+<publisher-name>John Wiley &amp; Sons google-Books-ID</publisher-name>
+<year>2016</year>
+<comment>ADLOCwAAQBAJ</comment>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>McGowen</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Tsagkogeorga</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Álvarez Carretero</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>dos Reis</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Struebig</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Deaville</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jepson</surname>
+<given-names>PD</given-names>
+</name>
+<name>
+<surname>Jarman</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Polanowski</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Morin</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Rossiter</surname>
+<given-names>SJ</given-names>
+</name>
+</person-group>
+<chapter-title>Phylogenomic Resolution of the Cetacean Tree of Life Using Target Sequence Capture</chapter-title>
+<source>Systematic Biology</source>
+<publisher-name>Oxford Academic</publisher-name>
+<year>2020</year>
+<volume>69</volume>
+<fpage>479</fpage>
+<lpage>501</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<collab>Ministry of Health, L. and Welfare</collab>
+<article-title>Situation of the covid-19 in the cruise ship diamond princess</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mizumoto</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kagaya</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zarebski</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Chowell</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Estimating the asymptomatic proportion of coronavirus disease 2019 (covid-19) cases on board the diamond princess cruise ship, yokohama, japan, 2020</article-title>
+<source>Eurosurveillance</source>
+<year>2020</year>
+<volume>25</volume>
+<comment>2000180</comment>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morlon</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Parsons</surname>
+<given-names>TL</given-names>
+</name>
+<name>
+<surname>Plotkin</surname>
+<given-names>JB</given-names>
+</name>
+</person-group>
+<article-title>Reconciling molecular phylogenies with the fossil record</article-title>
+<source>P Natl Acad Sci USA</source>
+<year>2011</year>
+<volume>108</volume>
+<fpage>16327</fpage>
+<lpage>16332</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nee</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>May</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Harvey</surname>
+<given-names>PH</given-names>
+</name>
+</person-group>
+<article-title>The reconstructed evolutionary process</article-title>
+<source>Philosophical Transactions of the Royal Society of London B: Biological Sciences</source>
+<year>1994</year>
+<volume>344</volume>
+<fpage>305</fpage>
+<lpage>311</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nishiura</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Backcalculating the incidence of infection with covid-19 on the diamond princess</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O'Reilly</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Donoghue</surname>
+<given-names>PC</given-names>
+</name>
+</person-group>
+<article-title>The effect of fossil sampling on the estimation of divergence times with the fossilized birth-death process</article-title>
+<source>Systematic biology</source>
+<year>2020</year>
+<volume>69</volume>
+<fpage>124</fpage>
+<lpage>138</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Patzkowsky</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Holland</surname>
+<given-names>SM</given-names>
+</name>
+</person-group>
+<chapter-title>Stratigraphic paleobiology: understanding the distribution of fossil taxa in time and space</chapter-title>
+<publisher-name>University of Chicago Press</publisher-name>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quental</surname>
+<given-names>TB</given-names>
+</name>
+<name>
+<surname>Marshall</surname>
+<given-names>CR</given-names>
+</name>
+</person-group>
+<article-title>Diversity dynamics: molecular phylogenies need the fossil record</article-title>
+<source>Trends in Ecology &amp; Evolution</source>
+<year>2010</year>
+<volume>25</volume>
+<fpage>434</fpage>
+<lpage>441</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Rabosky</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<chapter-title>Automatic Detection of Key Innovations, Rate Shifts, and Diversity-Dependence on Phylogenetic Trees</chapter-title>
+<source>PLOS ONE</source>
+<publisher-name>Public Library of Science</publisher-name>
+<year>2014</year>
+<volume>9</volume>
+<fpage>e89543</fpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rasmussen</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Ratmann</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Koelle</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Inference for nonlinear epidemiological models using genealogies and time series</article-title>
+<source>PLoS computational biology</source>
+<year>2011</year>
+<volume>7</volume>
+<comment>1002136</comment>
+</element-citation>
+</ref>
+<ref id="R42">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Raup</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<chapter-title>Taxonomic Diversity during the Phanerozoic</chapter-title>
+<source>Science</source>
+<publisher-name>American Association for the Advancement of Science</publisher-name>
+<year>1972</year>
+<volume>177</volume>
+<fpage>1065</fpage>
+<lpage>1071</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rocklöv</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sjödin</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wilder-Smith</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Covid-19 outbreak on the diamond princess cruise ship: estimating the epidemic potential and effectiveness of public health countermeasures</article-title>
+<source>Journal of travel medicine</source>
+<year>2020</year>
+<volume>27</volume>
+<comment>taaa030</comment>
+</element-citation>
+</ref>
+<ref id="R44">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Scire</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Barido-Sottani</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kühnert</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Vaughan</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Improved multi-type birth-death phylodynamic inference in beast 2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R45">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Sepkoski</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Bambach</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Raup</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Valentine</surname>
+<given-names>JW</given-names>
+</name>
+</person-group>
+<chapter-title>Phanerozoic marine diversity and the fossil record</chapter-title>
+<source>Nature</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>1981</year>
+<volume>293</volume>
+<fpage>435</fpage>
+<lpage>437</lpage>
+<comment>number: 5832</comment>
+</element-citation>
+</ref>
+<ref id="R46">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>McCauley</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Gisaid: Global initiative on sharing all influenza data-from vision to reality</article-title>
+<source>Eurosurveillance</source>
+<year>2017</year>
+<volume>22</volume>
+<fpage>30494</fpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Silvestro</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Salamin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Antonelli</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Meyer</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<chapter-title>Improved estimation of macroevolutionary rates from fossil data using a Bayesian framework</chapter-title>
+<source>Paleobiology</source>
+<publisher-name>Cambridge University Press</publisher-name>
+<year>2019</year>
+<volume>45</volume>
+<fpage>546</fpage>
+<lpage>570</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Silvestro</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Salamin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Schnitzler</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>PyRate: a new program to estimate speciation and extinction rates from incomplete fossil data</article-title>
+<source>Methods in Ecology and Evolution</source>
+<year>2014</year>
+<volume>5</volume>
+<fpage>1126</fpage>
+<lpage>1131</lpage>
+<comment>eprint: <ext-link ext-link-type="uri" xlink:href="https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.12263">https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.12263</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R49">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Silvestro</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Warnock</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Gavryushkina</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Closing the gap between palaeontological and neontological speciation and extinction rate estimates</article-title>
+<source>Nature Communications</source>
+<year>2018</year>
+<volume>9</volume>
+<fpage>1</fpage>
+<lpage>14</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Sampling-through-time in birth-death trees</article-title>
+<source>Journal of theoretical biology</source>
+<year>2010</year>
+<volume>267</volume>
+<fpage>396</fpage>
+<lpage>404</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Phylodynamic analyses based on 128 sequences</article-title>
+<year>2020a</year>
+</element-citation>
+</ref>
+<ref id="R52">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Phylodynamic analyses of outbreaks in china, italy, washington state (usa), and the diamond princess</article-title>
+<year>2020b</year>
+</element-citation>
+</ref>
+<ref id="R53">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gavryushkina</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Warnock</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+</person-group>
+<article-title>The fossilized birth-death model for the analysis of stratigraphic range data under different speciation modes</article-title>
+<source>Journal of theoretical biology</source>
+<year>2018</year>
+<volume>447</volume>
+<fpage>41</fpage>
+<lpage>55</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Küuhnert</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bonhoeffer</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+</person-group>
+<article-title>Birth–death skyline plot reveals temporal changes of epidemic spread inHIV and hepatitis c virus (HCV)</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2013</year>
+<volume>110</volume>
+<fpage>228</fpage>
+<lpage>233</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Steeman</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Hebsgaard</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Fordyce</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Ho</surname>
+<given-names>SY</given-names>
+</name>
+<name>
+<surname>Rabosky</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Rahbek</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Glenner</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Sørensen</surname>
+<given-names>MV</given-names>
+</name>
+<name>
+<surname>Willerslev</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Radiation of extant cetaceans driven by restructuring of the oceans</article-title>
+<source>Systematic biology</source>
+<year>2009</year>
+<volume>58</volume>
+<fpage>573</fpage>
+<lpage>585</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Talts</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Betancourt</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Simpson</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Vehtari</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gelman</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Validating Bayesian Inference Algorithms with Simulation-Based Calibration</article-title>
+<year>2018</year>
+<comment>arXiv:1804.06788 [stat] ArXiv: 1804.06788</comment>
+</element-citation>
+</ref>
+<ref id="R57">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Uhen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pyenson</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Diversity estimates, biases, and historiographic effects: Resolving cetacean diversity in the Tertiary</article-title>
+<source>Palaeontologia Electronica</source>
+<year>2007</year>
+<fpage>10</fpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaughan</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Leventhal</surname>
+<given-names>GE</given-names>
+</name>
+<name>
+<surname>Rasmussen</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Welch</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Estimating epidemic incidence and prevalence from genomic data</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R59">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Wickham</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<chapter-title>ggplot2: Elegant Graphics for Data Analysis</chapter-title>
+<publisher-name>Springer google-Books-ID</publisher-name>
+<year>2016</year>
+<comment>XgFkDAAAQBAJ</comment>
+</element-citation>
+</ref>
+<ref id="R60">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wright</surname>
+<given-names>AM</given-names>
+</name>
+</person-group>
+<article-title>A systematist's guide to estimating bayesian phylogenies from morphological data</article-title>
+<source>Insect Systematics and Diversity</source>
+<year>2019</year>
+<volume>3</volume>
+<fpage>2</fpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wright</surname>
+<given-names>AM</given-names>
+</name>
+</person-group>
+<article-title>RevBayes: Discrete morphology — Multistate Characters</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R62">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xing</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Onstein</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Carter</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Peter Linder</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Fossils and a large molecular phylogeny show that the evolution of species richness, generic diversity, and turnover rates are disconnected</article-title>
+<source>Evolution</source>
+<year>2014</year>
+<volume>68</volume>
+<fpage>2821</fpage>
+<lpage>2832</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yule</surname>
+<given-names>GU</given-names>
+</name>
+</person-group>
+<article-title>A mathematical theory of evolution, based on the conclusions of Dr.Willis Jc F.R.S. Phil</article-title>
+<source>Trans R Soc Lond B</source>
+<year>1925</year>
+</element-citation>
+</ref>
+<ref id="R64">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Klopfstein</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Ronquist</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Total-evidence dating under the fossilized birth-death process</article-title>
+<source>Systematic biology</source>
+<year>2015</year>
+<volume>65</volume>
+<fpage>228</fpage>
+<lpage>249</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Different approaches to infer past history and population sizes. a) The full unknown history of the population. Different types of data can be used in order to infer the past history and population sizes of the population. b) Genetic sequencing data and character data for present day individuals allows to infer the reconstructed phylogenetic tree and to estimate the past number of lineages. c) This tree can be enriched with past individuals with documented character data (either morphological or molecular data), adding information on some extinct lineages (red). d) Past population sized can be obtained from sampled occurrences alone. Finally, e) A more comprehensive total evidence method integrates extant genetic sequences, samples with character data and the occurrences in a unified framework.</p>
+</caption>
+<graphic xlink:href="EMS101541-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Workflow for using the OBD model for diversity inference. One first needs to specify a graphical model with priors and provide some empirical (molecular, morphological, occurrence) data. A MCMC is run to sample the posterior distribution of trees and parameters. Finally, these traces are used to compute the posterior distribution of diversity through time.</p>
+</caption>
+<graphic xlink:href="EMS101541-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Validation of the likelihood calculation. Each parameter is varying (A-F) while keeping the others at their baseline values (H) and evaluating the likelihood of the toy dataset (I) where pink dots are occurrences, blue dots at past samples, and yellow dots are extant samples. Filled dots are removed samples, unfilled are not removed. For all parameters (A-F), our RevBayes implementation is compared to the Python code provided in <xref ref-type="bibr" rid="R27">Manceau et al. (2019)</xref> and whenever possible (B,C,E,F), to earlier FBDP implementations available in RevBayes, fixing <italic>r</italic> = 0, <italic>ω</italic> = 0 and &#119978; = ∅.</p>
+</caption>
+<graphic xlink:href="EMS101541-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Results of the blind test analysis. The posterior distribution of the number of lineages through time is in green. The inferred LTT plot, showing the number of lineages in the tree through time, is in black. The true simulated number of individuals is in red.</p>
+</caption>
+<graphic xlink:href="EMS101541-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Results of the Simulation-Based Calibration. Each dot corresponds to the proportion of simulated parameters (y axis) falling within its inferred posterior credible interval with a given level (x axis). The black line corresponds to the expected perfect match.</p>
+</caption>
+<graphic xlink:href="EMS101541-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>Analysis of the SARS-2 COVID-19 outbreak dynamics aboard the Diamond Princess cruise ship. (A) Occurrence and sequenced data are plotted as daily new observations. Although passengers were monitored until July 2020 (<xref ref-type="bibr" rid="R32">Ministry of Health and Welfare 2020</xref>), we focus on infections detected while guests were still aboard, until the end of the harbour quarantine. (B) Posterior probability distribution of the instantaneous total infected population aboard the cruise ship and inferred LTT. (C) Estimates of the effective reproductive number (<italic>R<sub>e</sub>
+</italic>) throughout a 38 day period starting at the beginning of the cruise.</p>
+</caption>
+<graphic xlink:href="EMS101541-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<p>Posterior probability distribution of the total number of genera over time. The 95% credible intervals are indicated in dashed lines, the expected diversity is in green and the inferred LTT is in black. Periods of biotic or abiotic factors that are hypothesized to have driven diversification changes are adapted from <xref ref-type="bibr" rid="R29">Marx and Fordyce (2015)</xref> and shown in black for information but had no influence on the analysis. ACC = Antarctic Circumpolar Current. Black dots below represent the occurrences used in the analysis.</p>
+</caption>
+<graphic xlink:href="EMS101541-f007"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Parameters and objects of the Occurrence Birth-Death Process.</p>
+</caption>
+<table frame="box" rules="cols">
+<thead>
+<tr>
+<th align="center" valign="middle">Parameter</th>
+<th align="center" valign="middle">Signification</th>
+<th align="center" valign="middle">Object</th>
+<th align="center" valign="middle">Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>t<sub>or</sub>
+</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Time of origin</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">&#119983;</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Reconstructed tree</td>
+</tr>
+<tr>
+<td align="center" valign="middle">λ</td>
+<td align="center" valign="middle">Speciation rate</td>
+<td align="center" valign="middle">&#119978;</td>
+<td align="center" valign="middle">Record of occurrence times</td>
+</tr>
+<tr>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>μ</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Extinction rate</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>I<sub>t</sub>
+</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Total number of lineages</td>
+</tr>
+<tr>
+<td align="center" valign="middle">
+<italic>ψ</italic>
+</td>
+<td align="center" valign="middle">Fossil sampling rate</td>
+<td align="center" valign="middle">
+<italic>k<sub>t</sub>
+</italic>
+</td>
+<td align="center" valign="middle">Number of sampled lineages</td>
+</tr>
+<tr>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>ω</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Occurrence sampling rate</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>i</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Number of hidden lineages</td>
+</tr>
+<tr>
+<td align="center" valign="middle">
+<italic>r</italic>
+</td>
+<td align="center" valign="middle">Removal probability at sampling</td>
+<td align="center" valign="middle">
+<inline-formula>
+<mml:math id="M11">
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↑</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mo>↑</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="center" valign="middle">Occurrences and tree before time t</td>
+</tr>
+<tr>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<italic>ρ</italic>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Sampling probability at present</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">
+<inline-formula>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mn>&#119978;</mml:mn>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mo>↓</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="center" valign="middle" style="background-color:#EFEFEF">Occurrences and subtrees after time t</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<p>Prior distributions of the OBDP parameters for the quantitative validation test. Notations: <italic>U</italic> for Uniform distribution with given lower and upper bound, <italic>Exp</italic> for Exponential with given rate parameter. The model of molecular evolution is the Jukes-Cantor 1969 substitution model (JC69) with strict clock hypothesis.</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="middle">Parameter</th>
+<th align="center" valign="middle">
+<italic>t<sub>or</sub>
+</italic>
+</th>
+<th align="center" valign="middle">
+<italic>μ</italic>
+</th>
+<th align="center" valign="middle">
+<italic>λ − μ</italic>
+</th>
+<th align="center" valign="middle">
+<italic>r</italic>
+</th>
+<th align="center" valign="middle">
+<italic>ψ</italic>
+</th>
+<th align="center" valign="middle">
+<italic>ω</italic>
+</th>
+<th align="center" valign="middle">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="middle">Mutation rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">Prior or Model</td>
+<td align="center" valign="middle">&#119984; (1, 5)</td>
+<td align="center" valign="middle">
+<italic>Exp</italic>(1)</td>
+<td align="center" valign="middle">
+<italic>Exp</italic>(100)</td>
+<td align="center" valign="middle">&#119984; (0, 1)</td>
+<td align="center" valign="middle">
+<italic>Exp</italic>(5)</td>
+<td align="center" valign="middle">
+<italic>Exp</italic>(5)</td>
+<td align="center" valign="middle">&#119984; (0.8, 1)</td>
+<td align="center" valign="middle">
+<italic>Exp</italic>(100)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

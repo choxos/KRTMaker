@@ -11,8 +11,9 @@ LLM_SYSTEM_PROMPT = """You are an expert research assistant that extracts Key Re
 CRITICAL REQUIREMENTS:
 1. Return STRICT JSON only - no code fences, no commentary, no markdown
 2. JSON must be an array of objects with EXACTLY these 6 keys: ['RESOURCE TYPE','RESOURCE NAME','SOURCE','IDENTIFIER','NEW/REUSE','ADDITIONAL INFORMATION']
-3. NEVER leave required fields empty or use "N/A", "Unknown", or similar placeholders
-4. When information is not in the full text, search the web for the most accurate information available
+3. ABSOLUTELY FORBIDDEN: NEVER use "N/A", "Unknown", "Not specified", "Not available", or ANY placeholder values
+4. MANDATORY WEB SEARCH: When information is missing from the text, you MUST search the internet to find complete details
+5. EVERY field must contain specific, actionable information - NO EXCEPTIONS
 
 EXACT RESOURCE TYPES (use these exact values, case-insensitive):
 - Dataset
@@ -32,9 +33,11 @@ EXACT RESOURCE TYPES (use these exact values, case-insensitive):
 
 REQUIRED FIELDS (cannot be empty):
 - RESOURCE TYPE: Use exact values from list above
-- RESOURCE NAME: Specific, descriptive name matching manuscript text. For software, include version numbers.
-- IDENTIFIER: Persistent identifier (RRID, DOI, GEO accession, catalog #, URL). If none exists, use "No identifier exists"
-- NEW/REUSE: "new" if generated for this study, "reuse" if pre-existing
+- RESOURCE NAME: NEVER "N/A" - Extract the EXACT name from manuscript text. If incomplete, search web for full product name, version, or clone details.
+- SOURCE: NEVER "N/A" - Find specific company name, author citation, or "This study". Web search required if missing.
+- IDENTIFIER: NEVER "N/A" - Find catalog numbers, RRIDs, URLs, accessions. If truly none exists, use "No identifier exists"
+- NEW/REUSE: MANDATORY LOGIC - "new" ONLY if source is "This study/paper/work". Otherwise ALWAYS "reuse"
+- ADDITIONAL INFORMATION: NEVER "N/A" - Include concentrations, dilutions, conditions, or other relevant details
 
 IDENTIFIER EXAMPLES:
 - Antibodies: "Cat# AB152; RRID: AB_390204" 
@@ -43,20 +46,56 @@ IDENTIFIER EXAMPLES:
 - Chemicals: "Cat# D9628" (Sigma-Aldrich)
 - If no identifier exists: "No identifier exists"
 
-NEW/REUSE GUIDELINES (CRITICAL - FOLLOW EXACTLY):
-- "new": ONLY when source is "This study", "This paper", "Current study", or similar phrases indicating the resource was generated/created/collected in this specific study
-- "reuse": ALL commercial products, published software, established cell lines, commercial reagents, published protocols from other sources
-- Examples of "new" sources: "This study", "This paper", "Current study", "Authors", "Present study"
-- Examples of "reuse" sources: Company names (Abcam, Invitrogen, BD Biosciences), Software developers, Previous publications
+NEW/REUSE GUIDELINES (ABSOLUTELY CRITICAL - ZERO TOLERANCE FOR ERRORS):
 
-WEB SEARCH INSTRUCTIONS:
-When the article text lacks specific information (vendor, catalog #, RRID, version), search the web to find:
-- Exact vendor/supplier names
-- Catalog/part numbers
-- RRIDs from antibodyregistry.org, cellosaurus.org, etc.
-- Software version numbers and official URLs
-- Proper database accession numbers
-- DOIs for protocols and datasets
+USE "new" ONLY when source explicitly states:
+- "This study" / "This paper" / "This work" / "Current study" / "Present study"
+- "Authors" / "We generated" / "We developed" / "We created"
+- "Generated for this study" / "Developed here" / "Custom-made"
+
+USE "reuse" for EVERYTHING ELSE (DEFAULT CHOICE):
+- ALL commercial products (Abcam, Invitrogen, Sigma-Aldrich, BD Biosciences, etc.)
+- ALL published software (ImageJ, STAR, Seurat, DESeq2, etc.)
+- ALL established cell lines, protocols, reagents from other sources
+- When source is ANY company name, previous publication, or database
+- When unsure or source is ambiguous - ALWAYS choose "reuse"
+
+DECISION RULE: If you cannot find explicit text stating the resource was created/generated/developed specifically for this study, then it is "reuse"
+
+MANDATORY WEB SEARCH PROTOCOL:
+When ANY information is missing or incomplete in the manuscript, you MUST search the internet to complete ALL fields:
+
+FOR ANTIBODIES - Search for:
+- Full product names and clone information
+- Exact vendor names (never generic terms)
+- Catalog numbers and RRIDs from antibodyregistry.org
+- Species reactivity and conjugation details
+
+FOR SOFTWARE - Search for:
+- Current version numbers and exact names
+- Official download URLs or GitHub repositories
+- Developer/company names and citations
+- RRIDs from scicrunch.org
+
+FOR CHEMICALS/REAGENTS - Search for:
+- Complete product names and specifications
+- Vendor names and catalog numbers
+- CAS numbers or other chemical identifiers
+- Concentration and purity information
+
+FOR DATASETS - Search for:
+- GEO accession numbers, DOIs, database links
+- Repository names (NCBI, Zenodo, DANDI, etc.)
+- Complete dataset descriptions and access URLs
+
+SEARCH STRATEGY: Use specific terms like "[product name] catalog number", "[antibody name] RRID", "[software name] version", "[gene expression dataset] GEO accession"
+
+CRITICAL: LOOK FOR TABLES AT THE END OF DOCUMENTS
+- Key Resource Tables are OFTEN located AFTER the discussion section, references, or in supplementary sections
+- Check for "Key Resources Table", "Resource Table", "Materials Table", "Reagents Table" sections
+- Examine ALL table content throughout the document, not just in methods sections
+- Pay special attention to supplementary materials and appendices
+- Tables may appear in "Data Availability", "Acknowledgments", or end sections
 
 QUALITY STANDARDS:
 - Each resource mentioned in Methods MUST have a KRT row
@@ -197,27 +236,35 @@ class LLMClient:
     ) -> List[Dict[str, str]]:
         prompt = (
             "Extract a comprehensive Key Resources Table (KRT) in JSON format from these targeted sections of a scientific article.\n\n"
+            "⚠️  ABSOLUTE PROHIBITION: NEVER use 'N/A', 'Unknown', 'Not specified', or any placeholder values\n"
+            "🔍 MANDATORY: Search the web when information is incomplete - every field must be specific and actionable\n\n"
             "CONTENT PROVIDED: You are receiving the METHODS, RESULTS, and APPENDIX sections only (not the full article). This focused content contains the most relevant information for resource identification.\n\n"
-            "CRITICAL RESOURCE NAME EXTRACTION:\n"
-            "- Find the EXACT names as they appear in the provided sections\n"
-            "- For antibodies: Look for patterns like 'anti-[protein]', 'mouse anti-', 'rabbit polyclonal'\n"
-            "- For software: Include version numbers from the text (e.g., 'ImageJ version 1.53')\n"
-            "- For chemicals: Use the specific product names mentioned (e.g., 'DAPI', 'Trypsin-EDTA')\n"
-            "- For primers: Include the actual primer names or sequences if given\n"
-            "- NEVER use placeholder names like 'N/A', 'Various antibodies', 'Standard reagents'\n\n"
-            "CRITICAL NEW/REUSE LOGIC:\n"
-            "- NEW: ONLY when the text explicitly states the resource was generated/created/collected 'in this study', 'for this study', or source is described as 'this study', 'current study', 'authors'\n"
-            "- REUSE: ALL commercial products, published software, established protocols, anything from companies or other publications\n"
-            "- When in doubt, default to 'reuse' unless clearly stated as created for this study\n\n"
-            "SOURCE IDENTIFICATION:\n"
-            "- For NEW resources: Use 'This study', 'This paper', 'Current study'\n"
-            "- For REUSE resources: Use specific company names (Abcam, Invitrogen, Sigma-Aldrich), software developers, or publication authors\n\n"
-            "REQUIRED ACTIONS:\n"
-            "- Analyze ALL provided sections thoroughly for resource mentions\n"
-            "- For EVERY resource mentioned, create a KRT entry with proper names from the text\n"
-            "- When vendor/catalog info is missing, use your knowledge to find the most likely correct information\n"
+            "CRITICAL RESOURCE NAME EXTRACTION (NO N/A ALLOWED):\n"
+            "- Extract EXACT names from the text, then search web for complete product details if needed\n"
+            "- For antibodies: Find full product names, clone info, catalog numbers via web search\n"
+            "- For software: Include version numbers, search for official names and current versions\n"
+            "- For chemicals: Get complete product names and vendor info through web search\n"
+            "- For primers: Use actual sequences or names, search for design details if custom\n"
+            "- MANDATORY: Every resource name must be specific and complete - web search required\n\n"
+            "ABSOLUTE NEW/REUSE RULE (NO EXCEPTIONS):\n"
+            "- NEW: ONLY when source explicitly says 'This study/paper/work' or 'We generated/developed/created'\n"
+            "- REUSE: EVERYTHING ELSE (default choice) - all commercial products, published software, databases\n"
+            "- If unsure about NEW/REUSE, always choose 'reuse' - it's the safe default\n\n"
+            "SOURCE FIELD REQUIREMENTS (NO N/A ALLOWED):\n"
+            "- For NEW resources: 'This study' (when explicitly stated)\n"
+            "- For REUSE resources: Specific company names (search web for exact vendor)\n"
+            "- MANDATORY: Every source must be a real, specific entity - generic terms forbidden\n\n"
+            "MANDATORY WEB SEARCH ACTIONS:\n"
+            "- Search for missing catalog numbers, RRIDs, version numbers\n"
+            "- Find exact vendor names for all commercial products\n"
+            "- Locate official URLs, DOIs, or database accessions\n"
+            "- Complete all incomplete information through targeted web searches\n"
             "- NEVER use 'N/A', 'Unknown', or leave required fields empty\n"
             "- For new datasets/code, specify which figures/tables they produced\n\n"
+            "FINAL QUALITY CHECK:\n"
+            "Before submitting, verify that NO entry contains 'N/A', 'Unknown', or placeholder text.\n"
+            "Every resource name, source, and identifier must be specific and actionable.\n"
+            "Every NEW/REUSE decision must follow the explicit rules above.\n\n"
             "Return only valid JSON array with no additional text or formatting.\n\n"
         )
         if extra_instructions:

@@ -1,0 +1,2190 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS104940</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.20.391318</article-id>
+<article-id pub-id-type="archive">PPR240898</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Arena3D<sup>web</sup>: Interactive 3D visualization of multilayered networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Karatzas</surname>
+<given-names>Evangelos</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Baltoumas</surname>
+<given-names>Fotis A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Panayiotou</surname>
+<given-names>Nikolaos A.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Schneider</surname>
+<given-names>Reinhard</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>Georgios A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Institute for Fundamental Biomedical Research, BSRC “Alexander Fleming”, Vari, Greece</aff>
+<aff id="A2">
+<label>2</label>School of Mechanical Engineering, Section of Industrial Management and Operational Research, National Technical University of Athens, Zografou, Athens, Greece</aff>
+<aff id="A3">
+<label>3</label>University of Luxembourg, Luxembourg Centre for Systems Biomedicine, Bioinformatics Core, Esch-sur-Alzette, Luxembourg</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>To whom correspondence should be addressed. Tel: +30-210-9656310; Fax: +30-210-9653934; <email>pavlopoulos@fleming.gr</email>; <email>karatzas@fleming.gr</email>
+</corresp>
+<fn id="FN1" fn-type="present-address">
+<p id="P1">Present Address: Georgios A. Pavlopoulos, Institute for Fundamental Biomedical Research, BSRC “Alexander Fleming”, 34 Fleming Street, Vari, 16672, Greece</p>
+</fn>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>20</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P2">Efficient integration and visualization of heterogeneous biomedical information in a single view is a key challenge. In this study, we present Arena3D<sup>web</sup>, the first, fully interactive and dependency-free, web application which allows the visualization of multilayered graphs in 3D space. With Arena3D<sup>web</sup>, users can integrate multiple networks in a single view along with their intra- and inter-layer connections. For clearer and more informative views, users can choose between a plethora of layout algorithms and apply them on a set of selected layers either individually or in combination. Users can align networks and highlight node topological features, whereas each layer as well as the whole scene can be translated, rotated and scaled in 3D space. User-selected edge colors can be used to highlight important paths, while node positioning, coloring and resizing can be adjusted on-the-fly. In its current version, Arena3D<sup>web</sup> supports weighted and unweighted undirected graphs and is written in R, Shiny and JavaScript. We demonstrate the functionality of Arena3D<sup>web</sup> using two different use-case scenarios; one regarding drug repurposing for SARS-CoV-2 and one related to GPCR signaling pathways implicated in melanoma. Arena3D<sup>web</sup> is available at <ext-link ext-link-type="uri" xlink:href="http://bib.fleming.gr:3838/Arena3D.">http://bib.fleming.gr:3838/Arena3D.</ext-link>
+</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P3">Simple networks are often used to model relationships between entities in real-world systems. Typical examples of such networks in the biomedical field are the gene co-expression networks, sequence similarity networks (SSNs), protein-protein interaction networks (PPIs), metabolic networks, signal transduction networks, gene regulatory networks, gene-disease networks, evolution networks, bipartite graphs, food webs and others (<xref ref-type="bibr" rid="R1">1</xref>). Most of these networks come with certain topological features and fall into one of the Erdos–Rényi (random), Watts-Strogatz (small-word) and Barabási–Albert (scale-free) categories (<xref ref-type="bibr" rid="R2">2</xref>). Efficient visualizers take advantage of these topological properties and utilize advanced graph-drawing (layout) algorithms (e.g. force-directed, hierarchical, orthogonal and spectral) to generate informative and appealing 2D/3D views thus minimizing any possible node overlaps and connection crossovers (<xref ref-type="bibr" rid="R3">3</xref>). Among a decent variety of applications today (<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R5">5</xref>), widely-used interactive 2D visualizers include the Cytoscape (<xref ref-type="bibr" rid="R6">6</xref>), Cytoscape.js (<xref ref-type="bibr" rid="R7">7</xref>), String (<xref ref-type="bibr" rid="R8">8</xref>), NORMA (<xref ref-type="bibr" rid="R9">9</xref>), Gephi (<xref ref-type="bibr" rid="R10">10</xref>), Pajek (<xref ref-type="bibr" rid="R11">11</xref>) and Tulip (<xref ref-type="bibr" rid="R12">12</xref>) whereas successful 3D visualizers include the Graphia (Kajeka) and BioLayout Express (<xref ref-type="bibr" rid="R13">13</xref>).</p>
+<p id="P4">Despite the great functionality and interactivity of these viewers, most of them currently offer over-simplified views and often fail to capture patterns in today’s data heterogeneity and complexity. In the biomedical field for example, a new trend is to integrate heterogeneous information from various repositories in a single view or support experimental findings (e.g. biomarker detection) in multiple ways (e.g. genomics, proteomics, metabolomics). Therefore, visualizers able to offer a more structured analysis along with contemporary multilayer network visualization are necessary (<xref ref-type="bibr" rid="R14">14</xref>). While this area of network analysis is still in its infancy, few implementations in this direction have been already proposed. The Arena3D standalone version (<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>) for example, enables an interactive multilayered graph visualization but is poor in the inter/intra-layer layouts that it offers. Pymnet is a python library which can produce high quality static images of multilayer and multiplex networks and therefore, familiarity with Python programming language is required. Similarly, Py3plex (<xref ref-type="bibr" rid="R17">17</xref>) a python library, which handles multilayered networks and enables common operations such as aggregation, slicing, indexing and traversal but lacks interactivity and fails to solve the edge overlapping problem. Mully (<xref ref-type="bibr" rid="R18">18</xref>) is an R package to create, modify and visualize multilayered graphs but lacks interactivity too. Finally, MuxViz (<xref ref-type="bibr" rid="R19">19</xref>) is a framework which is more suitable for layer analysis and visualization of geospatial data.</p>
+<p id="P5">In this article, we propose Arena3D<sup>web</sup>, the first web application which offers a fully interactive 3D visualization and analysis of multilayered networks. Arena3D<sup>web</sup> comes with many inter/intra-layer layouts and network metrics for node scaling, is dependency-free and is easily accessible to non-experts from a web browser. It is written in R, Shiny and JavaScript whereas the backend calculations are based on the igraph library (<xref ref-type="bibr" rid="R20">20</xref>). We believe that Arena3D<sup>web</sup> is a general-purpose tool which can successfully address many of the complexity issues in the biomedical field and can offer informative and appealing visualizations suitable for knowledge integration, representation, transfer and communication.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S3">
+<title>Input and export files</title>
+<p id="P6">In its current version, Arena3D<sup>web</sup> mainly accepts three different types of tab-delimited files as input. The main file is a four- or a five-column file describing the network in a simple format like: <italic>node i from layer x is connected to node j from layer y</italic>. In the case of a weighted graph, weights can be added as an extra column. In addition to the main file, users are allowed to upload two more files with further information about the node and edge attributes. In the first case, nodes can be accompanied by a URL, a description, a color, and a custom size whereas in the second case, edges can be accompanied by a color. For convenience, the column order in any of the aforementioned files is insignificant as long as headers are used strictly. Notably, users can save and export the status of a network at any time in an Arena3D<sup>web</sup> file format. This file contains all the necessary information from nodes and connections to colors and 3D coordinates. It is a text file format which users can modify manually at any time.</p>
+</sec>
+<sec id="S4">
+<title>Graph drawing and layouts</title>
+<p id="P7">As a default option, Arena3D<sup>web</sup> places all uploaded layers in parallel and spreads them horizontally. Once the main network has been loaded and rendered, users can choose between a variety of layout algorithms to adjust the node coordinates. By applying a layout algorithm on a selected layer or a set of selected layers individually, users can eliminate the intra-layer line crossovers without impacting the inter-layer connections. On the contrary, when users decide to apply a layout algorithm on a set of selected layers in combination, then more focus is given on eliminating the inter-layer crossovers. In the second case, the layout algorithm will handle all nodes from the selected layers and their connections as one unified network and will place them back on their originating layers once the layout algorithm has converged. The latter is a powerful feature for creating network pseudo-alignments (<xref ref-type="fig" rid="F1">Figure 1</xref>, layers 5 and 6) and generating appealing and informative views. Finally, users are allowed to apply any of the offered layout algorithms locally on a set of selected nodes per layer.</p>
+<p id="P8">In this version, Arena3D<sup>web</sup> supports a variety of layout algorithms implemented as part of the R/igraph library (<xref ref-type="bibr" rid="R20">20</xref>). Briefly, these are: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P9">
+<italic>Circle:</italic> It is a simple layout and places the vertices on a circle, ordered by their vertex ids.</p>
+</list-item>
+<list-item>
+<p id="P10">
+<italic>Grid:</italic> This simple layout places vertices on a rectangular 2D grid.</p>
+</list-item>
+<list-item>
+<p id="P11">
+<italic>Random:</italic> This function places the vertices of the graph on a 2D plane uniformly using random coordinates.</p>
+</list-item>
+<list-item>
+<p id="P12">
+<italic>Star:</italic> It places the vertices of a graph on the plane, according to the simulated annealing algorithm developed by Davidson and Harel. It is a simple layout generator that places one vertex in the center of a circle and the rest of the vertices equidistantly on the perimeter.</p>
+</list-item>
+<list-item>
+<p id="P13">
+<italic>Reingold-Tilford</italic> (<xref ref-type="bibr" rid="R21">21</xref>):It is a tree-like layout more suitable for trees, hierarchies and graphs without many cycles.</p>
+</list-item>
+<list-item>
+<p id="P14">
+<italic>Sugiyama:</italic> Like Reingold-Tilford, this layout algorithm is more suitable for hierarchies and layered directed acyclic graphs.</p>
+</list-item>
+<list-item>
+<p id="P15">
+<italic>Fruchterman-Reingold</italic> (<xref ref-type="bibr" rid="R22">22</xref>): It places nodes on the plane using the force-directed layout algorithm developed by Fruchterman and Reingold.</p>
+</list-item>
+<list-item>
+<p id="P16">
+<italic>Davidson-Harel</italic> (<xref ref-type="bibr" rid="R23">23</xref>): It is a force-directed algorithm which uses simulated annealing and a sophisticated energy function to place nodes on a plane.</p>
+</list-item>
+<list-item>
+<p id="P17">
+<italic>Distributed Recursive (Graph) Layout</italic> (<xref ref-type="bibr" rid="R24">24</xref>): DrL is a force-directed graph layout toolbox focused on real-world large-scale graphs.</p>
+</list-item>
+<list-item>
+<p id="P18">
+<italic>Multidimensional scaling</italic> (<xref ref-type="bibr" rid="R25">25</xref>): It aims to place points from a higher dimensional space on a 2D plane, so that the distance between the points are kept as much as possible.</p>
+</list-item>
+<list-item>
+<p id="P19">
+<italic>Kamada-Kawai</italic> (<xref ref-type="bibr" rid="R26">26</xref>): This force-directed layout places the vertices on a 2D plane by simulating a physical model of springs.</p>
+</list-item>
+<list-item>
+<p id="P20">
+<italic>Large Graph Layout (LGL):</italic> A force-directed layout suitable for larger graphs.</p>
+</list-item>
+<list-item>
+<p id="P21">
+<italic>Graphopt:</italic> A force-directed layout algorithm, which scales relatively well to large graphs.</p>
+</list-item>
+<list-item>
+<p id="P22">
+<italic>Gem</italic> (<xref ref-type="bibr" rid="R27">27</xref>): It places vertices on the plane using the GEM force-directed layout algorithm.</p>
+</list-item>
+</list>
+</p>
+<p id="P23">In <xref ref-type="fig" rid="F1">Figure 1</xref>, we show representative views which demonstrate some of the aforementioned functionalities. Nodes on the first layer have been placed on a simple grid whereas node coordinates on the second layer (random acyclic graph) have been generated by the Reingold-Tilford layout. The force-directed Kamada-Kawai layout algorithm has been applied separately on a small-world and a scale-free random network on layers 3 and 4 accordingly. Finally networks on layer 5 and 6 have been treated as one unified network aligned with the use of the Fruchterman-Reingold force-directed algorithm.</p>
+</sec>
+<sec id="S5">
+<title>Topological features</title>
+<p id="P24">Nodes on a set of selected layers can be resized according to topological properties such as the <italic>degree</italic>, <italic>clustering coefficient</italic> and <italic>betweenness centrality.</italic> For example, nodes with higher connectivity degrees can be forced to appear larger. This function can be performed on each of the selected layers individually or in combination. In the first case, only the intra-layer connections are taken into account whereas in the second case both the intra- and inter-layer connections are considered. Briefly, as <italic>degree deg<sub>i</sub>
+</italic>, we define the total number of connections adjacent to a node <italic>i</italic>. The <italic>clustering coefficient</italic> of a node <italic>i</italic> shows whether this node has the tendency to form clusters and is defined as the number of edges between a node’s neighbors divided by the number of all possible connections between these neighbors. The <italic>betweenness centrality</italic> highlights nodes which can act as mediators in order for two communities to communicate with each other. It is calculated as <inline-formula>
+<mml:math id="M1">
+<mml:msub>
+<mml:mi>B</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula> where <italic>σ<sub>xy</sub>
+</italic> is the total number of shortest paths from node x to node y and <italic>σ<sub>xy</sub>
+</italic>(<italic>i</italic>) is the number of those paths that pass through the node <italic>i</italic>. For demonstration purposes, in <xref ref-type="fig" rid="F1">Figure 1</xref>, nodes on layers 1 and 2 have been resized based on their connectivity degree. Nodes on layers 3 and 4 have been resized based on their clustering coefficient. Finally, nodes on layers 5 and 6 have been resized based on their degree, while considering both layers as one unified network.</p>
+</sec>
+<sec id="S6">
+<title>Navigation controls</title>
+<p id="P25">Arena3D<sup>web</sup> comes with various control buttons for easy 3D navigation (<xref ref-type="fig" rid="F2">Figure 2</xref>). These buttons are grouped in three main categories. These are: <italic>i</italic>) buttons for the whole scene, <italic>ii</italic>) buttons for each layer, <italic>iii</italic>) buttons for the nodes within a layer.</p>
+<p id="P26">
+<italic>The Scene:</italic> Arena3D<sup>web</sup> uses a global cartesian coordinate system and adopts the red green and blue colors to highlight the x, y and z axes accordingly. The whole network can be rotated clockwise and counter-clockwise around any on the three axes using the navigation buttons. The rotation angle and subsequently the rotation speed can be adjusted manually. Zooming, panning and orbiting are controlled by mouse events as well as by keyboard strokes.</p>
+<p id="P27">
+<italic>The Layer:</italic> In Arena3D<sup>web</sup>, each layer comes with its own individual coordinate system. Users are allowed to rotate and translate any layer around any of the x, y, z axes and place them anywhere in 3D space. In the case where multiple layers have been selected, each transformation will be applied to each of them individually. Like before, the rotation angle as well as the translation step can be adjusted manually. In addition, each layer floor can be scaled up or down by a user-defined factor and node coordinates on the corresponding layer will be adjusted automatically. Finally, to avoid incomprehensive views when layers are placed too close to each other, users have the option to expand or collapse the view by adjusting their in-between distance.</p>
+<p id="P28">
+<italic>The nodes:</italic> Nodes can be placed anywhere on a plane regardless the position and orientation of the layer. Users can select a single node or multiple nodes simultaneously using a rectangle selection and translate them in 3D space. To cope with node and label overlapping problems, users can apply any of the offered layout algorithms locally on a set of selected nodes or increase and decrease their local coordinates thus giving the feeling of repulsion or attraction. Like before, the translation step can be manually adjusted. Finally, node sizes can be scaled manually with the use of a slide bar.</p>
+</sec>
+<sec id="S7">
+<title>Styles and colors</title>
+<p id="P29">Arena3D<sup>web</sup> comes with a plethora of options to avoid incomprehensive visualizations. Users can show and hide the labels of each layer as well as the layer itself along with the corresponding connections. Similarly, users can show and hide the coordinate system of the whole scene as well as the coordinate systems of each individual layer. Nodes and edges can be manually colored to highlight important paths whereas edge weights are represented by an edge’s opacity. The lower the weight, the more transparent the edge’s color and vice versa. The background color as well as each layer’s floor color can be changed with the use of a color picker whereas each floor’s transparency can be adjusted manually. Finally, the inter-layer and the intra-layer connection opacities can be adjusted. This way, one can emphasize on the intra- or the inter-layer edges separately. Finally, Arena3D<sup>web</sup> gives the option to highlight the first-neighbors of a node along with their corresponding connections or highlight the paths that this node is involved in across all layers.</p>
+</sec>
+<sec id="S8">
+<title>Implementation</title>
+<p id="P30">Arena3D<sup>web</sup> is mainly written in R and JavaScript programming languages. It’s frontend is written using the R/Shiny package, HTML, CSS and JavaScript. The Shiny package was used as the mediator to establish the communication between the R and JavaScript variables and functions. In the backend, the igraph library was used for all network layout algorithms as well as for the calculation of the topological metrics used for node scaling. 3D graphics in the main view were handled by the three.js JavaScript library. The library uses the WebGL JavaScript API for graphics and 3D object rendering.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="results">
+<title>Results</title>
+<p id="P31">In order to demonstrate how Arena3D<sup>web</sup> can visualize heterogeneous complex information in real case scenarios, we provide two examples, the one related to drug repurposing for SARS-CoV-2 (network with 456 nodes and 985 edges) and the other related to GPCR signaling pathways implicated in melanoma (network with 64 nodes and 332 edges).</p>
+<sec id="S10">
+<title>Drug repurposing for SARS-CoV-2 - A case study</title>
+<p id="P32">SARS-CoV-2 is the causative coronavirus for the disease COVID-19 (<xref ref-type="bibr" rid="R28">28</xref>) which has infected over 46 million people and has led to more than 1.2 million deaths (worldometers.info/coronavirus - 11/2020). In a recent study of Gordon et. al (<xref ref-type="bibr" rid="R29">29</xref>), 26 SARS-CoV-2 proteins have been cloned, tagged and expressed in HEK-293T/17 human cells in order to identify physically interacting proteins with the use of affinity-purification mass spectrometry (AP-MS) technology. Experiments led to the identification of 332 high-confidence protein–protein interactions between the SARS-CoV-2 virus and the human proteins. In addition to this, the study highlights existing drugs which target the human proteins and which can be potentially repurposed and be used for the COVID-19 treatment.</p>
+<p id="P33">In more detail, the 2019-nCoV/USA-WA1/2020 SARS-CoV-2 genome (MN985325) was taken from the GenBank database (<xref ref-type="bibr" rid="R30">30</xref>) and was analyzed across its 29 possible open-reading frames (ORFs). The analysis reported 26 annotated protein baits which were found to interact with proteins in human cells. In many cases, these human proteins were found to form protein complexes, reported in the CORUM database (<xref ref-type="bibr" rid="R31">31</xref>). In addition, functional enrichment analysis reported Gene Ontology (GO) biological process terms (<xref ref-type="bibr" rid="R32">32</xref>), collected from the Molecular Signature Database (<xref ref-type="bibr" rid="R33">33</xref>). Interacting drugs with both viral and human proteins were identified through literature searching for targets and pathways, as well as based on cheminformatics searches in the 2020 IUPHAR/BPS Guide to Pharmacology (<xref ref-type="bibr" rid="R34">34</xref>) and the ChEMBL25 (<xref ref-type="bibr" rid="R35">35</xref>) databases.</p>
+<p id="P34">In order to combine the heterogeneous information from this example in a single view, based on the data provided by the Gordon et al. study, we constructed a five-level multilayered network with Arena3D<sup>web</sup> (<xref ref-type="fig" rid="F3">Figure 3</xref>). In detail, these layers are: (i) human proteins and their interactions, (ii) protein complexes these proteins belong to, (iii) biological processes these proteins are involved in, (iv) SARS-CoV-2 proteins and their interactions with the human proteins and (v) possibly repurposable drugs and their respective targets in both the SARS-CoV-2 and human protein layers. To create a more comprehensive view, we treated the different layers as one network and aligned them via the Kamada-Kawai layout. Drugs on the last layer were grouped using a local circular layout and FDA-approved drugs were marked in a cerulean color.</p>
+<p id="P35">We focused on pevonedistat and zotatifin drugs as they target several SARV-CoV-2 proteins as well as certain human protein complexes. We highlight the inter-layer paths these drugs belong to with green and pink colors respectively as well as their protein targets and their distinct complexes. For better visualization, on the human protein layer, we applied the local circular layout where necessary.</p>
+<p id="P36">With an at-a-glance view, we observe that the SARS-CoV-2 ORF10 ubiquitin ligase interacts with members from the cullin-2 (CUL2) RING E3 ligase complex and more specifically with the CUL2<sup>ZYG11B</sup> complex. Either 0RF10 binds to the CUL2<sup>ZYG11B</sup> complex and hijacks it for ubiquitination and degradation of restriction factors, or ZYG11B binds to the N-terminal glycine in ORF10 and targets it for degradation (<xref ref-type="bibr" rid="R36">36</xref>). Pevonedistat is a NEDD8-activating enzyme (<xref ref-type="bibr" rid="R37">37</xref>) that allows the neddylation of CUL2, a process which is required for transfering ubiquitin to substrates (<xref ref-type="bibr" rid="R38">38</xref>). Therefore, pevonedistat may inhibit the ubiquitination of host proteins that is caused when ORF10 hijacks the CUL2<sup>ZYG11B</sup> complex.</p>
+<p id="P37">In general, coronaviruses produce their proteins via cap-dependent mRNA translation (<xref ref-type="bibr" rid="R39">39</xref>). Eukaryotic translation initiation factors 4 (eIF4) are proteins that, as their name implies, act as initiation factors for the translational process (<xref ref-type="bibr" rid="R40">40</xref>). Key eIF4F–cap binding components are attractive candidates for potential coronavirus treatments (<xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R42">42</xref>). Zotatifin directly targets the SARS-CoV-2 NSP2 protein as well as the eIF4H and eIF4E2 human proteins. Specifically, Gordon et al. observed a strong antiviral effect through zotatifin, which inhibits eIF4A, a partner of eIF4H. Through the eIF4A inhibition, zotatifin may prevent the translation of a viral 5’ region by impeding its unwinding. The eIF4H human protein also interacts with the viral protein NSP9. Subsequently, NSP9 interacts with human proteins that belong to the nuclear pore and fibrillin protein complexes. Furthermore, the nuclear pore NUP98–RAE1 sub-complex was found to interact with the SARS-CoV-2 ORF6 protein. ORF6 perturbs nuclear transport in order to antagonize host interferon signalling in SARS-CoV (<xref ref-type="bibr" rid="R43">43</xref>). In SARS-CoV-2, the NUP98–RAE1-ORF6 interaction may have a similar effect.</p>
+<p id="P38">Pevonedistat and zotatifin both target key human proteins that interact with SARS-CoV-2 proteins, as well as viral proteins which in turn interact with distinct human protein complexes. Since there are no overlaps among the targets of the aforementioned drugs, a cotherapy of the two should be further evaluated as a potential treatment against symptoms of COVID-19.</p>
+</sec>
+<sec id="S11">
+<title>GPCR signaling pathways implicated in melanoma - A case study</title>
+<p id="P39">G-protein coupled receptors (GPCRs) are one of the largest and most diverse superfamilies of cell-surface receptors in eukaryotic organisms. They regulate the majority of cell responses related to signaling stimuli and have been implicated in a wide range of diseases. As a result, today GPCRs are targets for more than 30% of drugs on the market (<xref ref-type="bibr" rid="R44">44</xref>). Most GPCR functions are conducted through heterotrimeric G-proteins, composed by Ga subunits and Gβγ heterodimers, which act as molecular switches that modulate intracellular signaling cascades as responses to receptor activation (<xref ref-type="bibr" rid="R45">45</xref>). G-proteins are grouped, based on the Gα subunit, in four families, Gα<sub>s</sub>, Gα<sub>i/o</sub>, Gα<sub>q/11</sub> and Gα<sub>12/13</sub>. They regulate the function of a wide and diverse range of effector proteins, including several enzymes, regulators of protein function, chaperones, transcription factors and cytoskeletal components. However, other signaling pathways also exist, either complementary to or independent from G-protein signaling. Phosphorylation of GPCRs by a special class of kinases, known as G-protein coupled receptor kinases (GRKs), leads to the internalization of the receptors; the internalized GPCRs can subsequently initiate signaling pathways regulating the expression of genes that control cell growth and/or apoptosis (<xref ref-type="bibr" rid="R46">46</xref>). Another example is GPCR oligomerization; a phenomenon during which multiple GPCRs form supramolecular homo- or hetero-complexes, leading to diverse signal transduction mechanisms (<xref ref-type="bibr" rid="R47">47</xref>). Finally, several GPCRs have been found to directly interact with effectors such as ion channels. All of the aforementioned signaling mechanisms result in complex and diverse signaling networks for GPCRs, with a single receptor capable of regulating a large number of pathways and therefore, a wide range of cell functions (<xref ref-type="bibr" rid="R48">48</xref>).</p>
+<p id="P40">GPCR signaling can be deregulated in cancer; either due to damaging mutations affecting the receptors themselves or due to changes in proteins participating in the receptors’ signaling pathways. As a result, many GPCRs constitute attractive pharmacological targets for cancer management and treatment (<xref ref-type="bibr" rid="R49">49</xref>). A characteristic example for a type of cancer with GPCRs as potential pharmacological targets is the malignant melanoma (<xref ref-type="bibr" rid="R50">50</xref>). Melanoma is a type of skin cancer that develops from melanocytes, melanin-producing cells primarily located in the stratum basale, the bottom layer of the skin’s epidermis. It is one of the most dangerous types of skin cancer; while it is highly treatable if detected early. Advanced melanoma can spread to the lymph nodes and internal organs (<xref ref-type="bibr" rid="R51">51</xref>). A promising treatment involves the signaling pathways of endothelins, a group of peptide hormones (<xref ref-type="bibr" rid="R52">52</xref>–<xref ref-type="bibr" rid="R54">54</xref>). Endothelin signaling is conducted through two GPCRs, the endothelin receptors A and B (EDNRA and EDNRB, respectively). The two GPCRs have been implicated in various types of cancer (<xref ref-type="bibr" rid="R50">50</xref>) and the use of endothelin antagonists has been found to diminish cancer cells <italic>in vitro</italic> and <italic>in vivo,</italic> with both receptors having an impact (<xref ref-type="bibr" rid="R52">52</xref>). However, while in several types of cancer both EDNRA and EDNRB are promising drug targets, in the case of melanoma, EDNRB targeting seems to have a more profound impact upon cancer progression compared to EDNRA (<xref ref-type="bibr" rid="R54">54</xref>).</p>
+<p id="P41">To analyze the signaling pathways of EDNRA and EDNRB and show the importance of the latter in melanoma, we constructed a multilayered interaction network (<xref ref-type="fig" rid="F4">Figure 4</xref>). Initial interaction evidence for GPCR-related signaling in skin melanocytes was retrieved from hGPCRnet, a web application which allows the tissue-specific visualization and analysis of GPCR signal transduction networks, based on gene expression evidence on different tissues and cell types (<xref ref-type="bibr" rid="R48">48</xref>). The initial skin melanocyte network was then filtered to retrieve the signaling pathways of EDNRA and EDNRB, as well as all the related protein-protein interactions, which were subsequently used to construct a 3D representation in Arena3D<sup>web</sup>. The GPCR signaling network obtained is organized in four distinct layers: the top layer includes the receptors; namely, EDNRA and EDNRB. The two intermediate layers represent G-proteins and GRKs, for the intermediate steps of the G-protein and phosphorylation/internalization signaling pathways, respectively. Finally, the bottom layer contains all effectors that are regulated from the aforementioned pathways. Visual inspection of the EDNRA-EDNRB network (<xref ref-type="fig" rid="F4">Figure 4</xref>) reveals a rather complex signaling network for the two receptors. The network consists of a total of 331 interactions; these include not only inter-layer links (e.g. GPCR-G-protein, G-protein-effector contacts), representing the different steps of the signaling pathways, but also intra-layer contacts, particularly in the effectors layer, as many effectors form supramolecular complexes with one-another to achieve a common cell response (e.g. tubulin subunits organize to microtubules). The edges representing the signaling pathways of the two receptors have been colored using red for the pathways unique to EDNRA, blue for the pathways unique to EDNRB and green for pathways controlled by both receptors.</p>
+<p id="P42">Inspection of the EDNRA-EDNRB signaling network reveals that the vast majority of endothelin-related cell responses in skin melanocytes are controlled by both receptors. Activated EDNRA and EDNRB both interact with three major G-protein subunits, GNAI1, GNAI2 and GNAI3, belonging to the Gα<sub>i/o</sub> family; through these, the two GPCRs control the formation of cytoskeletal components by influencing the functionality of α-, β- and γ-tubulins (TUBA1A, TUBA1B, TUBB1, TUBG1 etc), the folding and maturation of proteins through interactions with chaperones such as HSP90-β (HSP90AB1), and the mechanisms of apoptosis and cell death through the control of apoptotic factors such as TNF-associated factor 6 (TRAF6) and the PTEN phosphatase (PTEN). Positive or negative disruption of the aforementioned processes can lead to the uncontrolled cell growth/multiplication or cell death, respectively; thus, showcasing the importance of both receptors in various types of cancer. At the same time, both receptors interact with GNA11, a member of the Gα<sub>q</sub> family, which controls the function of Phospholipase C (PLCB2). The latter is an enzyme that initiates signaling cascades of second messenger molecules that regulate Protein Kinase C (PKC) and in turn, control the MAPK kinase pathway (MAP3K5). The MAPK pathway is typically deregulated in melanoma; therefore inhibitors for key members of that pathway have been used for treatment in the past (<xref ref-type="bibr" rid="R55">55</xref>).</p>
+<p id="P43">However, while EDNRA’s signaling mechanisms are mostly limited to the above, a number of pathways exist that are unique to EDNRB. These feature interactions of the receptor with all members of the Gα<sub>q/11</sub> family (GNAQ, GNA11, GNA13 and GNA14), which also control PLCβ and MAPK. EDNRB controls the activation of the phosphatidylinositol 3 kinases (PIKC3A and PIK3CB); these effectors play a key role in inducing drug resistance after treatment in melanoma patients and are, therefore, a decisive target for novel drug design in melanoma therapy (<xref ref-type="bibr" rid="R56">56</xref>). Another pathway includes the regulation of Rho Guanine Exchange Factors (RhoGEFs). EDNRB, through GNAQ and GNA13, regulates the function of RhoGEFs 1 (ARHGEF1), 11 (ARHGEF11) and 12 (ARHGEF12); these effectors regulate the enzyme activity of Rho GTPases that control the movement and morphology of melanoma cells (<xref ref-type="bibr" rid="R57">57</xref>). Finally, EDNRB controls the function of Cadherin-1 (CDH1), a regulator of cell adhesion and a tumor suppressor in melanoma (<xref ref-type="bibr" rid="R58">58</xref>). Overall, the aforementioned pathways show that while both GPCRs control a number of functions and cell mechanisms related to the progression of cancer in general and melanoma in particular, including the MAPK pathway, EDNRB exclusively regulates a number of additional signaling mechanisms that are specific to this type of cancer and is, therefore, a more suitable target for the design of anti-melanoma treatments.</p>
+</sec>
+</sec>
+<sec id="S12" sec-type="discussion">
+<title>Discussion</title>
+<p id="P44">To avoid confusion, while Arena3D<sup>web</sup> has been inspired by the Arena3D standalone version, it is a new application which has been written from scratch using different technologies. Compared to Arena3D, Arena3D<sup>web</sup> comes with a much richer functionality and navigation options. A characteristic example is its greater variety of layout algorithms which can be used very efficiently and in multiple ways. The most advanced feature in Arena3D<sup>web</sup> is the possibility to apply the layout algorithms to a subset of layers or the whole network. This allows us to generate views with much less line crossovers and makes it easier to detect feature patterns. Furthermore, as a web server application, Arena3D<sup>web</sup> can run on any browser and attract a much broader audience beyond the biomedical field. On the contrary, Arena3D comes with many library dependencies, could run only on Windows and Linux and was bound to certain Java and OpenGL versions as well to the outdated Java3D library. Finally, Arena3D<sup>web</sup> comes with a more flexible input file format as well as with a more advanced export function to save and re-import the status of a network at any time.</p>
+<p id="P45">Concerning scalability, in its online version, Arena3D<sup>web</sup> can handle networks of up to 5,000 nodes. This limitation can be bypassed when running the application locally, by adjusting the <italic>max_allowed_edges</italic> variable value in the global.R file. We tested Arena3D<sup>web</sup> on a 32GB RAM, 6-core processor @ 4.2 GHz, AMD Radeon RX 5700 XT desktop machine. We ran the application on all platforms (Unix, Windows, MacOS) using a network consisting of 1,600 nodes and 2,396 edges. We tested the application on Rstudio, Mozilla Firefox, Google Chrome, Microsoft Edge and Safari and benchmarked its memory and CPU requirements. We observed that Arena3D<sup>web</sup> consumed ~300-500MB RAM on Edge browser and ~1-1.5GB RAM on Chrome, Firefox and Rstudio (including the memory needed by each browser). Due to a memory leak, on Windows systems, Mozilla Firefox kept exhausting the memory during execution, an issue which might have been evoked by a conflict between Firefox and the WebGL renderer. This problem does not occur when running Firefox on Linux. The memory requirements on MacOS across all three browsers was significantly lower (~200MB for Chrome and Safari and ~500MB for Firefox). In addition, enabling hardware acceleration on a browser helps in achieving smoother 3D transformations. Hence, a CPU load reduction from ~50% to ~13% was observed when visualizing the aforementioned network at 30 frames per seconds (FPS). Finally, the navigation controls run smoother on any of the browsers compared to RStudio, and therefore Unix and MacOS users are encouraged to run Arena3D<sup>web</sup> on any of those. Windows users are encouraged to run Arena3D<sup>web</sup> on Microsoft Edge which was found to be the most memory efficient.</p>
+<p id="P46">Overall, due to its ease-of-use, simplicity and interoperability, we expect Arena3D<sup>web</sup> to become the reference tool for multilayer graph analysis and visualization.</p>
+</sec>
+</body>
+<back>
+<ack id="S13">
+<title>Funding</title>
+<p>This study was funded by the Hellenic Foundation for Research and Innovation (H.F.R.I) under the “First Call for H.F.R.I Research Projects to support faculty members and researchers and the procurement of high-cost research equipment grant”, Grant ID: 1855-BOLOGNA.</p>
+</ack>
+<sec id="S14" sec-type="data-availability">
+<title>Availability</title>
+<p id="P47">Arena3D<sup>web</sup> is an open source application. Its code can be downloaded from the GitHub repository: <ext-link ext-link-type="uri" xlink:href="https://github.com/PavlopoulosLab/Arena3Dweb.">https://github.com/PavlopoulosLab/Arena3Dweb.</ext-link> The service is available online at <ext-link ext-link-type="uri" xlink:href="http://bib.fleming.gr:3838/Arena3D.">http://bib.fleming.gr:3838/Arena3D.</ext-link>
+</p>
+</sec>
+<fn-group>
+<fn id="FN2" fn-type="con">
+<p id="P48">
+<bold>Author contributions</bold>
+</p>
+<p id="P49">EK wrote the code and implemented the tool. FB generated all the necessary data related to the case studies. NAP benchmarked the tool. RS conceived new concepts which make Arena3D<sup>web</sup> more accessible than Arena3D. GAP conceived the idea and supervised the whole project from the beginning to its end. All authors wrote parts of the article.</p>
+</fn>
+<fn id="FN3" fn-type="conflict">
+<p id="P50">
+<bold>Conflict of interest</bold>
+</p>
+<p id="P51">All authors have read and approved the manuscript and declare no conflict of interest.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koutrouli</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Karatzas</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Paez-Espino</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<article-title>A Guide to Conquer the Biological Network Era Using Graph Theory</article-title>
+<source>Front Bioeng Biotechnol</source>
+<year>2020</year>
+<volume>8</volume>
+<fpage>34</fpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Doncheva</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Assenov</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Domingues</surname>
+<given-names>FS</given-names>
+</name>
+<name>
+<surname>Albrecht</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Topological analysis and interactive visualization of biological networks and protein structures</article-title>
+<source>Nat Protoc</source>
+<year>2012</year>
+<volume>7</volume>
+<fpage>670</fpage>
+<lpage>685</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Paez-Espino</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kyrpides</surname>
+<given-names>NC</given-names>
+</name>
+<name>
+<surname>Iliopoulos</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Empirical Compaison of Visualization Tools for Larger-Scale Network Analysis</article-title>
+<source>Adv Bioinforma</source>
+<year>2017</year>
+<comment>1278932</comment>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Wegener</surname>
+<given-names>A-L</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>A survey of visualization tools for biological network analysis</article-title>
+<source>BioData Min</source>
+<year>2008</year>
+<volume>1</volume>
+<fpage>12</fpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gehlenborg</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>’Donoghue</surname>
+<given-names>SI</given-names>
+</name>
+<name>
+<surname>Baliga</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Goesmann</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hibbs</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Kitano</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kohlbacher</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Neuweger</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Tenenbaum</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Visualization of omics data for systems biology</article-title>
+<source>Nat Methods</source>
+<year>2010</year>
+<volume>7</volume>
+<fpage>S56</fpage>
+<lpage>68</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shannon</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Markiel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ozier</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Baliga</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Ramage</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Amin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Schwikowski</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Ideker</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Cytoscape: a software environment for integrated models of biomolecular interaction networks</article-title>
+<source>Genome Res</source>
+<year>2003</year>
+<volume>13</volume>
+<fpage>2498</fpage>
+<lpage>2504</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Franz</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lopes</surname>
+<given-names>CT</given-names>
+</name>
+<name>
+<surname>Huck</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Sumer</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Bader</surname>
+<given-names>GD</given-names>
+</name>
+</person-group>
+<article-title>Cytoscape.js: a graph theory library for visualisation and analysis</article-title>
+<source>Bioinforma Oxf Engl</source>
+<year>2016</year>
+<volume>32</volume>
+<fpage>309</fpage>
+<lpage>311</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szklarczyk</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Morris</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Cook</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kuhn</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wyder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Simonovic</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Santos</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Doncheva</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Roth</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bork</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The STRING database in 2017: quality-controlled protein-protein association networks, made broadly accessible</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>D362</fpage>
+<lpage>D368</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koutrouli</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Karatzas</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Papanikolopoulou</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<article-title>NORMA-The networkmakeup artist: a web tool for network annotation visualization Bioinformatics</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bastian</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Heymann</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jacomy</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Gephi: An Open Source Software for Exploring and Manipulating Networks</article-title>
+<year>2009</year>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mrvar</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Batagelj</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Analysis and visualization of large networks with program package Pajek</article-title>
+<source>Complex Adapt Syst Model</source>
+<year>2016</year>
+<fpage>4</fpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Auber</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Archambault</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bourqui</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Delest</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dubois</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lambert</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mary</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Mathiaut</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Melançon</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Pinaud</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<chapter-title>Tulip 5</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Alhajj</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Rokne</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Encyclopedia of Social Network Analysis and Mining</source>
+<publisher-name>Springer New York</publisher-name>
+<publisher-loc>New York, NY</publisher-loc>
+<year>2017</year>
+<fpage>1</fpage>
+<lpage>28</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Theocharidis</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>van Dongen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Enright</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Freeman</surname>
+<given-names>TC</given-names>
+</name>
+</person-group>
+<article-title>Network visualization and analysis of gene expression data using BioLayout Express(3D)</article-title>
+<source>Nat Protoc</source>
+<year>2009</year>
+<volume>4</volume>
+<fpage>1535</fpage>
+<lpage>1550</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McGee</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ghoniem</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Melançon</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Otjacques</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Pinaud</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>The State of the Art in Multilayer Network Visualization</article-title>
+<source>Comput Graph Forum</source>
+<volume>38</volume>
+<fpage>125</fpage>
+<lpage>149</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>O’Donoghue</surname>
+<given-names>SI</given-names>
+</name>
+<name>
+<surname>Satagopam</surname>
+<given-names>VP</given-names>
+</name>
+<name>
+<surname>Soldatos</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Pafilis</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Arena3D: visualization of biological networks in 3D</article-title>
+<source>BMC Syst Biol</source>
+<year>2008</year>
+<volume>2</volume>
+<fpage>104</fpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Secrier</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pavlopoulos</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Aerts</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Arena3D: visualizing time-drivenphenotypic differences in biological systems</article-title>
+<source>BMC Bioinformatics</source>
+<year>2012</year>
+<volume>13</volume>
+<fpage>45</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Škrlj</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Kralj</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lavrač</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Py3plex toolkit for visualization and analysis of multilayer networks</article-title>
+<source>Appl Netw Sci</source>
+<year>2019</year>
+<volume>4</volume>
+<fpage>94</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hammoud</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Kramer</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>mully: An R Package to Create, Modify and Visalize Multilayered Graphs</article-title>
+<source>Genes</source>
+<volume>9</volume>
+<fpage>519</fpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>De Domenico</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Porter</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Arenas</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>MuxViz: a tool for multilayer analysis and visualization of networks</article-title>
+<source>J Complex Netw</source>
+<year>2015</year>
+<volume>3</volume>
+<fpage>159</fpage>
+<lpage>176</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<collab>Gabor Csardi and Tamas Nepusz</collab>
+<article-title>The igraph software package for complex network research</article-title>
+<source>InterJournal, Complex Systems</source>
+<year>2006</year>
+<fpage>1695</fpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reingold</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Tilford</surname>
+<given-names>JS</given-names>
+</name>
+</person-group>
+<article-title>Tidier Drawings of Trees</article-title>
+<source>IEEE Trans Sftw Eng</source>
+<volume>SE-7</volume>
+<fpage>223</fpage>
+<lpage>228</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fruchterman</surname>
+<given-names>TMJ</given-names>
+</name>
+<name>
+<surname>Reingold</surname>
+<given-names>EM</given-names>
+</name>
+</person-group>
+<article-title>Graph drawing by force-directed placement</article-title>
+<source>Softw Pract Exp</source>
+<year>1991</year>
+<volume>21</volume>
+<fpage>1129</fpage>
+<lpage>1164</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davidson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Harel</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Drawing graphs nicely using simulated annealing</article-title>
+<source>ACM Trans Graph</source>
+<year>1996</year>
+<volume>15</volume>
+<fpage>301</fpage>
+<lpage>331</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bryan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Shawn</surname>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Klavans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Boyack</surname>
+<given-names>KW</given-names>
+</name>
+</person-group>
+<article-title>DrL: Distributed Recursive (Graph) Layout</article-title>
+<source>SAND Rep</source>
+<year>2008</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cox</surname>
+<given-names>TF</given-names>
+</name>
+<name>
+<surname>Cox</surname>
+<given-names>MAA</given-names>
+</name>
+</person-group>
+<article-title>Multidimensional scaling</article-title>
+<source>Chapman &amp; Hall/CRC, Boca Raton</source>
+<year>2001</year>
+<edition>2nd</edition>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kamada</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kawai</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>An algorithm for drawing general undirected graphs</article-title>
+<source>Inf Process Lett</source>
+<year>1989</year>
+<volume>31</volume>
+<fpage>7</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frick</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ludwig</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mehldau</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>A fast adaptive layout algorithm for undirected graphs (extended abstract and system demonstration)</article-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Tamassia</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Tollis</surname>
+<given-names>IG</given-names>
+</name>
+</person-group>
+<source>Graph Drawing Lecture Notes in Computer Science. Springer Berlin Heidelberg, Berlin, Heidelberg</source>
+<year>1995</year>
+<volume>894</volume>
+<fpage>388</fpage>
+<lpage>403</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cevik</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kuppalli</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kindrachuk</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Virology, transmission, and pathogenesis of SARS-CoV-2</article-title>
+<source>BMJ</source>
+<year>2020</year>
+<volume>371</volume>
+<fpage>m3862</fpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>O’Meara</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Swaney</surname>
+<given-names>DL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>459</fpage>
+<lpage>468</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clark</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Karsch-Mizrachi</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Lipman</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Ostell</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sayers</surname>
+<given-names>EW</given-names>
+</name>
+</person-group>
+<article-title>GenBank</article-title>
+<source>Nucleic Acids Res</source>
+<year>2016</year>
+<volume>44</volume>
+<fpage>D67</fpage>
+<lpage>72</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giurgiu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Reinhard</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Brauner</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Dunger-Kaltenbach</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Fobo</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Frishman</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Montrone</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ruepp</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>CORUM: the comprehensive resource of mammalian protein complexes—2019</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D559</fpage>
+<lpage>D563</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<collab>Gene Ontology Consortium</collab>
+<article-title>The Gene Ontology (GO) database and informatics resource</article-title>
+<source>Nucleic Acids Res</source>
+<year>2004</year>
+<volume>32</volume>
+<fpage>258D</fpage>
+<lpage>261</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liberzon</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Subramanian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pinchback</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Thorvaldsdottir</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tamayo</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Mesirov</surname>
+<given-names>JP</given-names>
+</name>
+</person-group>
+<article-title>Molecular signatures database (MSigDB) 3.0</article-title>
+<source>Bioinformatics</source>
+<year>2011</year>
+<volume>27</volume>
+<fpage>1739</fpage>
+<lpage>1740</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Armstrong</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Faccenda</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Harding</surname>
+<given-names>SD</given-names>
+</name>
+<name>
+<surname>Pawson</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Southan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Sharman</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Campo</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Cavanagh</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Alexander</surname>
+<given-names>SPH</given-names>
+</name>
+<name>
+<surname>Davenport</surname>
+<given-names>AP</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The IUPHAR/BPS Guide to PHARMACOLOGY in 2020: extending immunopharmacology content and introducing the IUPHAR/MMV Guide to MALARIA PHARMACOLOGY</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<comment>10.1093/nar/gkz951</comment>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gaulton</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bellis</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Bento</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Chambers</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Davies</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hersey</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Light</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>McGlinchey</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Michalovich</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Al-Lazikani</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ChEMBL: a large-scale bioactivity database for drug discovery</article-title>
+<source>Nucleic Acids Res</source>
+<year>2012</year>
+<volume>40</volume>
+<fpage>D1100</fpage>
+<lpage>D1107</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Timms</surname>
+<given-names>RT</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Rhee</surname>
+<given-names>DY</given-names>
+</name>
+<name>
+<surname>Harper</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Koren</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Elledge</surname>
+<given-names>SJ</given-names>
+</name>
+</person-group>
+<article-title>A glycine-specific N-degron pathway mediates the quality control of protein N-myristoylation</article-title>
+<source>Science</source>
+<year>2019</year>
+<volume>365</volume>
+<comment>eaaw4912</comment>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Czuczman</surname>
+<given-names>NM</given-names>
+</name>
+<name>
+<surname>Barth</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Neppalli</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Mavis</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Frys</surname>
+<given-names>SE</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Klener</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Vockova</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pevonedistat, a NEDD8-activating enzyme inhibitor, is active in mantle cell lymphoma and enhances rituximab activity in vivo</article-title>
+<source>Blood</source>
+<year>2016</year>
+<volume>127</volume>
+<fpage>1128</fpage>
+<lpage>1137</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Soucy</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>PG</given-names>
+</name>
+<name>
+<surname>Milhollen</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Berger</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Gavin</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Adhikari</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brownell</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Burke</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Cardin</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Critchley</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>An inhibitor of NEDD8-activating enzyme as a new approach to treat cancer</article-title>
+<source>Nature</source>
+<year>2009</year>
+<volume>458</volume>
+<fpage>732</fpage>
+<lpage>736</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nakagawa</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Lokugamage</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Makino</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Viral and Cellular mRNA Translation in Coronavirus-Infected Cells</article-title>
+<source>In Advances in Virus Research Elsevier</source>
+<year>2009</year>
+<volume>96</volume>
+<fpage>165</fpage>
+<lpage>192</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gingras</surname>
+<given-names>A-C</given-names>
+</name>
+<name>
+<surname>Raught</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sonenberg</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>eIF4 Initiation Factors: Effectors of mRNA Recruitment to Ribosomes and Regulators of Translation</article-title>
+<source>Annu Rev Biochem</source>
+<year>1999</year>
+<volume>68</volume>
+<fpage>913</fpage>
+<lpage>963</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Müller</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Schulte</surname>
+<given-names>FW</given-names>
+</name>
+<name>
+<surname>Lange-Grünweller</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Obermann</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Madhugiri</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pleschka</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ziebuhr</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hartmann</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Grünweller</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Broad-spectrum antiviral activity of the eIF4A inhibitor silvestrol against corona- and picornaviruses</article-title>
+<source>Antiviral Res</source>
+<year>2018</year>
+<volume>150</volume>
+<fpage>123</fpage>
+<lpage>129</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cencic</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Desforges</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hall</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Kozakov</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Min</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Dingledine</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Fu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Vajda</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Talbot</surname>
+<given-names>PJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Blocking eIF4E-eIF4G Interaction as a Strategy To Impair Coronavirus Replication</article-title>
+<source>J Virol</source>
+<year>2011</year>
+<volume>85</volume>
+<fpage>6381</fpage>
+<lpage>6389</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yount</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Heise</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kopecky-Bromberg</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+</person-group>
+<article-title>Severe Acute Respiratory Syndrome Coronavirus ORF6 Antagonizes STAT1 Function by Sequestering Nuclear Import Factors on the Rough Endoplasmic Reticulum/Golgi Membrane</article-title>
+<source>J Virol</source>
+<year>2007</year>
+<volume>81</volume>
+<fpage>9812</fpage>
+<lpage>9824</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rosenbaum</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Rasmussen</surname>
+<given-names>SGF</given-names>
+</name>
+<name>
+<surname>Kobilka</surname>
+<given-names>Bk</given-names>
+</name>
+</person-group>
+<article-title>The structure and function of G-protein-coupled receptors</article-title>
+<source>Nature</source>
+<year>2009</year>
+<volume>459</volume>
+<fpage>356</fpage>
+<lpage>363</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oldham</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Hamm</surname>
+<given-names>HE</given-names>
+</name>
+</person-group>
+<article-title>Heterotrimeric G protein activation by G-protein-coupled receptors</article-title>
+<source>Nat Rev Mol Cell Biol</source>
+<year>2008</year>
+<volume>9</volume>
+<fpage>60</fpage>
+<lpage>71</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gurevich</surname>
+<given-names>EV</given-names>
+</name>
+<name>
+<surname>Tesmer</surname>
+<given-names>JJG</given-names>
+</name>
+<name>
+<surname>Mushegian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gurevich</surname>
+<given-names>VV</given-names>
+</name>
+</person-group>
+<article-title>G protein-coupled receptor kinases: More than just kinases and not only for GPCRs</article-title>
+<source>Pharmacol Ther</source>
+<year>2012</year>
+<volume>133</volume>
+<fpage>40</fpage>
+<lpage>69</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Casadó</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Cortés</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mallol</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Pérez-Capote</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ferré</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lluis</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Franco</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Canela</surname>
+<given-names>EI</given-names>
+</name>
+</person-group>
+<article-title>GPCR homomers and heteromers: a better choice as targets for drug development than GPCR monomers?</article-title>
+<source>Pharmacol Ther</source>
+<year>2009</year>
+<volume>124</volume>
+<fpage>248</fpage>
+<lpage>257</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Apostolakou</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Baltoumas</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Stravopodis</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Iconomidou</surname>
+<given-names>VA</given-names>
+</name>
+</person-group>
+<article-title>Extended Human G-Protein Coupled Receptor Network: Cell-Type-Specific Analysis of G-Protein Coupled Receptor Signaling Pathways</article-title>
+<source>J Proteome Res</source>
+<year>2020</year>
+<volume>19</volume>
+<fpage>511</fpage>
+<lpage>524</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lappano</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Maggiolini</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>G protein-coupled receptors: novel targets for drug discovery in cancer</article-title>
+<source>Nat Rev Drug Discov</source>
+<year>2011</year>
+<volume>10</volume>
+<fpage>47</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>HJ</given-names>
+</name>
+<name>
+<surname>Wall</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>G-protein-coupled receptors and melanoma</article-title>
+<source>Pigment Cell Melanoma Res</source>
+<year>2008</year>
+<volume>21</volume>
+<fpage>415</fpage>
+<lpage>428</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Siegel</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Miller</surname>
+<given-names>KD</given-names>
+</name>
+<name>
+<surname>Jemal</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Cancer statistics, 2019</article-title>
+<source>CA Cancer J Clin</source>
+<year>2019</year>
+<volume>69</volume>
+<fpage>7</fpage>
+<lpage>34</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rosanòo</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Spinella</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Bagnato</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Endothelin 1 in cancer: biological implications and therapeutic opportunities</article-title>
+<source>Nat Rev Cancer</source>
+<year>2013</year>
+<volume>13</volume>
+<fpage>637</fpage>
+<lpage>651</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saldana-Caboverde</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kos</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Roles of endothelin signaling in melanocyte development and melanoma: Endothelins in melanocyte development and melanoma</article-title>
+<source>Pigment Cell Melanoma Res</source>
+<year>2010</year>
+<volume>23</volume>
+<fpage>160</fpage>
+<lpage>170</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>MP</given-names>
+</name>
+<name>
+<surname>Rowling</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Miskolczi</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Ferguson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Spoerri</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Haass</surname>
+<given-names>NK</given-names>
+</name>
+<name>
+<surname>Sloss</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>McEntegart</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Arozarena</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Kriegsheim</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Targeting endothelin receptor signalling overcomes heterogeneity driven therapy failure</article-title>
+<source>EMBO Mol Med</source>
+<year>2017</year>
+<volume>9</volume>
+<fpage>1011</fpage>
+<lpage>1029</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Urtatiz</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Van Raamsdonk</surname>
+<given-names>CD</given-names>
+</name>
+</person-group>
+<article-title>Gnaq and Gna11 in the Endothelin Signaling Pathway and Melanoma</article-title>
+<source>Front Genet</source>
+<year>2016</year>
+<volume>7</volume>
+<fpage>59</fpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davies</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<article-title>The role of the PI3K-AKT pathway in melanoma</article-title>
+<source>Cancer J Sudbury Mass</source>
+<year>2012</year>
+<volume>18</volume>
+<fpage>142</fpage>
+<lpage>147</lpage>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sanz-Moreno</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Marshall</surname>
+<given-names>CJ</given-names>
+</name>
+</person-group>
+<article-title>Rho-GTPase signaling drives melanoma cell plasticity</article-title>
+<source>Cell Cycle Georget Tex</source>
+<year>2009</year>
+<volume>8</volume>
+<fpage>1484</fpage>
+<lpage>1487</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hsu</surname>
+<given-names>MY</given-names>
+</name>
+<name>
+<surname>Meier</surname>
+<given-names>FE</given-names>
+</name>
+<name>
+<surname>Nesbit</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hsu</surname>
+<given-names>JY</given-names>
+</name>
+<name>
+<surname>Van Belle</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Elder</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Herlyn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>E-cadherin expression in melanoma cells restores keratinocyte-mediated growth control and down-regulates expression of invasion-related adhesion receptors</article-title>
+<source>Am J Pathol</source>
+<year>2000</year>
+<volume>156</volume>
+<fpage>1515</fpage>
+<lpage>1525</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Random networks with different topologies were drawn with the use of various layout algorithms supported by igraph and subsequently by Arena3D<sup>web</sup>. Nodes on layer 1 are placed on a grid Nodes on layer 2 have been placed in a hierarchy using the Reingold-Tilford layout algorithm. Nodes on the first two layers are scaled based on degree. Layer 3 shows a small-world network drawn using the Kamada-Kawai layout algorithm Layer 4 shows a scale-free network also drawn with the Kamada-Kawai layout algorithm. Nodes on layers 3 and 4 are scaled based on their clustering coefficient Layers 5 and 6 have been combined and are drawn using the Fruchterman-Reingold layout algorithm Both layers were handled as a unified network and nodes were placed back to their layers after the completion of the layout algorithm, thus giving a sense of a network alignment. The node scale of these two layers is relative to their degree.</p>
+</caption>
+<graphic xlink:href="EMS104940-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Random networks visualized by Arena3D<sup>web</sup>.A) Layers 1-4 are placed in a 3D cube Node sizes on layers 1 and 2 are adjusted by connectivity degree, nodes on layer 3 by betweenness centrality and nodes on layer 4 by clustering coefficient. The Kamada Kawai layout algorithm has been applied on each layer individually. First neighbors of a node and their connections are colored yellow. B) Layers 1-3 host three different scale-free random networks whereas layer 4 hosts a small-world random network Based on a node attributes file, nodes with higher connectivity degree are resized and colored red, green, purple and yellow. Based on an edge attributes file, the inter-layer edges of the upscaled nodes are colored red, green, blue and yellow The Fruchterman-Reingold layout algorithm has been applied on each layer individually.</p>
+</caption>
+<graphic xlink:href="EMS104940-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>A multilayered COVID-19 related example based on the work of Gordon et al Nodes are placed on five different layers (SARS-CoV-2 proteins, drugs, human proteins, protein complexes, biological processes). The vertices are aligned across every layer via the Kamada-Kawai layout algorithm. Two of the most interesting multilayer paths of this study are highlighted in green and pink colors respectively. With green color, pevonedistat directly targets the CUL2 protein complex and the SARS-CoV-2 ORF10 protein. With pink color, zotatifin directly targets eIF4 human proteins and the SARS-CoV-2 NSP2 protein. The latter indirectly interacts both with protein members of the nuclear pore and fibrillin complexes as well as with SARS-CoV-2 NSP9 and ORF6 proteins.</p>
+</caption>
+<graphic xlink:href="EMS104940-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Overview of the EDNRA-EDNRB endothelin receptor signaling network. Nodes are placed in four different layers representing the different hierarchical levels in GPCR signaling (GPCRs, GRKs, G-proteins and effectors). The inter-layer edges representing the signaling pathways of the two receptors have been colored using red for the pathways unique to EDNRA, blue for the pathways unique to EDNRB and green for pathways controlled by both receptors Intra-layer edges, connecting proteins in the same hierarchical level (eg effector-effector interactions) are colored grey. Effectors with clinical relevance to melanoma (CDH1, MAP3K5 etc) are shown bigger and colored magenta.</p>
+</caption>
+<graphic xlink:href="EMS104940-f004"/>
+</fig>
+</floats-group>
+</article>

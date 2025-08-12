@@ -1,0 +1,1909 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141086</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.03.471024</article-id>
+<article-id pub-id-type="archive">PPR428780</article-id>
+<article-version article-version-type="publisher-id">4</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Predictions of the SARS-CoV-2 Omicron Variant (B.1.1.529) Spike Protein Receptor-Binding Domain Structure and Neutralizing Antibody Interactions</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Ford</surname>
+<given-names>Colby T.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">✉</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Machado</surname>
+<given-names>Denis Jacob</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Janies</surname>
+<given-names>Daniel A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Bioinformatics and Genomics, University of North Carolina at Charlotte, Charlotte, NC, USA</aff>
+<aff id="A2">
+<label>2</label>School of Data Science, University of North Carolina at Charlotte, Charlotte, NC USA</aff>
+<author-notes>
+<corresp id="CR1">Correspondence: <email>colby.ford@uncc.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>29</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The genome of the SARS-CoV-2 Omicron variant (B.1.1.529) was released on November 22, 2021, which has caused a flurry of media attention due the large number of mutations it contains. These raw data have spurred questions around vaccine efficacy. Given that neither the structural information nor the experimentally-derived antibody interaction of this variant are available, we have turned to predictive computational methods to model the mutated structure of the spike protein’s receptor binding domain and posit potential changes to vaccine efficacy. In this study, we predict some structural changes in the receptor-binding domain that may reduce antibody interaction without completely evading existing neutralizing antibodies (and therefore current vaccines).</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>COVID-19</kwd>
+<kwd>Protein Structure Analysis</kwd>
+<kwd>Antibodies Bioinformatics</kwd>
+<kwd>Computational Biology</kwd>
+<kwd>Machine Learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">A team of researchers from the Botswana-Harvard HIV Reference Laboratory submitted a new SARS-CoV-2 genome sequence to GISAID on November 22, 2021 (GISAID accession. EPI_ISL_6752027). The specimen was taken from a living 59-year-old male from Gaborone, Botswana using a nasopharyngeal swab and was sequenced using a Nanopore MinION device.</p>
+<p id="P3">This sample’s genome contains 60 mutations from the Wuhan-derived reference genome (GenBank accession no. <ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/nuccore/NC_045512">NC_045512.2</ext-link>) (<xref ref-type="bibr" rid="R1">1</xref>), 37 of which are in the Spike (S) protein. This variant was given the identifier B.1.1.529 by PANGO lineages (<xref ref-type="bibr" rid="R2">2</xref>). On November 26, 2021, the WHO has designated B.1.1.529 as a Variant of Concern (VOC), named Omicron (<xref ref-type="bibr" rid="R3">3</xref>).</p>
+<p id="P4">The emergence of new SARS-CoV-2 variants is expected. Therefore, scientists have advocated for close international monitoring to determine the need for vaccination boosters and redesign (<xref ref-type="bibr" rid="R4">4</xref>). Hence, the identification of the omicron variant is not surprising. What is surprising is the number of mutations that the omicron variant accumulated compared to the first sequenced genome of SARS-CoV-2.</p>
+<p id="P5">Different authors have warned that limited SARS-CoV-2 sampling and sequencing from positive cases, especially from asymptomatic and symptomatic cases that did not require hospitalization, would make it challenging to identify new mutations in the virus. For example, Brito et al. (<xref ref-type="bibr" rid="R5">5</xref>) analyzed the spatiotemporal heterogeneity in each country’s SARS-CoV-2 genomic surveillance efforts using metadata submitted to GISAID until May 30, 2021. These authors calculate that sequencing capacity should be at least 0.5% of cases per week when incidence is more than 100 positive cases every 100,000 people. Unfortunately, most countries are not reaching this sequence threshold.</p>
+<p id="P6">While sampling bias can explain why we may miss new mutations and fail to identify new variants of low prevalence, the emergence of new variants is due to factors that favor the transmission of SARS-CoV-2, including low vaccination rates in some regions, especially in low and middle-income countries (LMICs). Therefore, disparities in vaccination rates combined with sampling bias explain why scientists may continue to be surprised by the mutations in new SARS-CoV-2 variants.</p>
+<p id="P7">There are many questions regarding genomic epidemiology and the lessons we can learn from the COVID-19 pandemic. Those questions are beyond the scope of this manuscript, and we addressed them elsewhere (<xref ref-type="bibr" rid="R6">6</xref>). While the origin and evolution of the Omicron variant are still open questions, here we focus on the potential implications of the mutations observed in this variant.</p>
+<p id="P8">This seemingly hyper-mutated variant is of public health concern with unanswered questions surrounding vaccine protection (from available vaccines), the possibility of reinfection, transmissibility, and pathogenicity.</p>
+<p id="P9">Regarding vaccine efficacy, we must look at the receptor-binding domain (RBD), part of the S1 subunit, of the spike protein as this is the binding site for neutralizing antibodies. This domain exists between positions 319 and 541 of the spike protein. Omicron contains 15 mutations in the RBD, none of which are deletions or insertions. In contrast, the Delta variant contains 7 mutations across the entire spike protein, only 2 of which are in the RBD.</p>
+<p id="P10">Given that an experimentally-derived structure of the Omicron spike protein is not yet available, we must derive a predicted structure from its sequence <italic>in silico</italic>. Then, we can use available neutralizing antibody structures to computationally model the interaction between Omicron and the paratopes of the antibodies, thus allowing us to compare potential affinity changes due to the mutations and posit their effects to vaccine efficacy.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Sequence Comparison among VBMs and VOCs</title>
+<p id="P11">We downloaded the reference genome of SARS-CoV-2 (Wuhan-Hu-1, NCBI’s RefSeq accession no. NC_045512.2) as well as the first 100 complete genome sequences (≥29,000 bp) of each Variant of Concern (VOC) and Variant Being Monitored (VBM). The total number of input sequences was 1,301. We aligned all of these complete genomes using <monospace>MAFFT</monospace> version 7.475 (<xref ref-type="bibr" rid="R7">7</xref>) with the “auto” option and trimmed the alignment to remove the 5’-UTR and 3’-UTR regions. We also removed duplicated sequences or sequences with more than 5% of missing data, leaving us with 1,026 sequences.</p>
+<p id="P12">We annotated each of the 1,026 remaining sequences using the strategy described in <xref ref-type="bibr" rid="R6">Machado et al. (2021)</xref> (<xref ref-type="bibr" rid="R8">8</xref>). Once we had all the predicted spike proteins for each of the 1,026 genomes, we aligned those sequences based on their translation with the help of <monospace>MAFFT</monospace> using the <monospace>TranslatorX</monospace> pipeline (<xref ref-type="bibr" rid="R9">9</xref>). We removed duplicated sequences and sequences with more than 5% of missing data. Finally, we identified the receptor binding motif on that alignment based on sequence similarity with the reference.</p>
+<p id="P13">We then calculated the pairwise p-distances between each pair of sequences were calculated using <monospace>MEGA</monospace> version 11.0.10 (<xref ref-type="bibr" rid="R10">10</xref>). This distance is the proportion (p) of nucleotide sites at which two sequences being compared are different. The p-distances were calculated for the whole spike alignments (nucleotides) but also for the alignment of its receptor binding motif (RBM; position 430–522 of the spike amino acid sequence, a subset of the positions in the RBD).</p>
+<p id="P14">This variant nucleotide sequence for the spike protein was then translated into amino acids using the standard translation table. This sequence was then trimmed to only contain the RBD of the spike protein (positions 319 to 541).</p>
+</sec>
+<sec id="S4">
+<title>Receptor-Binding Domain Structural Prediction</title>
+<p id="P15">Using the derived RBD amino acid sequence for Omicron, we used <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace> to create a predicted 3D protein structures. <monospace>AlphaFold2</monospace> is a neural network-based deep learning model created by Google DeepMind (<xref ref-type="bibr" rid="R11">11</xref>). The algorithm first searches for homologous sequences with existing structures to use as a scaffold on which to place the new sequence. <monospace>RoseTTAFold</monospace> is a similar neural network-based system by the Institute for Protein Design at the University of Washington (<xref ref-type="bibr" rid="R12">12</xref>).</p>
+<p id="P16">The <monospace>AlphaFold2</monospace>-based prediction was run with the “single sequence” mode using the predicted TM-score (PTM) method. We also specified that the algorithm should run an Amber relaxation procedure to repair any structural violations in the predicted model (<xref ref-type="bibr" rid="R13">13</xref>). The <monospace>RoseTTAFold</monospace>-based prediction was run with the “mmseqs2” mode (by ColabFold (<xref ref-type="bibr" rid="R14">14</xref>)).</p>
+<p id="P17">Both systems each resulted in a .PDB file of the predicted RBD structure for Omicron along with metrics surrounding the multiple sequence alignment coverage, predicted aligned error (PAE), and predicted confidence (pLDDT) by position (available in <xref ref-type="supplementary-material" rid="SD1">Supplementary Materials</xref>).</p>
+<p id="P18">Given that this study focuses on antibodies that bind to the top of the RBD of the spike protein. Since that <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace> are template-based models that generate the predicted RBD structures using homologous sequences for which we have actual structures, we can avoid modeling the entire spike protein.</p>
+</sec>
+<sec id="S5">
+<title>Neutralizing Antibody Interaction Simulation</title>
+<p id="P19">Using the predicted structures of the Omicron RBD, we simulated the interaction with four available neutralizing antibody structures: <ext-link ext-link-type="uri" xlink:href="https://web.expasy.org/abcd/ABCD_AT483">C105</ext-link>, <ext-link ext-link-type="uri" xlink:href="https://web.expasy.org/abcd/ABCD_AT959">CC12.1</ext-link>, <ext-link ext-link-type="uri" xlink:href="https://web.expasy.org/abcd/ABCD_AT960">CC12.3</ext-link>, and <ext-link ext-link-type="uri" xlink:href="https://web.expasy.org/abcd/ABCD_AS708">CV30</ext-link> (PDBs: <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XCM">6XCM</ext-link>, <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>, <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC7">6XC7</ext-link>, and <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XE1">6XE1</ext-link>, respectively) (<xref ref-type="bibr" rid="R15">15</xref>–<xref ref-type="bibr" rid="R17">17</xref>). We used only a single fragment antigen-binding (Fab) region of the antibody structures as the paratope location against which to dock. Each of the RBD structures from these reference files have identical sequences to the Wuhan-Hu-1 spike RBD.</p>
+<p id="P20">Each of these neutralizing antibody structures were collected from patients who had been infected with SARS-CoV-2. Thus, these structures are serologically-derived antibodies rather than structures of therapeutic antibodies. All of them bind to the same “up” location of the S1 subunit of the spike protein (class I binders). This is a similar location to the interaction site between the human ACE2 receptor epitope. Thus, the neutralizing mechanism of these antibodies is in the prevention of SARS-CoV-2 binding to ACE2 on human cells.</p>
+<p id="P21">We used <monospace>HADDOCK</monospace> version 2.4, a biomolecular modeling software that provides docking predictions for provided structures, to predict the binding affinity between the epitope of the RBD with the paratope of the neutralizing antibody structures (<xref ref-type="bibr" rid="R18">18</xref>). This takes in two or more .PDB files as inputs and outputs multiple predicted protein complexes in .PDB format along with docking metrics.</p>
+<p id="P22">We first renumbered the residues according to <monospace>HADDOCK’s</monospace> requirements and then specified the interacting residues between the RBD structure and the Fab. Specifically, ensure there are not overlapping residue IDs between the chains of a .PDB file and then specify the residues that are assumed to interact between the structures. This analysis was performed on the antibody-RBD structure pairs shown in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+<p id="P23">The assessment of these interactions was measured by multiple biophysical factors including van der Waals energy, electrostatic energy, desolvation energy, and restraints violation energy, which were collectively used to derive a HADDOCK score to quantify changes in protein-protein interaction resulting from mutations in the RBD. Further, interfacing residues between the RBD and Fab structures were determined by identifying residues above the 1.0 Å<sup>2</sup> difference in surface area cutoff between the chains of the RBD and the Fab using the <italic>InterafaceResidues</italic>
+<sup>
+<xref ref-type="fn" rid="FN1">1</xref>
+</sup> functionality in <monospace>PyMol</monospace> version 2.4.1 (<xref ref-type="bibr" rid="R19">19</xref>).</p>
+<p id="P24">We then compared the metrics of the actual complexes (i.e., the real RBD structure and the Fab) versus the predicted RBD structures of Omicron (with the same Fab). This provides a baseline interaction that was then measured against the mutated interactions with each respective Fab.</p>
+<p id="P25">Differences between HADDOCK results were assessed using Kruskal-Wallis tests and ad hoc Wilcoxon pairwise comparisons. All statistical analyses were performed using R version 4.0.4 (<xref ref-type="bibr" rid="R20">20</xref>).</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="results">
+<title>Results</title>
+<sec id="S7">
+<title>Variant Sequence Comparison</title>
+<p id="P26">Although the Omicron RBM (spike amino acid sequence, positions 430–522) can be efficiently categorized by nine characteristic mutations (S:N440K, S:G446S, S:S447N, S:T478K, S:E484A, S:Q493R, S:G496S, S:Q298R, S:N501Y), at least two of them (S:N440K and S:G446S) may be missing from some samples classified as Omicron. Also, some Omicron RBMs contains an additional mutation at S:Y505H.</p>
+<p id="P27">The Omicron variant is the variant more distantly related to the reference genome (SARS-CoV-2 Wuhan-Hu-1; NCBI’s RefSeq accession no. NC_045512.2) in the proportion of shared nucleotides. Also, Omicron is the variant that is more distantly related to Gamma. See <xref ref-type="fig" rid="F2">Figures 2</xref> and <xref ref-type="fig" rid="F3">3</xref>.</p>
+</sec>
+<sec id="S8">
+<title>Mutational Analysis</title>
+<p id="P28">Comparing the RBD of Omicron to the reference genome, there are 15 mutations, all of which are single amino acid substitutions. Most of the substitutions result in a change in the residue type. (See <xref ref-type="table" rid="T2">Table 2</xref>.)</p>
+<p id="P29">The resulting RBD structure from <monospace>AlphaFold2</monospace> predicts that there is little conformational change from the reference structure. Conversely, there is a significant conformational change in the predicted RBD structure from <monospace>RoseTTAFold</monospace>. See <xref ref-type="fig" rid="F4">Figure 4</xref>.</p>
+<p id="P30">There are multiple mutated residues (shown in <styled-content style-type="color" style="#ff0000">red</styled-content> in <xref ref-type="fig" rid="F5">Figures 5</xref> and <xref ref-type="fig" rid="F6">6</xref>) in positions that may affect the ability of a neutralizing antibody to sufficiently bind. Some of these mutated residues change to much longer side-chained or differently-charged amino acids. For example, there are two “to lysine” mutations: N440K and T478K (i.e., from polar, smaller side chain residues to a positive-charged, longer side chain residue). These types of changes may have an effect on the binding affinity between the RBD and an antibody, either by changing the surface charge on the protein or by inhibiting a tighter antibody interaction.</p>
+<p id="P31">Superimposing the predicted RBDs on the reference RBD with the CC12.1 antibody in place, shown in <xref ref-type="fig" rid="F5">Figures 5</xref> and <xref ref-type="fig" rid="F6">6</xref>, shows that mutations Q493R, Q498R, and N501Y in the <monospace>AlphaFold2</monospace> structure and the E484A mutation in the <monospace>RoseTTAFold</monospace> structure may affect the binding position of the antibody. These side chains clash with particular residues of the Fab, which may cause a less effective and more distant binding. Longer/larger side chains may increase the distance between the Fab paratope of the antibody and the epitope of the RBD.</p>
+</sec>
+<sec id="S9">
+<title>Antibody Binding Analyses</title>
+<p id="P32">The results of all four antibody docking exercises with the predicted <monospace>AlphaFold2</monospace> RBD structure show that the Fab of the respective neutralizing antibodies continue to bind to the RBD of Omicron, though not as well as the reference interaction. Note that there is a consistent decrease (increase in value) in the electrostatic energy and an increase in restraints violation energy between the binding from the reference RBDs and the predicted RBD of Omicron. The HADDOCK score is worse (higher) across the board and it appears that the interaction of the Omicron RBD with the antibodies are more distant, as shown by the buried surface area changes below.</p>
+<p id="P33">When looking at the antibody docking exercises with the predicted <monospace>RoseTTAFold</monospace> RBD structure, there is agreement with the <monospace>AlphaFold2</monospace> results in that there still seems to be interaction with the neutralizing antibodies. However, the reduction in binding affinity is much more severe given the conformational changes seen only in the <monospace>RoseTTAFold</monospace> structure.</p>
+<p id="P34">Note: All values in <xref ref-type="table" rid="T3">Tables 3</xref>, <xref ref-type="table" rid="T4">4</xref>, <xref ref-type="table" rid="T5">5</xref>, and <xref ref-type="table" rid="T6">6</xref> below represent the best docking predictions from <monospace>HADDOCK</monospace>. Also, values in parentheses represent the percentage difference between the given metric for the predicted structure and the reference structure.</p>
+<sec id="S10">
+<title>C105 Antibody Binding</title>
+<p id="P35">Resulting binding metrics from the C105 <monospace>HADDOCK</monospace> docking analysis are shown in <xref ref-type="table" rid="T3">Table 3</xref>. This interaction shows that there is a ~ 4% reduction in the electrostatic energy and an ~ 5% decrease in buried surface area comparing between the 6XCM RBD and the predicted RBD of Omicron from <monospace>AlphaFold2</monospace>. From <monospace>RoseTTAFold</monospace>, the interaction shows that there is ~ 16% increase in the electrostatic energy but with a ~ 36% decrease in buried surface area.</p>
+</sec>
+<sec id="S11">
+<title>CC12.1 Antibody Binding</title>
+<p id="P36">Resulting binding metrics from the CC12.1 <monospace>HADDOCK</monospace> docking analysis are shown in <xref ref-type="table" rid="T4">Table 4</xref>. This interaction shows that there is a ~ 17% reduction in the electrostatic energy and an ~ 7% decrease in buried surface area comparing between the 6XC2 RBD and predicted RBD of Omicron from <monospace>AlphaFold2</monospace>. From <monospace>RoseTTAFold</monospace>, the interaction shows that there is ~ 24% reduction in the electrostatic energy but and a ~ 43% decrease in buried surface area.</p>
+</sec>
+<sec id="S12">
+<title>CC12.3 Antibody Binding</title>
+<p id="P37">Resulting binding metrics from the CC12.3 <monospace>HADDOCK</monospace> docking analysis are shown in <xref ref-type="table" rid="T4">Table 4</xref>. This interaction shows that there is a ~ 22% reduction in the electrostatic energy and an ~ 3% decrease in buried surface area comparing between the 6XC7 RBD and predicted RBD of Omicron from <monospace>AlphaFold2</monospace>. From <monospace>RoseTTAFold</monospace>, the interaction shows that there is ~ 24% reduction in the electrostatic energy and a ~ 43% decrease in buried surface area.</p>
+</sec>
+<sec id="S13">
+<title>CV30 Antibody Binding</title>
+<p id="P38">Resulting binding metrics from the CV30 <monospace>HADDOCK</monospace> docking analysis are shown in <xref ref-type="table" rid="T6">Table 6</xref>. This interaction shows that there is a ~ 52% reduction in the electrostatic energy and an ~ 20% decrease in buried surface area comparing between the 6XE1 RBD and predicted RBD of Omicron from <monospace>AlphaFold2</monospace>. From <monospace>RoseTTAFold</monospace>, the interaction shows that there is ~ 41% reduction in the electrostatic energy and a ~ 35% decrease in buried surface area.</p>
+</sec>
+</sec>
+<sec id="S14">
+<title>Antibody Interaction Comparison</title>
+<p id="P39">All of the interaction predictions among the four antibodies tested in this study (C105, CC12.1, CC12.3, and CV30) agree that there is a decrease in binding affinity when comparing the respective RBD interactions with the Omicron RBD interactions. Across all of the docking predictions using the <monospace>AlphaFold2</monospace> RBD structure, we see a drop in electrostatic interaction (increase in the electrostatic energy value) ranging from ~ 4% to ~ 52% and a consistent decrease in buried surface area (increase in distance) of the RBD and the antibody Fab. In addition, we see a variable increase (worsening) in the HADDOCK score, indicating that all of the Omicron RBD structures have a lower binding affinity when compared to their respective reference RBD structures as a benchmark. See <xref ref-type="fig" rid="F11">Figure 11</xref>.</p>
+<p id="P40">Similarly, we see a more extreme reduction in the binding affinity of the Fab structures and the RBD structure predicted by <monospace>RoseTTAFold</monospace>. We see a drop in electrostatic interaction (increase in the electrostatic energy value) ranging from ~ 24% to ~ 41% in three of the four interactions (with an odd ~ 16% increase in the C105 interaction) and a consistent ~ 35% to ~ 43% decrease in buried surface area (increase in distance) of the RBD and the antibody Fab.</p>
+<p id="P41">We performed Kruskal-Wallis tests with each of the <monospace>HADDOCK</monospace> metrics, which show that there is a statistically-significant difference between the three sets of binding experiments (Alpha and the two predicted Omicron sets). See <xref ref-type="fig" rid="F11">Figure 11</xref>. Interestingly, performing the Wilcoxon Rank-Sum tests on these metrics to compare the differences between the predictions and reference results shows that there is no statistically-significant difference at the <italic>α</italic> = 0.05 level between the <monospace>AlphaFold2</monospace> RBD structure binding and the reference structures. However, when comparing the <monospace>RoseTTAFold</monospace> RBD structure to the reference results, differences in the restraints violation energy, van der Waals energy, HADDOCK score, and buried surface area are statistically significant at the <italic>α</italic> = 0.05 level and the differences in desolvation energy is statistically significant at the <italic>α</italic> = 0.10 level. Also, the same metrics are significantly different between the <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace>, further showing that these predicted structures are quite different from one another.</p>
+<sec id="S15">
+<title>Fab-RBD Interfacing Residues</title>
+<p id="P42">Furthermore, when comparing residues that are interfaced between the Fab and RBD, there is agreement in that particular residues in Omicron are no longer interfacing with the antibodies analyzed in this study. In particular, residues 448N, 484A, and 494S may not interface with the Fab structure as they are in the reference RBD-Fab complexes. However, the aforementioned N501Y and S477N mutations (along with a variety of other mutations) do not appear to affect the interfacing of the residues at these positions.</p>
+<p id="P43">This implies that there are certain positions that are more sensitive to mutations in that substitutions at these loci are more likely to affect the interface of the RBD with the antibody’s Fab (denoted by a Δ symbol in <xref ref-type="table" rid="T7">Table 7</xref>).</p>
+<p id="P44">In contrast, there are other positions that have been substituted between the reference RBDs and the predicted Omicron RBDs that continue to interface with most of the Fab structures (denoted by a ♦ symbol in <xref ref-type="table" rid="T7">Table 7</xref>).</p>
+<p id="P45">Finally, there are some residues that remain unchanged in the Omicron variant RBD structure, yet we see changes in the interfacing at these loci (denoted by a ◦ symbol in <xref ref-type="table" rid="T7">Table 7</xref>). This suggests that there are other mutated residues around these stable positions that may be affecting their ability to interface.</p>
+<p id="P46">Many of these findings concur with the findings in Sharma et al. (<xref ref-type="bibr" rid="R21">21</xref>). Specifically, we also continue to see a reliance on residues at positions K417, S477, Q493, Q498, N501, and Y505, which are stated to increase binding affinity. Interestingly, the interfacing residues that are non-mutated N448 and S494 (denoted with a ◦ symbol) are rarely, if ever, listed as interfacing residues in <xref ref-type="table" rid="T3">Table 3</xref> in Sharma et al. (<xref ref-type="bibr" rid="R21">21</xref>). This further supports the notion that there are residue positions that are important for interfacing with neutralizing antibodies, but that the mutations seen here in the Omicron RBD may not seriously affect this RBD-antibody interface.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S16" sec-type="conclusions | discussion">
+<title>Conclusion and Discussion</title>
+<p id="P47">While <italic>in vitro</italic> experiments are needed to validate these predictions, the predicted results here suggest that existing neutralizing antibodies may still bind to the mutated spike protein of the Omicron variant. However, it appears that the affinity of Omicron’s RBD for neutralizing antibodies is reduced compared to the reference RBD structures. The results of both <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace> suggest that antibodies elicited from previous infection will provide at least some protection against Omicron. Additionally, these results indicate that the SARS-CoV-2 Omicron variant will note completely evade vaccines based on the spike protein.</p>
+<p id="P48">Though there are many mutations in the RBD of Omicron, the predicted structure from <monospace>AlphaFold2</monospace> suggests these mutations do not appear to be causing any large conformational change that would totally evade antibody interaction. However, we do see some amino acid substitutions to different, longer side chained residues at the binding site. This result may be due to the slightly more distant interaction with the antibody and therefore may reduce the binding affinity.</p>
+<p id="P49">The results of <monospace>RoseTTAFold</monospace> suggest that the mutations have a different effect on the overall 3D structure of the Omicron RBD. The conformational change seen in this structure may contribute to antibody evasion or more severely reduce antibody binding affinity.</p>
+<p id="P50">
+<monospace>AlphaFold2</monospace> has not been validated for predicting the effect of mutations and is not expected to produce a completely unfolded structure if the Omicron sequence contains any destabilising point mutations. This may explain the extremely similar backbone structure to the reference RBD structures.</p>
+<p id="P51">Given that the antibody docking results between <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace> are statistically different, this further posits that this potential conformational change seen in the <monospace>RoseTTAFold</monospace> RBD may directly affect the binding of neutralizing antibodies.</p>
+<p id="P52">Though the predicted RBD structures between <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace> are quite different, the <monospace>HADDOCK</monospace> antibody docking results seem to converge on specific positions with which the Fab will interface. S477N and Y505H may be useful positions on which to focus for future vaccine design or mutational surveillance in new variants.</p>
+<p id="P53">Further analyses are needed using a broader range of different classes of antibodies, including therapeutic antibodies and neutralizing antibodies that bind to other locations on the spike protein. Recent preprint articles show more drastic reductions in the binding affinity of some other antibodies like CB6, a neutralizing antibody similar to ones used in this study, as well as a variety of therapeutic antibodies (<xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R23">23</xref>). Thus, while we fail to see complete evasion of the antibodies used in this study, there are far more Omicron-antibody interactions to be understood.</p>
+<p id="P54">Once a true structure of the Omicron RBD is determined, it will be of interest to compare the true structure to both of the predicted RBD structures from <monospace>AlphaFold2</monospace> and <monospace>RoseTTAFold</monospace>, mainly to see if a large conformational change occurs (as is seen in the <monospace>RoseTTAFold</monospace>) or if the overall backbone/3D structure is very similar to the reference structures used in this study (as is seen in the <monospace>AlphaFold2</monospace>). In addition, it will be necessary to validate the antibody interactions predicted using <monospace>HADDOCK</monospace> with true, experimentally-derived binding measurements.</p>
+<p id="P55">Determining the actual structure of a protein is a time-consuming process. Further, quantifying protein-protein interactions (like spike-to-antibody interactions) are also experimentally difficult to perform <italic>in vitro</italic>. Given the public health urgency in understanding the impacts of new SARS-CoV-2 variants quickly requires that we act quicker than is possible in a lab. Thus, in <italic>silico</italic> predictive tools like AlphaFold2, RoseTTAFold, and HADDOCK are important for quickly understanding the biochemistry of variants and can help us to infer the epidemiological implications of the variant.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Materials</label>
+<media xlink:href="EMS141086-supplement-Supplementary_Materials.pdf" mimetype="application" mime-subtype="pdf" id="N66421" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S17">
+<title>Acknowledgements</title>
+<p>We acknowledge these entities at UNC Charlotte: The Department of Bioinformatics and Genomics, The Bioinformatics Research Center, the College of Computing and Informatics, The College of Liberal Arts and Sciences, Research and Economic Development, University Research Computing, and the Graduate School. We also thank the Belk family for support.</p>
+<p>Also, we appreciate the initial feedback from members of the Google DeepMind team on the usage of <monospace>AlphaFold2</monospace> for point mutations. This prompted our further investigation and comparison with <monospace>RoseTTAFold</monospace> and the differing results we now show in this study.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P56">
+<italic>InterafaceResidues</italic> Function Documentation: <ext-link ext-link-type="uri" xlink:href="https://pymolwiki.org/index.php/InterfaceResidues">https://pymolwiki.org/index.php/InterfaceResidues</ext-link>
+</p>
+</fn>
+</fn-group>
+<ref-list>
+<title>Bibliography</title>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y-M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Z-G</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tao</surname>
+<given-names>Z-W</given-names>
+</name>
+<name>
+<surname>Tian</surname>
+<given-names>J-Ha</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>Y-Yn</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>M-L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<issue>7798</issue>
+<fpage>265</fpage>
+<lpage>269</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2008-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McCrone</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Ruis</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>du Plessis</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Pybus</surname>
+<given-names>OG</given-names>
+</name>
+</person-group>
+<article-title>A dynamic nomenclature proposal for SARS-CoV-2 lineages to assist genomic epidemiology</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>1403</fpage>
+<lpage>1407</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0770-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="web">
+<collab>World Health Organization</collab>
+<source>Classification of Omicron (B.1.1.529): SARS-CoV-2 Variant of Concern</source>
+<year>2021</year>
+<comment>Available at: <ext-link ext-link-type="uri" xlink:href="https://www.who.int/news/item/26-11-2021-classification-of-omicron-%28b.1.1.529%29-sars-cov-2-variant-of-concern">https://www.who.int/news/item/26-11-2021-classification-of-omicron-%28b.1.1.529%29-sars-cov-2-variant-of-concern</ext-link>
+</comment>
+<date-in-citation>accessed 1 December 2021</date-in-citation>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Farooqi</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Malik</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Mulla</surname>
+<given-names>AH</given-names>
+</name>
+<name>
+<surname>Al Hagbani</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Almansour</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ubaid</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Alghamdi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Anwar</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>An overview of SARS-CoV-2 epidemiology, mutant variants, vaccines, and management strategies</article-title>
+<source>Journalof InfectionandPublic Health</source>
+<year>2021</year>
+<volume>14</volume>
+<fpage>1299</fpage>
+<lpage>1312</lpage>
+<pub-id pub-id-type="doi">10.1016/j.jiph.2021.08.014</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brito</surname>
+<given-names>AF</given-names>
+</name>
+<name>
+<surname>Semenova</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Dudas</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Hassler</surname>
+<given-names>GW</given-names>
+</name>
+<name>
+<surname>Kalinich</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Kraemer</surname>
+<given-names>MUG</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>SC</given-names>
+</name>
+<collab>Danish COVID-19 Genome Consortium</collab>
+<name>
+<surname>Sabino</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Pybus</surname>
+<given-names>OG</given-names>
+</name>
+<name>
+<surname>Dye</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Global disparities in SARS-CoV-2 genomic surveillance</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.08.21.21262393</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Machado</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>White III</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Kofsky</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Janies</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Fundamentals of genomic epidemiology, lessons learned from the coronavirus disease 2019 (covid-19) pandemic, and new directions</article-title>
+<source>Antimicrobial Stewardship &amp; Healthcare Epidemiology 2021</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>11</lpage>
+<pub-id pub-id-type="doi">10.1017/ash.2021.222</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>Daron M</given-names>
+</name>
+</person-group>
+<article-title>Mafft multiple sequence alignment software version 7: improvements in performance and usability</article-title>
+<source>Molecular biology and evolution</source>
+<year>2013</year>
+<month>Apr</month>
+<volume>30</volume>
+<issue>4</issue>
+<fpage>772</fpage>
+<lpage>780</lpage>
+<comment>ISSN 1537-1719</comment>
+<pub-id pub-id-type="doi">10.1093/molbev/mst010</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jacob Machado</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Scott</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Guirales</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Janies</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Fundamental evolution of all orthocoronavirinae including three deadly lineages descendent from chiroptera-hosted coronaviruses: Sars-cov, mers-cov and sars-cov-2</article-title>
+<source>Cladistics</source>
+<year>2021</year>
+<volume>37</volume>
+<issue>5</issue>
+<fpage>461</fpage>
+<lpage>488</lpage>
+<pub-id pub-id-type="doi">10.1111/cla.12454</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abascal</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zardoya</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Telford</surname>
+<given-names>MJ</given-names>
+</name>
+</person-group>
+<article-title>TranslatorX: multiple alignment of nucleotide sequences guided by amino acid translations</article-title>
+<source>Nucleic Acids Research</source>
+<year>2010</year>
+<month>04</month>
+<volume>38</volume>
+<issue>suppl_2</issue>
+<fpage>W7</fpage>
+<lpage>W13</lpage>
+<comment>ISSN 0305-1048</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gkq291</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stecher</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Tamura</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Molecular Evolutionary Genetics Analysis (MEGA) for macOS</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2020</year>
+<month>01</month>
+<volume>37</volume>
+<issue>4</issue>
+<fpage>1237</fpage>
+<lpage>1239</lpage>
+<comment>ISSN 0737-4038</comment>
+<pub-id pub-id-type="doi">10.1093/molbev/msz312</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jumper</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pritzel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Green</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Figurnov</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ronneberger</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Tunyasuvunakool</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Bates</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Žídek</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Potapenko</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bridgland</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Highly accurate protein structure prediction with AlphaFold</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>596</volume>
+<issue>7873</issue>
+<fpage>583</fpage>
+<lpage>589</lpage>
+<comment>ISSN 1476-4687</comment>
+<pub-id pub-id-type="doi">10.1038/s41586-021-03819-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baek</surname>
+<given-names>Minkyung</given-names>
+</name>
+<name>
+<surname>DiMaio</surname>
+<given-names>Frank</given-names>
+</name>
+<name>
+<surname>Anishchenko</surname>
+<given-names>Ivan</given-names>
+</name>
+<name>
+<surname>Dauparas</surname>
+<given-names>Justas</given-names>
+</name>
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>Sergey</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>Gyu Rie</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Jue</given-names>
+</name>
+<name>
+<surname>Cong</surname>
+<given-names>Qian</given-names>
+</name>
+<name>
+<surname>Kinch</surname>
+<given-names>Lisa N</given-names>
+</name>
+<name>
+<surname>Schaeffer</surname>
+<given-names>R Dustin</given-names>
+</name>
+<name>
+<surname>Millán</surname>
+<given-names>Claudia</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Accurate prediction of protein structures and interactions using a three-track neural network</article-title>
+<source>Science</source>
+<year>2021</year>
+<volume>373</volume>
+<issue>6557</issue>
+<fpage>871</fpage>
+<lpage>876</lpage>
+<pub-id pub-id-type="doi">10.1126/science.abj8754</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hornak</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Abel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Okur</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Strockbine</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Roitberg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Comparison of multiple amber force fields and development of improved protein backbone parameters</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2006</year>
+<volume>65</volume>
+<issue>3</issue>
+<fpage>712</fpage>
+<lpage>725</lpage>
+<pub-id pub-id-type="doi">10.1002/prot.21123</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirdita</surname>
+<given-names>Milot</given-names>
+</name>
+<name>
+<surname>Schütze</surname>
+<given-names>Konstantin</given-names>
+</name>
+<name>
+<surname>Moriwaki</surname>
+<given-names>Yoshitaka</given-names>
+</name>
+<name>
+<surname>Heo</surname>
+<given-names>Lim</given-names>
+</name>
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>Sergey</given-names>
+</name>
+<name>
+<surname>Steinegger</surname>
+<given-names>Martin</given-names>
+</name>
+</person-group>
+<article-title>Colabfold - making protein folding accessible to all</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.08.15.456425</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barnes</surname>
+<given-names>CO</given-names>
+</name>
+<name>
+<surname>West</surname>
+<given-names>AP</given-names>
+<suffix>Jr</suffix>
+</name>
+<name>
+<surname>Huey-Tubman</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Hoffmann</surname>
+<given-names>MAG</given-names>
+</name>
+<name>
+<surname>Sharaf</surname>
+<given-names>NG</given-names>
+</name>
+<name>
+<surname>Hoffman</surname>
+<given-names>PR</given-names>
+</name>
+<name>
+<surname>Koranda</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Gristick</surname>
+<given-names>HB</given-names>
+</name>
+<name>
+<surname>Gaebler</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Muecksch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Lorenzi</surname>
+<given-names>JCC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structures of human antibodies bound to SARS-CoV-2 spike reveal common epitopes and recurrent features of antibodies</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<issue>4</issue>
+<fpage>828</fpage>
+<lpage>842</lpage>
+<elocation-id>e16</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.06.025</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>NC</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>C-CD</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Hua</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tien</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Rogers</surname>
+<given-names>TF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis of a shared antibody response to SARS-CoV-2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<issue>6507</issue>
+<fpage>1119</fpage>
+<lpage>1123</lpage>
+<pub-id pub-id-type="doi">10.1126/science.abd2321</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hurlburt</surname>
+<given-names>NK</given-names>
+</name>
+<name>
+<surname>Seydoux</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>Y-H</given-names>
+</name>
+<name>
+<surname>Edara</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Stuart</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Suthar</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Stamatatos</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Pancera</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Structural basis for potent neutralization of SARS-CoV-2 and role of antibody affinity maturation</article-title>
+<source>Nature Communications</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>1</issue>
+<elocation-id>5413</elocation-id>
+<pub-id pub-id-type="doi">10.1038/s41467-020-19231-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van Zundert</surname>
+<given-names>GCP</given-names>
+</name>
+<name>
+<surname>Rodrigues</surname>
+<given-names>JPGLM</given-names>
+</name>
+<name>
+<surname>Trellet</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Schmitz</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kastritis</surname>
+<given-names>PL</given-names>
+</name>
+<name>
+<surname>Karaca</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Melquiond</surname>
+<given-names>ASJ</given-names>
+</name>
+<name>
+<surname>van Dijk</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>de Vries</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Bonvin</surname>
+<given-names>AMJJ</given-names>
+</name>
+</person-group>
+<article-title>The HADDOCK2.2 web server: User-friendly integrative modeling of biomolecular complexes</article-title>
+<source>Journal ofMolecularBiology</source>
+<year>2016</year>
+<volume>428</volume>
+<issue>4</issue>
+<fpage>720</fpage>
+<lpage>725</lpage>
+<pub-id pub-id-type="doi">10.1016/j.jmb.2015.09.014</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Schrödinger</surname>
+<given-names>LLC</given-names>
+</name>
+</person-group>
+<source>The PyMOL Molecular Graphics System, version 2.4.1</source>
+<year>2015</year>
+<comment>Available at: <ext-link ext-link-type="uri" xlink:href="http://www.pymol.org/pymol">http://www.pymol.org/pymol</ext-link>
+</comment>
+<date-in-citation>accessed 29 November 2021</date-in-citation>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="book">
+<collab>R Core Team</collab>
+<source>R: a language and environment for statistical computing</source>
+<publisher-name>R Foundation for Statistical Computing</publisher-name>
+<publisher-loc>Vienna, Austria</publisher-loc>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sharma</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Rawat</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Janakiraman</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Gromiha</surname>
+<given-names>MM</given-names>
+</name>
+</person-group>
+<article-title>Elucidating important structural features for the binding affinity of spike-sars-cov-2 neutralizing antibody complexes</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2021</year>
+<volume>n/a</volume>
+<issue>n/a</issue>
+<pub-id pub-id-type="doi">10.1002/prot.26277</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Lihong</given-names>
+</name>
+<name>
+<surname>Iketani</surname>
+<given-names>Sho</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Yicheng</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>Jasper F-W</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Maple</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Liyuan</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>Yang</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>Hin</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Yiming</given-names>
+</name>
+<name>
+<surname>Nair</surname>
+<given-names>Manoj S</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>Jian</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Striking antibody evasion manifested by the omicron variant of sars-cov-2</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.12.14.472719</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>VanBlargan</surname>
+<given-names>Laura A</given-names>
+</name>
+<name>
+<surname>Errico</surname>
+<given-names>John M</given-names>
+</name>
+<name>
+<surname>Halfmann</surname>
+<given-names>Peter J</given-names>
+</name>
+<name>
+<surname>Zost</surname>
+<given-names>Seth J</given-names>
+</name>
+<name>
+<surname>Crowe</surname>
+<given-names>James E</given-names>
+</name>
+<name>
+<surname>Purcell</surname>
+<given-names>Lisa A</given-names>
+</name>
+<name>
+<surname>Kawaoka</surname>
+<given-names>Yoshihiro</given-names>
+</name>
+<name>
+<surname>Corti</surname>
+<given-names>Davide</given-names>
+</name>
+<name>
+<surname>Fremont</surname>
+<given-names>Daved H</given-names>
+</name>
+<name>
+<surname>Diamond</surname>
+<given-names>Michael S</given-names>
+</name>
+</person-group>
+<article-title>An infectious sars-cov-2 b.1.1.529 omicron virus escapes neutralization by several therapeutic monoclonal antibodies</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.12.15.472828</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Ford</surname>
+<given-names>CT</given-names>
+</name>
+</person-group>
+<source>Predictions of the SARS-CoV-2 B.1.1.529 Variant Spike Protein Receptor Binding Domain Structure and Neutralizing Antibody Interactions</source>
+<year>2021</year>
+<comment>Available at: <ext-link ext-link-type="uri" xlink:href="https://zenodo.org/record/5733161#.YalzFvFKhhE">https://zenodo.org/record/5733161#.YalzFvFKhhE</ext-link>
+</comment>
+<date-in-citation>accessed 1 December 2021</date-in-citation>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>Process flow of the prediction analysis steps.</title>
+</caption>
+<graphic xlink:href="EMS141086-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<p>Distance matrix of the spike gene (using nucleotides) for 9 Variants Being Monitored (VBM) and 2 Variants of Concern (VOC). The distance is the average proportion (<italic>p</italic>) of nucleotide sites at which two sequences being compared are different.</p>
+</caption>
+<graphic xlink:href="EMS141086-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>Distance matrix of the receptor binding motif (RBM) of spike gene (using amino acids) for 9 Variants Being Monitored (VBM) and 2 Variants of Concern (VOC). The distance is the average proportion (<italic>p</italic>) of nucleotide sites at which two sequences being compared are different.</p>
+</caption>
+<graphic xlink:href="EMS141086-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Comparison of reference RBD structure (PDB: <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>, shown in <styled-content style-type="color" style="#00d700">green</styled-content>) and the predicted Omicron (B.1.1.529) RBD structures (<monospace>AlphaFold2</monospace> shown in <styled-content style-type="color" style="#0000ff">blue</styled-content>, <monospace>RoseTTAFold</monospace> shown in <styled-content style-type="color" style="#800080">purple</styled-content>). Mutated residues are highlighted in <styled-content style-type="color" style="#ff0000">red</styled-content>.</p>
+</caption>
+<graphic xlink:href="EMS141086-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<p>Possible inhibitory mutated RBD residues in the <monospace>AlphaFold2</monospace> Omicron (B.1.1.529) (structure shown in <styled-content style-type="color" style="#0000ff">blue</styled-content> with mutated residues of interest shown in <styled-content style-type="color" style="#ff0000">red</styled-content>) superimposed on a reference RBD structure. Note: the reference RBD structure (PDB:<ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>) is shown in <styled-content style-type="color" style="#003900">green</styled-content> with equivalent position residues highlighted in <styled-content style-type="color" style="#fff200">yellow</styled-content>. CC12.1 antibody Fab (from PDB <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>) is shown in <styled-content style-type="color" style="#f9ccde">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>.</p>
+</caption>
+<graphic xlink:href="EMS141086-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig. 6</label>
+<caption>
+<p>Possible inhibitory mutated RBD residues in the <monospace>RoseTTAFold</monospace> Omicron (B.1.1.529) (structure shown in <styled-content style-type="color" style="#800080">purple</styled-content> with mutated residues of interest shown in <styled-content style-type="color" style="#ff0000">red</styled-content>) superimposed on a reference RBD structure. Note: the reference RBD structure (PDB: <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>) is shown in <styled-content style-type="color" style="#00ff00">green</styled-content> with equivalent position residues highlighted in <ext-link ext-link-type="uri" xlink:href="#fff200">yellow</ext-link>. CC12.1 antibody Fab (from PDB <ext-link ext-link-type="uri" xlink:href="https://www.rcsb.org/structure/6XC2">6XC2</ext-link>) is shown in <styled-content style-type="color" style="#ec008c">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>.</p>
+</caption>
+<graphic xlink:href="EMS141086-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Fig. 7</label>
+<caption>
+<p>HADDOCK docking prediction using C105 (shown in <styled-content style-type="color" style="#f068a8">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>), comparing the 6XCM RBD (shown in shown in <styled-content style-type="color" style="#00ff00">green</styled-content>) vs. the Omicron (B.1.1.529) predicted RBD structures (<monospace>AlphaFold2</monospace> shown in <styled-content style-type="color" style="#0000ff">blue</styled-content>, <monospace>RoseTTAFold</monospace> shown in <styled-content style-type="color" style="#800080">purple</styled-content>).</p>
+</caption>
+<graphic xlink:href="EMS141086-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Fig. 8</label>
+<caption>
+<p>HADDOCK docking prediction using CC12.1 (shown in <styled-content style-type="color" style="#8e0078">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>), comparing the 6XC2 RBD (shown in shown in <styled-content style-type="color" style="#00ff00">green</styled-content>) vs. the Omicron (B.1.1.529) predicted RBD structures (<monospace>AlphaFold2</monospace> shown in <styled-content style-type="color" style="#0000ff">blue</styled-content>, <monospace>RoseTTAFold</monospace> shown in <styled-content style-type="color" style="#800080">purple</styled-content>).</p>
+</caption>
+<graphic xlink:href="EMS141086-f008"/>
+</fig>
+<fig id="F9" position="float">
+<label>Fig. 9</label>
+<caption>
+<p>HADDOCK docking prediction using CC12.3 (shown in <styled-content style-type="color" style="#ec008c">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>), comparing the 6XC7 RBD (shown in shown in <styled-content style-type="color" style="#00ff00">green</styled-content>) vs. the Omicron (B.1.1.529) predicted RBD structures (<monospace>AlphaFold2</monospace> shown in <styled-content style-type="color" style="#0000ff">blue</styled-content>, <monospace>RoseTTAFold</monospace> shown in <styled-content style-type="color" style="#800080">purple</styled-content>).</p>
+</caption>
+<graphic xlink:href="EMS141086-f009"/>
+</fig>
+<fig id="F10" position="float">
+<label>Fig. 10</label>
+<caption>
+<p>HADDOCK docking prediction using CV30 (shown in <styled-content style-type="color" style="#ec008c">magenta</styled-content>/<styled-content style-type="color" style="#ffbfbf">pink</styled-content>), comparing the 6XE1 RBD (shown in shown in <styled-content style-type="color" style="#00cc00">green</styled-content>) vs. the Omicron (B.1.1.529) predicted RBD structures (<monospace>AlphaFold2</monospace> shown in <styled-content style-type="color" style="#0000ff">blue</styled-content>, <monospace>RoseTTAFold</monospace> shown in <styled-content style-type="color" style="#800080">purple</styled-content>).</p>
+</caption>
+<graphic xlink:href="EMS141086-f010"/>
+</fig>
+<fig id="F11" position="float">
+<label>Fig. 11</label>
+<caption>
+<p>HADDOCK results comparison between the reference RBD structures and the predicted Omicron (B.1.1.529) RBD structures. The bars indicate results that are significantly different and the “*” indicates Wilcoxon Rank-Sum’s p-value ≤ 0.005).</p>
+</caption>
+<graphic xlink:href="EMS141086-f011"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>List of analyses performed, comparing reference and predicted RBD structures in complex with reference Fab structures.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Antibody Fab</th>
+<th align="center" valign="top">Analysis Type</th>
+<th align="center" valign="top">RBD Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle" rowspan="3">C105 (6XCM, chains N and S)</td>
+<td align="left" valign="middle">Reference</td>
+<td align="left" valign="middle">6XCM (chain B)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>AlphaFold2</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>RoseTTAFold</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">CC12.1 (6XC2, chains H and L)</td>
+<td align="left" valign="middle">Reference</td>
+<td align="left" valign="middle">6XC2 (chain A)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>AlphaFold2</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>RoseTTAFold</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">CC12.3 (6XC7, chains C and D)</td>
+<td align="left" valign="middle">Reference</td>
+<td align="left" valign="middle">6XC7 (chain A)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>AlphaFold2</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>RoseTTAFold</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">CV30 (6XE1, chains H and L)</td>
+<td align="left" valign="middle">Reference</td>
+<td align="left" valign="middle">6XE1 (chain B)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>AlphaFold2</monospace>)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Prediction</td>
+<td align="left" valign="middle">B.1.1.529 (from <monospace>RoseTTAFold</monospace>)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Mutations in the receptor-binding domain (RBD) of the spike protein in the Omicron variant (B.1.1.529).</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Position</th>
+<th align="center" valign="top">Ref</th>
+<th align="center" valign="top">Alt</th>
+<th align="center" valign="top">Ref Type</th>
+<th align="center" valign="top">Alt Type</th>
+<th align="center" valign="top">Type Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">339</td>
+<td align="left" valign="middle">G</td>
+<td align="left" valign="middle">D</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Negative</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">371</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">L</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">373</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">P</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">375</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">F</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">417</td>
+<td align="left" valign="middle">K</td>
+<td align="left" valign="middle">N</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">440</td>
+<td align="left" valign="middle">N</td>
+<td align="left" valign="middle">K</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">446</td>
+<td align="left" valign="middle">G</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">477</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">N</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">No</td>
+</tr>
+<tr>
+<td align="left" valign="middle">478</td>
+<td align="left" valign="middle">T</td>
+<td align="left" valign="middle">K</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">484</td>
+<td align="left" valign="middle">E</td>
+<td align="left" valign="middle">A</td>
+<td align="left" valign="middle">Negative</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">493</td>
+<td align="left" valign="middle">Q</td>
+<td align="left" valign="middle">R</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">496</td>
+<td align="left" valign="middle">G</td>
+<td align="left" valign="middle">S</td>
+<td align="left" valign="middle">Non-Polar</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">498</td>
+<td align="left" valign="middle">Q</td>
+<td align="left" valign="middle">R</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+<tr>
+<td align="left" valign="middle">501</td>
+<td align="left" valign="middle">N</td>
+<td align="left" valign="middle">Y</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">No</td>
+</tr>
+<tr>
+<td align="left" valign="middle">505</td>
+<td align="left" valign="middle">Y</td>
+<td align="left" valign="middle">H</td>
+<td align="left" valign="middle">Polar</td>
+<td align="left" valign="middle">Positive</td>
+<td align="left" valign="middle">Yes</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>HADDOCK metrics for the C105 docking prediction, comparing the 6XCM RBD vs. the Omicron (B.1.1.529) predicted RBD structures.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top" rowspan="2">Metric</th>
+<th align="center" valign="top" rowspan="2">6XCM RBD w/ C105</th>
+<th align="center" valign="top" colspan="2">Predicted B.1.1.529 RBD w/ C105</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<monospace>AlphaFold</monospace>
+</th>
+<th align="center" valign="top">
+<monospace>RoseTTAFold</monospace>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">van der Waals energy</td>
+<td align="left" valign="middle">−85</td>
+<td align="left" valign="middle">−71.8(16%)</td>
+<td align="left" valign="middle">−44.2(48%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Electrostatic energy</td>
+<td align="left" valign="middle">−280.9</td>
+<td align="left" valign="middle">−268.9 (4%)</td>
+<td align="left" valign="middle">−324.5 (-16%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Desolvation energy</td>
+<td align="left" valign="middle">−18.6</td>
+<td align="left" valign="middle">−17.1 (8%)</td>
+<td align="left" valign="middle">−3.2 (83%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Restraints violation energy</td>
+<td align="left" valign="middle">154.1</td>
+<td align="left" valign="middle">158.8(3%)</td>
+<td align="left" valign="middle">338.6 (120%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">HADDOCK score</td>
+<td align="left" valign="middle">−144.4</td>
+<td align="left" valign="middle">−126.8(12%)</td>
+<td align="left" valign="middle">−78.4(46%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Buried Surface Area</td>
+<td align="left" valign="middle">2417.8</td>
+<td align="left" valign="middle">2299.6 (-5%)</td>
+<td align="left" valign="middle">1555.1 (-36%)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>HADDOCK metrics for the CC12.1 docking prediction, comparing the 6XC2 RBD vs. the Omicron (B.1.1.529) predicted RBD structures.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="middle" rowspan="2">Metric</th>
+<th align="center" valign="middle" rowspan="2">6XC2 RBDw/CC12.1</th>
+<th align="center" valign="middle" colspan="2">Predicted B.1.1.529 RBD w/ CC12.1</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<monospace>AlphaFold</monospace>
+</th>
+<th align="center" valign="top">
+<monospace>RoseTTAFold</monospace>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">van der Waals energy</td>
+<td align="left" valign="top">−106.9</td>
+<td align="left" valign="top">−90.7(15%)</td>
+<td align="left" valign="top">−27.5 (74%)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Electrostatic energy</td>
+<td align="left" valign="top">−342.6</td>
+<td align="left" valign="top">−284.9 (17%)</td>
+<td align="left" valign="top">−259.2(24%)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Desolvation energy</td>
+<td align="left" valign="top">−37.5</td>
+<td align="left" valign="top">−28.8 (23%)</td>
+<td align="left" valign="top">−12.4(67%)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Restraints violation energy</td>
+<td align="left" valign="top">143.2</td>
+<td align="left" valign="top">152.6 (7%)</td>
+<td align="left" valign="top">201.4 (41%)</td>
+</tr>
+<tr>
+<td align="left" valign="top">HADDOCK score</td>
+<td align="left" valign="top">−198.6</td>
+<td align="left" valign="top">−163.3 (18%)</td>
+<td align="left" valign="top">−71.6(64%)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Buried Surface Area</td>
+<td align="left" valign="top">2778.5</td>
+<td align="left" valign="top">2584.3 (-7%)</td>
+<td align="left" valign="top">1578.4(-43%)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<title>HADDOCK metrics for the CC12.3 docking prediction, comparing the 6XC7 RBD vs. the Omicron (B.1.1.529) predicted RBD structures.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th rowspan="2" align="center" valign="top">Metric</th>
+<th rowspan="2" align="center" valign="top">6XC7 RBDw/CC12.3</th>
+<th align="center" valign="top" colspan="2">Predicted B.1.1.529 RBD w/ CC12.3</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<monospace>AlphaFold</monospace>
+</th>
+<th align="center" valign="top">
+<monospace>RoseTTAFold</monospace>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">van der Waals energy</td>
+<td align="left" valign="middle">−86.1</td>
+<td align="left" valign="middle">−93.1 (−8%)</td>
+<td align="left" valign="middle">−48.1 (44%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Electrostatic energy</td>
+<td align="left" valign="middle">−248.1</td>
+<td align="left" valign="middle">−194.1 (22%)</td>
+<td align="left" valign="middle">−189.2(24%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Desolvation energy</td>
+<td align="left" valign="middle">−41.7</td>
+<td align="left" valign="middle">−37.9 (9%)</td>
+<td align="left" valign="middle">−23.5 (44%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Restraints violation energy</td>
+<td align="left" valign="middle">159.1</td>
+<td align="left" valign="middle">104.7(-34%)</td>
+<td align="left" valign="middle">221.4(39%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">HADDOCK score</td>
+<td align="left" valign="middle">−161.5</td>
+<td align="left" valign="middle">−159.4(1%)</td>
+<td align="left" valign="middle">−87.4 (46%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Buried Surface Area</td>
+<td align="left" valign="middle">2489.8</td>
+<td align="left" valign="middle">2416.7 (−3%)</td>
+<td align="left" valign="middle">1420.6(−43%)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" position="float" orientation="portrait">
+<label>Table 6</label>
+<caption>
+<title>HADDOCK metrics for the CV30 docking prediction, comparing the 6XE1 RBD vs. the Omicron (B.1.1.529) predicted RBD structures.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top" rowspan="2">Metric</th>
+<th align="center" valign="top" rowspan="2">6XE1 RBD w/ CV30</th>
+<th align="center" valign="top" colspan="2">Predicted B.1.1.529 RBD w/ CV30</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<monospace>AlphaFold</monospace>
+</th>
+<th align="center" valign="top">
+<monospace>RoseTTAFold</monospace>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">van der Waals energy</td>
+<td align="left" valign="middle">−86.1</td>
+<td align="left" valign="middle">−61.7 (28%)</td>
+<td align="left" valign="middle">−41.1 (52%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Electrostatic energy</td>
+<td align="left" valign="middle">−354.4</td>
+<td align="left" valign="middle">−171.8(52%)</td>
+<td align="left" valign="middle">−207.9 (41%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Desolvation energy</td>
+<td align="left" valign="middle">−13.8</td>
+<td align="left" valign="middle">−19.5 (−41%)</td>
+<td align="left" valign="middle">−10.2(26%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Restraints violation energy</td>
+<td align="left" valign="middle">147.6</td>
+<td align="left" valign="middle">159.4 (8%)</td>
+<td align="left" valign="middle">286.0 (93%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">HADDOCK score</td>
+<td align="left" valign="middle">−156.0</td>
+<td align="left" valign="middle">−99.6 (36%)</td>
+<td align="left" valign="middle">−43.9 (71%)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Buried Surface Area</td>
+<td align="left" valign="middle">2479.0</td>
+<td align="left" valign="middle">1992.6 (−20%)</td>
+<td align="left" valign="middle">1600.2 (−35%)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T7" position="float" orientation="landscape">
+<label>Table 7</label>
+<caption>
+<p>Interfacing residue changes of interest between the Fab paratope and the RBD structures. (Note that a ‘-’ means that the residue at this position no longer interfaces with the Fab structure.)</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top" colspan="2">Interface Position</th>
+<th align="center" valign="top">417 (K▶N)</th>
+<th align="center" valign="top">448 (N)</th>
+<th align="center" valign="top">477 (S▶N)</th>
+<th align="center" valign="top">484 (E▶A)</th>
+<th align="center" valign="top">493(Q▶R)</th>
+<th align="center" valign="top">494 (S)</th>
+<th align="center" valign="top">498 (Q▶R)</th>
+<th align="center" valign="top">501 (N▶Y)</th>
+<th align="center" valign="top">505 (Y▶H)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle" rowspan="3">6XC2 vs. B. 1.1.529</td>
+<td align="left" valign="middle">Reference</td>
+<td align="center" valign="middle">K</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">S</td>
+<td align="center" valign="middle">E</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">S</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">Y</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>AlphaFold2</monospace> Prediction</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">Y</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>RoseTTAFold</monospace> Prediction</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">A</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">6XC7 vs. B. 1.1.529</td>
+<td align="left" valign="middle">Reference</td>
+<td align="center" valign="middle">K</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">S</td>
+<td align="center" valign="middle">E</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">s</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">Y</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>AlphaFold2</monospace> Prediction</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">Y</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>RoseTTAFold</monospace> Prediction</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">Y</td>
+<td align="center" valign="middle">-</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">6XCM vs. B. 1.1.529</td>
+<td align="left" valign="middle">Reference</td>
+<td align="center" valign="middle">K</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">S</td>
+<td align="center" valign="middle">E</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">s</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">Y</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>AlphaFold2</monospace> Prediction</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">s</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">Y</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>RoseTTAFold</monospace> Prediction</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">A</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="3">6XE1 vs. B.1.1.529</td>
+<td align="left" valign="middle">Reference</td>
+<td align="center" valign="middle">K</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">S</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">s</td>
+<td align="center" valign="middle">Q</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">Y</td>
+</tr>
+<tr>
+<td align="left" valign="middle">AlphaFold2 Prediction</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">A</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">s</td>
+<td align="center" valign="middle">R</td>
+<td align="center" valign="middle">Y</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle">
+<monospace>RoseTTAFold</monospace> Prediction</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">N</td>
+<td align="center" valign="middle">A</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">-</td>
+<td align="center" valign="middle">H</td>
+</tr>
+<tr>
+<td align="left" valign="middle" colspan="2">Legend:<break/>♦ - Mutated positions with few interface changes,<break/>◯ - Non-mutated positions with interface changes,<break/>Δ - Mutated positions with interface changes</td>
+<td align="center" valign="middle">Δ</td>
+<td align="center" valign="middle">◯</td>
+<td align="center" valign="middle">♦</td>
+<td align="center" valign="middle">Δ</td>
+<td align="center" valign="middle">Δ</td>
+<td align="center" valign="middle">◯</td>
+<td align="center" valign="middle">Δ</td>
+<td align="center" valign="middle">Δ</td>
+<td align="center" valign="middle">♦</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

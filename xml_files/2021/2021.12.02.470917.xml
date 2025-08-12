@@ -1,0 +1,1261 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141078</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.02.470917</article-id>
+<article-id pub-id-type="archive">PPR428529</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>PEPPI: Whole-proteome protein-protein interaction prediction through structure and sequence similarity, functional association, and machine learning</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Bell</surname>
+<given-names>Eric W.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Schwartz</surname>
+<given-names>Jacob H.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Freddolino</surname>
+<given-names>Peter L.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Yang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Computational Medicine and Bioinformatics, University of Michigan, Ann Arbor, MI 48109, USA</aff>
+<aff id="A2">
+<label>2</label>Department of Biological Chemistry, University of Michigan, Ann Arbor, MI 48109, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence should be addressed to Yang Zhang, Department of Computational Medicine and Bioinformatics, University of Michigan, 100 Washtenaw Avenue, Ann Arbor, MI 48109-2218, USA, Phone: (734) 647-1549, Fax: (734) 615-6553, <email>zhng@umich.edu</email> and/or Peter Freddolino, Department of Biological Chemistry, University of Michigan, 1150 W. Medical Center Dr., Ann Arbor, MI 48109-0600, USA, <email>petefred@umich.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>03</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Proteome-wide identification of protein-protein interactions is a formidable task which has yet to be sufficiently addressed by experimental methodologies. Many computational methods have been developed to predict proteome-wide interaction networks, but few leverage both the sensitivity of structural information and the wide availability of sequence data. We present PEPPI, a pipeline which integrates structural similarity, sequence similarity, functional association data, and machine learning-based classification through a naïve Bayesian classifier model to accurately predict protein-protein interactions at a proteomic scale. Through benchmarking against a set of 798 ground truth interactions and an equal number of non-interactions, we have found that PEPPI attains 4.5% higher AUROC than the best of other state-of-the-art methods. As a proteomic-scale application, PEPPI was applied to model the interactions which occur between SARS-CoV-2 and human host cells during coronavirus infection, where 403 high-confidence interactions were identified with predictions covering 73% of a gold standard dataset from PSICQUIC and demonstrating significant complementarity with the most recent high-throughput experiments. PEPPI is available both as a webserver and in a standalone version and should be a powerful and generally applicable tool for computational screening of protein-protein interactions.</p>
+</abstract>
+<kwd-group>
+<kwd>Direct interaction prediction</kwd>
+<kwd>interology</kwd>
+<kwd>dimer threading</kwd>
+<kwd>interactome</kwd>
+<kwd>SARS-CoV-2</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">The biological function of many proteins is conferred through their interactions with other proteins. Therefore, to fully understand the function of each protein in an organism, one must first attain a comprehensive network of the protein-protein interactions (PPIs) that occur within the cell. The discovery of critical interactions within this interaction network, or “interactome”, can lead to drug development[<xref ref-type="bibr" rid="R1">1</xref>] or protein engineering[<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R3">3</xref>] targeting these interactions. However, many of these experiments do not guarantee that the interactions detected are, in fact, direct physical contacts between the proteins; some of the earliest databases for PPI prediction involve features that assert only a functional association between proteins[<xref ref-type="bibr" rid="R4">4</xref>]. While these databases can be useful for prediction of physical interactions, as all physical interactions are functionally associated, the converse is not true; many biological applications, such as drug target discovery, require knowledge of which proteins come into physical contact. The methods for elucidating these direct physical interactions are at present either prohibitively costly for whole-proteome analysis (such as structure solving or crosslinking mass spectrometry) or are too susceptible to errors (such as yeast-two hybrid[<xref ref-type="bibr" rid="R5">5</xref>]). As an alternative, computational methods can be used to model proteome-wide interactions, as well as refine existing interaction datasets.</p>
+<p id="P3">One of the most straightforward methods of computational interaction prediction is to determine whether the query protein pair is similar to an already known interaction. Many programs directly leverage sequence similarity for this purpose because the sequence comparison operation is quick and sequence data is plentiful[<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R7">7</xref>]. However, since structure is more evolutionarily conserved than sequence, structural similarity is much more effective at detecting distantly similar PPIs; methods which leverage this structural information[<xref ref-type="bibr" rid="R8">8</xref>-<xref ref-type="bibr" rid="R11">11</xref>] grow more powerful as modern structural biology methods such as cryo-EM facilitate the solving of complicated protein complex structures, and as computational approaches offer improved accuracy in predicting the folds of individual proteins[<xref ref-type="bibr" rid="R12">12</xref>]. In addition, structures provide a clear ground truth as to whether two proteins interact physically; if a solved structure of the interaction exists, the proteins are likely to interact <italic>in vivo.</italic> Therefore, an effective similarity-based program should consider both structural and sequence similarity.</p>
+<p id="P4">Another common method for PPI prediction is the application of machine learning-based classifiers. In the earlier days of machine learning, the major novelty of machine learning-based PPI predictors was in how they extracted features from the input amino acid sequences in order to create a fixed-length vector that could be utilized in standard machine learning algorithms, such as the conjoint triad method[<xref ref-type="bibr" rid="R13">13</xref>] or autocorrelation[<xref ref-type="bibr" rid="R14">14</xref>]. As more modern deep learning techniques became available, improved PPI predictions were achieved with features solely from evolutionary profiles[<xref ref-type="bibr" rid="R15">15</xref>] or even based on sequence alone[<xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R17">17</xref>]. Despite these initial studies into deep learning, to our knowledge these methods have yet to demonstrate success in a species agnostic context; more commonly, they are benchmarked by either combining a few species-specific datasets[<xref ref-type="bibr" rid="R16">16</xref>] or by training on one species and testing on another[<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R17">17</xref>].</p>
+<p id="P5">Here, we present a Pipeline for the Extraction of Predicted Protein-protein Interactions (PEPPI), which offers high-accuracy PPI predictions through a consensus of sequence and structural similarity, functional association, and neural network classification. While the source code for PEPPI can be found at <ext-link ext-link-type="uri" xlink:href="https://github.com/ewbell94/PEPPI">https://github.com/ewbell94/PEPPI</ext-link>, an online webserver implementation of this pipeline can be found at <ext-link ext-link-type="uri" xlink:href="https://zhanggroup.org/PEPPI/">https://zhanggroup.org/PEPPI/</ext-link>, which allows users to create PPI predictions from sequences alone. We additionally present an application of PEPPI to make predictions of the inter-species interactome between human host cells and SARS-CoV-2. Through the following benchmarks and examples, we demonstrate that PEPPI is a useful tool for predicting both pairwise and systems-level PPIs.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<label>2</label>
+<title>Results</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Pipeline Overview and Module Cross-Validation</title>
+<p id="P6">PEPPI is a protein-protein interaction prediction pipeline which takes in a pair of query sequences and quantifies their likelihood of interaction as a natural log-transformed likelihood ratio (log(LR)) through a consensus of five independent prediction modules (<xref ref-type="fig" rid="F1">Figure 1</xref>). This consensus is determined by a naïve Bayesian classifier model trained on a set of 800 high-confidence interactions from IntAct[<xref ref-type="bibr" rid="R18">18</xref>] and 800 curated non-interactions from the Negatome 2.0 database[<xref ref-type="bibr" rid="R19">19</xref>] (see <xref ref-type="supplementary-material" rid="SD2">Supplementary Methods</xref>).</p>
+<p id="P7">
+<xref ref-type="fig" rid="F2">Figure 2a</xref> presents the 10-fold cross validation performance of each individual module and the full pipeline on this training set. The best-performing individual modules are SPRING and SEQ, which implement structure and sequence-based similarity approaches, respectively. The SPRING module uses the dimeric threading program SPRING[<xref ref-type="bibr" rid="R20">20</xref>] to identify dimer structure templates out of a database of interacting proteins extracted from the PDB, while SEQ uses BLAST[<xref ref-type="bibr" rid="R21">21</xref>] sequence searching to identify similar interactions in a database of direct interactions identified by high-throughput experiment (HTE) data. These homology-based modules will perform well for any cases which have homologous similarity to existing interactions, which is the case for many true interactions. The next best-performing module is the neural network-based CT module, which transforms the input amino acid sequences into a fixed-length vector according to the conjoint triad method[<xref ref-type="bibr" rid="R13">13</xref>] and classifies the resulting vector through a neural network model. This module helps PEPPI retrieve true positive predictions in case there is only loose homologous similarity to existing interactions. The STRING module, a module which extracts various query functional association features from the STRING database[<xref ref-type="bibr" rid="R22">22</xref>], performs relatively poorly on its own; this is expected because of its focus on functional association data instead of physical interaction data and because of its tendency to provide no data if the interaction is not located in STRING. SPRINGNEG has a nearly identical methodology to SPRING but it performs least well because it searches through a database of non-interacting protein structures and thus a hit in this database will only lower the interaction score because by design it only provides information to filter out functionally associated non-interactions. STRING also gives insight into non-interactions, as the training data revealed that a high co-expression value is more likely to belong to a false positive functional association than a direct physical interaction. Overall, the combination of all modules clearly outperforms any single module, demonstrating that the modules are complimentary in classification.</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>PEPPI Benchmark and Performance</title>
+<p id="P8">In order to quantify the classification performance of PEPPI against existing methods, we benchmarked PEPPI alongside PRISM[<xref ref-type="bibr" rid="R8">8</xref>], a structure-based similarity predictor, SPRINT[<xref ref-type="bibr" rid="R6">6</xref>], a sequence-based similarity predictor, and PIPR[<xref ref-type="bibr" rid="R16">16</xref>], a deep learning predictor which utilizes a combination of recurrent and convolutional layers in its architecture. These benchmarks were performed using a randomly selected test set of 798 interacting structure pairs and an equal number of structure pairs involving chains from the same protein complex but known to not come into physical contact (and thus do not form a physical interaction). All structures of this test set were taken from the PDB and were confirmed to have &lt;50% sequence identity to the PEPPI training protein pairs.</p>
+<p id="P9">The results of the PPI predictions are summarized presented in <xref ref-type="fig" rid="F2">Figure 2b</xref> and <xref ref-type="supplementary-material" rid="SD2">Table S1</xref>, where it is shown that PEPPI significantly outperforms all competing methods in terms of area under ROC (AUROC), average precision (similar to area under precision-recall curve, AUPRC), and all but SPRINT in maximum achievable Matthew’s correlation coefficient (MCC). PRISM had the lowest performance in this benchmark, which is likely due to its outdated interface structure library, which misses many structures which have been solved since its release to the public. Interestingly, the highest performance from a competing program was seen from SPRINT, a sequence motif-based similarity classifier, and not from PIPR, the more sophisticated deep-learning pipeline. The deep learning architecture of PIPR was optimized based on cross validation performance of species-specific (primarily yeast) interaction datasets; when this method was applied to the species agnostic dataset of this benchmark, PIPR’s ability to accurately classify interactions decreased. As a result, the method which draws its conclusions from explicit similarity (SPRINT) outperforms the method which tries to sub-optimally learn the interaction problem itself (PIPR).</p>
+<p id="P10">One particular case of interest in this benchmark is the interaction between chain A and chain B of PDB code 1F3M (corresponding to the N- and C-terminal domains of the human kinase PAK1). While this is a true interaction, no hit was found in either the sequence or structure databases after homologous template removal, leading to poor scores for those pipelines (SPRING: 8.937, STRING: not found, SEQ: 0.129, SPRINGNEG: 4.618). However, this case was still classified as positive with a log(LR) of 0.056 due to a high interaction probability from the CT module (0.999), thus demonstrating the utility of CT for rescuing interactions that do not attain significant similarity. On the side of non-interaction classification, the classification of chain G and chain I of 3CJH (corresponding to two Tim13 chains of the yeast Tim8-Tim13 complex) poses an interesting case, as PEPPI was able to classify this as negative (log(LR)=-0.939) where competing programs could not, despite attaining a high SPRING score (34.208), a high CT confidence (1.0), and loose SEQ homology (0.217). The reason for this is a high score from SPRINGNEG (36.108) which pushes down the total interaction likelihood, thus demonstrating a case where SPRINGNEG’s false positive identification ability rescues the pipeline from misclassifying the interaction.</p>
+<p id="P11">While the previous balanced dataset is convenient for benchmarking, it is not fully reflective of the context in which an interactome prediction algorithm is applied because true interactions are much sparser relative to the total set of pairwise combinations of query proteins in almost all contexts. Therefore, we randomly sampled 100 interacting pairs from the previous test set and paired the 200 chains from these interactions in an all-by-all fashion (excluding homodimer pairings), resulting in an unbalanced test set of 100 true interacting pairs out of 19,990 putative interactions. Due to the high number of interactions, PRISM was excluded from this benchmark because of its slow speed and poor performance on the preceding benchmark. The results of this unbalanced benchmark are presented in <xref ref-type="fig" rid="F2">Figure 2c</xref> and <xref ref-type="supplementary-material" rid="SD2">Table S2</xref>. The outcome is similar to the previous benchmark, with PEPPI outperforming all other programs, followed most closely by the sequence-based algorithm SPRINT. In this benchmark, however, the superiority of PEPPI is much clearer, as SPRINT is on average more susceptible to false positive detection for comparable recalls. This resulted in a statistically significant difference in max MCC performance between PEPPI and SPRINT, which was not the case on the balanced benchmark set. Also made clearer is the relatively poor performance of PIPR with respect to false positive errors; so many pairs are classified with the highest confidence score that the maximum achievable precision is 0.186. One particular case of interest in this benchmark is the interaction between chain J and chain K of PDB code 3CI0 (part of the type 2 secretion system of enterotoxigenic <italic>E. coli</italic>), an interaction which was detected only by PEPPI. This interaction was able to be detected solely through structural similarity (SPRING: 51.45), with all other modules failing to detect the interaction (STRING: not found, SPRINGNEG: 4.09, SEQ: 0.279, CT: 0.026), leading to a log(LR) of 1.433.</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>SARS-CoV-2 and Human Interactome Modeling</title>
+<p id="P12">The COVID-19 pandemic, caused by the SARS-CoV-2 virus, has disrupted the lives of almost every person to some degree, and as of November 2021, over 5 million people have lost their lives to the disease worldwide[<xref ref-type="bibr" rid="R23">23</xref>]. SARS-CoV-2 has thus become an essential entity to understand, as our expedient comprehension of this virus translates to the development of therapeutic medicines, such as antiviral drugs and vaccines, for current and future coronavirus infections. One fundamental step towards understanding the function of the virus is to establish what proteins of the host genome each viral protein interacts with. Through modeling the virushost interactome, we can begin to identify the purpose of each viral protein through our functional understanding of the human proteins with which each viral protein interacts. To this end, we have predicted the set of interactions which occur between SARS-CoV-2 and human proteins using PEPPI.</p>
+<p id="P13">Our SARS-CoV-2/Human interactome model consists of 403 interactions whose likelihood ratios were determined to be greater than 1, i.e., interactions which are more likely to be interacting than not. As shown in <xref ref-type="fig" rid="F3">Figure 3a-b</xref>, the SARS-CoV-2 protein which has the highest number of predicted interactions is the Spike protein (86 interactions), followed by the 2’-O-methyltransferase nsp16 (46 interactions), and the RNA polymerase nsp12 (41 interactions). The highest confidence interaction of this network was the Spike/ACE2 interaction (<xref ref-type="fig" rid="F3">Figure 3c</xref>), which is expected given the extensive study of this interaction due to its essential role in viral entry[<xref ref-type="bibr" rid="R24">24</xref>]. PEPPI also correctly predicted Spike to interact with two other host proteins important to viral entry: Furin, a protease which cleaves Spike during entry of SARS-CoV-2 but is not involved in SARS-CoV-1 entry[<xref ref-type="bibr" rid="R25">25</xref>], and TMPRSS2, a cell-surface protease involved in viral entry of both SARS-Cov-2 and SARS-CoV-1[<xref ref-type="bibr" rid="R24">24</xref>]. The PEPPI results also demonstrated the power of structure similarity-based PPI prediction through the prediction of the PARP15-nsp3 interaction (<xref ref-type="fig" rid="F3">Figure 3d</xref>); this interaction was predicted with high confidence (log(LR)=1.435), mainly due to the SPRING module’s high confidence score (35.6). The PARP proteins are known to interact with the nsp3 macrodomain in other coronaviruses[<xref ref-type="bibr" rid="R26">26</xref>], so detection of this interaction in our dataset stands as an important validation.</p>
+<p id="P14">To evaluate PEPPI’s overall performance at recapitulating known biology, we constructed a gold standard dataset from PSICQUIC[<xref ref-type="bibr" rid="R27">27</xref>] of known interactions for comparison. This dataset consisted of 128 interactions, 94 (73%) of which were predicted by PEPPI. 28 of the 34 missed interactions were not predicted to interact in part because of low SEQ score (&lt;0.3); 19 of these 28 interactions were added to PSICQUIC after the PEPPI databases were constructed, which explains why they were not detected by sequence homology-based approaches. In addition, we compared the overlap between our predicted dataset and a high-throughput experimental dataset recently published in [<xref ref-type="bibr" rid="R28">28</xref>]. PEPPI’s predictions only shared one interaction with this dataset (an interaction between MARK3 and ORF9b), but the experimental dataset presents only functional associations due to their use of AP-MS, which is known to pull down entire interacting complexes instead of only the interacting “prey” protein interest. Compared to PEPPI, the dataset in [<xref ref-type="bibr" rid="R28">28</xref>] also misses crucial interactions, such as the interactions involving the Spike protein with ACE2, Furin, and TMPRSS2. In fact, only 3 of the 128 (2%) gold standard interactions we isolated from PSICQUIC are present in this dataset. Thus, even in the presence of a high throughput experimental dataset, PEPPI provides a demonstrably useful complement and reveals many direct physical interactions which would otherwise be missed.</p>
+<p id="P15">Lastly, PEPPI made the potentially significant predictions that nsp3 interacts with the post-translational modifiers NEDD8 and UBD (FAT10). While it is well-documented that the papainlike protease (PLPro) of SARS-CoV-2 nsp3 both deISGylates and deubiquitinates viral proteins to avoid host detection and thus evade immune response[<xref ref-type="bibr" rid="R29">29</xref>], there has been less study of the role of the related, ubiquitin-like, post-transcriptional modifiers NEDD8 and UBD in SARS-CoV-2 disease. NEDD8 tags proteins for degradation, has been implicated in the innate immune response to viruses[<xref ref-type="bibr" rid="R30">30</xref>], and is a target by some viruses for modulation of host immune response[<xref ref-type="bibr" rid="R31">31</xref>]. UBD has been shown to be a ubiquitin-independent and cytokine-inducible modifier targeting proteins for proteasomal degradation[<xref ref-type="bibr" rid="R32">32</xref>] and has additionally been shown to have roles in viral infection defense[<xref ref-type="bibr" rid="R33">33</xref>]. Furthermore, the top structural templates PEPPI found for nsp3/NEDD8 (<xref ref-type="fig" rid="F3">Figure 3e</xref>) and nsp3/UBD (<xref ref-type="fig" rid="F3">Figure 3f</xref>) were a PLPro in complex with free ubiquitin and a PLPro in complex with the ubiquitin-like and innate-immune-modulating protein ISG15, respectively. We therefore hypothesize that SARS-CoV-2 modulates host innate immune response through interaction of nsp3 with NEDD8 and UBD in a similar manner that nsp3 interacts with ubiquitin.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="discussion | conclusions">
+<label>3</label>
+<title>Discussion &amp; Conclusion</title>
+<p id="P16">We have presented a novel PPI prediction pipeline which demonstrates superior performance relative to other approaches. In addition to performance, this method presents a few unique advantages. Firstly, because the structure-based analysis makes use of threading rather than structural alignment, it is much faster than pipelines which need to explicitly model the input chains, while retaining the flexibility of not requiring an input structure. Second, because structure-based analysis is a component of the pipeline, PEPPI can produce rough structural models of the interactions, which can help deepen biological insights such as interface residue determination and can guide follow-up experiments. Finally, because PEPPI is a consensus model, it is not solely dependent on any one methodology to make its predictions; even if all modules classify an interaction with low confidence, if these classifications agree, the final prediction will have reasonable confidence (as we have shown in several examples above). In addition, the consensus classifier is constructed such that if any modules are intentionally excluded or fail to produce a score, a prediction can still be made from the remaining modules.</p>
+<p id="P17">A few shortcomings and assumptions of the pipeline should also be discussed. First, the interaction predictions made in this pipeline are based largely on similarity to known PPIs, and these modules will only detect interactions with similarity to solved structures or to interactions detected in high-throughput screens. Therefore, the method’s performance will depend on the coverage of our knowledge of the existing interaction space, which is currently far from fully comprehensive. However, this knowledge will expand as more interactions are discovered, so the power of the similarity-based method will improve over time. Second, because PEPPI is similarity dependent, if an interaction is predicted between proteins of two given families, all other proteins in those families will likely also be predicted to interact. In this case, interactions involving proteins of the same families can be sorted by LR; the highest rated interaction is the most likely to be true. Finally, this pipeline predicts the capability for proteins to interact regardless of biological context. As a result, it is possible for some of the interactions predicted here to not exist within the context of the cell due to factors such as incompatible subcellular localization or insufficient expression of the proteins of interest <italic>in vivo.</italic> While this additional biological insight can be useful in pruning the interaction space in a proteome-wide interactome modeling study, it is not explicitly considered in PEPPI’s interaction predictions. Therefore, it is worth validating the interactions predicted with this program with more focused small-scale biochemical studies, such as crosslinking mass spectrometry experiments. Despite these shortcomings, the whole proteome interaction networks modeled by PEPPI can help biologists retrieve existing biology and derive novel biology for their system of interest, as we did for the SARS-CoV-2/Human interaction system. Through the understanding of PPI networks on the whole-proteome scale that PEPPI provides, future studies will be able to better understand the systems-level complexity that underpins biological phenomena as well as target individual edges of the network for therapeutic benefit.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<label>4</label>
+<title>Methods</title>
+<sec id="S8">
+<label>4.1</label>
+<title>Pipeline overview</title>
+<p id="P18">The PEPPI pipeline performs predictions through a set of independent modules, each of which score the interaction likelihood in their own way. These modules include a conjoint triad trained neural network, a STRING database lookup module, and two “interology” based modules: a threading-based module using a modified version of SPRING and a sequence-based module using BLAST. Scores from each of these modules are transformed into a ratio of likelihood based on pre-trained score probability distributions, and the final likelihood ratio is calculated as the product of likelihood ratios from each independent module (i.e., the sum of log-likelihood ratios). A full description of the pipeline methodology can be found in the <xref ref-type="supplementary-material" rid="SD1">Supplementary Material</xref>.</p>
+</sec>
+<sec id="S9">
+<label>4.2</label>
+<title>SARS-CoV-2 Virus and human host protein sequence collection</title>
+<p id="P19">The SARS-CoV-2 proteome was collected from the UniProtKB pre-release. Replicase polyprotein 1ab was split into nsp1-16 (excluding nsp11) according to its “chain” regions as described in the “Protein Processing” subsection of its UniProtKB entry; nsp11 was extracted from replicase polyprotein 1a in a similar fashion. As a result, the SARS-CoV-2 sequence set consisted of 31 protein sequences in total. The human proteome, consisting of 20,600 proteins, was also collected from the Uniprot database. All 20600*31=638,600 putative interactions were analyzed with PEPPI; any pairs resulting in a log(LR) greater than 0 were classified as interacting. The “gold standard” dataset is comprised interactions listed in the PSICQUIC database annotated as “direct interaction” as of April 2021 between the proteins of either SARS-CoV-1 or SARS-CoV-2 and human proteins, a total of 128 interactions.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Data</label>
+<media xlink:href="EMS141078-supplement-Supplementary_Data.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66110" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Tables and Methods</label>
+<media xlink:href="EMS141078-supplement-Supplementary_Tables_and_Methods.docx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.wordprocessingml.document" id="N66119" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S10">
+<label>5</label>
+<title>Acknowledgements</title>
+<p>We would like to thank Dr. Gilbert S. Omenn for his consultation and advice in the authorship of this manuscript. Our work was funded by NSF AWD2025426 and NIH AI13467801. The work in this manuscript was performed in part using the Extreme Science and Engineering Discovery Environment (XSEDE), which is supported by the National Science Foundation (ACI1548562).</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Scott</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Bayly</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Abell</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Skidmore</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Small molecules, big targets: Drug discovery faces the protein-protein interaction challenge</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2016</year>
+<fpage>533</fpage>
+<lpage>50</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bryan</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Rocklin</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Bick</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Ford</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Majri-Morrison</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kroll</surname>
+<given-names>AV</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computational design of a synthetic PD-1 agonist</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2021</year>
+<volume>118</volume>
+<elocation-id>e2102164118-e</elocation-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>De novo design of protein peptides to block association of the SARS-CoV-2 spike protein with human ACE2</article-title>
+<source>Aging</source>
+<year>2020</year>
+<volume>12</volume>
+<fpage>11263</fpage>
+<lpage>76</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Snel</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Lehmann</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Bork</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Huynen</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<article-title>STRING: a web-server to retrieve and display the repeatedly occurring neighbourhood of a gene</article-title>
+<source>Nucleic acids research</source>
+<year>2000</year>
+<volume>28</volume>
+<fpage>3442</fpage>
+<lpage>4</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fields</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>High-throughput two-hybrid analysis: The promise and the peril</article-title>
+<source>FEBS Journal</source>
+<year>2005</year>
+<volume>272</volume>
+<fpage>5391</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ilie</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>SPRINT: Ultrafast protein-protein interaction prediction of the entire human interactome</article-title>
+<source>BMC Bioinformatics</source>
+<year>2017</year>
+<volume>18</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pitre</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dehne</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cheetham</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Duong</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Emili</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>PIPE: A protein-protein interaction prediction engine based on the re-occurring short polypeptide sequences between known interacting protein pairs</article-title>
+<source>BMC Bioinformatics</source>
+<year>2006</year>
+<volume>7</volume>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baspinar</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cukuroglu</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Nussinov</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Keskin</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Gursoy</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>PRISM: A web server and repository for prediction of protein-protein interactions and modeling their 3D complexes</article-title>
+<source>Nucleic Acids Research</source>
+<year>2014</year>
+<volume>42</volume>
+<fpage>W285</fpage>
+<lpage>W9</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hosur</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Vinayagam</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Stelzl</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Perrimon</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A computational framework for boosting confidence in high-throughput protein-protein interaction datasets</article-title>
+<year>2012</year>
+<fpage>76</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Garzón</surname>
+<given-names>JI</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Murray</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Shapira</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Petrey</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Honig</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>A computational interactome and functional annotation for the human proteome</article-title>
+<source>eLife</source>
+<year>2016</year>
+<volume>5</volume>
+<fpage>1</fpage>
+<lpage>27</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gong</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Guerler</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Warner</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Integrating Multimeric Threading With High-throughput Experiments for Structural Interactome of Escherichia coli</article-title>
+<source>Journal of molecular biology</source>
+<year>2021</year>
+<volume>433</volume>
+<elocation-id>166944</elocation-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jumper</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pritzel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Green</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Figurnov</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ronneberger</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Highly accurate protein structure prediction with AlphaFold</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>596</volume>
+<fpage>583</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Predicting protein-protein interactions based only on sequences information</article-title>
+<source>Proceedings of the National Academy of Sciences of the United States of America</source>
+<year>2007</year>
+<volume>104</volume>
+<fpage>4337</fpage>
+<lpage>41</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Using support vector machine combined with auto covariance to predict protein-protein interactions from protein sequences</article-title>
+<source>Nucleic Acids Research</source>
+<year>2008</year>
+<volume>36</volume>
+<fpage>3025</fpage>
+<lpage>30</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hashemifar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Neyshabur</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Khan</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Predicting protein-protein interactions through sequence-based deep learning</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>i802</fpage>
+<lpage>i10</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ju</surname>
+<given-names>CJT</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>KW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Multifaceted protein-protein interaction prediction based on Siamese residual RCNN</article-title>
+<edition>14 ed</edition>
+<fpage>i305</fpage>
+<lpage>i14</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sledzieski</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cowen</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Berger</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>D-SCRIPT translates genome to phenome with sequence-based, structure-aware, genome-scale predictions of protein-protein interactions</article-title>
+<source>Cell Systems</source>
+<year>2021</year>
+<volume>12</volume>
+<fpage>969</fpage>
+<lpage>82</lpage>
+<elocation-id>e6</elocation-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Orchard</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ammari</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Aranda</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Breuza</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Briganti</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Broackes-Carter</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The MIntAct project - IntAct as a common curation platform for 11 molecular interaction databases</article-title>
+<source>Nucleic Acids Research</source>
+<year>2014</year>
+<volume>42</volume>
+<fpage>D358</fpage>
+<lpage>D63</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blohm</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Frishman</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Smialowski</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Goebels</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wachinger</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Ruepp</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Negatome 2.0: A database of non-interacting proteins derived by literature mining, manual annotation and protein structure analysis</article-title>
+<source>Nucleic Acids Research</source>
+<year>2014</year>
+<volume>42</volume>
+<fpage>D396</fpage>
+<lpage>400</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guerler</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Govindarajoo</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Mapping monomeric threading to protein-protein structure prediction</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2013</year>
+<volume>53</volume>
+<fpage>717</fpage>
+<lpage>25</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Altschul</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>Gish</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Miller</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Myers</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Lipman</surname>
+<given-names>DJ</given-names>
+</name>
+</person-group>
+<article-title>Basic local alignment search tool</article-title>
+<source>Journal of Molecular Biology</source>
+<year>1990</year>
+<volume>215</volume>
+<fpage>403</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szklarczyk</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gable</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Lyon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Junge</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wyder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Huerta-Cepas</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>STRING v11: Protein-protein association networks with increased coverage, supporting functional discovery in genome-wide experimental datasets</article-title>
+<source>Nucleic Acids Research</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D607</fpage>
+<lpage>D13</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Organization</surname>
+<given-names>WH</given-names>
+</name>
+</person-group>
+<article-title>WHO Coronavirus (COVID-19) Dashboard</article-title>
+<source>WHO Coronavirus (COVID-19) Dashboard With Vaccination Data</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>5</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoffmann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kleine-Weber</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schroeder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Krüger</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Herrler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Erichsen</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Cell Entry Depends on ACE2 and TMPRSS2 and Is Blocked by a Clinically Proven Protease Inhibitor</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>271</fpage>
+<lpage>80</lpage>
+<elocation-id>e8</elocation-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Johnson</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Kalveram</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Lokugamage</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Muruato</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Loss of furin cleavage site attenuates SARS-CoV-2 pathogenesis</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>591</volume>
+<fpage>293</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grunewald</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kuny</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Maejima</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lease</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ferraris</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The coronavirus macrodomain is required to prevent PARP-mediated inhibition of virus replication and enhancement of IFN expression</article-title>
+<source>PLoS Pathogens</source>
+<year>2019</year>
+<volume>15</volume>
+<elocation-id>e1007756-e</elocation-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Aranda</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Blankenburg</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kerrien</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brinkman</surname>
+<given-names>FSL</given-names>
+</name>
+<name>
+<surname>Ceol</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Chautard</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<source>PSICQUIC and PSISCORE: Accessing and scoring molecular interactions</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2011</year>
+<fpage>528</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>KM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>459</fpage>
+<lpage>68</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shin</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Mukherjee</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Grewe</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bojkova</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Baek</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Papain-like protease regulates SARS-CoV-2 viral spread and innate immunity</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>587</volume>
+<fpage>657</fpage>
+<lpage>62</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Han</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Roles of neddylation against viral infections</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2018</year>
+<fpage>292</fpage>
+<lpage>4</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Kumar</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Mehta</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Mishra</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Nayak</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Sunil</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>Role of host-mediated post-translational modifications (PTMS) in RNA virus pathogenesis</source>
+<publisher-name>Multidisciplinary Digital Publishing Institute</publisher-name>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>26</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hipp</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Kalveram</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Raasi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Groettrup</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Schmidtke</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>FAT10, a Ubiquitin-Independent Signal for Proteasomal Degradation</article-title>
+<source>Molecular and Cellular Biology</source>
+<year>2005</year>
+<volume>25</volume>
+<fpage>3483</fpage>
+<lpage>91</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Basler</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Buerger</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Groettrup</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>The ubiquitin-like modifier FAT10 in antigen processing and antimicrobial defense</source>
+<publisher-name>Pergamon</publisher-name>
+<year>2015</year>
+<fpage>129</fpage>
+<lpage>32</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>An illustration of the PEPPI pipeline. This pipeline functions by analyzing a pair of input sequences via a series of independent modules, including structure similarity, sequence similarity, neural network classification, and functional association data. These modules are combined using a naïve Bayesian consensus classifier, which provides the final interaction score as a log-likelihood ratio.</p>
+</caption>
+<graphic xlink:href="EMS141078-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>PEPPI benchmark results.</title>
+<p>(a) 10-fold cross validation AUROC reveals that the full PEPPI pipeline outperforms its component modules: the neural network classifier (CT), the functional association data (STRING), the sequence similarity method (SEQ), the structure similarity method (SPRING), and the non-interaction similarity method (SPRINGNEG). (b) An ROC curve of the performance of PEPPI against PRISM, a structure similarity-based method, SPRINT, a sequence similarity-based method, and PIPR, a deep learning-based method on a balanced testing set. The dotted line represents the performance of random classification. (c) Precision-recall curve of the performance of PEPPI against several other comparable programs on an unbalanced testing set. The dotted line represents the performance of random classification. (d) A superposition of an example dimer model (PDB 3CI0; chain J in red, chain K in blue) on its dimer template structure (PDB 5VTM; chain W in yellow, chain X in cyan).</p>
+</caption>
+<graphic xlink:href="EMS141078-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>A summary of SARS-CoV-2/human interactome prediction.</title>
+<p>(a) A network overview of the full interactome of human-covid protein pairs, with SARS-CoV-2 proteins colored red and human proteins colored blue. (b) A bar chart of the number of predicted interactions involving each SARS-CoV-2 protein. Proteins which were not predicted to have any interactions were excluded. (c) A superposition of a dimer model of the top-ranked SARS-CoV-2 Spike (in red) and Human ACE2 (in blue) interaction on its dimer template structure (PDB 6ACG; chain D in cyan, chain C in yellow). (d) A superposition of a dimer model of the SARS-CoV-2 nsp3 macrodomain (in red) and human PARP15 macrodomain (in blue) on its dimer template structure (PDB 2W2G; chain A in cyan, chain B in yellow). (e) A superposition of a dimer model of a domain of the SARS-CoV-2 nsp3 (in red) and human NEDD8 (in blue) on its dimer template structure (PDB 5WFI; chain C in cyan, chain A in yellow). (f) A superposition of a dimer model of a domain of the SARS-CoV-2 nsp3 (in red) and human UBD (in blue) on its dimer template structure (PDB 6BI8; chain C in cyan, chain A in yellow).</p>
+</caption>
+<graphic xlink:href="EMS141078-f003"/>
+</fig>
+</floats-group>
+</article>

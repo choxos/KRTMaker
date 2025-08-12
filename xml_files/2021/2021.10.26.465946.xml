@@ -1,0 +1,1046 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS139868</article-id>
+<article-id pub-id-type="doi">10.1101/2021.10.26.465946</article-id>
+<article-id pub-id-type="archive">PPR412870</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Multi-label topic classification for COVID-19 literature annotation using an ensemble model based on PubMedBERT</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Tian</surname>
+<given-names>Shubo</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Jinfeng</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Statistics, Florida State University, Tallahassee, USA</aff>
+<author-notes>
+<corresp id="CR1">Contact: <email>Jinfeng@stat.fsu.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>29</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The BioCreative VII Track 5 calls for participants to tackle the multi-label classification task for automated topic annotation of COVID-19 literature. In our participation, we evaluated several deep learning models built on PubMedBERT, a pre-trained language model, with different strategies addressing the challenges of the task. Specifically, multi-instance learning was used to deal with the large variation in the lengths of the articles, and focal loss function was used to address the imbalance in the distribution of different topics. We found that the ensemble model performed the best among all the models we have tested. Test results of our submissions showed that our approach was able to achieve satisfactory performance with an F1 score of 0.9247, which is significantly better than the baseline model (F1 score: 0.8678) and the mean of all the submissions (F1 score: 0.8931).</p>
+</abstract>
+<kwd-group>
+<kwd>
+<italic>multi-label topic classification</italic>
+</kwd>
+<kwd>
+<italic>deep learning</italic>
+</kwd>
+<kwd>
+<italic>pre-trained language model</italic>
+</kwd>
+<kwd>
+<italic>PubMedBERT</italic>
+</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>I</label>
+<title>Introduction</title>
+<p id="P2">The ever-increasing biomedical literature has posed significant challenges for manual curation and categorization. During the COVID-19 pandemic, manual annotation became even more challenging given the number of COVID-19-related articles growing by about 10,000 per month. This rapid growth has significantly increased the burden of manual curation for LitCovid (<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>), a literature database of more than 100,000 COVID-19-related publications. LitCovid is updated daily with new articles identified from PubMed and organized into curated categories, such as treatment, diagnosis, prevention, transmission, etc. Annotating each article with up to eight possible topics has been a bottleneck in the LitCovid curation pipeline. To support manual curation on topic classification, the track 5 of BioCreative VII calls for a community effort to tackle automated topic annotation for COVID-19 literature.</p>
+<p id="P3">LitCovid is used by researchers, healthcare professionals, and the public worldwide to keep up with the latest literature of COVID-19 research. Increasing accuracy of automated topic prediction for COVID-19-related literature would be beneficial to both the curators and all the users. The topic annotation in LitCovid is a standard multi-label classification task that assigns one or more labels to each article. The first batch of documents in LitCovid was annotated manually. To support manual curation on topic classification, Chen et al. (<xref ref-type="bibr" rid="R2">2</xref>) developed eight deep learning models that integrate embeddings encoded by BioBERT (<xref ref-type="bibr" rid="R3">3</xref>) with manually crafted features to predict the probability for topic assignment, one model for each topic. Evaluated on a subset of about 40,000 articles in LitCovid, they were able to achieve an average micro F1 score of 0.81. Jimenez Gutierrez et al. (<xref ref-type="bibr" rid="R4">4</xref>) evaluated a number of models on a LitCovid dataset of 8,000 articles and achieved a micro F1 score of around 0.86 with the best performing model using BioBERT.</p>
+<p id="P4">As a team participating in this task, we evaluated several deep learning models with different architectures based on PubMedBERT (<xref ref-type="bibr" rid="R5">5</xref>), a pre-trained language model based on BERT. Our experiments showed that our approach was able to achieve quite satisfactory result (F1 score: 0.9247) that was significantly better than the performance of ML-Net (<xref ref-type="bibr" rid="R6">6</xref>), the baseline model using a more general and accessible shallow embedding approach (F1 score: 0.8678). Our method also performed significantly better than the mean F1 score of all the submission (0.8931).</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<label>II</label>
+<title>Methods</title>
+<p id="P5">There are three datasets provided for this task. Based on these datasets, we trained and evaluated several deep learning models with different architectures built on PubMedBERT.</p>
+<sec id="S3">
+<label>A</label>
+<title>Datasets</title>
+<p id="P6">The datasets provided for this task included a training dataset of 24,960 articles, a development dataset of 6,239 articles and a test dataset of 2,500 articles. Articles in the datasets contain publicly available metadata of COVID-19-related articles, such as journal names, author names, titles, abstracts, and keywords. Article length vary significantly in terms of the number of sentences in abstracts and the numbers of words in titles and abstracts as shown <xref ref-type="fig" rid="F1">Figure 1</xref> and <xref ref-type="table" rid="T1">Table I</xref>.</p>
+<p id="P7">Each article in the datasets is assigned one or more labels of the 7 topics including Prevention, Treatment, Diagnosis, Mechanism, Case Report, Transmission, and Epidemic Forecasting. <xref ref-type="table" rid="T2">Table II</xref> shows the breakdown of articles by number of labels and the distribution of each topic in the training and development datasets. While every article can be labelled with multiple topics, more than 95% of the articles in the training and development datasets contain only one (67.4%) or two labels (close to 30%). Distribution of each topic varies significantly from topic to topic. The most frequent topic, namely Prevention, is assigned to more than 40% of the articles and consequently has more balanced positive and negative cases. However, the least frequent topic, i.e., Epidemic Forecasting, is only assigned to around 3% of the articles which results in highly imbalanced positive and negative cases.</p>
+</sec>
+<sec id="S4">
+<label>B</label>
+<title>Models</title>
+<p id="P8">The multi-label classification task can be formulated as: given a document <bold>
+<italic>x</italic>
+</bold> in a collection of <bold>
+<italic>X</italic>
+</bold>, <italic>
+<bold>x</bold>
+</italic> ∈ <italic>
+<bold>X</bold>
+</italic>, and a finite set of <italic>m</italic> labels <bold>
+<italic>Y</italic>
+</bold> = {<italic>y</italic>
+<sub>1</sub>, <italic>y</italic>
+<sub>2</sub>, …, <italic>y</italic>
+<sub>
+<italic>j</italic>
+</sub>, …, <italic>y</italic>
+<italic>
+<sub>m</sub>
+</italic>}, assign a set of relevant labels <italic>
+<bold>y</bold>
+</italic> ⊆ <italic>
+<bold>Y</bold>
+</italic> to <bold>
+<italic>x</italic>
+</bold> by learning a classifier <italic>f</italic>: <bold>
+<italic>y</italic>
+</bold> = <italic>f</italic>(<bold>
+<italic>x</italic>
+</bold>).</p>
+<p id="P9">It is more convenient to identify a set of relevant labels <bold>
+<italic>y</italic>
+</bold> with a binary vector <bold>
+<italic>y</italic>
+</bold> = (<italic>y</italic>
+<sub>1</sub>, <italic>y</italic>
+<sub>2</sub>, …, <italic>y</italic>
+<sub>
+<italic>j</italic>
+</sub>, …, <italic>y</italic>
+<sub>
+<italic>m</italic>
+</sub>), where <italic>y</italic>
+<sub>
+<italic>j</italic>
+</sub> = 1 when it is a relevant label and <italic>y</italic>
+<sub>
+<italic>j</italic>
+</sub> = 0 otherwise. Then to learn the classifier <italic>f</italic> becomes to learn a set of classifiers: <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>|</mml:mo>
+<mml:mstyle mathvariant="bold-italic" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P10">Multi-label classification task is usually considered as a difficult task given the complexity of the task requiring assignment of multiple labels to an article in a large label space. In addition, the large variation in article lengths, the lack of information such as missing title or abstract in some articles, and the imbalanced distributions of topics increase the difficulty of the task.</p>
+<p id="P11">To tackle the task, we built several deep learning models with different architectures on top of PubMedBERT, a transformer-based pre-trained BERT (<xref ref-type="bibr" rid="R7">7</xref>) language model. PubMedBERT was pre-trained from scratch with corpus developed from PubMed articles and it consistently outperformed all the other BERT models in most biomedical natural language processing tasks (<xref ref-type="bibr" rid="R5">5</xref>). On top of this model, we applied different strategies to address the aforementioned difficulties. After experimenting with different models trained and validated on the training dataset and evaluated on the development dataset with different strategies, we submitted predictions of five representative models for the test dataset. These five models include: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P12">The <bold>BERTBASE</bold> model is an architecture with the classifiers built directly on top of PubMedBERT. The title and abstract of each article were concatenated and fed into PubMedBERT. The PubMedBERT embedding output was then used by the classifiers for predicting probabilities of the topic labels.</p>
+</list-item>
+<list-item>
+<p id="P13">The <bold>BERTATT</bold> model applies an attention of the PubMedBERT embedding output attending to the topic labels prior to the classifiers. The title and abstract of each article were concatenated and fed into PubMedBERT. The attention representations were computed, aggregated, and fed into the classifiers for topic label probability prediction.</p>
+</list-item>
+<list-item>
+<p id="P14">The <bold>BERTMIL</bold> model uses multi-instance learning to address the issue of large variation in the lengths of the articles, especially for articles with length exceeding the length limit of BERT models. In this model, abstract of each article was split into sentences. Title and the sentences were fed into PubMedBERT to output sentence embeddings which were then aggregated and used for topic label probability prediction.</p>
+</list-item>
+<list-item>
+<p id="P15">The <bold>BERTBASEFOCAL</bold> model replaces the Cross Entropy loss function used in the BERTBASE model with the Focal Loss (<xref ref-type="bibr" rid="R8">8</xref>) function to address the issue of imbalance in distribution of different topics.</p>
+</list-item>
+<list-item>
+<p id="P16">The <bold>ENSEMBLE</bold> model takes the topic label probabilities predicted by different models as input and computes an average of the predicted probabilities of each topic label as the final prediction.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S5">
+<label>C</label>
+<title>Experiment Settings</title>
+<p id="P17">To train and validate the models, we split the training dataset into train and validation datasets at the ratio of 8:2. During the model development process, all models were trained with the train dataset, validated with the validation dataset, and evaluated with the development dataset. The models with best performance on the development dataset were used for prediction of the test dataset.</p>
+<p id="P18">We fine-tuned the hyperparameters on the BERTBASE model and used the set of hyperparameters with best performance for all the models. We set the maximal sequence length at 512 for the models of BERTBASE, BERTATT, BERTBASEFOCAL, and 128 for the BERTMIL model. Each model was trained for maximal 20 epochs with learning rate of 1e-6 and batch size of 4. AdamW was used as the optimizer. The pooled output of the last layer of PubMedBERT was taken as the embedding for each article encoded by the model.</p>
+<p id="P19">Both label-based and instance-based metrics of precision, recall and F1 score were used for evaluation of model performance. Evaluation results were calculated using the evaluation script provided. We used a deep learning model with TF-IDF as input as the baseline for evaluation of the development dataset. The baseline used for evaluation of the test dataset is the ML-Net (6), an end-to-end deep learning framework that combines the label prediction and label decision in the same network for multi-label biomedical text classification tasks.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="results">
+<label>III</label>
+<title>Results</title>
+<p id="P20">Evaluation results of the development dataset and the test dataset are listed in <xref ref-type="table" rid="T3">Table III</xref> and <xref ref-type="table" rid="T4">Table IV</xref> respectively. The ensemble approach consistently produced the highest precision while the BERTBASEFOCAL model produced the highest recall in the label-based and instance-based metrics for both datasets. For F1 score, the ENSEMBLE approach achieved the best label-based micro average score, while the BERTBASEFOCAL model achieved the best label-based macro average score and the best instance-based score for the development dataset. For the test dataset, the ENSEMBLE approach consistently achieved the best F1 score in both label-based and instance-based metrics.</p>
+<p id="P21">When examining the performance for each topic class, our evaluation results of the development dataset showed that more frequent topic classes, such as Prevention and Treatment, had higher scores, while less frequent topic classes, such as Transmission and Epidemic Forecasting, had lower scores.</p>
+</sec>
+<sec id="S7" sec-type="discussion">
+<label>IV</label>
+<title>Discussion</title>
+<p id="P22">In addition to the models and strategies used to produce the submissions, we examined other possible strategies for tackling the challenges of the task. To address the issue of imbalance in distribution of each topic, we evaluated the feasibility of using data augmentation techniques, such as shuffling the order of sentences in abstract and randomly deleting a certain number of words in the article to increase the cases for less frequent topics. We observed that using data augmentation techniques was able to improve the precision score at the cost of decreasing recall for the corresponding topic classes. Further investigation might be worthwhile to achieve a better balance for the strategy.</p>
+<p id="P23">Although our evaluation results showed that multi-instance learning (BERTMIL model) was not able to achieve better performance, training different models for articles with different lengths may have the potential to improve the performance since there is a large variation in the article lengths in the dataset.</p>
+</sec>
+<sec id="S8" sec-type="conclusions">
+<label>V</label>
+<title>Conclusion</title>
+<p id="P24">During our participation of BioCreative VII track 5, we tackled the multi-label topic classification for automated annotation of COVID-19 literature by evaluating several deep learning models of different architectures. Evaluation on the development and test datasets showed consistent results that the ENSEMBLE approach achieved the highest F1 score and precision and the BERTBASEFOCAL model achieved the highest recall in both label-based and instance-based metrics. Compared to the performance of the baseline model, our models were able to achieve significantly better performance. The performance of our models also compared favorably to those of other participating teams.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Allot</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Keep up with the latest coronavirus research</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>193</fpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Allot</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>LitCovid: an open database of COVID-19 literature</article-title>
+<source>Nucleic Acids Res</source>
+<year>2021</year>
+<volume>49</volume>
+<fpage>D1534</fpage>
+<lpage>D1540</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>BioBERT: a pre-trained biomedical language representation model for biomedical text mining</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<elocation-id>btz682</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Jimenez Gutierrez</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Document Classification for COVID-19 Literature</article-title>
+<source>Findings of the Association for Computational Linguistics: EMNLP 2020</source>
+<publisher-name>Association for Computational Linguistics</publisher-name>
+<year>2020</year>
+<fpage>3715</fpage>
+<lpage>3722</lpage>
+<comment>Online</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tinn</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Domain-Specific Language Model Pretraining for Biomedical Natural Language Processing</source>
+<year>2021</year>
+<elocation-id>ArXiv200715779</elocation-id>
+<comment>Cs</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Du</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ML-Net: multi-label classification of biomedical texts with deep neural networks</article-title>
+<source>J Am Med Inform Assoc</source>
+<year>2019</year>
+<volume>26</volume>
+<fpage>1279</fpage>
+<lpage>1285</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Devlin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>M-W</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<source>BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</source>
+<year>2019</year>
+<elocation-id>ArXiv181004805</elocation-id>
+<comment>Cs</comment>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>T-Y</given-names>
+</name>
+<name>
+<surname>Goyal</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Girshick</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Focal Loss for Dense Object Detection</source>
+<year>2018</year>
+<elocation-id>ArXiv170802002</elocation-id>
+<comment>Cs</comment>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>Distributions of (a) number of sentences in the abstracts, (b) number of words in the titles, and (c) number of words in the abstracts in the training, development and test datasets.</title>
+</caption>
+<graphic xlink:href="EMS139868-f001"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table I</label>
+<caption>
+<title>Stateitics of Datasets</title>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr style="border-bottom: solid thin">
+<th align="left" valign="top" colspan="3"/>
+<th align="left" valign="top">Train</th>
+<th align="left" valign="top">Dev.</th>
+<th align="left" valign="top">Test</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top" colspan="3"># of Articles</td>
+<td align="right" valign="top">24,960</td>
+<td align="right" valign="top">6,239</td>
+<td align="right" valign="top">2,500</td>
+</tr>
+<tr>
+<td align="left" valign="top" rowspan="9"># of Words</td>
+<td align="left" valign="top" rowspan="3">Title</td>
+<td align="left" valign="top">Min</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">3</td>
+<td align="right" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">Max</td>
+<td align="right" valign="top">176</td>
+<td align="right" valign="top">101</td>
+<td align="right" valign="top">44</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top">Median</td>
+<td align="right" valign="top">15</td>
+<td align="right" valign="top">15</td>
+<td align="right" valign="top">15</td>
+</tr>
+<tr>
+<td align="left" valign="top" rowspan="3">Abstract</td>
+<td align="left" valign="top">Min</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">0</td>
+</tr>
+<tr>
+<td align="left" valign="top">Max</td>
+<td align="right" valign="top">1,474</td>
+<td align="right" valign="top">1,572</td>
+<td align="right" valign="top">1,121</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top">Median</td>
+<td align="right" valign="top">226</td>
+<td align="right" valign="top">228</td>
+<td align="right" valign="top">246</td>
+</tr>
+<tr>
+<td align="left" valign="top" rowspan="3">Title &amp; Abstract</td>
+<td align="left" valign="top">Min</td>
+<td align="right" valign="top">7</td>
+<td align="right" valign="top">10</td>
+<td align="right" valign="top">9</td>
+</tr>
+<tr>
+<td align="left" valign="top">Max</td>
+<td align="right" valign="top">1,514</td>
+<td align="right" valign="top">1,613</td>
+<td align="right" valign="top">1,134</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top">Median</td>
+<td align="right" valign="top">242</td>
+<td align="right" valign="top">243</td>
+<td align="right" valign="top">262</td>
+</tr>
+<tr>
+<td align="left" valign="top" rowspan="3" colspan="2"># of Sentences in Abstract</td>
+<td align="left" valign="top">Min</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">0</td>
+</tr>
+<tr>
+<td align="left" valign="top">Max</td>
+<td align="right" valign="top">51</td>
+<td align="right" valign="top">71</td>
+<td align="right" valign="top">42</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top">Median</td>
+<td align="right" valign="top">8</td>
+<td align="right" valign="top">8</td>
+<td align="right" valign="top">9</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table II</label>
+<caption>
+<title>Labels of the Traingin and Development Datasets</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" rowspan="2" style="border-right: solid thin"/>
+<th align="center" valign="top" colspan="2" style="border-bottom: solid thin; border-right: solid thin">Training</th>
+<th align="center" valign="top" colspan="2" style="border-bottom: solid thin">Development</th>
+</tr>
+<tr>
+<th align="center" valign="top">Articles</th>
+<th align="center" valign="top" style="border-right: solid thin">Percent</th>
+<th align="center" valign="top">Articles</th>
+<th align="center" valign="top">Percent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="border-bottom: solid thin; border-right: solid thin">Total</td>
+<td align="left" valign="top" style="border-bottom: solid thin">24,960</td>
+<td align="left" valign="top" style="border-bottom: solid thin; border-right: solid thin">100.0%</td>
+<td align="center" valign="top" style="border-bottom: solid thin">6,239</td>
+<td align="left" valign="top" style="border-bottom: solid thin">100.0%</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="5" style="background-color:#BFBFBF; border-bottom: solid thin">
+<bold>By number of labels</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">1</td>
+<td align="right" valign="top">16,827</td>
+<td align="right" valign="top" style="border-right: solid thin">67.4%</td>
+<td align="right" valign="top">4,203</td>
+<td align="right" valign="top">67.4%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">2</td>
+<td align="right" valign="top">7,135</td>
+<td align="right" valign="top" style="border-right: solid thin">28.6%</td>
+<td align="right" valign="top">1,839</td>
+<td align="right" valign="top">29.5%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">3</td>
+<td align="right" valign="top">860</td>
+<td align="right" valign="top" style="border-right: solid thin">3.4%</td>
+<td align="right" valign="top">168</td>
+<td align="right" valign="top">2.7%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">4</td>
+<td align="right" valign="top">121</td>
+<td align="right" valign="top" style="border-right: solid thin">0.5%</td>
+<td align="right" valign="top">24</td>
+<td align="right" valign="top">0.4%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">5</td>
+<td align="right" valign="top">17</td>
+<td align="right" valign="top" style="border-right: solid thin">0.1%</td>
+<td align="right" valign="top">5</td>
+<td align="right" valign="top">0.1%</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="5" style="background-color:#BFBFBF; border-bottom: solid thin; border-top: solid thin">
+<bold>By different labels</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Prevention</td>
+<td align="right" valign="top">11,102</td>
+<td align="right" valign="top" style="border-right: solid thin">44.5%</td>
+<td align="right" valign="top">2,750</td>
+<td align="right" valign="top">44.1%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Treatment</td>
+<td align="right" valign="top">8,717</td>
+<td align="right" valign="top" style="border-right: solid thin">34.9%</td>
+<td align="right" valign="top">2,207</td>
+<td align="right" valign="top">35.4%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Diagnosis</td>
+<td align="right" valign="top">6,193</td>
+<td align="right" valign="top" style="border-right: solid thin">24.8%</td>
+<td align="right" valign="top">1,546</td>
+<td align="right" valign="top">24.8%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Mechanism</td>
+<td align="right" valign="top">4,438</td>
+<td align="right" valign="top" style="border-right: solid thin">17.8%</td>
+<td align="right" valign="top">1,073</td>
+<td align="right" valign="top">17.2%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Case Report</td>
+<td align="right" valign="top">2,063</td>
+<td align="right" valign="top" style="border-right: solid thin">8.3%</td>
+<td align="right" valign="top">482</td>
+<td align="right" valign="top">7.7%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Transmission</td>
+<td align="right" valign="top">1,088</td>
+<td align="right" valign="top" style="border-right: solid thin">4.4%</td>
+<td align="right" valign="top">256</td>
+<td align="right" valign="top">4.1%</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Epidemic Forecasting</td>
+<td align="right" valign="top">645</td>
+<td align="right" valign="top" style="border-right: solid thin">2.6%</td>
+<td align="right" valign="top">192</td>
+<td align="right" valign="top">3.1%</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table III</label>
+<caption>
+<title>Evaluation Results of the Development Dataset</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" style="border-right: solid thin">Models</th>
+<th align="center" valign="top" style="border-right: solid thin">P</th>
+<th align="center" valign="top" style="border-right: solid thin">R</th>
+<th align="center" valign="top">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin">
+<bold>Label-based micro avg</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9119</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8991</td>
+<td align="center" valign="top">0.9055</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9092</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8974</td>
+<td align="center" valign="top">0.9033</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9026</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8921</td>
+<td align="center" valign="top">0.8973</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9086</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.9058</bold>
+</td>
+<td align="center" valign="top">0.9072</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.9183</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.8982</td>
+<td align="center" valign="top" style="border-bottom: solid thin">
+<bold>0.9081</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">TF-IDF</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9029</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8421</td>
+<td align="center" valign="top">0.8715</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin; border-top: solid thin">
+<bold>Label-based macro avg</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8703</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8488</td>
+<td align="center" valign="top">0.8590</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8651</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8395</td>
+<td align="center" valign="top">0.8515</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8630</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8333</td>
+<td align="center" valign="top">0.8470</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8686</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.8563</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.8620</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.8805</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.8408</td>
+<td align="center" valign="top" style="border-bottom: solid thin">0.8592</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">TF-IDF</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8818</td>
+<td align="center" valign="top" style="border-right: solid thin">0.7371</td>
+<td align="center" valign="top" style="border-right: solid thin">0.7962</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin; border-top: solid thin">
+<bold>Instance-based</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9299</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9253</td>
+<td align="center" valign="top">0.9276</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9281</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9237</td>
+<td align="center" valign="top">0.9259</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9184</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9182</td>
+<td align="center" valign="top">0.9183</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9288</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.9308</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.9298</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.9330</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.9250</td>
+<td align="center" valign="top" style="border-bottom: solid thin">0.9290</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">TF-IDF</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8901</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8724</td>
+<td align="center" valign="top">0.8812</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table IV</label>
+<caption>
+<title>Evaluation Results of the Test Dataset</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" style="border-right: solid thin">Models</th>
+<th align="center" valign="top" style="border-right: solid thin">P</th>
+<th align="center" valign="top" style="border-right: solid thin">R</th>
+<th align="center" valign="top">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin">
+<bold>Label-based micro avg</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9251</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8814</td>
+<td align="center" valign="top">0.9027</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9284</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8861</td>
+<td align="center" valign="top">0.9067</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9141</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8803</td>
+<td align="center" valign="top">0.8969</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9238</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.8880</bold>
+</td>
+<td align="center" valign="top">0.9055</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.9334</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.8841</td>
+<td align="center" valign="top" style="border-bottom: solid thin">
+<bold>0.9081</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Baseline (ML-Net)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8756</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8142</td>
+<td align="center" valign="top">0.8437</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin; border-top: solid thin">
+<bold>Label-based macro avg</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8979</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8328</td>
+<td align="center" valign="top">0.8577</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9062</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8330</td>
+<td align="center" valign="top">0.8636</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8917</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8347</td>
+<td align="center" valign="top">0.8518</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9035</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.8394</bold>
+</td>
+<td align="center" valign="top">0.8635</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.9204</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.8345</td>
+<td align="center" valign="top" style="border-bottom: solid thin">
+<bold>0.8670</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Baseline (ML-Net)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8364</td>
+<td align="center" valign="top" style="border-right: solid thin">0.7309</td>
+<td align="center" valign="top">0.7655</td>
+</tr>
+<tr>
+<td align="left" valign="top" colspan="4" style="background-color:#BFBFBF; border-bottom: solid thin; border-top: solid thin">
+<bold>Instance-based</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9358</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9095</td>
+<td align="center" valign="top">0.9225</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTATT</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9356</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9131</td>
+<td align="center" valign="top">0.9242</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTMIL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9218</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9062</td>
+<td align="center" valign="top">0.9139</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">BERTBASEFOCAL</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9337</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.9143</bold>
+</td>
+<td align="center" valign="top">0.9239</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin; border-bottom: solid thin">ENSEMBLE</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">
+<bold>0.9380</bold>
+</td>
+<td align="center" valign="top" style="border-right: solid thin; border-bottom: solid thin">0.9117</td>
+<td align="center" valign="top" style="border-bottom: solid thin">
+<bold>0.9247</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Baseline (ML-Net)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8849</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8514</td>
+<td align="center" valign="top">0.8678</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

@@ -22,14 +22,14 @@ def example_get_statistics():
 
 def example_get_recent_papers():
     """Example: Get papers from recent years only"""
-    print("\n📅 Example: Getting papers from 2024-2025")
+    print("\n📅 Example: Getting papers from 2024-2026")
     
     fetcher = EuropePMCFetcher()
     
-    # Get papers from just 2024-2025 (without limits = ALL papers)
+    # Get papers from just 2024-2026 (without limits = ALL papers)
     papers = fetcher.search_all_biorxiv_papers_by_year(
         start_year=2024, 
-        end_year=2025
+        end_year=2026
         # No limit = get ALL papers from these years
     )
     
@@ -65,7 +65,7 @@ def example_get_all_papers():
     print("```")
     
     print("\n📈 Expected results based on statistics:")
-    stats = {2020: 2897, 2021: 2765, 2022: 3848, 2023: 4063, 2024: 3534, 2025: 2298}
+    stats = {2020: 2897, 2021: 2765, 2022: 3848, 2023: 4063, 2024: 3534, 2025: 2298, 2026: 1850}
     total = sum(stats.values())
     
     for year, count in stats.items():

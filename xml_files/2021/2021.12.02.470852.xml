@@ -1,0 +1,3852 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141073</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.02.470852</article-id>
+<article-id pub-id-type="archive">PPR428513</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Post-Translational Modifications Optimize the Ability of SARS-CoV-2 Spike for Effective Interaction with Host Cell Receptors</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Kapoor</surname>
+<given-names>Karan</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Chen</surname>
+<given-names>Tianle</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Tajkhorshid</surname>
+<given-names>Emad</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<aff id="A1">Theoretical and Computational Biophysics Group, NIH Center for Macromolecular Modeling and Bioinformatics, Beckman Institute for Advanced Science and Technology, Department of Biochemistry, and Center for Biophysics and Quantitative Biology, University of Illinois at Urbana-Champaign, Urbana, IL 61801, USA</aff>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<email>emad@illinois.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>03</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">SARS-CoV2 spike glycoprotein is prime target for vaccines and for diagnostics and therapeutic antibodies against the virus. While anchored in the viral envelope, for effective virulance, the spike needs to maintain structural flexibility to recognize the host cell surface receptors and bind to them, a property that can heavily hinge upon the dynamics of the unresolved domains, most prominently the stalk. Construction of the complete, membrane-bound spike model and the description of its dynamics remain critical steps in understanding the inner working of this key element in viral infection. Using a hybrid approach, combining homology modeling, protein-protein docking and MD simulations, guided by biochemical and glycomics data, we have developed a full-length, membrane-bound, palmitoylated and fully-glycosylated spike structure in a native membrane. Multi-microsecond MD simulations of this model, the longest known trajectory of the full-spike, reveals conformational dynamics employed by the protein to explore the crowded surface of the host cell. In agreement with cryoEM, three flexible hinges in stalk allow for global conformational heterogeneity of spike in the fully-glycosyslated system mediated by glycan-glycan and glycan-lipid interactions. Dynamical range of spike is considerably reduced in its non-glycosylated form, confining the area explored by the spike on the host cell surface. Furthermore, palmitoylation of the membrane domain amplify the local curvature that may prime the fusion. We show that the identified hinge regions are highly conserved in SARS coronaviruses, highlighting their functional importance in enhancing viral infection, and thereby provide novel points for discovery of alternative therapeutics against the virus.</p>
+</abstract>
+<kwd-group>
+<kwd>Spike protein</kwd>
+<kwd>coronaviruses</kwd>
+<kwd>structural dynamics</kwd>
+<kwd>glycosylation</kwd>
+<kwd>molecular dynamics</kwd>
+<kwd>lipid bilayer</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">The pandemic caused by SARS-CoV-2 continues to impact nearly all aspects of human lives across the globe.<sup>
+<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>
+</sup> SARS-CoV-2 belongs to the beta coronavirus genus, same as SARS-CoV and MERS-CoV responsible for the severe acute respiratory syndrome outbreak in 2003 and Middle East respiratory syndrome in 2012, respectively.<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>
+</sup> The first step in viral entry and infection in SARS-CoV-2, and in other coronaviruses in general, is the binding of its extended spike glycoproteins located on the viral envelope to specific human cell surface receptors.<sup>
+<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R6">6</xref>
+</sup> These envelope spike proteins contain all key components necessary for the infection of human cells; after binding to the surface receptors they initiate the fusion of the io viral and human membranes and the subsequent release of the viral genome into the host cell.<sup>
+<xref ref-type="bibr" rid="R7">7</xref>
+</sup> Characterizing the mechanism of action of the spike protein thus remains key to our understanding of the critical steps involved in viral infection, paving way for development of novel therapeutics against the virus.</p>
+<p id="P3">Major efforts have been spent recently in characterizing the structural features of the spike, and as such, quite a few SARS-CoV-2 spike cryo-EM structures have been resolved.<sup>
+<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R15">15</xref>
+</sup> Though providing essential information on the structural details of the spike globular domain (spike head), which contains the receptor-binding domain (RBD) recognizing and binding to the ACE2 host cell receptors, <sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup> the resolved structures are still missing a number of functionally important regions in the full spike (<xref ref-type="fig" rid="F1">Fig. 1A</xref>). These include the highly conserved fusion-peptide segment involved in initiating the fusion of the viral and host cell membranes,<sup>
+<xref ref-type="bibr" rid="R16">16</xref>,<xref ref-type="bibr" rid="R17">17</xref>
+</sup> the stalk heptad repeat 2 (HR2) domain undergoing refolding during the membrane fusion,<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup> and the transmembrane (TM) domain containing multiple palmitoylation sites shown to stabilize the spike in the viral envelope and thus essential for assembly and activity in other viruses.<sup>
+<xref ref-type="bibr" rid="R19">19</xref>,<xref ref-type="bibr" rid="R20">20</xref>
+</sup> The structures also lack critical information about the glycosylation of different residues, known to be essential in mediating protein folding, shaping viral tropism, as well as shielding the virus from immune recognition.<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> Additionally, the assembly and budding of the virus are known to take place in the endoplasmic reticulum–Golgi intermediate compartment (ERGIC),<sup>
+<xref ref-type="bibr" rid="R22">22</xref>,<xref ref-type="bibr" rid="R23">23</xref>
+</sup> an environment that is not taken into account in any of the above cryo-EM studies which have resolved only the ectodomain structure stabilized using C-terminal foldon trimerization motif.<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup> Further resolution of these structural and environmental details thus becomes a necessary step to study the behavior of native spike proteins in a physiological context.</p>
+<p id="P4">Computational simulations offer an effective technique for modeling complex systems like the spike at a detailed level. As such, recent efforts in applying classical molecular dynamics (MD) simulations to the resolved structures of the spike head<sup>
+<xref ref-type="bibr" rid="R24">24</xref>–<xref ref-type="bibr" rid="R27">27</xref>
+</sup> as well as constructed full-length spike models<sup>
+<xref ref-type="bibr" rid="R28">28</xref>–<xref ref-type="bibr" rid="R30">30</xref>
+</sup> have provided powerful insights into various functionally relevant features, e.g., how glycans can shield the spike from the immune system and neutralizing antibodies,<sup>
+<xref ref-type="bibr" rid="R24">24</xref>,<xref ref-type="bibr" rid="R25">25</xref>,<xref ref-type="bibr" rid="R29">29</xref>,<xref ref-type="bibr" rid="R30">30</xref>
+</sup> or the intra-domain dynamics of the spike head that may facilitate the RBD to switch between the ‘up’ and ‘down’ (active or inactive) conformations,<sup>
+<xref ref-type="bibr" rid="R26">26</xref>,<xref ref-type="bibr" rid="R27">27</xref>,<xref ref-type="bibr" rid="R29">29</xref>
+</sup> How-ever, we are still far from fully understanding how the global dynamics of the spike may contribute to its function, specifically in relation to effectively locating its target receptor in crowded cellular environments. So far, characterization of the effect of the spike glycosylation has been focused on their global shielding effects, leaving the possible roles that the glycans may play in the protein’s conformational dynamics unexplored. Furthermore, the role of palmitoylations present in the TM/endodomain, known to participate in the modulation of the membrane curvature and in mediating cell fusion in other viruses,<sup>
+<xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R34">34</xref>
+</sup> also remains lacking in SARS-CoV-2.</p>
+<p id="P5">To obtain further insights into the workings of this important component of the virus machinery, we aimed to construct a full-length, membrane-embedded spike for investigation of its conformational dynamics at the atomic-scale using MD simulations. In the first step, we use a hybrid approach, combining homology modeling, protein-protein docking and MD simulations of the modeled regions, with the available experimental data, <sup>
+<xref ref-type="bibr" rid="R35">35</xref>–<xref ref-type="bibr" rid="R38">38</xref>
+</sup> to develop a full-length, palmitoylated and fully-glycosylated spike. After validating the modeled parts, multi-microsecond MD simulations of the full-length spike, embedded in a lipid bilayer of composition derived from ERGIC, were used to characterize global dynamics and inter-domain motions, focusing specifically on the potential role of glycans in these processes. Control, multi-microsecond simulations of the non-glycosyslated spike highlighted the importance of the glycans in modulating the global motion of the spike. We also characterized the specific role played by palmitoylations in modulating the membrane curvature, potentially regulating the membrane fusion with the host cell. This study provides key insight into the dynamics used by the spike to sample the crowded surface of its host cell and the direct role of the glycans in regulating this process while successfully allowing the virus to evade the host immune response.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Modeling of full-length spike</title>
+<p id="P6">Topologically, the spike can be divided into two main regions - the spike head, which includes the RBD that binds to the host cell receptor, and an extended stalk consisting of a short spike neck, the HR2 domain, and the TM domain tethering the spike to the viral envelope. In addition, the spike also contains a cysteine-rich, disordered C-terminal region inside the envelope. Since the experimental structures have only been resolved for the spike head, as the first step, we model the missing regions to construct a full-length spike structure, which is then palmitoylated at the TM/endodomain and fully-glycosylated, before performing MD simulations. The different steps involved in this process are described below.</p>
+<sec id="S4">
+<title>Constructing missing regions of the spike head</title>
+<p id="P7">The recent cryo-EM structures of the spike head don’t provide coordinates for a number of missing regions including a short peptide segment called the fusion peptide, known to to be important for membrane binding and insertion, <sup>
+<xref ref-type="bibr" rid="R16">16</xref>,<xref ref-type="bibr" rid="R17">17</xref>
+</sup> as well as a number of loops. These missing regions were generated using either template- or fragment-based modeling as described below. Firstly, the cryo-EM structures of the spike head from SARS-CoV-2 (PDB: 6VYB and 6VXX<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>), SARS-CoV (PDB: 5X58,<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup> 5XLR,<sup>
+<xref ref-type="bibr" rid="R40">40</xref>
+</sup> 6CRW<sup>
+<xref ref-type="bibr" rid="R41">41</xref>
+</sup>) and MERS-CoV (PDB: 6Q04<sup>
+<xref ref-type="bibr" rid="R42">42</xref>
+</sup>), along with the SARS-CoV-2 RBD structure in complex with human receptor ACE2 (PDB: 6M17<sup>
+<xref ref-type="bibr" rid="R43">43</xref>
+</sup>) were aligned and using sequence- and structure-based alignment in MOE.<sup>
+<xref ref-type="bibr" rid="R44">44</xref>
+</sup> The missing regions were then constructed in MOE by grafting a suitable template region from the aligned structures and using local superimposition based on the flanking residues of the template region. Residues in the grafted templates from other CoV structures were mutated back to those in the SARS-CoV-2 sequence. Missing loop regions in the spike head without a suitable template were constructed using Rosetta ab-initio fragment assembly in the Robetta protein structure prediction server.<sup>
+<xref ref-type="bibr" rid="R45">45</xref>,<xref ref-type="bibr" rid="R46">46</xref>
+</sup>
+</p>
+</sec>
+<sec id="S5">
+<title>Modeling the neck and the HR2 domain</title>
+<p id="P8">Due to lack of a suitable template, the spike neck was modeled using ab-initio modeling in Robetta. The HR2 domain was homology-modeled using the NMR-resolved structure of homologous SARS-CoV (PDB: 2FXP<sup>
+<xref ref-type="bibr" rid="R47">47</xref>
+</sup>) as the template in MOE. These modeled regions were validated against secondary structure predictions by JPred4.<sup>
+<xref ref-type="bibr" rid="R48">48</xref>
+</sup>
+</p>
+</sec>
+<sec id="S6">
+<title>Developing a trimeric TM model</title>
+<p id="P9">The structural information about the TM region of SARS-CoV-2 spike, which is highly conserved among coronaviruses and known to play a role in the spike assembly and stabilization, <sup>
+<xref ref-type="bibr" rid="R19">19</xref>,<xref ref-type="bibr" rid="R49">49</xref>
+</sup> is limited, as no structure for this domain has been resolved. The available structure from the HIV virus displays a low sequence homology, making it unsuitable for template-based modeling.<sup>
+<xref ref-type="bibr" rid="R50">50</xref>
+</sup> The TM domian of SARS-CoV-2 was thus built in an ab initio manner. Firstly, the location of the TM region in the spike sequence was predicted using TMHMM, <sup>
+<xref ref-type="bibr" rid="R51">51</xref>
+</sup> a bioinformatics-based approach for predicting membrane spanning regions in protein sequences. Using the predicted TM sequence, a TM helix monomer was constructed in MOE. The monomer was then placed in a membrane patch using CHARMM-GUI<sup>
+<xref ref-type="bibr" rid="R52">52</xref>,<xref ref-type="bibr" rid="R53">53</xref>
+</sup> with a lipid composition based on the lipoprofiles of the ERGIC, <sup>
+<xref ref-type="bibr" rid="R22">22</xref>,<xref ref-type="bibr" rid="R54">54</xref>
+</sup> where coronaviruses assemble.<sup>
+<xref ref-type="bibr" rid="R23">23</xref>
+</sup> The specific lipid compositions of the two leaflets are provided in <xref ref-type="supplementary-material" rid="SD4">Table S1</xref>. After solvating the system, 1,000 minimization steps and 100 ns equilibration were performed under NPT conditions to relax the monomeric structure in the membrane. Next, in order to construct the trimeric assembly of the TM domain, multiple trimeric configurations of the TM helix were generated using <monospace>Multimer Docking</monospace> in ClusPro,<sup>
+<xref ref-type="bibr" rid="R55">55</xref>
+</sup> a fast Fourier transformbased, rigid-body docking method. Briefly, a total of 10<sup>9</sup> docking models were generated out of which a subset of 10<sup>3</sup> models were selected based on the predicted binding-energy score of Cluspro. We then clustered these models using RMSD and ranked them according to their populations. The models in the top 10 clusters were visually inspected for the expected symmetry between the individual TM monomers and their membrane orientations, and the two best trimeric TM configurations were selected for additional refinement in MD simulations.</p>
+<p id="P10">The two selected trimeric TM configurations were similarly embedded in the membrane, solvated, energy-minimized, and equilibrated for 200 ns each. The stability of these models was evaluated by calculating the following metrics: i) RMSD of the TM domain with respect to the starting structure using <italic>C<sub>α</sub>
+</italic> atoms, ii) TM tilt/inclination, which was measured as the angle between the third principal axis of the moment of inertia of the heavy atoms in each TM monomer and that of the whole TM trimer, and iii) coordination number (<monospace>coordNum</monospace> implemented in the collective variables (COLVARS) module<sup>
+<xref ref-type="bibr" rid="R56">56</xref>,<xref ref-type="bibr" rid="R57">57</xref>
+</sup> of VMD<sup>
+<xref ref-type="bibr" rid="R58">58</xref>
+</sup>) quantifying the number of heavy atom pairs within a cutoff distance, between each TM monomer and the other two TM monomers, using a half-contact value of d<sub>0</sub>=4.5 Å. Here, for <italic>d</italic> ≪ <italic>d</italic>
+<sub>0</sub> the contact value is close to 1, at <italic>d</italic> = <italic>d</italic>
+<sub>0</sub> the value is 0.5, and at <italic>d</italic> » <italic>d</italic>
+<sub>0</sub> the value ~0. The total contact is then calculated by summing over all heavy-atom pairs in the two groups. The most stable TM trimeric conformation thus identified using the above three structural metrics was then used to construct the full-length spike structure.</p>
+</sec>
+<sec id="S7">
+<title>Constructing the C-terminal region</title>
+<p id="P11">The C-terminal region, located in the lumen of the viral envelope, is predicted to be intrinsically disordered, through secondary structure predictions by JPred4, and does not have a suitable template structure. We used Robetta to generate multiple ab intio models of this region. From these, a model was selected based on its spatial arrangement with respect to the TM trimeric domain, namely, a model without any steric clashes when connected to the membrane-inserted TM trimer.</p>
+</sec>
+<sec id="S8">
+<title>Assembling the full-length spike</title>
+<p id="P12">The structure of the full-length spike was constructed by assembling together the spike head and the individually constructed domains of the stalk region. The structures of the individual domains were aligned using VMD, with the sequential gaps between them ranging between 3-5 residues, which were filled using loop modeling in MODELLER. <sup>
+<xref ref-type="bibr" rid="R59">59</xref>
+</sup>
+</p>
+</sec>
+<sec id="S9">
+<title>Spike glycosylation and palmitoylations</title>
+<p id="P13">The surface of the SARS-CoV-2 spike is known to be extensively glycosylated, 37 but structural information on this feature is by and large missing from the available structures. Recent mass spectrometry studies have successfully identified both the spike’s glycosylation sites as well as their specific chemical compositions. <sup>
+<xref ref-type="bibr" rid="R36">36</xref>,<xref ref-type="bibr" rid="R37">37</xref>
+</sup> Utilizing this information, we added a total of 22 N-glycans and 1 O-glycan to each of the spike monomers (<xref ref-type="supplementary-material" rid="SD1">Table S2</xref>).</p>
+<p id="P14">SARS-CoV-2 spike is also known to be palmitoylated at the endodomain, <sup>
+<xref ref-type="bibr" rid="R35">35</xref>
+</sup> but its specific palmitoylation residues have not been determined. Since the cysteine-rich endodomain of the the SARS-CoV spike shares ~95% sequence identity with the SARS-CoV-2 spike, we used the palmitoylation data from the mutagenesis analysis of the cysteine clusters in the former<sup>
+<xref ref-type="bibr" rid="R60">60</xref>
+</sup> as a reference for palmoytilation of the SARS-CoV-2 spike. Thus, we adopted 3 palmitoylation sites (residues 1,236, 1,240 and 1,241) in the first two cysteine-rich clusters of the C-terminal region in each spike monomer and covalently linked palmitoyl groups to them.</p>
+</sec>
+</sec>
+<sec id="S10">
+<title>MD simulations of membrane-bound spike</title>
+<p id="P15">In order to probe the conformational dynamics of the entire spike as well as the motions displayed by the individual domains, we carried out MD simulations of the full-length, membrane-embedded spike structure, both in glycosylated and non-glycosylated forms. The following sections provide more details on the simulation system construction and the MD protocol used.</p>
+<sec id="S11">
+<title>System preparation</title>
+<p id="P16">The final membrane-embedded, full-length spike system was prepared with the CHARMM-GUI webserver. <sup>
+<xref ref-type="bibr" rid="R52">52</xref>,<xref ref-type="bibr" rid="R53">53</xref>
+</sup> 22 N-glycosylations and 1 O-glycosylation were added to each spike monomer using <monospace>Glycan Reader &amp; Modeler</monospace> in CHARMM-GUI.<sup>
+<xref ref-type="bibr" rid="R28">28</xref>,<xref ref-type="bibr" rid="R61">61</xref>
+</sup> Three palmitic acid tails were also added to cysteine residues 1,236, 1,240 and 1,241 in the endodomain of each monomer. A total of 15 disulfide bonds were introduced between specific cysteine pairs (15-136, 131-166, 291-301, 336-361, 379-432, 391-525, 480-488, 538-590, 617-649, 662-671, 738-760, 743-749, 840-851, 1,032-1,043 and 1,082-1,126). The protonation states of titratable residues were set using PROPKA.<sup>
+<xref ref-type="bibr" rid="R62">62</xref>,<xref ref-type="bibr" rid="R63">63</xref>
+</sup> Following this, the spike protein was inserted into a lipid bilayer with ERGIC composition described above.<sup>
+<xref ref-type="bibr" rid="R22">22</xref>,<xref ref-type="bibr" rid="R54">54</xref>
+</sup> The system was then solvated with water and ionized with 0.15 M NaCl, resulting in a simulation system with approximate dimensions of 250 × 250 × 390 A<sup>3</sup> with ~ 2.3 million atoms.</p>
+</sec>
+<sec id="S12">
+<title>MD simulations</title>
+<p id="P17">MD simulations were performed using NAMD2, a highly scalable MD engine. <sup>
+<xref ref-type="bibr" rid="R64">64</xref>,<xref ref-type="bibr" rid="R65">65</xref>
+</sup> The CHARMM36m force field was used to represent the proteins, lipids, glycosylations, palmitoylations, and ions, <sup>
+<xref ref-type="bibr" rid="R66">66</xref>,<xref ref-type="bibr" rid="R67">67</xref>
+</sup> and the TIP3P model was used for water.<sup>
+<xref ref-type="bibr" rid="R68">68</xref>
+</sup> The simulations were performed as an NPT ensemble with the temperature and pressure maintained at 310 K and 1 bar using Langevin thermostat and barostat,<sup>
+<xref ref-type="bibr" rid="R69">69</xref>,<xref ref-type="bibr" rid="R70">70</xref>
+</sup> respectively. The SHAKE algorithm was used to constrain all bonds with hydrogen atoms.<sup>
+<xref ref-type="bibr" rid="R71">71</xref>
+</sup> For the calculation of van der Waals interactions, a pairlist distance of 13.5 Å, a switching distance of 12 Å, and a cuoff of 10 Å were used. The Particle mesh Ewald (PME) method under periodic boundary conditions was utilized for the calculation of electrostatic interactions and forces.<sup>
+<xref ref-type="bibr" rid="R72">72</xref>
+</sup>
+</p>
+<p id="P18">The system was equilibrated in 6 steps. In the first step, protein backbone and side chain heavy atoms were restrained using harmonic potentials with force constants of 10 and 5 kcal/mol/Å<sup>2</sup>, respectively, while the system was minimized for 10,000 timesteps using the steepest descent algorithm, followed by 100 ps of MD simulation. The modeled loop regions in the spike head and the linker regions connecting the different domain in the stalk were excluded from the restraints in this step to allow their adjustment. The restraints on the protein were sequentially reduced to half in each subsequent equilibration step, and the system was further equilibrated for 2 ns in each step. Additionally, coordinates of the lipid head group heavy atoms were restrained along the <italic>z</italic> axis (membrane normal) in order to maintain the membrane thickness during the whole equilibration phase with decreasing force constants from an initial value of 5 to 0.1 kcal/mol/Å<sup>2</sup> over the 6 equilibration steps. The first 3 equilibration steps were carried out using a timestep of 1 fs and the subsequent steps and the production runs with a timestep of 2 fs. After the equilibration phase, all the restraints were removed, and a production run was carried out for 5 <italic>μ</italic>s.</p>
+<p id="P19">As a control, full-length spike without glycosylations and palmitoylations was similarly prepared, embedded in an ERGIC-like lipid bilayer, equilibrated, and then simulated for 5 <italic>μ</italic>s.</p>
+</sec>
+</sec>
+<sec id="S13">
+<title>Analysis</title>
+<p id="P20">We first evaluated the structural stability of the spike over the course of the MD simulations, specially in the modeled TM domain. The global conformational dynamics of the spike protein obtained from the simulations were characterized in terms of the bending and twisting motions of the spike head with respect to the different domains in the stalk region. Additionally, the potential role of glycosylation in modulating these motions was analyzed in terms of direct interactions with the lipid bilayer as well as contacts formed between the glycans at the interfaces of different domains and the lipids. Finally, we also investigated the potential effect of palmoytilations on SARS-CoV-2 spike in modulating the membrane curvature.</p>
+<sec id="S14">
+<title>Stability of the spike domains</title>
+<p id="P21">The internal RMSD of different spike domains was calculated by superimposing the trajectory with respect to the starting structure of the respective domain using <italic>C<sub>α</sub>
+</italic> atoms. Furthermore, we characterized the stability of the modeled TM domain by calculating the following: i) TM tilt (described earlier for the evaluation of the TM domain models). ii) TM self-rotation which is calculated as the angle between the first principal axis of the moment of inertia of the heavy atoms in each TM monomer with respect to its equilibrated configuration, and iii) residue contact map between each TM monomer and the other two, calculated for Cα atoms and using a half-contact distance of 4 Å.</p>
+</sec>
+<sec id="S15">
+<title>Global structural dynamics</title>
+<p id="P22">The global conformational dynamics of the spike protein were characterized in terms of the orientational changes in the spike head with respect to the different stalk domains. For this, the trajectory was separately aligned using either the spike neck, the HR2 domain, or the TM domain, and the motion of the spike head was quantified with respect to the superimposed region in terms of the i) head bend, i.e., bending motion of the spike head, ii) head twist, i.e., twisting motion of the spike head in the <italic>xy</italic> plane, and iii) head distance to the superimposed region. For the calculation of the angles, specific vector representations were introduced for different domains as described below (see <xref ref-type="supplementary-material" rid="SD4">Fig. S1</xref>). For the calculation of the head bend, the spike head was represented by a vector connecting the <italic>C<sub>α</sub>
+</italic> atoms of the bottom and top residues of the central helices (i.e., residues 986 to 1,034), and the angle was calculated with respect to its initial position. For the calculation of the head twist, the top of the spike head was first approximated by a triangle with the <italic>C<sub>α</sub>
+</italic> atoms of residues 146 in the 3 spike monomers as vertices. The rotation of this triangle (quantified as the angle of one of its sides with regard to the initial position) was used as the twist angle. The head distance was calculated between the centroid of the triangle described above and the <italic>C<sub>α</sub>
+</italic> atom of the bottom residues of the different stalk domains used for superimposition (residue 1159 for the spike neck, residue 1204 for the HR2 domain, and residue 1236 for the TM domain).</p>
+</sec>
+<sec id="S16">
+<title>Multiple sequence alignment of human coronaviruses</title>
+<p id="P23">In order to analyze the sequence conservation of the individual spike domains, multiple sequence alignment was performed for the protein from different human coronaviruses (HCoVs). Currently a total of seven known HCoVs exist, namely, 229E and NL63 from the alpha subfamily of coronaviruses, and OC43, HKU1, MERS-CoV, SARS-CoV, and SARS-CoV-2, from the beta subfamily. Additionally, the bat coronavirus RaTG13, a closely related homolog of SARS-CoV-2, was also included in the sequence alignment. Multiple sequence alignment for the above eight sequences was carried out using the MAFFT program with the L-INS-i method<sup>
+<xref ref-type="bibr" rid="R73">73</xref>
+</sup> and visualized using Jalview.<sup>
+<xref ref-type="bibr" rid="R74">74</xref>
+</sup>
+</p>
+</sec>
+<sec id="S17">
+<title>Glycan-lipid and glycan-glycan interactions</title>
+<p id="P24">As the glycan molecules attached to the HR2 domain are situated close to the membrane and to the glycans on the neck region, their possible interactions were further analyzed. For this, we identified all heavy atom contacts between glycans and other glycans or lipids (cutoff of 4.5 Å). The number of glycan heavy-atom contacts in each monomer for each frame in the trajectory was denoted as the glycan contact number, calculated separately for glycan-glycan and glycan-lipid interactions.</p>
+<p id="P25">Additionally, the bending of the HR2 domain with respect to the membrane as well as the angle between the neck region and the HR2 domain was also quantified. For the former, the trajectory was first aligned by rotating the first principle axes of the membrane patch to that in the first frame so that the membrane normal vector lied in the direction of the z. The HR2 bending was then calculated as the angle between the third principal axis of the HR2 domain, determined using the <italic>C<sub>α</sub>
+</italic> atoms, and the z axis representing the membrane normal. The neck-HR2 bending was determined similarly by obtaining the angle between the third principal axis of the HR2 domain and the neck region.</p>
+</sec>
+<sec id="S18">
+<title>Correlated motions in the spike</title>
+<p id="P26">In order to identify potential correlations in the motions of the different domains of the spike, the Gram-Schmidt orthogonalization process was carried out, a widely used mathematical method to orthonormalize a set of vectors, in this case vectors representing orientations of the spike head, the HR2 domain, and the TM domain, generating 3 linearly independent, perpendicular vectors. For given vectors <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> (HR2), <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> (TM) and <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>3</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> (spike head), representing the <italic>C<sub>α</sub>
+</italic> atoms of the HR2, TM and the central helices of the spike head, respectively, we define a plane formed by two vectors, e.g., <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula>, and obtain the components of <inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>υ</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mn>3</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> on this plane and a perpendicular plane by performing orthogonalization. Thus, the spike head’s coplanar and orthogonal motions with respect to the HR2-TM domain bending can be derived to investigate the inter-correlation between different modes of bending.</p>
+</sec>
+<sec id="S19">
+<title>Calculation of membrane curvature</title>
+<p id="P27">Since the palmitoyl tails have been shown to contribute to the bending of the membrane in other viruses, <sup>
+<xref ref-type="bibr" rid="R32">32</xref>
+</sup> the curvature of the membrane around the fully-palmitoylated spike system was examined. Briefly, the coordinates of the upper and lower leaflet headgroups were fitted with a trigonometric surface function by the least square method, to maintain the periodic condition, followed by the numerical calculation of the mean curvature for the fitted grid points. For comparison, the membrane curvature of the non-palmitoylated spike system was also reported.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S20" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<p id="P28">SARS-CoV-2 binds to its host cell by the spike protein functioning as an extended viral antennae that recognizes the host cell surface receptors. Constructing the full spike and studying its behavior in its physiological environment remains the first and critical step in understanding the working of this most important component of the virus infection machinery. In the presented study, we first develop the full spike structure in its physiological, membrane-bound state, and subsequently, using μs-scale MD simulations we characterize the conformational dynamics of the protein. We describe these conformational changes in terms of bending and twisting motions of the spike head with respect to the stalk, and examine possible correlations among inter-domain motions as well as the the potential role of glycan-lipid and glycan-glycan interactions in these motions. Sequence comparison with other human coronaviruses allows us to delineate multiple conserved hinge regions in the stalk domain that likely promote the conformational motions of the spike head. Furthermore, we quantify the effects of palmitoylation in the TM domain offering support for the role of this post-transnational modification in modulating the local membrane curvature.</p>
+<sec id="S21">
+<title>Construction of the membrane-embedded full spike protein</title>
+<p id="P29">We combined homology modeling utilizing multiple template structures from homologous coronaviruses like SARS-CoV and MERS-CoV with fragment-based, ab initio modeling and secondary structure prediction to construct the missing regions in the spike head and the stalk including the HR2 domain (<xref ref-type="fig" rid="F1">Fig. 1A and B</xref> and <xref ref-type="supplementary-material" rid="SD4">Fig. S2</xref>). Additionally, we carried out an expansive procedure for deriving a stable model of the TM domain, where we combine sequence-based secondary structure prediction for the TM region (<xref ref-type="supplementary-material" rid="SD4">Fig. S3</xref>), with proteinprotein docking for generating the initial configurations of TM trimers (<xref ref-type="supplementary-material" rid="SD4">Table SS3</xref>) followed by MD relaxation of suitable TM trimeric configurations in membrane (<xref ref-type="supplementary-material" rid="SD4">Fig. S4</xref> and <xref ref-type="supplementary-material" rid="SD4">S5</xref>). The above-described modeling procedure was combined with the the biochemical data on the palmitoylation sites<sup>
+<xref ref-type="bibr" rid="R35">35</xref>
+</sup> and the recently reported glycomics data to determine the glycosylation compositions of specific Asn residues<sup>
+<xref ref-type="bibr" rid="R36">36</xref>,<xref ref-type="bibr" rid="R37">37</xref>
+</sup> (<xref ref-type="fig" rid="F1">Fig. 1C</xref> and <xref ref-type="supplementary-material" rid="SD4">Table S2</xref>), to develop the full-length, palmitoylated and fully-glycosylated spike structure (<xref ref-type="fig" rid="F1">Fig. 1D</xref>).</p>
+<p id="P30">We have also carried out structural comparison of our full-length spike model with previously published models.<sup>
+<xref ref-type="bibr" rid="R28">28</xref>,<xref ref-type="bibr" rid="R29">29</xref>,<xref ref-type="bibr" rid="R75">75</xref>
+</sup> The spike head structure in our study is obtained from cryo-EM data as done in the previous models. The individual monomers of the spike head are observed to display relatively stable conformations during our simulations after their initial equilibration (<xref ref-type="supplementary-material" rid="SD4">Fig. S6</xref>). The HR2 domain in the previous studies was modeled using either a coiled-coil template from salmonella autotransporter adhesin, <sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup> using a de novo coiled-coil modeling program, <sup>
+<xref ref-type="bibr" rid="R75">75</xref>
+</sup> or using the HR2 template from SARS-CoV.<sup>
+<xref ref-type="bibr" rid="R28">28</xref>
+</sup> Here, we also make use of the HR2 template structure from SARS-CoV, <sup>
+<xref ref-type="bibr" rid="R47">47</xref>
+</sup> resulting in a model observed to be stable throughout the trajectory (<xref ref-type="supplementary-material" rid="SD4">Fig. S6</xref>). As SARS-CoV and SARS-CoV-2 display complete sequence identity in the HR2 domain, our stable model is expected to provide a closer physiological representation of the HR2 domain compared to the coiled-coil models used in the earlier studies. The TM domain in the previous spike models <sup>
+<xref ref-type="bibr" rid="R28">28</xref>,<xref ref-type="bibr" rid="R29">29</xref>
+</sup> was constructed using a template structure from HIV.<sup>
+<xref ref-type="bibr" rid="R50">50</xref>
+</sup> It is noteworthy that the TM helices in HIV each contain a ‘GxxxG’ motif at their N-terminal end, a motif known to be frequently involved in close inter-TM helix interactions.<sup>
+<xref ref-type="bibr" rid="R76">76</xref>
+</sup> Consequently, the TM domain assembly in HIV displays inter-helical contacts in this region with the C-terminal half only held together by polar contacts.<sup>
+<xref ref-type="bibr" rid="R50">50</xref>
+</sup> As the ‘GxxxG’ motif is present in the central region of the TM helices in the SARS-CoV-2 spike (<xref ref-type="fig" rid="F1">Fig. 1A</xref>), the contacts between the TM helices in the SARS-CoV-2 spike can be expected to lie in this region instead. The TM domain in our spike model is a trimeric assembly with the majority of the inter-helical contacts formed between the central regions of the helices containing the ‘GxxxG’ motifs (<xref ref-type="fig" rid="F2">Fig. 2A and B</xref>). Additionally, the TM domain maintains a relatively stable and symmetric structure during the simulations (<xref ref-type="supplementary-material" rid="SD4">Fig. S6</xref> and <xref ref-type="fig" rid="F2">Fig. 2C, D, E and F</xref>). The correct prediction of the different stalk domain structures, including the trimeric HR2 and TM domains, may be critical to correctly describing the global motions observed in the spike head, as described below.</p>
+</sec>
+<sec id="S22">
+<title>Bending and twisting motions of spike head around stalk</title>
+<p id="P31">To further describe the the dynamics employed by the spike to sample the crowded cellular surface, we characterized its global motions in terms of the movements of the spike head with respect to the stalk region during the simulations (see <xref ref-type="supplementary-material" rid="SD1">Supplementary Video 1</xref>). These motions were quantified in terms of head-twist and head-bend angles as well as headdistances calculated separately with respect to either the spike neck, the HR2 domain, or the TM domain (<xref ref-type="fig" rid="F3">Fig. 3A</xref>). In its fully-glycosylated, native form, the spike can sample large headtwist angles (in the <italic>xy</italic> plane) with respect to both the HR2 and TM domains, highlighting the large conformational flexibility available along this degree of freedom (<xref ref-type="fig" rid="F3">Fig. 3B</xref> top, F and G). A wide normal distribution of head-twist angles is observed with respect to the HR2 domain, with the highest sampled configurations turned by almost 90° relative to the starting structure. With respect to the TM domain, although lowly populated, spike-head can sample conformations that are almost oppositely facing (turned by as much as 160°) compared to the starting orientation. A relatively smaller range of motion is allowed around the spike neck, with the most populous regions lying close to the starting structure (<xref ref-type="fig" rid="F3">Fig. 3B</xref> top and E). These results can be directly related to the length of the linkers connecting the different domains of spike. The domains around which spike head displays larger motions (HR2 and TM domains) are connected by longer linkers (linker2: 13 residues; linker 3: 11 residues), compared to the domain around which spike head displays relatively more restricted motions (spike neck), that is connected to the spike head by a smaller linker (linker 1: 7 residues). Furthermore, direct comparison of the head-twist motions in the glycosylated form to the control non-glycosylated system shows surprisingly that these motions become restricted in the latter (<xref ref-type="fig" rid="F3">Fig. 3B</xref> bottom), especially with respect to the head-twist angles calculated around the HR2 and TM domains. These results point to an unexpected enhancing role of glycans in the overall dynamics of the spike.</p>
+<p id="P32">Similarly, the spike head displays a broad range of head-bend angles with respect to the HR2 domain, sampling configurations almost orthogonal to the starting structure (<xref ref-type="fig" rid="F3">Fig. 3C</xref> top and I). Comparatively, smaller head-bend motions are observed around the spike neck and the TM domain, with the respective populations showing distributions over a range of 0 — 60° angles (<xref ref-type="fig" rid="F3">Fig. 3C</xref> top, H and J). The extent of these bending angles is also directly related to the changes in the head-distances with respect to these domains, with the largest distance changes observed in conformations with the largest head-bend angles (<xref ref-type="fig" rid="F3">Fig. 3D</xref> top). Thus, the spike head can move as much as 125 Å with respect to the HR2 domain compared to its starting configuration. Again, comparison of the glycosylated and non-glycosylated forms shows that the spike domains rigidify (display relatively smaller range of motion) in the absence of glycans (<xref ref-type="fig" rid="F3">Fig. 3C and D</xref> bottom). The potential role of the glycans in modulating global motions of the spike is further discussed in later sections.</p>
+<p id="P33">Mechanistically, these motions (bend/twist/translation) of the spike head represent major degrees of freedom available bestowed upon the receptor-binding domain (located in the spike head) to locate and bind to the target ACE2 receptors in the host cell membranes. As spike proteins have been found to be sparsely distributed on the virion envelope (recent cryo-EM and tomography studies<sup>
+<xref ref-type="bibr" rid="R12">12</xref>,<xref ref-type="bibr" rid="R77">77</xref>
+</sup>), the flexibility and the allowed range of motions of the spike domain may play an important role in extending the search space covered by the spikes. Cryo-EM and other computational studies have similarly reported the conformational diversity of the spike head around its stalk.<sup>
+<xref ref-type="bibr" rid="R75">75</xref>,<xref ref-type="bibr" rid="R78">78</xref>
+</sup> Compared to our results, the conformational variability of the spike head was observed to a smaller extent in one of these MD studies,<sup>
+<xref ref-type="bibr" rid="R75">75</xref>
+</sup> likely due to the crowded conditions used in the simulation system, where 4 spikes were packed at close proximity to each other, preventing the protein to amply sample the available space. The crowded distribution used in the above study is unlikely to represent the physiological distribution observed in the whole virion cryo-EM study where approximately one spike is observed per 1000 nm<sup>2</sup> of the viral surface area.<sup>
+<xref ref-type="bibr" rid="R77">77</xref>
+</sup> Additionally, previous studies have quantified the inter-domain motions compared to the spike head orientational changes measured in our study, that are more directly related to the motions of the RBD binding to the host receptors, and hence directly related to the function of the protein.</p>
+</sec>
+<sec id="S23">
+<title>Sequence conservation in multiple hinge regions</title>
+<p id="P34">In order to examine potential generality of the observed global motions in the SARS-CoV-2 spike, we analyzed the sequence similarity of the spike protein, specifically focusing on the flexible regions connecting the different domains. These include the small connecting linkers between the spike head and the neck (linker 1: NTVYDPL), between the spike neck and the HR2 domain (linker 2: HTSPDVDLGDISG), and between the HR2 domain and the TM domain (linker 3: GKYEQYIKWP). The three linkers are found to be rich in Pro and Gly, residues known to contribute to the conformational flexibility in proteins<sup>
+<xref ref-type="bibr" rid="R79">79</xref>,<xref ref-type="bibr" rid="R80">80</xref>
+</sup> (<xref ref-type="fig" rid="F4">Fig. 4A</xref>). Additionally, the Pro residues in these regions may be important for the hinge or recoil motion suggested to take place in the refolding of the spike during the fusion process, which may result in an elongated post-fusion state of the protein. <sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>
+</p>
+<p id="P35">To further elucidate the possible functional importance of these residues in the mobility of the spike, multiple sequence alignment was carried out with other coronaviruses infecting humans. Interestingly, all Pro and Gly residues present in the flexible regions are completely conserved in the homologous Bat-CoV and human SARS-CoV, and to a large extent in human MERS-CoV where only Pro-1163 is not conserved (<xref ref-type="fig" rid="F4">Fig. 4B</xref>). Most of these residues are not conserved in other human coronaviruses except Pro-1213 that is completely conserved in all coronaviruses. We propose that the presence of these conserved flexible residues in the regions connecting the different domains not only promotes the observed conformational flexibility of the spike head around the stalk domains but, compared to other coronaviruses, also provides an evolutionary advantage to SARS-CoV-2, SARS-CoV and MERS-CoV, coronaviruses known to be highly infective in humans.</p>
+</sec>
+<sec id="S24">
+<title>Stalk bending motions modulated by glycan-lipid and glycan-glycan interactions</title>
+<p id="P36">In addition to the important roles glycans can play in shielding the spike from neutralizing antibodies, <sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> we noted that the glycans also form contacts with each other, as well as with the lipid bilayer, during the simulations (see example of these phenomena in <xref ref-type="supplementary-material" rid="SD2">Supplementary Video 2</xref>). To obtain deeper insights into the impact of these glycan interactions, especially with respect to the spike global motions, we evaluated the relationship between the inclination of the different stalk domains and the glycan-lipid or glycan-glycan contacts formed, both in the native glycosylated spike simulations and the control non-glycosylated spike. In the glycosylated spike when the inclination angle of the HR2 domain exceeded a threshold of around 20°, we observed formation of more glycan-lipid or glycan-glycan contacts, indicating a correlation between the bending of the HR2 domain and the glycan interactions (<xref ref-type="fig" rid="F5">Fig. 5A</xref>, B, C and D). On examining the distribution of the HR2 tilt angles towards the membrane in the glycosylated spike simulation, only ~20% of the trajectory was found to lie between 0° - 20° (vertical orientation) compared to ~80% of the non-glycosylated trajectory that lied below the 20° inclination. It can be inferred that in the fully-glycosylated spike when no glycan-lipid interactions are formed the HR2 domain can move freely within the 20° inclination (<xref ref-type="fig" rid="F5">Fig. 5A and B</xref>); the glycan-lipid interactions appear when the inclination angle lies between 20° – 50°, further restraining the flexibility of the HR2 hinge motion in this range. The HR2-neck inclination shows similar properties as the HR2-membrane inclination, where larger inclination angles, ranging between 20° – 90°, mostly correspond with high glycan-glycan contacts (<xref ref-type="fig" rid="F5">Fig. 5C and D</xref>). Although the HR2 domain in the non-glycosylated spike can show a similar range of motion (with respect to the neck) as in the native form, almost half of the sampled configurations lie close to the starting vertical orientation (0° - 20°) (<xref ref-type="fig" rid="F5">Fig. 5A and C</xref>), suggesting coupling between glycan-glycan interactions and the dynamics of the stalk. Overall, the data indicate that the glycans around the flexible linkers can further enhance the relative motion between the stalk domains, in turn increasing the probed space by the spike head.</p>
+<p id="P37">N-glycans have been reported to be involved in mediating receptor recognition and facilitating cell adhesion.<sup>
+<xref ref-type="bibr" rid="R81">81</xref>
+</sup> The self-recognition and conjugation has been previously demonstrated for N-linked complex glycans with multiple N-acytylglucosamine (GlcNAc) termini. <sup>
+<xref ref-type="bibr" rid="R82">82</xref>,<xref ref-type="bibr" rid="R83">83</xref>
+</sup> The glycans located at the bottom end of the neck region (N1158), as well as the top (N1173) and bottom (N1194) ends of the HR2 domain, are all complex glycans containing multivalent GlcNAc (<xref ref-type="supplementary-material" rid="SD4">Table SS2</xref>). Additionally, these glycans are completely conserved in human coronaviruses (<xref ref-type="fig" rid="F4">Fig. 4B</xref>). Overall, we propose that these complex glycosylation sites not only shield the stalk from epitopes, by occupying the space around the flexible hinges connecting 5 the neck, HR2 and TM domains, but also contribute to the flexibility of the stalk, that may in turn increase the range of motion of the spike head allowing for more effective sampling of the human cell surface.</p>
+<p id="P38">On further examination of the glycan-lipid interactions we observed that the majority of these contacts are formed with the zwitterionic lipids (POPC/POPE) followed by anionic lipids (POPS) (<xref ref-type="supplementary-material" rid="SD4">Fig. S7</xref>). Majority of the interactions between glycans and lipids consist of hydrogen bonds formed between O/N atoms of the N-acetyl-D-neurominic acid (NE5AC) or D-galactose sugars present in the glycans and N atoms from PE head group or O atoms in the PE/PC phosphate groups. These interactions may further stabilize the inclined conformations of the HR2 domain with respect to the membrane. The contacts with cholesterol are 5 minimal, which is expected as cholesterol is known to insert more deeply in the membrane core compared to the phospholipids. <sup>
+<xref ref-type="bibr" rid="R84">84</xref>,<xref ref-type="bibr" rid="R85">85</xref>
+</sup>
+</p>
+</sec>
+<sec id="S25">
+<title>Correlated inter-domain motions in the spike</title>
+<p id="P39">The global conformational dynamics of the spike were further examined for the presence of correlated motions between its different domains. A correlation between the motions of the spike head and the TM domain about the HR2 domain is evident in the fully-glycosylated spike (<xref ref-type="fig" rid="F6">Fig. 6A and B</xref>; see <xref ref-type="supplementary-material" rid="SD3">Supplementary Video 3</xref>). A high Pearson’s coefficient of 0.85 between the Head1 and TM vectors (<xref ref-type="fig" rid="F6">Fig. 6A and B</xref>), representing the spike head’s coplanar motion with respect to the HR2-TM domain bending, further confirms the observed correlation in the motions of these domains. A Pearson’s coefficient of 0.48 was also observed between the Head2 and TM vectors (<xref ref-type="fig" rid="F6">Fig. 6A and B</xref>), showing that the spike head’s orthogonal motion is similarly correlated, but to a lesser degree, with respect to the HR2-TM domain bending. This is an interesting observations in that the orientational motions of the different domains of the spike appear to remain inter-related even though they are connected by flexible hinge regions. Without glycosylations, not only is the magnitude of inter-domain motions dampened (<xref ref-type="supplementary-material" rid="SD4">Fig. S8</xref>), but, at the same time, the correlation between them is also reduced, with the non-glycosylated spike showing relatively lower Pearson’s coefficient, 0.78 and 0.39, respectively, for the in-plane and orthogonal motions of the spike head with respect to the HR2-TM domain bending. In general, the correlated motions between the different spike domains can be attributed to its unique tertiary structure and can be considered an intrinsic property of the protein, but, at the same time, glycosylation may further amplify these motions through the extensive glycan-lipid and glycan-glycan interactions in the system (<xref ref-type="fig" rid="F5">Fig. 5</xref>). For example, interactions of the glycans located at the bottom end of the HR2 domain with the lipids seem to promote its bending towards the membrane that may in turn facilitate formation of more contacts between the glycans located at the top/opposite end of the HR2 domain and glycans in the neck region, promoting bending of the spike neck and head in the opposite direction.</p>
+<p id="P40">The Gram-Schmidt analysis (see Methods) indicates concerted motions of the spike head and the TM domain about the HR2 domain. Here, the orthonormal vectors representing the spike head and the TM domain are oriented in the same direction about the HR2 domain for 88% of the simulation in the fully-glycosylated spike (<xref ref-type="fig" rid="F6">Fig. 6C</xref>). Non-glycosylated spike displays a similar behavior, with the the orthonormal vectors oriented in the same direction for 89% of the time, further highlighting that these motions are largely a property of the spike structure itself. Topologically, this reflects a configuration where the spike head and the TM domain orient diametrically opposing each other around the HR2 domain, a configuration which may further extend the reach of the spike head and the RBD for the target cellular receptors (<xref ref-type="fig" rid="F6">Fig. 6D</xref>). Additionally, considering the fact that the inclination of TM domain in the membrane can be substantial, ranging between 0-30° (<xref ref-type="supplementary-material" rid="SD4">Fig. S9</xref>), the concerted, opposing bendings of the spike head and the TM domain may pull the head back to an upwards position with respect to the membrane, preventing it from severe inclination and falling into the membrane and thus maintaining a proper configuration for binding with the ACE2 receptor.</p>
+</sec>
+<sec id="S26">
+<title>Role of palmitoylations in modulating membrane curvature</title>
+<p id="P41">Protein S-palmitoylation, the covalent lipid modification of the Cys residues, widely exists in viral membrane proteins and reported to contribute to membrane fusion and other processes.<sup>
+<xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R33">33</xref>
+</sup> To characterize the effect of spike palmitoylations on the membrane shape, we compared the membrane curvature for the control simulation of non-palmitoylated spike with the palmoytilated (and fully glycosylated) one, taking into account the periodicity in fitting the lipid head groups (<xref ref-type="fig" rid="F7">Fig. 7A, B</xref>). The two simulations share a similar membrane size, but the palmitoylated system seems to deform the membrane more than the non-palmitoylated system (<xref ref-type="fig" rid="F7">Fig. 7C</xref>). Keeping in mind that the periodic boundary conditions used in the simulations can suppress long-range curvature effects, comparing the local curvature (in the range of 20-50 A from the center of the TM domain) shows that the palmitoylated TM domain is found within a positively curved membrane, whereas the non-palmitoylated TM prefers a saddle point. Thus, the palmitic tails may induce a positive curvature locally in the vicinity of the TM domain.</p>
+<p id="P42">The lipidation of other viral proteins is relatively well studied. In influenza virus, cryo-ET measurements have shown membrane curvature induced by HA palmitoylation.<sup>
+<xref ref-type="bibr" rid="R32">32</xref>
+</sup> Apart from this, non-acylated HA mutants of influenza virus show a severe negative effect on the membrane fusion step of the infection process.<sup>
+<xref ref-type="bibr" rid="R86">86</xref>
+</sup> As shown by the results above, SARS-CoV-2 spike palmitoylation may similarly contribute to the bending of the membrane, especially locally, and thus play a role in the viral fusion with the host cell membrane.</p>
+</sec>
+<sec id="S27" sec-type="conclusions">
+<title>Conclusions</title>
+<p id="P43">The spike protein of SARS-CoV-2 constitutes a major component in the viral infection and, therefore, the main target for both diagnostics and vaccines developed for the disease caused by the virus. To better understand the many mechanistic steps the spike is involved in, it is imperative to characterize its structure and dynamics in the most detailed manner and under the most realistic conditions possible. We report here a full model for the full-length spike in its native, glycosylated and palmitoylated, membrane-bound form which we use for several microseconds of atomistic simulations highlighting some of the dynamics employed by the spike to search for and locate the host cell receptors effectively (<xref ref-type="fig" rid="F8">Fig. 8</xref>). The hinge regions identified in the stalk domain directly modulate the conformational landscape of the spike head, where the RBDs reside, and may thus represent important structural elements regulating the effective role of the spike in binding its receptor. These highly conserved hinges may offer novel points of target for developing alternative drugs and antibodies that bind to and modulate the structure/dynamics of these regions, and therefore the effectiveness of the spike protein. In addition we propose possible roles for posttranslational modifications of spike, specifically glycosylation and palmitoylation, in modulating its dynamics. The results provide a deeper understanding of the intricate roles and functions of the different elements of the spike, each evolved in order to maximize the chance of successful infection and transmission of the genetic material to the host cell. Future extended simulations studying the spike behavior in a full viral envelope will allow further characterization of the impact of a more crowded environment of the envelope and its proteins in modulating the structure and dynamics of the spike and will provide additional insight into the inner working of the virus.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Video 1</label>
+<media xlink:href="EMS141073-supplement-Supplementary_Video_1.mp4" mimetype="video" mime-subtype="mp4" id="N67029" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Video 2</label>
+<media xlink:href="EMS141073-supplement-Supplementary_Video_2.mp4" mimetype="video" mime-subtype="mp4" id="N67038" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Video 3</label>
+<media xlink:href="EMS141073-supplement-Supplementary_Video_3.mp4" mimetype="video" mime-subtype="mp4" id="N67047" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Supporting Information</label>
+<media xlink:href="EMS141073-supplement-Supporting_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67056" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S28">
+<title>Acknowledgement</title>
+<p>This study was supported by the National Institutes of Health under awards P41-GM104601 and R01-GM123455 (to ET). Simulations were performed using computational resources provided by Lawrence Livermore National Laboratory, Oak Ridge Leadership Computing Facility, and Microsoft Azure, under COVID-19 HPC Consortium Grant MCB200183 (to KK).</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>(1)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Clinical features of patients infected with 2019 novel coronavirus in Wuhan, China</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<fpage>497</fpage>
+<lpage>506</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>(2)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>JF-W</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kok</surname>
+<given-names>K-H</given-names>
+</name>
+<name>
+<surname>To</surname>
+<given-names>KK-W</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xing</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yip</surname>
+<given-names>CC-Y</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>RW-S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A familial cluster of pneumonia associated with the 2019 novel coronavirus indicating person-to-person transmission: a study of a family cluster</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<fpage>514</fpage>
+<lpage>523</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>(3)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chan-Yeung</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>R-H</given-names>
+</name>
+</person-group>
+<article-title>SARS: epidemiology</article-title>
+<source>Respirology</source>
+<year>2003</year>
+<volume>8</volume>
+<fpage>S9</fpage>
+<lpage>S14</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>(4)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zumla</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hui</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Perlman</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Middle East respiratory syndrome</article-title>
+<source>Lancet</source>
+<year>2015</year>
+<volume>386</volume>
+<fpage>995</fpage>
+<lpage>1007</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>(5)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vasllieva</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Sui</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Berne</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Somasundaran</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sullivan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Luzuriaga</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Greeneugh</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Choe</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Angiotensin-converting enzyme 2 is a functional receptor for the SARS coronavirus</article-title>
+<source>Nature</source>
+<year>2003</year>
+<volume>426</volume>
+<fpage>450</fpage>
+<lpage>454</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>(6)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Receptor recognition by the novel coronavirus from Wuhan: an analysis based on decade-long structural studies of SARS coronavirus</article-title>
+<source>Journal of Virology</source>
+<year>2020</year>
+<volume>94</volume>
+<fpage>e00127</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>(7)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bidon</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jaimes</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Whittaker</surname>
+<given-names>GR</given-names>
+</name>
+<name>
+<surname>Daniel</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Coronavirus membrane fusion mechanism offers a potential target for antiviral development</article-title>
+<source>Antiviral Research</source>
+<year>2020</year>
+<volume>178</volume>
+<elocation-id>104792</elocation-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>(8)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wrapp</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Corbett</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Goldsmith</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Hsieh</surname>
+<given-names>C-L</given-names>
+</name>
+<name>
+<surname>Abiona</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+</person-group>
+<article-title>Cryo-EM structure of the 2019-nCoV spike in the prefusion conformation</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>367</volume>
+<fpage>1260</fpage>
+<lpage>1263</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>(9)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>Y-J</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Wall</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Veesler</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Structure, function, and antigenicity of the SARS-CoV-2 spike glycoprotein</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>(10)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Beltramello</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lempp</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Pinto</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Dang</surname>
+<given-names>HV</given-names>
+</name>
+<name>
+<surname>Rosen</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>McCallum</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bowen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Minola</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jaconi</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ultrapotent human antibodies protect against SARS-CoV-2 challenge via multiple mechanisms</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>370</volume>
+<fpage>950</fpage>
+<lpage>957</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>(11)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henderson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Edwards</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Mansouri</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Janowska</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Stalls</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Gobeil</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kopp</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Parks</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Hsu</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Borgnia</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Controlling the SARS-CoV-2 spike glycoprotein conformation</article-title>
+<source>Nature Structural &amp; Molecular Biology</source>
+<year>2020</year>
+<volume>27</volume>
+<fpage>925</fpage>
+<lpage>933</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>(12)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ke</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Oton</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Qu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Cortese</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zila</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McKeane</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Nakane</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zivanov</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Neufeldt</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Cerikan</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structures and distributions of SARS-CoV-2 spike proteins on intact virions</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>588</volume>
+<fpage>498</fpage>
+<lpage>502</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>(13)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Toelzer</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gupta</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Yadav</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Borucu</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Davidson</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Williamson</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Shoemark</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Garzoni</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Staufer</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Milligan</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Free fatty acid binding pocket in the locked structure of SARS-CoV-2 spike protein</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>370</volume>
+<fpage>725</fpage>
+<lpage>730</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>(14)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Juraszek</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Rutten</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Blokland</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Bouchier</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Voorzaat</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ritschel</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bakkers</surname>
+<given-names>MJG</given-names>
+</name>
+<name>
+<surname>Renault</surname>
+<given-names>LLR</given-names>
+</name>
+<name>
+<surname>Langedijk</surname>
+<given-names>JPM</given-names>
+</name>
+</person-group>
+<article-title>Stabilizing the closed SARS-CoV-2 spike trimer</article-title>
+<source>Nature Communications</source>
+<year>2021</year>
+<volume>12</volume>
+<fpage>244</fpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>(15)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cai</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Sterling</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Walsh</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Rawson</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rits-Volloch</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Distinct conformational states of SARS-CoV-2 spike protein</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>1586</fpage>
+<lpage>1592</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>(16)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tamm</surname>
+<given-names>LK</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Viral fusion peptides: a tool set to disrupt and connect biological membranes</article-title>
+<source>Bioscience reports</source>
+<year>2000</year>
+<volume>20</volume>
+<fpage>501</fpage>
+<lpage>518</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>(17)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>White</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Delos</surname>
+<given-names>SE</given-names>
+</name>
+<name>
+<surname>Brecher</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Schornberg</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Structures and mechanisms of viral membrane fusion proteins: multiple variations on a common theme</article-title>
+<source>Critical reviews in biochemistry and molecular biology</source>
+<year>2008</year>
+<volume>43</volume>
+<fpage>189</fpage>
+<lpage>219</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>(18)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Snijder</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xiong</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bosch</surname>
+<given-names>B-J</given-names>
+</name>
+<name>
+<surname>Rey</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Veesler</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Tectonic conformational changes of a coronavirus spike glycoprotein promote membrane fusion</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2017</year>
+<volume>114</volume>
+<fpage>11157</fpage>
+<lpage>11162</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>(19)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Broer</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Boson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Spaan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Cosset</surname>
+<given-names>F-L</given-names>
+</name>
+<name>
+<surname>Corver</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Important role for the transmembrane domain of severe acute respiratory syndrome coronavirus spike protein during entry</article-title>
+<source>Journal of virology</source>
+<year>2006</year>
+<volume>80</volume>
+<fpage>1302</fpage>
+<lpage>1310</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>(20)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thorp</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Boscarino</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Logan</surname>
+<given-names>HL</given-names>
+</name>
+<name>
+<surname>Goletz</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Gallagher</surname>
+<given-names>TM</given-names>
+</name>
+</person-group>
+<article-title>Palmi-toylations on murine coronavirus spike proteins are essential for virion assembly and infectivity</article-title>
+<source>Journal of virology</source>
+<year>2006</year>
+<volume>80</volume>
+<fpage>1280</fpage>
+<lpage>1289</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>(21)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Watanabe</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bowden</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>IA</given-names>
+</name>
+<name>
+<surname>Crispin</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Exploitation of glycosylation in enveloped virus pathobiology</article-title>
+<source>Biochimica et Biophysica Acta – General Subjects</source>
+<year>2019</year>
+<volume>1863</volume>
+<fpage>1480</fpage>
+<lpage>1497</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>(22)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schweizer</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Clausen</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Van Meer</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Hauri</surname>
+<given-names>H-P</given-names>
+</name>
+</person-group>
+<article-title>Localization of O-glycan initiation, sphingomyelin synthesis, and glucosylceramide synthesis in Vero cells with respect to the endoplasmic reticulum-Golgi intermediate compartment</article-title>
+<source>Journal of Biological Chemistry</source>
+<year>1994</year>
+<volume>269</volume>
+<fpage>4035</fpage>
+<lpage>4041</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>(23)</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Hogue</surname>
+<given-names>BG</given-names>
+</name>
+<name>
+<surname>Machamer</surname>
+<given-names>CE</given-names>
+</name>
+</person-group>
+<source>Nidoviruses</source>
+<publisher-name>American Society of Microbiology</publisher-name>
+<year>2008</year>
+<fpage>179</fpage>
+<lpage>200</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>(24)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grant</surname>
+<given-names>OC</given-names>
+</name>
+<name>
+<surname>Montgomery</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Ito</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>RJ</given-names>
+</name>
+</person-group>
+<article-title>Analysis of the SARS-CoV-2 spike protein glycan shield reveals implications for immune recognition</article-title>
+<source>Scientific Reports</source>
+<year>2020</year>
+<volume>10</volume>
+<elocation-id>14991</elocation-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>(25)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Serapian</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Marchetti</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Triveri</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Morra</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Meli</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Moroni</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Sautto</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Rasola</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Colombo</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>The Answer Lies in the Energy: How Simple Atomistic Molecular Dynamics Simulations May Hold the Key to Epitope Prediction on the Fully Glycosylated SARS-CoV-2 Spike Protein</article-title>
+<source>The Journal of Physical Chemistry Letters</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>8084</fpage>
+<lpage>8093</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>(26)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gur</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Taka</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Yilmaz</surname>
+<given-names>SZ</given-names>
+</name>
+<name>
+<surname>Kilinc</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Aktas</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Golcuk</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Conformational transition of SARS-CoV-2 spike glycoprotein between its closed and open states</article-title>
+<source>Journal of Chemical Physics</source>
+<year>2020</year>
+<volume>153</volume>
+<elocation-id>075101</elocation-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>(27)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peters</surname>
+<given-names>MH</given-names>
+</name>
+<name>
+<surname>Bastidas</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Kokron</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Henze</surname>
+<given-names>CE</given-names>
+</name>
+</person-group>
+<article-title>Static all-atom energetic mappings of the SARS-Cov-2 spike protein and dynamic stability analysis of “Up” versus “Down” protomer states</article-title>
+<source>PLoS One</source>
+<year>2020</year>
+<volume>15</volume>
+<elocation-id>e0241168</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>(28)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Woo</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>YK</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Tanveer</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kern</surname>
+<given-names>NR</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yeom</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Croll</surname>
+<given-names>TI</given-names>
+</name>
+<name>
+<surname>Seok</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Developing a Fully Glycosylated Full-Length SARS-CoV-2 Spike Protein Model in a Viral Membrane</article-title>
+<source>Journal of Physical Chemistry B</source>
+<year>2020</year>
+<volume>124</volume>
+<fpage>7128</fpage>
+<lpage>7137</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>(29)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Casalino</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Gaieb</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Goldsmith</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Hjorth</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Dommer</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Harbison</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Fogarty</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Barros</surname>
+<given-names>EP</given-names>
+</name>
+<name>
+<surname>Taylor</surname>
+<given-names>BC</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Beyond shielding: the roles of glycans in the SARS-CoV-2 spike protein</article-title>
+<source>ACS Central Science</source>
+<year>2020</year>
+<volume>6</volume>
+<fpage>1722</fpage>
+<lpage>1734</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>(30)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sikora</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>von Bulow</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Blanc</surname>
+<given-names>FE</given-names>
+</name>
+<name>
+<surname>Gecht</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Covino</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Hummer</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Computational epitope map of SARS-CoV-2 spike protein</article-title>
+<source>PLoS Computational Biology</source>
+<year>2021</year>
+<volume>17</volume>
+<elocation-id>e1008790</elocation-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>(31)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aicart-Ramos</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Valero</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Rodriguez-Crespo</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Protein palmitoylation and sub-cellular trafficking</article-title>
+<source>Biochimica et Biophysica Acta – Biomembranes</source>
+<year>2011</year>
+<volume>1808</volume>
+<fpage>2981</fpage>
+<lpage>2994</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>(32)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chlanda</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Mekhedov</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Waters</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Sodt</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schwartz</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Nair</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Blank</surname>
+<given-names>PS</given-names>
+</name>
+<name>
+<surname>Zimmerberg</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Palmitoylation contributes to membrane curvature in influenza A virus assembly and hemagglutinin-mediated membrane fusion</article-title>
+<source>Journal of Virology</source>
+<year>2017</year>
+<volume>91</volume>
+<fpage>e00947</fpage>
+<lpage>17</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>(33)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Parton</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Tek</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Baaden</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sansom</surname>
+<given-names>MSP</given-names>
+</name>
+</person-group>
+<article-title>Formation of Raft-Like Assemblies within Clusters of Influenza Hemagglutinin Observed by MD Simulations</article-title>
+<source>PLoS Computational Biology</source>
+<year>2013</year>
+<volume>9</volume>
+<elocation-id>e1003034</elocation-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>(34)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ernst</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Syed</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Zaki</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Bottanelli</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hacke</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xi</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Rivera-Molina</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rebane</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Bjorkholm</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>S-Palmitoylation Sorts Membrane Cargo for Anterograde Transport in the Golgi</article-title>
+<source>Developmental Cell</source>
+<year>2018</year>
+<volume>47</volume>
+<fpage>479</fpage>
+<lpage>493</lpage>
+<elocation-id>e7</elocation-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>(35)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Petit</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Chouljenko</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Iyer</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Colgrove</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Knipe</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Kousoulas</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<article-title>Palmitoylation of the cysteine-rich endodomain of the SARS-coronavirus spike glycoprotein is important for spike-mediated cell fusion</article-title>
+<source>Virology</source>
+<year>2007</year>
+<volume>360</volume>
+<fpage>264</fpage>
+<lpage>274</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>(36)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shajahan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Supekar</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Gleinich</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Azadi</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Deducing the N-and O-glycosylation profile of the spike protein of novel coronavirus SARS-CoV-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>(37)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Watanabe</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Allen</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Wrapp</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Crispin</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Site-specific glycan analysis of the SARS-CoV-2 spike</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>330</fpage>
+<lpage>333</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>(38)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Variations in SARS-CoV-2 Spike Protein Cell Epitopes and Glycosylation Profiles During Global Transmission Course of COVID-19</article-title>
+<source>Frontiers in Immunology</source>
+<year>2020</year>
+<volume>11</volume>
+<elocation-id>2222</elocation-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>(39)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cryo-EM structures of MERS-CoV and SARS-CoV spike glycoproteins reveal the dynamic receptor binding domains</article-title>
+<source>Nature Communications</source>
+<year>2017</year>
+<volume>8</volume>
+<elocation-id>15092</elocation-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>(40)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gui</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Xiang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Cryo-electron microscopy structures of the SARS-CoV spike glycoprotein reveal a prerequisite conformational state for receptor binding</article-title>
+<source>Cell research</source>
+<year>2017</year>
+<volume>27</volume>
+<fpage>119</fpage>
+<lpage>129</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>(41)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kirchdoerfer</surname>
+<given-names>RN</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Pallesen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wrapp</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Turner</surname>
+<given-names>HL</given-names>
+</name>
+<name>
+<surname>Cottrell</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Corbett</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Ward</surname>
+<given-names>AB</given-names>
+</name>
+</person-group>
+<article-title>Stabilized coronavirus spikes are resistant to conformational changes induced by receptor recognition or proteolysis</article-title>
+<source>Scientific Reports</source>
+<year>2018</year>
+<volume>8</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>(42)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>Y-J</given-names>
+</name>
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Sauer</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Bosch</surname>
+<given-names>B-J</given-names>
+</name>
+<name>
+<surname>DiMaio</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Veesler</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Structures of MERS-CoV spike glycoprotein in complex with sialoside attachment receptors</article-title>
+<source>Nature Structural &amp; Molecular Biology</source>
+<year>2019</year>
+<volume>26</volume>
+<fpage>1151</fpage>
+<lpage>1157</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>(43)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>Structural basis for the recognition of SARS-CoV-2 by full-length human ACE2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>367</volume>
+<fpage>1444</fpage>
+<lpage>1448</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>(44)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vilar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cozza</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Moro</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Medicinal chemistry and the molecular operating environment (MOE): application of QSAR and molecular docking to drug discovery</article-title>
+<source>Current Topics in Medicinal Chemistry</source>
+<year>2008</year>
+<volume>8</volume>
+<fpage>1555</fpage>
+<lpage>1572</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>(45)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Raman</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Vernon</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Thompson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tyka</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sadreyev</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kellogg</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>DiMaio</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Lange</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure prediction for CASP8 with allatom refinement using Rosetta</article-title>
+<source>PROTEINS: Structure, Function, and Bioinformatics</source>
+<year>2009</year>
+<volume>77</volume>
+<fpage>89</fpage>
+<lpage>99</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>(46)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>DiMaio</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>RY-R</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Miles</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Brunette</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Thompson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>High-resolution comparative modeling with RosettaCM</article-title>
+<source>Structure</source>
+<year>2013</year>
+<volume>21</volume>
+<fpage>1735</fpage>
+<lpage>1742</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>(47)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hakansson-McReynolds</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rong</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Caffrey</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Solution structure of the severe acute respiratory syndrome-coronavirus heptad repeat 2 domain in the prefusion state</article-title>
+<source>Journal of Biological Chemistry</source>
+<year>2006</year>
+<volume>281</volume>
+<fpage>11965</fpage>
+<lpage>11971</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>(48)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Drozdetskiy</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cole</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Procter</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>JPred4: a protein secondary structure prediction server</article-title>
+<source>Nucleic Acids Research</source>
+<year>2015</year>
+<volume>43</volume>
+<fpage>W389</fpage>
+<lpage>W394</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>(49)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bosch</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>de Haan</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Smits</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Rottier</surname>
+<given-names>PJ</given-names>
+</name>
+</person-group>
+<article-title>Spike protein assembly into the coronavirion: exploring the limits of its sequence requirements</article-title>
+<source>Virology</source>
+<year>2005</year>
+<volume>334</volume>
+<fpage>306</fpage>
+<lpage>318</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>(50)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dev</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Fu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ha</surname>
+<given-names>HJ</given-names>
+</name>
+<name>
+<surname>Ghantous</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Herrmann</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Frey</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Seaman</surname>
+<given-names>MS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for membrane anchoring of HIV-1 envelope spike</article-title>
+<source>Science</source>
+<year>2016</year>
+<volume>353</volume>
+<fpage>172</fpage>
+<lpage>175</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>(51)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krog</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Larsson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>von Heijne</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Sonnhammer</surname>
+<given-names>ELL</given-names>
+</name>
+</person-group>
+<article-title>Predicting transmembrane protein topology with a hidden markov model: application to complete genomes</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2001</year>
+<volume>305</volume>
+<fpage>567</fpage>
+<lpage>580</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>(52)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Iyer</surname>
+<given-names>VG</given-names>
+</name>
+<name>
+<surname>Im</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>CHARMM-GUI: a Web-based Graphical User Interface for CHARMM</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2008</year>
+<volume>29</volume>
+<fpage>1859</fpage>
+<lpage>1865</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>(53)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Jo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rui</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Dávila-Contreras</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Monje-Galvan</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Venable</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Klauda</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CHARMM-GUI Membrane Builder Toward Realistic Biological Membrane Simulations</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2014</year>
+<volume>35</volume>
+<fpage>1997</fpage>
+<lpage>2004</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>(54)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krijnse-Locker</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ericsson</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rottier</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Griffiths</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Characterization of the budding compartment of mouse hepatitis virus: evidence that transport from the RER to the Golgi complex requires only one vesicular transport step</article-title>
+<source>Journal of Cell Biology</source>
+<year>1994</year>
+<volume>124</volume>
+<fpage>55</fpage>
+<lpage>70</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>(55)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kozakov</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Hall</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Porter</surname>
+<given-names>KA</given-names>
+</name>
+<name>
+<surname>Padhorny</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Yueh</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Beglov</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Vajda</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>The ClusPro web server for protein-protein docking</article-title>
+<source>Nature Protocols</source>
+<year>2017</year>
+<volume>12</volume>
+<fpage>255</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>(56)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fiorin</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Hénin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Using Collective Variables to Drive Molecular Dynamics Simulations</article-title>
+<source>Molecular Physics</source>
+<year>2013</year>
+<volume>111</volume>
+<fpage>3345</fpage>
+<lpage>3362</lpage>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>(57)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Coutsias</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Seok</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Dill</surname>
+<given-names>KA</given-names>
+</name>
+</person-group>
+<article-title>Using quaternions to calculate RMSD</article-title>
+<source>Journal of Chemical Physics</source>
+<year>2004</year>
+<volume>25</volume>
+<fpage>1849</fpage>
+<lpage>1857</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>(58)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Humphrey</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Dalke</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>VMD: Visual Molecular Dynamics</article-title>
+<source>Journal of Molecular Graphics</source>
+<year>1996</year>
+<volume>14</volume>
+<fpage>33</fpage>
+<lpage>38</lpage>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>(59)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fiser</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Do</surname>
+<given-names>RKG</given-names>
+</name>
+<name>
+<surname>Sali</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Modeling of loops in protein structures</article-title>
+<source>Protein science</source>
+<year>2000</year>
+<volume>9</volume>
+<fpage>1753</fpage>
+<lpage>1773</lpage>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>(60)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Petit</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Chouljenko</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Iyer</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Colgrove</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Knipe</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Kousoulas</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Palmitoylation of the cysteine-rich endodomain of the SARS-coronavirus spike glycoprotein is important for spike-mediated cell fusion</article-title>
+<source>Virology</source>
+<year>2007</year>
+<volume>360</volume>
+<fpage>264</fpage>
+<lpage>274</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>(61)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kern</surname>
+<given-names>NR</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>HS</given-names>
+</name>
+<name>
+<surname>Jo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Joung</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Joo</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Im</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>CHARMM-GUI Glycan Modeler for modeling and simulation of carbohydrates and glycoconjugates</article-title>
+<source>Glycobiology</source>
+<year>2019</year>
+<volume>29</volume>
+<fpage>320</fpage>
+<lpage>331</lpage>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>(62)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Søndergaard</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Olsson</surname>
+<given-names>MHM</given-names>
+</name>
+<name>
+<surname>Rostkowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>JH</given-names>
+</name>
+</person-group>
+<article-title>Improved treatment for ligands and coupling effects in empirical calculation and rationalization of pK<sub>a</sub> values</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>2284</fpage>
+<lpage>2295</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>(63)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Olsson</surname>
+<given-names>MH</given-names>
+</name>
+<name>
+<surname>Søndergaard</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Rostkowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>JH</given-names>
+</name>
+</person-group>
+<article-title>PROPKA3: consistent treatment of internal and surface residues in empirical pKa predictions</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>525</fpage>
+<lpage>537</lpage>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>(64)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Phillips</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Braun</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gumbart</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tajkhorshid</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Villa</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chipot</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Skeel</surname>
+<given-names>RD</given-names>
+</name>
+<name>
+<surname>Kale</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Scalable molecular dynamics with NAMD</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2005</year>
+<volume>26</volume>
+<fpage>1781</fpage>
+<lpage>1802</lpage>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>(65)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Phillips</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scalable molecular dynamics on CPU and GPU architectures with NAMD</article-title>
+<source>Journal of Chemical Physics</source>
+<year>2020</year>
+<volume>153</volume>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>(66)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hart</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Foloppe</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Denning</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Nilsson</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Mackerell</surname>
+<given-names>AD</given-names>
+<suffix>Jr</suffix>
+</name>
+</person-group>
+<article-title>Optimization of the CHARMM Additive Force Field for DNA: Improved Treatment of the BI/BII Conformational Equilibrium</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2012</year>
+<volume>8</volume>
+<fpage>348</fpage>
+<lpage>362</lpage>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>(67)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klauda</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Venable</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Freites</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>O’Connor</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Tobias</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Mondragon-Ramirez</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Vorobyov</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>MacKerell</surname>
+<given-names>AD</given-names>
+<suffix>Jr</suffix>
+</name>
+<name>
+<surname>Pastor</surname>
+<given-names>RW</given-names>
+</name>
+</person-group>
+<article-title>Update of the CHARMM All-Atom Additive Force Field for Lipids: Validation on Six Lipid Types</article-title>
+<source>Journal of Physical Chemistry B</source>
+<year>2010</year>
+<volume>114</volume>
+<fpage>7830</fpage>
+<lpage>7843</lpage>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>(68)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jorgensen</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Maudura</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Impey</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+</person-group>
+<article-title>Comparison of Simple Potential Functions for Simulating Liquid Water</article-title>
+<source>Journal of Chemical Physics</source>
+<year>1983</year>
+<volume>79</volume>
+<fpage>926</fpage>
+<lpage>935</lpage>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>(69)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martyna</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Tobias</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+</person-group>
+<article-title>Constant Pressure Molecular Dynamics Algorithms</article-title>
+<source>Journal of Chemical Physics</source>
+<year>1994</year>
+<volume>101</volume>
+<fpage>4177</fpage>
+<lpage>4189</lpage>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>(70)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Feller</surname>
+<given-names>SE</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Pastor</surname>
+<given-names>RW</given-names>
+</name>
+</person-group>
+<article-title>Constant Pressure Molecular Dynamics Simulation: the Langevin Piston Method</article-title>
+<source>Journal of Chemical Physics</source>
+<year>1995</year>
+<volume>103</volume>
+<fpage>4613</fpage>
+<lpage>4621</lpage>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>(71)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ryckaert</surname>
+<given-names>J-P</given-names>
+</name>
+<name>
+<surname>Ciccotti</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Berendsen</surname>
+<given-names>HJC</given-names>
+</name>
+</person-group>
+<article-title>Numerical Integration of the Cartesian Equations of Motion of a System With Constraints: Molecular Dynamics of <italic>n</italic>-Alkanes</article-title>
+<source>Journal of Computational Physics</source>
+<year>1977</year>
+<volume>23</volume>
+<fpage>327</fpage>
+<lpage>341</lpage>
+</element-citation>
+</ref>
+<ref id="R72">
+<label>(72)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>York</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pedersen</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Particle Mesh Ewald: an <italic>N</italic>olog(N) Method for Ewald Sums in Large Systems</article-title>
+<source>Journal of Chemical Physics</source>
+<year>1993</year>
+<volume>98</volume>
+<fpage>10089</fpage>
+<lpage>10092</lpage>
+</element-citation>
+</ref>
+<ref id="R73">
+<label>(73)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Misawa</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kuma</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Miyata</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>MAFFT: a novel method for rapid multiple sequence alignment based on fast Fourier transform</article-title>
+<source>Nucleic Acids Research</source>
+<year>2002</year>
+<volume>30</volume>
+<fpage>3059</fpage>
+<lpage>3066</lpage>
+</element-citation>
+</ref>
+<ref id="R74">
+<label>(74)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clamp</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cuff</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Searle</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>The Jalview Java alignment editor</article-title>
+<source>Bioinformatics</source>
+<year>2004</year>
+<volume>20</volume>
+<fpage>426</fpage>
+<lpage>427</lpage>
+</element-citation>
+</ref>
+<ref id="R75">
+<label>(75)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Turoňovň</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sikora</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Schurmann</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hagen</surname>
+<given-names>WJ</given-names>
+</name>
+<name>
+<surname>Welsch</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Blanc</surname>
+<given-names>FE</given-names>
+</name>
+<name>
+<surname>von Bülow</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gecht</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bagola</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Horner</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>In situ structural analysis of SARS-CoV-2 spike reveals flexibility mediated by three hinges</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>370</volume>
+<fpage>203</fpage>
+<lpage>208</lpage>
+</element-citation>
+</ref>
+<ref id="R76">
+<label>(76)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Teese</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Langosch</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Role of GxxxG Motifs in Transmembrane Domain Interactions</article-title>
+<source>Biochemistry</source>
+<year>2015</year>
+<volume>54</volume>
+<fpage>5125</fpage>
+<lpage>5135</lpage>
+</element-citation>
+</ref>
+<ref id="R77">
+<label>(77)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yao</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Weng</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Molecular architecture of the SARS-CoV-2 virus</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>183</volume>
+<fpage>730</fpage>
+<lpage>738</lpage>
+</element-citation>
+</ref>
+<ref id="R78">
+<label>(78)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choi</surname>
+<given-names>YK</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Frank</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Woo</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Yeom</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Croll</surname>
+<given-names>TI</given-names>
+</name>
+<name>
+<surname>Seok</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Im</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Structure, Dynamics, Receptor Binding, and Antibody Binding of the Fully Glycosylated Full-Length SARS-CoV-2 Spike Protein in a Viral Membrane</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2021</year>
+<volume>17</volume>
+<fpage>2479</fpage>
+<lpage>2487</lpage>
+</element-citation>
+</ref>
+<ref id="R79">
+<label>(79)</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Betts</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Russell</surname>
+<given-names>RB</given-names>
+</name>
+</person-group>
+<source>Bioinformatics for geneticists</source>
+<person-group person-group-type="editor">
+<name>
+<surname>Barnes</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Gray</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<publisher-name>Wiley New York</publisher-name>
+<publisher-loc>New York, USA</publisher-loc>
+<year>2003</year>
+<volume>317</volume>
+<fpage>289</fpage>
+<lpage>316</lpage>
+</element-citation>
+</ref>
+<ref id="R80">
+<label>(80)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ho</surname>
+<given-names>BK</given-names>
+</name>
+<name>
+<surname>Coutsias</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Seok</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Dill</surname>
+<given-names>KA</given-names>
+</name>
+</person-group>
+<article-title>The flexibility in the proline ring couples to the protein backbone</article-title>
+<source>Protein Science</source>
+<year>2005</year>
+<volume>14</volume>
+<fpage>1011</fpage>
+<lpage>1018</lpage>
+</element-citation>
+</ref>
+<ref id="R81">
+<label>(81)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>te Riet</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Joosten</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Reinieren-Beeren</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Figdor</surname>
+<given-names>CG</given-names>
+</name>
+<name>
+<surname>Cambi</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>N-glycan mediated adhesion strengthening during pathogen-receptor binding revealed by cell-cell force spectroscopy</article-title>
+<source>Scientific Reports</source>
+<year>2017</year>
+<volume>7</volume>
+<elocation-id>6713</elocation-id>
+</element-citation>
+</ref>
+<ref id="R82">
+<label>(82)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yoon</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Nakayama</surname>
+<given-names>K-i</given-names>
+</name>
+<name>
+<surname>Takahashi</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Yagi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Utkina</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Kato</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Sadilek</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hakomori</surname>
+<given-names>S-i</given-names>
+</name>
+</person-group>
+<article-title>Interaction of N-linked glycans, having multivalent GlcNAc termini, with GM3 ganglioside</article-title>
+<source>Glycoconjugate Journal</source>
+<year>2006</year>
+<volume>23</volume>
+<fpage>639</fpage>
+<lpage>649</lpage>
+</element-citation>
+</ref>
+<ref id="R83">
+<label>(83)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yoon</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Ikeda</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Sadilek</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hakomori</surname>
+<given-names>S-i</given-names>
+</name>
+<name>
+<surname>Ishida</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kiso</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Self-recognition of N-linked glycans with multivalent GlcNAc, determined as ceramide mimetic conjugate</article-title>
+<source>Glycobiology</source>
+<year>2007</year>
+<volume>17</volume>
+<fpage>1007</fpage>
+<lpage>1014</lpage>
+</element-citation>
+</ref>
+<ref id="R84">
+<label>(84)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Marquardt</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Heberle</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Greathouse</surname>
+<given-names>DV</given-names>
+</name>
+<name>
+<surname>Koeppe</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Standaert</surname>
+<given-names>RF</given-names>
+</name>
+<name>
+<surname>Van Oosten</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Harroun</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Kinnun</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Wassall</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Kat-saras</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Lipid bilayer thickness determines cholesterol’s location in model membranes</article-title>
+<source>Soft Matter</source>
+<year>2016</year>
+<volume>12</volume>
+<fpage>9417</fpage>
+<lpage>9428</lpage>
+</element-citation>
+</ref>
+<ref id="R85">
+<label>(85)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dai</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Alwarawrah</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Instability of Cholesterol Clusters in Lipid Bilayers and The Cholesterol’s Umbrella Effect</article-title>
+<source>Journal of Physical Chemistry B</source>
+<year>2010</year>
+<volume>114</volume>
+<fpage>840</fpage>
+<lpage>848</lpage>
+</element-citation>
+</ref>
+<ref id="R86">
+<label>(86)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sakai</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ohuchi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ohuchi</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Fatty Acids on the A/USSR/77 Influenza Virus Hemagglutinin Facilitate the Transition from Hemifusion to Fusion Pore Formation</article-title>
+<source>Journal of Virology</source>
+<year>2002</year>
+<volume>76</volume>
+<fpage>4603</fpage>
+<lpage>4611</lpage>
+</element-citation>
+</ref>
+<ref id="R87">
+<label>(87)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Varki</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cummings</surname>
+<given-names>RD</given-names>
+</name>
+<name>
+<surname>Aebi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Packer</surname>
+<given-names>NH</given-names>
+</name>
+<name>
+<surname>Seeberger</surname>
+<given-names>PH</given-names>
+</name>
+<name>
+<surname>Esko</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Stanley</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Hart</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Darvill</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kinoshita</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Symbol Nomenclature for Graphical Representations of Glycans</article-title>
+<source>Glycobiology</source>
+<year>2015</year>
+<volume>25</volume>
+<fpage>1323</fpage>
+<lpage>1324</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Significance</title>
+</caption>
+<p>SARS-CoV2 Spike protein, which forms the basis for high pathogenicity and transmissibility of the virus, is also prime target for the development of both diagnostics and vaccines for the debilitating disease caused by the virus. We present a full model of spike methodically crafted and used to study its atomic-level dynamics by multiple-<italic>μ</italic>s simulations. The results shed new light on the impact of posttranslational modifications in the pathogenicity of the virus. We show how glycan-glycan and glycan-lipid interactions broaden the protein’s dynamical range, and thereby, its effective interaction with the surface receptors on the host cell. Palmitoylation of spike membrane domain, on the other hand, results in a unique deformation pattern that might prime the membrane for fusion.</p>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Overview of full spike system</title>
+<p>(A) Schematic of the different functional domains of the spike, which can be largely divided into the head and stock domains: N-terminal domain (NTD), receptor binding domain (RBD), fusion peptide (FP), heptad repeat 1 (HR1), central helix (CH), connecting domain (CD), spike neck, heptad repeat 2 (HR2), transmenbrane domain (TM) and cytoplasmic tail (CT). The residue ranges of these domains are provided along with the experimentally identified glycosylation sites marked on top of the domains. Out of these, cryo-EM structures are only available for the spike head, with the missing regions in the structure shown in red. (B) The modeled structures in the spike neck, HR2, TM domain, CT and the 2 connecting linkers are shown. These missing regions in the spike stalk were modeled using a hybrid approach (described in methods). (C) The types of N-linked and O-linked glycans modeled in the full spike structure are shown. (D) The modeled structure of the full-length, palmitoylated and glycosylated spike is shown. Each spike monomer is depicted in surface representation in a different color. The protein is embedded in a membrane bilayer with a lipid composition from endoplasmic reticulum-Golgi intermediate compartment (ERGIC). The constituting glycan components and lipid/palmitoylation types are provided in the legends.</p>
+</caption>
+<graphic xlink:href="EMS141073-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Stability of the modeled TM domain</title>
+<p>(A) The top view of the modeled TM domain as well as the licorice representation of the “GxxxG” motif (residue 1,219-1,223) are shown. (B) Contact maps between a TM monomer and the other two monomers in the TM domain during the trajectory. A black dot is used to indicate the presence of at least one <italic>C<sub>α</sub>-C<sub>α</sub>
+</italic> contact (4.0 Å cutoff) between residues of a monomer and the other two monomers. (C) TM monomers’ self-rotation and tilt motions. The self-rotation of each monomer is calculated with respect to its equilibrated configuration, and the tilt angle is measured with respect to the whole TM domain. The heat map for the distribution of the tilt angle versus the self-rotation angle is shown for the TM monomer 1 (D), monomer 2 (E), and monomer 3 (F).</p>
+</caption>
+<graphic xlink:href="EMS141073-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Global conformational dynamics of spike</title>
+<p>(A) The schematic depicts the calculated bend and twist motions of the spike head (grey) around the spike neck (blue), the HR2 domain (red) and the TM domain (green), as well as the calculated head distances with respect to these domains. The probability distribution (in terms of normalized frequency) of the (B) twist, (C) bend, and (D) distance of the spike head with respect to the spike neck, HR2 domain and TM domain are provided. The top and bottom plots show the distributions observed in the fully-glycosylated spike and the non-glycosylated spike. Example snapshots of the spike (surface representation with each monomer in a different color) displaying the largest head twist with respect to the (E) spike neck, (F) the HR2 domain, and (G) the TM domain are shown for the fully-glycosylated system. Similarly, example snapshots of the spike showing the largest head bend with respect to the (H) spike neck, (I) the HR2 domain, and (J) TM domain are shown.</p>
+</caption>
+<graphic xlink:href="EMS141073-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Multiple sequence alignment of spike homologs.</title>
+<p>(A) Structure of the stalk region of spike in our model is shown. Pro and Gly residues of the linkers are shown in van der Waals representation. (B) The sequence of SARS-CoV-2 spike is aligned with those from closely related virues (bat coronavirus RaTGl3 and six other human HCoV viruses). The residues are colored according to their physiochemical properties in different shades of rainbow colors (Taylor coloring scheme). The different domains and linkers are labeled at the top of the sequence. The completely and partially conserved Pro and Gly residues present in the flexible linkers are enclosed in black boxes. Conservation between the different sequences is visualized as histograms with their heights, and color variation from brown to yellow, reflecting the level of conservation of physicochemical properties. Conserved and identical amino acid columns show the highest score of 11 and are indicated by ‘*’, whereas conserved and similar amino acid columns show a score of 10 and are indicated by ‘+’. Other groupings are indicated by lower scores accordingly.</p>
+</caption>
+<graphic xlink:href="EMS141073-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>Glycan-glycan and glycan-lipid interactions</title>
+<p>(A) Time series of the HR2 tilt angle towards the membrane in the glycosylated (red) and non-glycosylated (black) simulations (distribution histogram shown on the side). The number of heavy-atom contacts (within 4.5Å) between the glycans at N1194 and lipids over the course of the trajectory is also shown (bottom). The contacts shown use the same color scheme as the corresponding monomer and glycan representations shown in (B) and (D). (B) Snapshot of the glycan at N1194 contacting with lipids in van der Waals representation and zoomed in detail shown in inset in licorice representation. Glycans in the front are labeled. (C) Similar tilt angle between the HR2 domain and the neck region of the glycosylated (red) and non-glycosylated (black) simulations along with the distribution histogram (side). The glycan-glycan heavy atom contacts between N1173 on HR2 and N1158 on the neck region is shown as points (bottom). (D) Snapshot of the glycan at N1173 (same color scheme as chains) contacting with glycans at N1168 (red) in van der Waals representation and zoomed in detail shown in inset in licorice representation.</p>
+</caption>
+<graphic xlink:href="EMS141073-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<title>Global dynamics correlation in spike</title>
+<p>(A) Vectors representing the different domains of the spike (arrows in red): spike head (top), HR2 (middle), TM (bottom), and their orthogonalized sub-vectors (arrows in blue) in orthogonal planes of spike head (u3l, u32 and u33) and TM (u2). Headl and Head2 (arrows in green) are respectively the portions of the head vector on the HR2-TM plane and the one perpendicular to it, representing the lateral and axial movements of the head. (B) The time-series of the Al, A2 and A3 angles introduced in (A) are shown for the fully-glycosylated spike. (C) The time-series of the Gram-Schmidt process for computing the dot product between the u2 and u32 vectors in (A) is shown. A value of +1 means the vectors are pointing in the same direction and a value of -1 means that they are pointing in the opposite direction. (D) The conformational ensemble of the spike generated by taking 100 images evenly distributed over the trajectory of the fully-glycosylated spike and superimposed on the stalk region (the HR2 and TM domains). The color changes from red to blue over the time. Cartoon representation of the spike on top (spike head depicted as triangle and different stalk domains connected by lines) in green box are the favored (highly sampled) conformations, whereas representations in red box are rarely sampled during the simulations.</p>
+</caption>
+<graphic xlink:href="EMS141073-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<title>Membrane curvature modulation by palmitoylation</title>
+<p>(A) Section view of the membrane embedded palmitoylated spike is shown. The coloring scheme for the lipid composition is identical to <xref ref-type="fig" rid="F1">Fig. 1D</xref>, with the palmitoylations and lipid head groups displayed in red and blue surfaces, respectively. (B) Fitted surface (periodic) with lipid head group coordinates used for the calculation of curvature. (C) The mean curvature of the fitted membrane surface of the upper and lower leaflets as in (B). The left and right panels show the curvature profiles at the end of the simulations of non-palmoytilated and palmitoylated TM domains. The heavy atoms of the TM domain (yellow) and palmitoyls (black) are also shown.</p>
+</caption>
+<graphic xlink:href="EMS141073-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<title>Impact of post-translational modifications on spike global dynamics and membrane deformation.</title>
+<p>The host cellular membrane with binding receptors are shown at the top, and the viral envelope containing multiple spikes at the bottom. Each spike head is shown in three colors, representing the three constituting monomers, and the different stalk domains are also shown in different colors. Spike copies shown from left to right highlight the following results: i) correlated motions of the spike head and stalk allowing reorientation of the spike head with respect to the receptor (stick representations of the spike in favorable and unfavorable orientations also shown on the side); ii) global motion of the spike head around the stalk (twisting and bending motions) allowing it to broaden its reach for the cellular receptors and optimally binding to it; iii) membrane curvature induced by palmitoylation potentially plays a role in viral fusion; iv) glycan-lipid and glycan-glycan interactions restricting/modulating the stalk motions. Created with <email>BioRender.com</email>.</p>
+</caption>
+<graphic xlink:href="EMS141073-f008"/>
+</fig>
+</floats-group>
+</article>

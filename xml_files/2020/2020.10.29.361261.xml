@@ -1,0 +1,3486 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS102746</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.29.361261</article-id>
+<article-id pub-id-type="archive">PPR232352</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Modeling the Opening SARS-CoV-2 Spike: an Investigation of its Dynamic Electro-Geometric Properties</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Kucherova</surname>
+<given-names>Anna</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Strango</surname>
+<given-names>Selma</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Sukenik</surname>
+<given-names>Shahar</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Theillard</surname>
+<given-names>Maxime</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>Department of Applied Mathematics, University of California, Merced, California 95343, USA</aff>
+<aff id="A2">
+<label>b</label>Department of Chemistry and Chemical Biology, University of California, Merced, California 95343, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>mtheillard@ucmerced.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>01</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>29</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The recent COVID-19 pandemic has brought about a surge of crowd-sourced initiatives aimed at simulating the proteins of the SARS-CoV-2 virus. A bottleneck currently exists in translating these simulations into tangible predictions that can be leveraged for pharmacological studies. Here we report on extensive electrostatic calculations done on an exascale simulation of the opening of the SARS-CoV-2 spike protein, performed by the Folding@home initiative. We compute the electric potential as the solution of the nonlinear Poisson-Boltzmann equation using a parallel sharp numerical solver. The inherent multiple length scales present in the geometry and solution are reproduced using highly adaptive Octree grids. We analyze our results focusing on the electro-geometric properties of the receptor-binding domain and its vicinity. This work paves the way for a new class of hybrid computational and data-enabled approaches, where molecular dynamics simulations are combined with continuum modeling to produce high-fidelity computational measurements serving as a basis for protein bio-mechanism investigations.</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>covid-19</kwd>
+<kwd>Spike protein</kwd>
+<kwd>Molecular trajectory</kwd>
+<kwd>Poisson-Boltzmann</kwd>
+<kwd>multiscale modelling</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">Since its emergence in December 2019, the novel severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) continues to be a major concern due to its high transmission rate and worldwide presence [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R42">42</xref>, <xref ref-type="bibr" rid="R44">44</xref>]. The mechanism by which the virus interacts with cells is mediated by the receptor-binding domain (RBD) on the SARS-CoV-2 spike protein (S protein). The full S protein, composed of three identical S proteins to form a homotrimer, binds to the human angiotensin-converting enzyme 2 (ACE2), and this interaction is the principal instrument for viral infection [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R33">33</xref>].</p>
+<p id="P3">Multiple studies maintain that the spike protein’s structure and fxunction are two features highly responsible for cell infection because the conformational rearrangement of the S protein reveals its binding interface [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R37">37</xref>, <xref ref-type="bibr" rid="R39">39</xref>]. Recently, Zimmerman <italic>et al</italic>. [<xref ref-type="bibr" rid="R46">46</xref>] produced the first molecular dynamics simulation of the spike opening. This computational <italic>tour de force</italic> involved millions of citizen scientists collaborating through the Folding@home initiative [<xref ref-type="bibr" rid="R1">1</xref>], and produced an overall 0.1s of molecular trajectories. For a full characterization of the protein interaction, the molecular trajectory may not be enough.</p>
+<p id="P4">One aspect that may provide some insight into the interactions of the S protein is the electrostatic potential it generates. Indeed, according to a previous study, the affinity constant for the RBD of SARS-CoV-2 to the ACE2 is 10 to 15 times greater than that of SARS-CoV, potentially contributing to its transmission efficiency [<xref ref-type="bibr" rid="R37">37</xref>]. The reason for the higher binding affinity was attributed to several mutations, most notably from the residue Val404, found in SARS-CoV, to the positively charged Lys417 in SARS-CoV-2. This mutation resulted in an intensified electrostatic potential complementarity between the negatively charged ACE2 binding site and the now more positively charged RBD of SARS-CoV-2 [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R37">37</xref>]. To understand the contribution of charges, and also to help inform drug design strategies that leverage this distribution, it is imperative to understand how the S protein electrostatic potential changes during its opening.</p>
+<p id="P5">Although the electrostatic surface between the closed and open conformations of the spike protein is well characterized, all of the aforementioned work examine static structural data [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R37">37</xref>]. There is a deficit of numerical quantification regarding the surface of the entire S protein, the electrostatic potential on and around the protein’s surface, and how these properties vary as the protein transitions from a closed to an open conformation.</p>
+<p id="P6">In this work, we leverage the S protein opening tra jectory created by the Folding@home initiative to examine and characterize the electrostatic potential of the SARS-CoV-2 S protein during trimer opening. The novelty of our exploration lies in the combination of molecular dynamics simulation with partial differential equation modeling to obtain dynamical electric potential maps, thus revealing variations of the electro-geometric properties of the S protein. At each frame of the simulated tra jectory, we reconstruct the S protein surface and calculate the generated electric potential with the approach developed by Mirzadeh <italic>et al</italic>. [<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>]. Using adaptive non-graded Octree grids and sharp discretizations we efficiently produce high-fidelity solutions to the non-linear Poisson-Boltzmann equation. In the continuum model, all temporal variation may be neglected, and as a consequence, all potential maps are independent, making their computation parallelizable.</p>
+<p id="P7">Our study of the electrostatic dynamics of the S protein opening reveals dramatic rearrangements of the electrostatic field during this process. These rearrangements act to localize a negatively charged field towards the interior of the S protein and expose a positive surface of its residue binding domain. This is in line with the negative charge of the target binding region on the ACE2 receptor and may aid the S protein in binding to its target with high affinity.</p>
+<p id="P8">The paper is arranged as follows: in <xref ref-type="sec" rid="S3">section 2.1</xref>, we present our molecular tra jectory emphasis and investigate the spike protein’s conformational changes. The dynamical electrostatic and geometric properties of the spike protein are characterized in <xref ref-type="sec" rid="S7">section 2.2</xref>, followed by an analysis and fundamental takeaways in <xref ref-type="sec" rid="S12">section 3</xref>. <xref ref-type="sec" rid="S14">Section 4.1</xref> entails a thorough mathematical design for the calculation of the potential field that was carried out on each frame in the trajectory. <xref ref-type="sec" rid="S19">Section 4.2</xref> encapsulates the numerical method used accompanied by a convergence study for computational validation.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<label>2</label>
+<title>Results</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Opening of the SARS-CoV-2 Spike Protein</title>
+<p id="P9">The S protein exists primarily in the closed configuration, hiding the three identical RBDs in its core [<xref ref-type="bibr" rid="R46">46</xref>]. The Folding@home trajectory focuses on the opening of the unglycosylated, uncleaved spike configuration through the detachment of a single monomer from the spike’s core, revealing its associated binding site. A similar (but not identical) monomeric-opening state has recently shown to be populated in ≈ 16% of the unbound spike population in a recent cryoEM study [<xref ref-type="bibr" rid="R5">5</xref>].</p>
+<sec id="S4">
+<label>2.1.1</label>
+<title>Simulated Trajectory</title>
+<p id="P10">The trajectory, from Zimmerman <italic>et al</italic>. [<xref ref-type="bibr" rid="R46">46</xref>] contains a 71-frame sequence that captures the most populated pathway of the spike protein’s transition from its closed to open state. This path was calculated by means of a goal-oriented adaptive sampling algorithm (FAST, [<xref ref-type="bibr" rid="R45">45</xref>]) to favorably sample spike opening.</p>
+<p id="P11">Each frame consists of a list of <italic>N</italic> = 51, 671 atoms, represented by their positions <italic>x<sub>i=1..N</sub>
+</italic>, radius <italic>r<sub>i=1..N</sub>
+</italic> and fixed partial charge <italic>z<sub>i=1..N</sub>
+</italic>. Throughout these frames, the protein undergoes continuous deformations which shift the receptor-binding domain of one of the monomers from being hidden, while the spike is in its closed conformation, to being fully exposed once the spike opens. <xref ref-type="fig" rid="F1">Figure 1a</xref> and <xref ref-type="fig" rid="F1">1b</xref> represent the protein’s molecular structure in the open and closed configurations. Each one of its chains is depicted in a different color to illustrate the protein’s trimeric structure. The revealed receptor-binding domain is located at the opening extremity of the red chain (see <xref ref-type="fig" rid="F1">Fig. 1a,1b</xref>).</p>
+</sec>
+<sec id="S5">
+<label>2.1.2</label>
+<title>Relative Opening Measurement</title>
+<p id="P12">To provide preliminary quantification of the spike opening, dozens of atom pairs on opposing sides of the spike were chosen and the distance between them measured as the spike transitions from one conformation to another (i.e. as a function of frame) (<xref ref-type="fig" rid="F1">Fig.1a and b</xref>). One of the atoms in the pair was chosen from the binding interface, the monomer depicting in red in <xref ref-type="fig" rid="F1">Fig.1(a and b)</xref>, while the second atom in the pair was chosen across the top of the spike opening. Although all pairs presented the same general trajectory, four of these atom pairs were arbitrarily chosen as a subset for illustration.</p>
+<p id="P13">The resulting relative distance between the atom pairs is measured in Angstroms (Å), as shown in <xref ref-type="fig" rid="F1">Fig. 1c</xref>. The lines labeled 1, 2, 3, and 4 refer to the behavior of the four-pair subset, with their average behavior depicted in black. All four measurements generally follow the same trend. This extension happens continuously outside of frames 50 to 55 which show abrupt variations.</p>
+</sec>
+<sec id="S6">
+<label>2.1.3</label>
+<title>Magnitude of the Conformation Change</title>
+<p id="P14">To measure the total structural deformation we compute the root-mean-square deviation (RMSD). It measures the average distance between atoms in the current position and some reference configuration, defined here as the initial closed configuration. Specifically <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mi>R</mml:mi>
+<mml:mi>M</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:msup>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msubsup>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:msqrt>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where the superscripts <italic>n</italic> and 1 are for the current and initial states. Despite large variations at the initial and final stages, the RMSD evolution (depicted in <xref ref-type="fig" rid="F1">Fig. 1d</xref>), shares similar features with the evolution of the relative opening. These similarities suggest that the significant transformation that occurs during the opening are recapitulated by the 4 distances in <xref ref-type="fig" rid="F1">Fig. 1c</xref>.</p>
+</sec>
+</sec>
+<sec id="S7">
+<label>2.2</label>
+<title>Computational Investigation</title>
+<p id="P15">The S protein remains predominantly in the closed conformation to mask its receptor-binding domains (RBDs), thereby impeding their binding. To bind with ACE2, the S protein transforms into its open conformation, revealing its binding interface [<xref ref-type="bibr" rid="R46">46</xref>].</p>
+<p id="P16">In describing our results, we refer to the part of the spike containing the three RBDs as the top part, and the predominantly negatively charged portion binding to the virus capsid as the bottom part.</p>
+<p id="P17">Our simulations (see <xref ref-type="fig" rid="F2">Fig. 2a</xref>) illustrate that the top part of the spike protein is predominantly positively charged, in accordance with the negative charge of the ACE2 binding site (see <xref ref-type="fig" rid="F3">Fig. 3a</xref>). Surprisingly, the top of the spike also reveals an underlying core with a surface area that has a dense negative charge. As the spike opens, this area could be exposed to the solvent, generating a negatively charged electrostatic cloud in the upper part of the protein, which may repulse the negatively charged ACE2 receptor. Therefore, we wanted to characterize the dynamics of the geometrical and electric properties of this negatively charged core <italic>X</italic> (<xref ref-type="fig" rid="F2">Fig. 2b</xref>), the resulting repulsive cloud <italic>C</italic> (<xref ref-type="fig" rid="F2">Fig. 2c</xref>), the binding site <italic>B</italic> (<xref ref-type="fig" rid="F3">Fig. 3c</xref>), and the far electric field of the spike protein as they shift from the dynamics that occur during spike opening.</p>
+<sec id="S8">
+<label>2.2.1</label>
+<title>Negatively Charged Core</title>
+<p id="P18">We defined the negatively charged core <italic>χ</italic>, illustrated in <xref ref-type="fig" rid="F2">Fig. 2b</xref>, as the area of the SES in the top of the protein where the electric potential is more negative than a threshold value <italic>c<sub>χ</sub>
+</italic> = −5. <xref ref-type="fig" rid="F2">Figure 2 c and d</xref> depict the evolution of its surface and average charge. As the spike opens, the area shrinks by about 50%, while the variation in the average potential remains small (≈ 10%). In both cases, the most significant variations happen during the first 10 iterations. In comparison, the molecular structure analysis (see <xref ref-type="fig" rid="F1">Fig. 1</xref>) displays continuous variation over the entirety of the trajectory, indicating that the structural and electro-geometric transformations are non-trivially coupled. The diminution of both quantities could be explained by the fact that the spike opening removes a barrier, one of the monomers, between the core and solvent, causing the dilution of the surface charges in the solvent, and therefore a contraction of the core and its charge.</p>
+</sec>
+<sec id="S9">
+<label>2.2.2</label>
+<title>Repulsive Electric Cloud</title>
+<p id="P19">We define the negatively charged electric cloud &#119966;, generated by the core <italic>χ</italic>, as the region in the upper part of the solvent where the potential is below the threshold value <italic>c<sub>&#119966;</sub>
+</italic> = −2 (see <xref ref-type="fig" rid="F2">Fig. 2c</xref>). The measurements presented in <xref ref-type="fig" rid="F2">Fig. 2d and e</xref> indicate &#119966; expands by ≈ 42% as the spike opens, while its average potential decreases in magnitude by 30%. Again we interpret this phenomenon as an effective dissolution of the negative charges induced by the removal of the protecting monomer.</p>
+<p id="P20">For both geometries <italic>χ</italic> and &#119966;, we observe large variations in the first 10 frames. The abrupt change (around frame 50) in the protein structure, discussed in <xref ref-type="sec" rid="S3">section 2.1</xref>, is only perceptible in the size variation of the electric cloud &#119966;.</p>
+</sec>
+<sec id="S10">
+<label>2.2.3</label>
+<title>Binding Site Characterization</title>
+<p id="P21">The interface between the SARS-CoV-2 receptor-binding domain (RBD) and ACE2 are of particular interest as the binding of the two facilitates virus entry into cells [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R33">33</xref>]. Lan et al. [<xref ref-type="bibr" rid="R18">18</xref>] undertook the task of determining the residues of the RBD and ACE2 interface which form a connection, finding the location of the binding site on the spike, ℬ, to consist of 17 residues between Lys417-Tyr505 and the ACE2 site to be formed of 20 residues between Gln24-Tyr83 and Asn330-Arg393.</p>
+<p id="P22">For this analysis we define the binding site, ℬ, for the spike and the ACE2 receptor as the portion of the proteins SES generated by the residues sequences [417–505] and [24–42] ∪ [79– 83] ∪ [330] ∪ [354–357] ∪ [393] respectively. The spike RBD is generated by the sequence [333-527]. When the spike is in the closed position ℬ is located near its center, but as the spike shifts to its open conformation, <italic>B</italic> is moved outward and exposed to the solvent, as seen in <xref ref-type="fig" rid="F4">Fig. 4</xref>. As the spike opens, we monitor the evolution of the binding site area, average absolute curvature, and potential. The average is computed over the binding site surface. We interpret the average absolute curvatures as measures of the global convexity of the binding site. For the potential evolution, we distinguish between the average potential, average positive potential, and average negative potential.</p>
+<p id="P23">
+<xref ref-type="fig" rid="F3">Figure 3</xref> provides a depiction of the resulting information. A relative decrease is observed for the area and average absolute curvature: as the spike opens the binding site shrinks and flattens, in each case by 10 – 15%, suggesting minor conformational changes. The average negative potential also experiences a decrease, becoming less negative as the spike opens. Meanwhile, the average positive potential remains fairly constant, resulting in the total average potential of ℬ following very closely with the changes in average CHECK and ultimately nearing 0 in the final frame. This increase in average potential is consistent with the knowledge that the ACE2 receptor it is designed to bind to is negatively charged, and may be important in directing the ACE2 binding to the correct region.</p>
+</sec>
+<sec id="S11">
+<label>2.2.4</label>
+<title>Electric Field Structure</title>
+<p id="P24">The spike electric far-field streamlines are depicted in <xref ref-type="fig" rid="F4">Fig. 4</xref>. In the closed configuration, the majority of streamlines emanating from the bottom part of the spike are pointing away from the spike. Only a few of them, caused by the rare presence of positive charges, return rapidly to the protein. In the upper part, the streamlines are predominantly closed, suggesting that in this configuration the spike protein may not be able to attract charges of any polarity at long range, and therefore has limited attracting potential. This may cause a lower affinity. As the spike opens, the streamlines in the bottom remain unchanged. However, at the top of the protein, the streamlines are now predominantly open.</p>
+<p id="P25">
+<xref ref-type="fig" rid="F5">Fig 5(a)-(b)</xref> depicts the entire electric field structure along with the region in the solvent where the electric field point away from the protein, or equivalently where negative charges would be drawn to the spike. In the closed configuration, this region is predominantly located above the spike, while in the open configuration it is split into three sub-regions, each centered around one of the RBDs. In the latter, the sub-region centered around the revealed RBD represents 45% of the total region and carries 34% of its total electric potential energy.</p>
+<p id="P26">To characterize the restructuring of the electric field of the S protein, we define the first four moments of the non-dimensional charge distribution <italic>q</italic>(x) = sinh(− ψ(x)) in the solvent <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:mtext>Total</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>Charge</mml:mtext>
+<mml:mspace width="2.0em"/>
+<mml:mi>C</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mi>q</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:msup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+</mml:math>
+</disp-formula> <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:mtext>Dipole</mml:mtext>
+<mml:mspace width="2.0em"/>
+<mml:msub>
+<mml:mi>D</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mi>q</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+</mml:math>
+</disp-formula> <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:mtext>Quadrupole</mml:mtext>
+<mml:mspace width="2.0em"/>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mi>q</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>⋅</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+</mml:math>
+</disp-formula> <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M5">
+<mml:mtext>Octupole</mml:mtext>
+<mml:mspace width="2.0em"/>
+<mml:msub>
+<mml:mi>O</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mi>q</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>15</mml:mn>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>⋅</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P27">Note that the last two moments are defined in their symmetric traceless form, as they would be for a standard electrostatic multipole expansion. Because here our continuum model is more complex, it should be reminded that these four moments are not guaranteed to be the ones appearing in the multipole expansion. Nonetheless, they remain a pertinent tool to characterize the structure of the electrostatic solution. Their evolution throughout the opening, illustrated in <xref ref-type="fig" rid="F5">Fig. 5c</xref>, show that the strength of the dipole (<italic>D</italic>) is decreasing, while all other moments norms are increasing. The two most informative moments for the structure of the electric field, the dipole and the quadrupole, are diminished by 9% and increased by 67% respectively. The principal direction of <italic>Q</italic> associated to the positive eigenvector appears to remain quasiparallel to the dipole direction. In fact, all four directions (the dipole direction and the three principal directions of <italic>Q</italic>) appear to undergo the same rotation. The opening also reinforces the anisotropy in the tensor <italic>Q</italic>, by amplifying the difference between the magnitude of its eigenvalues, compressing one of its directions and effectively turning it into a two-dimensional quadrupole.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S12" sec-type="discussion">
+<label>3</label>
+<title>Discussion</title>
+<p id="P28">The overarching objective was to reveal the impact of the SARS-CoV-2 spike protein’s transition from its open to closed conformation. Thus, we examined the entire protein’s electrostatic potential dynamics, focusing particularly on its receptor-binding domains. In the Folding@home trajectory we analyzed, one of the three monomers detaches from the core of the complex and becomes visible to the surrounding environment, consistent with recent cryo-EM derived structures [<xref ref-type="bibr" rid="R5">5</xref>]. Our results show that despite the dramatic molecular displacement engendered by this strategic re-positioning, the geometric and electric properties of the RBD itself remain largely unaltered. Rather, as we describe below, changes emanating from the exposure of the core of the S protein cause a change in the electric fields surrounding the RBD.</p>
+<p id="P29">Our continuum analysis, both of the surface potential and the volumetric potential in the vicinity of the binding region point to the existence of an inner negatively charged core on the surface of the spike, which is revealed to the solvent as the spike opens. This negatively charged surface shrinks as the spike opens, inducing a negatively charged region between the exposed RBD and the two hidden ones. The emergence of this electric cloud is a <italic>priori</italic> puzzling: the binding site of the ACE2 receptor being almost entirely negatively charged, we would expect this cloud to repulse the receptor. However, this cloud does not envelop the spike’s binding site, <italic>B</italic>, which becomes more positively charged. This is in line with what we expect is a strong binder of the ACE2 receptor, and indicates that targeting the open state of the S protein may be a more viable drug design strategy than the closed configuration. Indeed, recent cryoEM studies indicated that ≈ 16% of a recombinantly expressed S protein population is in an open state, with a single monomer “erected” from the core [<xref ref-type="bibr" rid="R5">5</xref>].</p>
+<p id="P30">The electric field, which we observe uncoiling above the protein, exhibits a dramatic rearrangement. This is correlated to the emergence of the negatively charged cloud and manifests in the multipole moments decomposition. In particular, we observe the quadrupole moment growing in magnitude, rotating, and compressing one of its principal directions. This transformation can be interpreted as a strategic transition from an undirected configuration where the entire top part of the spike is attracting negatively charged structures, such as the ACE2 binding site, to one where the attraction is directed toward a specific RBD.</p>
+<p id="P31">At the computational level, we have developed a novel framework, combining molecular dynamics simulations with a continuum physics numerical solver to produce high-resolution multiscale dynamical potential maps of deforming proteins and their surrounding environment. Our framework includes practical mathematical tools to quantify the numerical error and characterize protein electro-geometric properties. The molecular trajectories alone are insufficient for understanding protein electrostatic interactions and thus, protein core bio-mechanisms. On the other hand, it is unrealistic to envision an approach where trajectories of such a large protein could be obtained solely through continuum modeling. We believe hybrid approaches, such as the one presented here, can provide the scientific community with invaluable information, which we hope can be used to elucidate how changes to physical properties such as electrostatics translate into function.</p>
+<p id="P32">The progression of time will uncover a multitude of breakthroughs regarding the behavior of the SARS-CoV-2 S protein. In the short time since the conception of our investigation, numerous discoveries by other researchers have been made public already. For example, the trajectory presented in [<xref ref-type="bibr" rid="R46">46</xref>] contains glycans, chemical compounds known to coat the exterior of many viruses, which may have an impact on the results presented here. Recall that the trajectory we explored here is simply one possible path the spike may follow, and so there is a possibility that a different trajectory would be a more accurate representation of the true function of the spike protein. Recent studies displayed cryo_EM structures for the spike, presenting an open configuration that differs from the open configuration represented here [<xref ref-type="bibr" rid="R40">40</xref>, <xref ref-type="bibr" rid="R36">36</xref>]. A similar analysis to the one presented here may be required on different structures, as more probable trajectories are predicted and novel molecular structures uncovered, to capture a more relevant image of the electric potential on and around the spike. Utilizing the same scientific pipeline, we are confident high-fidelity quantitative insights — into the electric potential of molecules unrestricted to the one investigated here — could be obtained efficiently, supporting the global scientific effort.</p>
+</sec>
+<sec id="S13" sec-type="methods">
+<label>4</label>
+<title>Method</title>
+<sec id="S14">
+<label>4.1</label>
+<title>Continuum Modelling</title>
+<p id="P33">The Poisson-Boltzmann equation has long been recognized as the representation of choice to model electric potential. It has drawn significant interest from the computational community since the pioneering calculations of Warwicker and Watson in the early 1980s [<xref ref-type="bibr" rid="R38">38</xref>], which has lead to the production of a broad variety of numerical solvers [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R22">22</xref>] and open source software [<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R32">32</xref>], built over the traditional spectrum of numerical methods. Such tools are, for example, employed in the context of drug development and discovery, to calculate solvation free energies [<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R28">28</xref>]. Using massively parallel architectures [<xref ref-type="bibr" rid="R11">11</xref>], these calculations can be carried out on considerably large proteins, such as the entire HIV-1 capsid (Protein database entry: 3J3Q, 4, 884, 312 atoms).</p>
+<p id="P34">This section describes the reconstruction of the potential map at each iteration from the current protein structure using the non-linear Poisson-Boltzmann (PB) equation. Because of the way the trajectory has been obtained, all frames are independent. Thus, the potential maps are decoupled and can be computed separately. A more comprehensive model, such as the Poisson-Boltzmann-Nernst-Planck model[<xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R25">25</xref>], would consider the diffusion of the ions and introduce time derivatives in the partial differential equations.</p>
+<p id="P35">Because at the atomic scale (L = 1Å), for typical diffusivities (<italic>D</italic> ≈ 10<sup>-9</sup>
+<italic>m</italic>
+<sup>2</sup>
+<italic>s</italic>
+<sup>-1</sup>), the ionic diffusion time scale <inline-formula>
+<mml:math id="M6">
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>τ</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo>≈</mml:mo>
+<mml:mfrac>
+<mml:msup>
+<mml:mi>L</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>D</mml:mi>
+</mml:mfrac>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mn>10</mml:mn>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>11</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mi>s</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> is orders of magnitude smaller than the estimated opening duration <italic>(τ<sub>O</sub>
+</italic> ≫ 10<sup>−9</sup>
+<italic>s</italic>), these effects can be neglected and the static PB equation is a pertinent model. Readers not interested in the numerical specifics can skip the following <xref ref-type="sec" rid="S14">sections (4.1</xref> and <xref ref-type="sec" rid="S19">4.2</xref>).</p>
+<sec id="S15">
+<label>4.1.1</label>
+<title>Molecular Surfaces</title>
+<p id="P36">A common way of portraying a molecular surface is by use of the van der Waals Surface depiction (see <xref ref-type="fig" rid="F6">Fig. 6b</xref>). Each atom in a molecule is depicted by a sphere with location x<italic>
+<sub>i</sub>
+</italic>=1…N and radius <italic>r<sub>i</sub>
+</italic>=1…N that is defined by an isosurface on their electron density. The union of these spheres, depicted in gray in <xref ref-type="fig" rid="F6">Fig. 6</xref>, forms thevanderWaals Surfaces (vdWS) ofthat molecule. The nature of the vdWS means that some regions might be identified as being exposed to the solvent, while in fact, their geometry makes them inaccessible to the solvent particles. As a consequence, we define the Solvent Accessible Surface (SAS [<xref ref-type="bibr" rid="R19">19</xref>]) of the protein, depicted as the blue outline in <xref ref-type="fig" rid="F6">Fig. 6 b</xref>; it is formed through the addition of the solvent’s particle radius, <italic>r<sub>P</sub>
+</italic>, to each <italic>r<sub>i</sub>=1..N</italic> resulting in a buffer around the vdWS. While the puffed-up SAS depiction may be useful for some areas of study the Solvent Excluded Surface (SES) is preferable when discussing surface details of a molecule [<xref ref-type="bibr" rid="R31">31</xref>], as shown in <xref ref-type="fig" rid="F6">Fig. 6b</xref>. As the name suggests, the inner molecule region defined by this surface includes all locations the solvent cannot occupy including the vdWS and the tiny crevasses on its exterior, shown as concave black triangles at the meeting of atoms A and B in <xref ref-type="fig" rid="F6">Fig. 6b</xref>.</p>
+</sec>
+<sec id="S16">
+<label>4.1.2</label>
+<title>Mathematical Representation and Numerical Construction</title>
+<p id="P37">To represent the biomolecule, we employ the level set method [<xref ref-type="bibr" rid="R30">30</xref>] and capture the SES location as the zero level set of an auxiliary field <italic>ϕ</italic>(x) defined over the domain of interest Ω. The solvent Ω<sup>-</sup>, the Solvent Excluded Surface Г, and the inside of the molecule Ω<sup>+</sup> are defined as <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M7">
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mtext>ℝ</mml:mtext>
+<mml:mn>3</mml:mn>
+</mml:msup>
+<mml:mo>|</mml:mo>
+<mml:mi>ϕ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>&lt;</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:math>
+</disp-formula> <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M8">
+<mml:mtext>Γ</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mtext>ℝ</mml:mtext>
+<mml:mn>3</mml:mn>
+</mml:msup>
+<mml:mo>|</mml:mo>
+<mml:mi>ϕ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:math>
+</disp-formula> <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M9">
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>+</mml:mo>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mtext>ℝ</mml:mtext>
+<mml:mn>3</mml:mn>
+</mml:msup>
+<mml:mo>|</mml:mo>
+<mml:mi>ϕ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>&gt;</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P38">The normal <bold>n</bold> to the interface Г is defined as pointing toward Ω<sup>+</sup>. It is calculated as the normalized level set gradient <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M10">
+<mml:mi mathvariant="bold">n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mtext>∇</mml:mtext>
+<mml:mi>ϕ</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mi>ϕ</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P39">The level set function is constructed following the approach proposed by Mirzadeh <italic>et al</italic>. in [<xref ref-type="bibr" rid="R27">27</xref>]. We start by constructing the level set function <italic>ϕ<sub>SAS</sub>
+</italic>(x) representing the SAS as <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M11">
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>A</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munder accentunder="false">
+<mml:mo>max</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>.</mml:mo>
+<mml:mo>.</mml:mo>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>|</mml:mo>
+<mml:mo>)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P40">The SAS level set function is then reinitialized to be a signed-distance function (<italic>i.e</italic>. |∇<sub>
+<italic>φSAS</italic>
+</sub>| = 1) by solving the reinitialization equation in fictitious time τ until the steady state is reached <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mtext>∂</mml:mtext>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>A</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>∂</mml:mtext>
+<mml:mi>τ</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>+</mml:mo>
+<mml:mtext>sign</mml:mtext>
+<mml:mo>(</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>A</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>)</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:mtext>∇</mml:mtext>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>A</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Ω</mml:mtext>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P41">From the reinitialized function ℛ(<italic>ϕ<sub>SAS</sub>
+</italic>), the SES level set function is then obtained as <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M13">
+<mml:mi>ϕ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>ℛ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>A</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Ω</mml:mtext>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P42">As it was pointed out in [<xref ref-type="bibr" rid="R27">27</xref>], this procedure can create non-physical inner cavities. They are identified by finding physical points disconnected from the contour of the computational domain ∂Ω where the level set function <italic>ϕ</italic>(x) is positive. In practice, such points are isolated by solving the following Laplace problem <disp-formula id="FD13">
+<label>(13)</label>
+<mml:math id="M14">
+<mml:mo>−</mml:mo>
+<mml:mtext>Δ</mml:mtext>
+<mml:mi>c</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>−</mml:mo>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> <disp-formula id="FD14">
+<label>(14)</label>
+<mml:math id="M15">
+<mml:mi>c</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> <disp-formula id="FD15">
+<label>(15)</label>
+<mml:math id="M16">
+<mml:mi>c</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mo>∂</mml:mo>
+<mml:mo>Ω</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> and detecting where <italic>ϕ</italic>(x) &lt; 0 and <italic>c</italic> = 0. The cavities are removed by switching the sign of the level set function at these problematic positions. Finally, for computational purposes the SES level set is systematically reinitialized.</p>
+</sec>
+<sec id="S17">
+<label>4.1.3</label>
+<title>Poisson-Boltzmann Equation</title>
+<p id="P43">The electrostatic potential, Ψ, around a biomolecule immersed in a binary z:z electrolyte solution can be described by the following nonlinear Poisson-Boltzmann (PB) equation, <disp-formula id="FD16">
+<label>(16)</label>
+<mml:math id="M17">
+<mml:mo>−</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mo>⋅</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>ϵ</mml:mi>
+<mml:msub>
+<mml:mi>ϵ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>∇</mml:mo>
+<mml:mo>Ψ</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mo>)</mml:mo>
+<mml:mn>2</mml:mn>
+<mml:msup>
+<mml:mi>c</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:msup>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mi>z</mml:mi>
+<mml:mi>sinh</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>e</mml:mi>
+<mml:mtext>Ψ</mml:mtext>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:msub>
+<mml:mi>q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mo>Ω</mml:mo>
+<mml:mo>\</mml:mo>
+<mml:mo>Γ</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>є</italic> is the relative permittivity, being equal to <italic>є</italic>
+<sup>+</sup> in the molecule (Ω<sup>+</sup>) and <italic>є</italic>
+<sup>-</sup> in the electrolyte (Ω<sup>-</sup>). <italic>є</italic>
+<sub>0</sub> is the permittivity of a vacuum, <italic>N<sub>A</sub>
+</italic> is the Avogadro number, <italic>c<sup>b</sup>
+</italic> is the bulk salt concentration, <italic>e</italic> is the elementary charge, <italic>k<sub>B</sub>
+</italic> is the Boltzmann constant, <italic>T</italic> is the temperature, <italic>z</italic> is the valence of the background electrolyte, <italic>q<sub>i</sub>
+</italic> and <italic>x<sub>i</sub>
+</italic> are the partial charge and position of the <italic>i<sup>th</sup>
+</italic> atom respectively, <italic>N</italic> is the total number of atoms in the molecule. <italic>c<sup>b</sup>(x)</italic> = 0 inside the molecule. In non-dimensional form, the Poisson-Boltzmann equation takes the following form <disp-formula id="FD17">
+<label>(17)</label>
+<mml:math id="M18">
+<mml:mo>−</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mo>⋅</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mi>ϵ</mml:mi>
+<mml:mtext>∇</mml:mtext>
+<mml:mi>ψ</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msubsup>
+<mml:mi>κ</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mi>sinh</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mi>ψ</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mi>δ</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mo>Ω</mml:mo>
+<mml:mo>\</mml:mo>
+<mml:mo>Γ</mml:mo>
+</mml:math>
+</disp-formula> where the characteristic length <italic>L</italic> is chosen to be 1Å, the potential is scaled by the thermal voltage <inline-formula>
+<mml:math id="M19">
+<mml:mo>(</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+<mml:mi>e</mml:mi>
+</mml:mfrac>
+<mml:mo>)</mml:mo>
+</mml:math>
+</inline-formula>, <italic>z<sub>i</sub>
+</italic>is the non-dimensional partial charge on the <italic>i<sup>th</sup>
+</italic> atom, and <inline-formula>
+<mml:math id="M20">
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:msup>
+<mml:mi>c</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>z</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ϵ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+<mml:msup>
+<mml:mi>L</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:msqrt>
+</mml:math>
+</inline-formula> is the non-dimensional inverse of the Debye length. Inside the molecule, <italic>K<sub>D</sub>
+</italic> is null. The constant <inline-formula>
+<mml:math id="M21">
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mi>ϵ</mml:mi>
+</mml:msub>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula> is the non-dimensional Bjerrum length. The above non-dimensional PDE is completed with the following jump conditions on non-dimensional potential <disp-formula id="FD18">
+<label>(18)</label>
+<mml:math id="M22">
+<mml:mo>[</mml:mo>
+<mml:mi>ψ</mml:mi>
+<mml:msub>
+<mml:mo>]</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>[</mml:mo>
+<mml:mi>ϵ</mml:mi>
+<mml:mtext>∇</mml:mtext>
+<mml:mi>ψ</mml:mi>
+<mml:mo>⋅</mml:mo>
+<mml:mi mathvariant="bold">n</mml:mi>
+<mml:msub>
+<mml:mo>]</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:math>
+</disp-formula> where the jump operator is defined for any quantity ζ defined in both domain as [ζ]г = ζ<sup>+</sup> − ζ<sup>−</sup>. All parameters and non-dimensional numbers, along with their values for this study, are summarized in <xref ref-type="table" rid="T1">table 1</xref>.</p>
+</sec>
+<sec id="S18">
+<label>4.1.4</label>
+<title>Solution Decomposition</title>
+<p id="P44">Following [<xref ref-type="bibr" rid="R27">27</xref>], we treat the singularities arising in the solution due to the singular charges inside the molecules by using the decomposition proposed by Chern <italic>et al</italic>. [<xref ref-type="bibr" rid="R8">8</xref>]. Doing so we split the non-dimensional potential <italic>ψ</italic>, into regular and singular parts: <inline-formula>
+<mml:math id="M23">
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:mspace width="0.2em"/>
+<mml:mtext>and</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">¯</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> respectively <disp-formula id="FD19">
+<label>(19)</label>
+<mml:math id="M24">
+<mml:mi>ψ</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:mo>+</mml:mo>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">¯</mml:mo>
+</mml:mover>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P45">The singular part is itself split into two parts <italic>ψ</italic>* and <italic>ψ</italic>
+<sub>0</sub> <disp-formula id="FD20">
+<label>(20)</label>
+<mml:math id="M25">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>Ω</mml:mi>
+<mml:mo>+</mml:mo>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="left">
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>Ω</mml:mi>
+<mml:mo>−</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>ψ</italic>* is the Coulombic potential due to singular charges, <disp-formula id="FD21">
+<label>(21)</label>
+<mml:math id="M26">
+<mml:msup>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mn>4</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:msup>
+<mml:mi>ϵ</mml:mi>
+<mml:mo>+</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:mfrac>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula> and <italic>ψ</italic>
+<sub>0</sub> satisfies the following Poisson’s problem <disp-formula id="FD22">
+<label>(22)</label>
+<mml:math id="M27">
+<mml:mtext>∇</mml:mtext>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mtext>Ω</mml:mtext>
+<mml:mo>+</mml:mo>
+</mml:msup>
+</mml:math>
+</disp-formula> <disp-formula id="FD23">
+<label>(23)</label>
+<mml:math id="M28">
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.5em"/>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P46">Utilizing the decomposition shown above, the regular (non-singular) part of the solution is given by solving <disp-formula id="FD24">
+<label>(24)</label>
+<mml:math id="M29">
+<mml:mo>−</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mo>⋅</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mi>ϵ</mml:mi>
+<mml:mtext>∇</mml:mtext>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>κ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>)</mml:mo>
+<mml:mi>sinh</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mo>Ω</mml:mo>
+<mml:mo>\</mml:mo>
+<mml:mo>Γ</mml:mo>
+</mml:math>
+</disp-formula> subject to the following jump conditions:<disp-formula id="FD25">
+<label>(25)</label>
+<mml:math id="M30">
+<mml:mo>[</mml:mo>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:msub>
+<mml:mo>]</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:math>
+</disp-formula> <disp-formula id="FD26">
+<label>(26)</label>
+<mml:math id="M31">
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:mo>∈</mml:mo>
+<mml:mo>∇</mml:mo>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mo>⋅</mml:mo>
+<mml:mtext>n</mml:mtext>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>Γ</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mo>∈</mml:mo>
+<mml:mo>+</mml:mo>
+</mml:msup>
+<mml:mo>∇</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>ψ</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mrow>
+<mml:mtext>n</mml:mtext>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>Γ</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mspace width="1.0em"/>
+<mml:mo>∀</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>∈</mml:mo>
+<mml:mi>Γ</mml:mi>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P47">Since <italic>ψ</italic>* is known analytically, the gradient, ∇<italic>ψ</italic>*, appearing in the right hand side of <xref ref-type="disp-formula" rid="FD26">(26)</xref> can be computed exactly <disp-formula id="FD27">
+<label>(27)</label>
+<mml:math id="M32">
+<mml:mtext>∇</mml:mtext>
+<mml:msup>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mn>4</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:msup>
+<mml:mi>ϵ</mml:mi>
+<mml:mo>+</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> while <inline-formula>
+<mml:math id="M33">
+<mml:mtext>∇</mml:mtext>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:math>
+</inline-formula>must be numerically approximated.</p>
+</sec>
+</sec>
+<sec id="S19">
+<label>4.2</label>
+<title>Numerical Method</title>
+<p id="P48">The numerical approach for the resolution of the above Poisson-Boltzmann problem is presented in this section, along with novel practical <italic>a postieri</italic> error estimates. We then verify the method for the entire trajectory by conducting a systematic convergence study for these estimators.</p>
+<sec id="S20">
+<label>4.2.1</label>
+<title>Implementation</title>
+<p id="P49">The numerical method, implemented on non-graded adaptive Octree grids, follows the general description given in [<xref ref-type="bibr" rid="R27">27</xref>], with each snapshot of the protein treated independently. The surface and grid generation is done using the level set framework developed by Min and Gibou [<xref ref-type="bibr" rid="R23">23</xref>]. In particular, as <xref ref-type="fig" rid="F7">Fig. 7</xref> illustrates, the mesh is systematically adapted to the SES location. All quantities are stored at the nodes of the mesh for improved accuracy and facilitated manipulation. The numerical solutions of the Poisson systems <xref ref-type="disp-formula" rid="FD13">(13)</xref>
+<xref ref-type="disp-formula" rid="FD14">(14)</xref>–<xref ref-type="disp-formula" rid="FD15">(15)</xref> and <xref ref-type="disp-formula" rid="FD22">(22)</xref>–<xref ref-type="disp-formula" rid="FD23">(23)</xref> (for the cavities detection and the construction of the regular part of the solution ψ<sub>0</sub> respectively) are obtained using the second-order approach presented in [<xref ref-type="bibr" rid="R35">35</xref>], itself based on [<xref ref-type="bibr" rid="R24">24</xref>]. The solution, <inline-formula>
+<mml:math id="M34">
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>, to the problem defined by Eqs. <xref ref-type="disp-formula" rid="FD24">(24)</xref>, <xref ref-type="disp-formula" rid="FD25">(25)</xref> and <xref ref-type="disp-formula" rid="FD26">(26)</xref> is constructed using a nodal version of the jump solver presented in [<xref ref-type="bibr" rid="R34">34</xref>]. The non-linearity of Eq. <xref ref-type="disp-formula" rid="FD24">(24)</xref> is addressed using Newton’s method [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>], with a relative error tolerance of 10<sup>-6</sup>, chosen to be orders of magnitude smaller than the desired overall numerical error. The whole method is parallelized in a shared memory fashion using OpenMP [<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R29">29</xref>].</p>
+<p id="P50">The entire computational domain is defined as the cube of side length 400Å (about twice the size of the whole protein) and center <inline-formula>
+<mml:math id="M35">
+<mml:msub>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>c</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:msub>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:math>
+</inline-formula>.Calculations were performed on Octrees of maximum level ranging from 7 to 11. On the finest grids, the minimal spatial resolution is 0.18Å.</p>
+</sec>
+<sec id="S21">
+<label>4.2.2</label>
+<title>Error Estimators</title>
+<p id="P51">To monitor the convergence of the overall method we construct <italic>a posteriori</italic> numerical error estimators. They only rely on the decomposition presented in <xref ref-type="sec" rid="S18">section 4.1.4</xref>, and can therefore be employed independently of the numerical approach. For the current implementation, detailed in <xref ref-type="sec" rid="S19">section 4.2</xref>, we refer the interested reader to [<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>] for formal convergence studies, using analytic solutions and order estimations.</p>
+<p id="P52">The error on the interface representation, gradient of the solution (i.e. electric field) and solution itself can be estimated using the following metrics <italic>e</italic>
+<sub>Г</sub>
+<italic>, e<sub>E</sub>, e<sub>ψ</sub>
+</italic> <disp-formula id="FD28">
+<label>(28)</label>
+<mml:math id="M36">
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mtext>∇</mml:mtext>
+<mml:msup>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo>⋅</mml:mo>
+<mml:mi mathvariant="bold">n</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:munderover>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>λ</mml:mi>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>4</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:msup>
+<mml:mi>ϵ</mml:mi>
+<mml:mo>+</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>|</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD29">
+<label>(29)</label>
+<mml:math id="M37">
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mtext>∇</mml:mtext>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:mi mathvariant="bold">n</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD30">
+<label>(30)</label>
+<mml:math id="M38">
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mi>ψ</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:msub>
+<mml:mo>∫</mml:mo>
+<mml:mtext>Γ</mml:mtext>
+</mml:msub>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>ψ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>|</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where |Γ| denotes the surface area of Г. In virtue of Gauss’s Theorem the first two integrals are null. Because of the boundary condition <xref ref-type="disp-formula" rid="FD23">(23)</xref>, the third quantity should also be null. When computing e<sub>Г</sub>, because the gradient of the Coulombic and the total charge are known exactly, numerical errors can only arise from calculating the local normal <bold>n</bold> or approximating the surface integral. Therefore, this metric focuses on the geometry and its manipulation only.</p>
+<p id="P53">The numerical errors in the gradient of the component ψ<sub>0</sub> are the main source of errors in the second metric <italic>e<sub>E</sub>
+</italic>. Thus, it can be interpreted as a lower bound estimate for the average total normal electric field on the interface. The metric <italic>e<sub>ψ</sub>
+</italic>, the average error in <italic>ψ</italic>
+<sub>0</sub> on the interface, can similarly be used to estimate the numerical error in the total potential on the interface.</p>
+</sec>
+<sec id="S22">
+<label>4.2.3</label>
+<title>Convergence Study</title>
+<p id="P54">
+<xref ref-type="fig" rid="F8">Figur 8a</xref> depicts the spike protein’s electrostatic potential at the initial frame (closed configuration) as the mesh is refined. Positive electrostatic potential is colored in blue, neutral (no charge) in white, and the negative electrostatic potential is shown in red. The coarsest simulations (max<sub>level</sub> = 7, 8) are only able to reproduce the general structure of the protein but fail at creating an accurate electrostatic map. As the maximal resolution reaches the characteristic atomic radius (<italic>r</italic>
+<sub>min</sub> = 1Å), the finest geometrical features are correctly reproduced, leading to appreciably more accurate results (max<sub>level</sub> = 9, minimal resolution 0.79AÅ). Further increasing the spatial resolution refines these molecular structures and the small scale potential variations even more (max<sub>level</sub> = 10, 11).</p>
+<p id="P55">The time evolution of our three error estimates for all examined resolutions is presented in <xref ref-type="fig" rid="F8">Fig. 8</xref>. As expected, all three metrics converge with increasing resolution. The impact of using subatomic resolution (<italic>i.e</italic>. max<sub>level</sub> ≥ 9) is well illustrated with the convergence of the electric field and potential error estimates: it is unclear for super-atomic resolutions (max<sub>level</sub> = 7, 8), and evident for subatomic ones (max<sub>level</sub> = 9, 10, 11).</p>
+<p id="P56">The error estimation for the total potential (<italic>e<sub>ψ</sub>
+</italic>) is significantly larger than the variations between consecutive maximum levels observed in <xref ref-type="fig" rid="F8">Fig. 8a</xref>, which is a proxy for the error on the regular part of the solution <inline-formula>
+<mml:math id="M39">
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>. Since <italic>e<sub>ψ</sub>
+</italic> involves the singular part of the solution, which exhibits large spatial variations over small length scales, it is prone to higher numerical errors and is expected to be larger than the actual error on the regular part of the solution. Closer inspection of our measurements reveals that these two metrics may differ by at least one order of magnitude. The error estimation for <italic>ψ</italic>, using max<sub>level</sub> = 10 is approximately equal to the maximum absolute surface potential value (≈ 10) observed on <xref ref-type="fig" rid="F8">Fig. 8a</xref>. This misleadingly suggests the relative error on the total solution is as large as 100%. The comparison between the potential maps for max<sub>level</sub> = 10 and max<sub>level</sub> = 11 indicates that in practice the relative error on the surface potential probably lies between 1% and 10%.</p>
+<p id="P57">From all these remarks, we are confident that the method is correctly implemented and that the most refined simulations accurately capture the S protein’s electrostatic potential. For the finest resolution, the estimated average error on the total potential is close to 2, which in light of the above discussion suggests that the average practical relative error on the surface potential is under 2%.</p>
+</sec>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S23">
+<title>Acknowledgments</title>
+<p>The authors would like to thank M. Zimmerman, G. Bowman, and the Folding@home project for creating and providing us with the S protein opening trajectory. We also thank D. Strubbe and J. Grasis for valuable discussions. This research was supported by a COVID-19 seed grant from the Center for Information Technology Research in the Interest of Society (CITRIS) at UC Merced awarded to M. Theillard and S. Sukenik. The authors acknowledge computing time on the Multi-Environment Computer for Exploration and Discovery (MERCED) cluster at the University of California, Merced, which was funded by National Science Foundation Grant No. ACI-1429783. M. Theillard and S. Sukenik are members of the NSF-CREST Center for Cellular and Biomolecular Machines at the University of California, Merced (NSF-HRD-1547848).</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P58">
+<bold>Author Contributions</bold>
+</p>
+<p id="P59">M. Theillard and S. Sukenik conceived the presented project. M. Theillard developed and implemented the numerical method. S. Strango, A. Kucherova, and M. Theillard carried the computations and analyzed the Results. All authors contributed to the redaction of the manuscript and approved its final form.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P60">
+<bold>7. Competing Interests statement</bold>
+</p>
+<p id="P61">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="web">
+<article-title>Folding @ home</article-title>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http:/foldingathome.org">http:/foldingathome.org</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sorour</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Kasry</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Comparing the binding interactions in the receptor binding domains of sars-cov-2 and sars-cov</article-title>
+<source>The Journal of Physical Chemistry Letters</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>12</issue>
+<fpage>4897</fpage>
+<lpage>4900</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baker</surname>
+<given-names>NA</given-names>
+</name>
+</person-group>
+<article-title>Improving implicit solvent simulations: a Poisson-centric view</article-title>
+<source>Current opinion in structural biology</source>
+<year>2005</year>
+<month>April</month>
+<volume>15</volume>
+<issue>2</issue>
+<fpage>137</fpage>
+<lpage>43</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baker</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Bashford</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Implicit solvent electrostatics in biomolecular simulation</article-title>
+<source>New algorithms for macromolecular simulation</source>
+<year>2006</year>
+<fpage>263</fpage>
+<lpage>295</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Benton</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wrobel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Roustan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rosenthal</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Skehel</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gamblin</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Receptor binding and priming of the spike protein of SARS-CoV-2 for membrane fusion</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>September</month>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Boschitsch</surname>
+<given-names>AH</given-names>
+</name>
+<name>
+<surname>Fenley</surname>
+<given-names>MO</given-names>
+</name>
+</person-group>
+<article-title>A fast and robust poisson-boltzmann solver based on adaptive cartesian grids</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2011</year>
+<volume>7</volume>
+<issue>5</issue>
+<fpage>1524</fpage>
+<lpage>1540</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Brooks</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Khandogin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Recent advances in implicit solvent-based methods for biomolecular simulations</article-title>
+<source>Current opinion in structural biology</source>
+<year>2008</year>
+<month>April</month>
+<volume>18</volume>
+<issue>2</issue>
+<fpage>140</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chern</surname>
+<given-names>IL</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>WC</given-names>
+</name>
+</person-group>
+<article-title>Accurate evaluation of electrostatics for macromolecules in solution</article-title>
+<source>Methods and Applications of analysis</source>
+<year>2003</year>
+<volume>10</volume>
+<fpage>309</fpage>
+<lpage>328</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dagum</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Dagum</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Openmp: An industry-standard api for shared-memory programming</article-title>
+<source>IEEE Comput Sci Eng</source>
+<year>1998</year>
+<month>January</month>
+<volume>5</volume>
+<issue>1</issue>
+<fpage>46</fpage>
+<lpage>55</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Decherchi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Masetti</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vyalov</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Rocchia</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Implicit solvent methods for free energy estimation</article-title>
+<source>European journal of medicinal chemistry</source>
+<year>2015</year>
+<month>Feb</month>
+<volume>91</volume>
+<fpage>27</fpage>
+<lpage>42</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Egan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Egan</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Fast and scalable algorithms for constructing solvent-excluded surfaces of large biomolecules</article-title>
+<source>Journal of Computational Physics</source>
+<year>2018</year>
+<volume>374</volume>
+<fpage>91</fpage>
+<lpage>120</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Felberg</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Brookes</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Yap</surname>
+<given-names>EH</given-names>
+</name>
+<name>
+<surname>Jurrus</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Head-Gordon</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Pb-am: An open-source, fully analytical linear poisson-boltzmann solver</article-title>
+<source>Journal of computational chemistry</source>
+<year>2017</year>
+<month>June</month>
+<volume>38</volume>
+<issue>15</issue>
+<fpage>1275</fpage>
+<lpage>1282</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Geng</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>GW</given-names>
+</name>
+</person-group>
+<article-title>Treatment of charge singularities in implicit solvent models</article-title>
+<source>J Chem Phys</source>
+<year>2007</year>
+<volume>127</volume>
+<issue>11</issue>
+<comment>114106</comment>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Harris</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Mackoy</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Fenley</surname>
+<given-names>MO</given-names>
+</name>
+</person-group>
+<article-title>Problems of robustness in poisson-boltzmann binding free energies</article-title>
+<source>Journal of chemical theory and computation</source>
+<year>2015</year>
+<month>Feb</month>
+<volume>11</volume>
+<issue>2</issue>
+<fpage>705</fpage>
+<lpage>712</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hassanzadeh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Perez Pena</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Dragotto</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Buccarello</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Iorio</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Pieraccini</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Sancini</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Feligioni</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Considerations around the sars-cov-2 spike protein with particular attention to covid-19 brain infection and neurological symptoms</article-title>
+<source>ACS chemical neuroscience</source>
+<year>2020</year>
+<month>Aug</month>
+<volume>11</volume>
+<issue>15</issue>
+<fpage>2361</fpage>
+<lpage>2369</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jurrus</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Engel</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Star</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Monson</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Brandi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Felberg</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Brookes</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liles</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Chun</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Improvements to the apbs biomolecular solvation software suite</article-title>
+<source>Protein Science</source>
+<year>2018</year>
+<volume>27</volume>
+<issue>1</issue>
+<fpage>112</fpage>
+<lpage>128</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koehl</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Electrostatics calculations : latest methodological advances</article-title>
+<source>Current Opinion in Structural Biology</source>
+<year>2006</year>
+<fpage>142</fpage>
+<lpage>151</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ge</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Structure of the sars-cov-2 spike receptor-binding domain bound to the ace2 receptor</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>May</month>
+<volume>581</volume>
+<issue>7807</issue>
+<fpage>215</fpage>
+<lpage>220</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Richards</surname>
+<given-names>FM</given-names>
+</name>
+</person-group>
+<article-title>The interpretation of protein structures: estimation of static accessibility</article-title>
+<source>Journal ofmolecular biology</source>
+<year>1971</year>
+<volume>55</volume>
+<issue>3</issue>
+<fpage>379</fpage>
+<lpage>400</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Letko</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Marzi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Functional assessment of cell entry and receptor usage for sars-cov-2 and other lineage b betacoronaviruses</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>4</issue>
+<fpage>562</fpage>
+<lpage>569</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Petukh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Alexov</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Progress in developing poisson-boltzmann equation solvers</article-title>
+<source>Molecular based mathematical biology</source>
+<year>2013</year>
+<month>Mar</month>
+<volume>1</volume>
+<pub-id pub-id-type="doi">10.2478/mlbmb–2013–0002</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>BZ</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>YC</given-names>
+</name>
+<name>
+<surname>Holst</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>McCammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Recent Progress in Numerical Methods for the Poisson Boltzmann Equation in Biophysical Applications</article-title>
+<source>Communications in computational physics</source>
+<year>2008</year>
+<volume>3</volume>
+<issue>5</issue>
+<fpage>973</fpage>
+<lpage>1009</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Min</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Min</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>A second order accurate level set method on non-graded adaptive Cartesian grids</article-title>
+<source>J Comput Phys</source>
+<year>2007</year>
+<volume>225</volume>
+<fpage>300</fpage>
+<lpage>321</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Min</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ceniceros</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>A supra-convergent finite difference scheme for the variable coefficient Poisson equation on non-graded grids</article-title>
+<source>J Comput Phys</source>
+<year>2006</year>
+<volume>218</volume>
+<fpage>123</fpage>
+<lpage>140</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirzadeh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Squires</surname>
+<given-names>TM</given-names>
+</name>
+</person-group>
+<article-title>Enhanced charging kinetics of porous electrodes: Surface conduction as a short-circuit mechanism</article-title>
+<source>Phys Rev Lett</source>
+<year>2014</year>
+<month>Aug</month>
+<volume>113</volume>
+<comment>097701</comment>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirzadeh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Theillard</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>A second-order discretization of the nonlinear PoissonBoltzmann equation over irregular geometries using non-graded adaptive Cartesian grids</article-title>
+<source>Journal of Computational Physics</source>
+<year>2010</year>
+<volume>230</volume>
+<fpage>2125</fpage>
+<lpage>2140</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirzadeh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Theillard</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Helgadottir</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Boy</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>An adaptive, finite difference solver for the nonlinear Poisson-Boltzmann equation with applications to biomolecular computations</article-title>
+<source>Comm Comput Phys</source>
+<year>2013</year>
+<volume>13</volume>
+<fpage>150</fpage>
+<lpage>173</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nguyen</surname>
+<given-names>DD</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>GW</given-names>
+</name>
+</person-group>
+<article-title>Accurate, robust, and reliable calculations ofpoisson-boltzmann binding energies</article-title>
+<source>Journal of computational chemistry</source>
+<year>2017</year>
+<month>May</month>
+<volume>38</volume>
+<issue>13</issue>
+<fpage>941</fpage>
+<lpage>948</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<collab>OpenMP Architecture Review Board</collab>
+<source>OpenMP application program interface version 5.0</source>
+<year>2018</year>
+<month>May</month>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Osher</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Osher</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Fronts propagating with curvature-dependent speed: Algorithms based on Hamilton-Jacobi formulations</article-title>
+<source>J Comput Phys</source>
+<year>1988</year>
+<volume>79</volume>
+<fpage>12</fpage>
+<lpage>49</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pan</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Tai</surname>
+<given-names>XC</given-names>
+</name>
+</person-group>
+<article-title>Model the solvent-excluded surface of 3d protein molecular structures using geometric pde-based level-set method</article-title>
+<source>Communications in Computational Physics</source>
+<year>2009</year>
+<volume>6</volume>
+<fpage>777</fpage>
+<lpage>792</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rocchia</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Alexov</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Honig</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Extending the applicability of the nonlinear poisson-boltzmann equation: Multiple dielectric constants and multivalent ions</article-title>
+<source>The Journal of Physical Chemistry B</source>
+<year>2001</year>
+<month>Jul</month>
+<volume>105</volume>
+<issue>28</issue>
+<fpage>6507</fpage>
+<lpage>6514</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tai</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Voronin</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Characterization of the receptor-binding domain (rbd) of 2019 novel coronavirus: implication for development of rbd protein as a viral attachment inhibitor and vaccine</article-title>
+<source>Cellular &amp; Molecular Immunology</source>
+<year>2020</year>
+<month>Jun</month>
+<volume>17</volume>
+<issue>6</issue>
+<fpage>613</fpage>
+<lpage>620</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Theillard</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Saintillan</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Sharp numerical simulation of incompressible two-phase flows</article-title>
+<source>Journal of Computational Physics</source>
+<year>2019</year>
+<volume>391</volume>
+<fpage>91</fpage>
+<lpage>118</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Theillard</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rycroft</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gibou</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>A multigrid method on non-graded adaptive Octree and Quadtree Cartesian grids</article-title>
+<source>J Sci Comput</source>
+<year>2013</year>
+<volume>55</volume>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>YJ</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Wall</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Veesler</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Structure, Function, and Antigenicity of the SARS-CoV-2 Spike Glycoprotein</article-title>
+<source>Cell</source>
+<year>2020</year>
+<month>April</month>
+<volume>181</volume>
+<issue>2</issue>
+<fpage>281</fpage>
+<lpage>292.e6</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Enhanced receptor binding of sars-cov-2 through networks of hydrogen-bonding and hydrophobic interactions</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2020</year>
+<volume>117</volume>
+<issue>25</issue>
+<fpage>13967</fpage>
+<lpage>13974</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Warwicker</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Watson</surname>
+<given-names>HC</given-names>
+</name>
+</person-group>
+<article-title>Calculation of the electric potential in the active site cleft due to alpha-helix dipoles</article-title>
+<source>Journal of Molecular Biology</source>
+<year>1982</year>
+<volume>157</volume>
+<issue>4</issue>
+<fpage>671</fpage>
+<lpage>679</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wrapp</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Corbett</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Goldsmith</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Hsieh</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Abiona</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+</person-group>
+<article-title>Cryo-em structure of the 2019-ncov spike in the prefusion conformation</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>367</volume>
+<issue>6483</issue>
+<fpage>1260</fpage>
+<lpage>1263</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wrobel</surname>
+<given-names>AG</given-names>
+</name>
+<name>
+<surname>Benton</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Roustan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Rosenthal</surname>
+<given-names>PB</given-names>
+</name>
+<name>
+<surname>Skehel</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Gamblin</surname>
+<given-names>SJ</given-names>
+</name>
+</person-group>
+<article-title>Sars-cov-2 and bat ratg13 spike glycoprotein structures inform on virus evolution and furin-cleavage effects</article-title>
+<source>Nature Structural &amp; Molecular Biology</source>
+<year>2020</year>
+<month>Aug</month>
+<volume>27</volume>
+<issue>8</issue>
+<fpage>763</fpage>
+<lpage>767</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>The sars-cov-2 outbreak: What we know</article-title>
+<source>International Journal of Infectious Diseases</source>
+<year>2020</year>
+<volume>94</volume>
+<fpage>44</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zeng</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mohammed</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ding</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Weng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Biochemical characterization of sars-cov-2 nucleocapsid protein</article-title>
+<source>Biochemical and biophysical research communications</source>
+<year>2020</year>
+<month>Jun</month>
+<volume>527</volume>
+<issue>3</issue>
+<fpage>618</fpage>
+<lpage>623</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zheng</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>GW</given-names>
+</name>
+</person-group>
+<article-title>Poisson-boltzmann-nernst-planck model</article-title>
+<source>The Journal of chemical physics</source>
+<year>2011</year>
+<month>May</month>
+<volume>134</volume>
+<issue>19</issue>
+<fpage>194101</fpage>
+<lpage>194101</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A novel coronavirus from patients with pneumonia in china, 2019</article-title>
+<source>New England Journal of Medicine</source>
+<year>2020</year>
+<volume>382</volume>
+<issue>8</issue>
+<fpage>727</fpage>
+<lpage>733</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zimmerman</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Bowman</surname>
+<given-names>GR</given-names>
+</name>
+</person-group>
+<article-title>Fast conformational searches by balancing exploration/exploitation trade-offs</article-title>
+<source>Journal of chemical theory and computation</source>
+<year>2015</year>
+<volume>11</volume>
+<issue>12</issue>
+<fpage>5747</fpage>
+<lpage>5757</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zimmerman</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Porter</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Ward</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Vithani</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Meller</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mallimadugula</surname>
+<given-names>UL</given-names>
+</name>
+<name>
+<surname>Kuhn</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Borowsky</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Wiewiora</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Hurley</surname>
+<given-names>MFD</given-names>
+</name>
+<name>
+<surname>Harbison</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Fogarty</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Coffland</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Fadda</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Voelz</surname>
+<given-names>VA</given-names>
+</name>
+<name>
+<surname>Chodera</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Bowman</surname>
+<given-names>GR</given-names>
+</name>
+</person-group>
+<article-title>Citizen scientists create an exascale computer to combat covid-19</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>SARS-CoV-2 Spike protein visualized in its closed (<italic>a</italic>) and open (<italic>b</italic>) states. The four pairs of atoms, along with the separating distances, used to quantify the gap opening are represented with straight solid colored lines. (<italic>c</italic>) The relative distance (<italic>Å</italic>) between arbitrarily chosen atom pairs is represented as a function of time. One atom is selected on the receptor-binding domain (RBD) and the other opposite the RBD across the opening of the spike protein. This distance is relative to the average distance between each respective atom pair (1,2,3, and 4 in the graph), hence the term ’relative distance’. (<italic>d</italic>) The root mean squared deviation (RMSD) is calculated as a function of time with frame 1 (closed state) as the reference frame.</p>
+</caption>
+<graphic xlink:href="EMS102746-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>(<italic>a</italic>) Potential map of the SARS-Cov-2 spike open (frame 1), intermediate (frame 35), and close configuration (frame 71). (<italic>b</italic>) Evolution of the negatively charged core as the spike opens. (<italic>c</italic>) Repulsive electric cloud generated by the negatively charged core. (<italic>d</italic> – <italic>e</italic>) Characterization of the negatively charged core <italic>χ</italic> and repulsive electric cloud <italic>C</italic>: relative size (<italic>d</italic>) and potential (<italic>e</italic>) variations over the entire molecular trajectory.</p>
+</caption>
+<graphic xlink:href="EMS102746-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>(<italic>a</italic>) Portion of the ACE2 receptor displaying surface charge (left). ACE2 and RBD of the spike protein connected (right). (<italic>b</italic>) Binding site of ACE2 highlighted in green (left). The binding site of ACE2 is highlighted within the ACE2 (orange) and RBD (yellow) connection (right). (<italic>c</italic>) SARS-Cov-2 spike in open conformation with RBD (yellow) and binding site, <italic>B</italic> (green) highlighted. (<italic>d</italic> - <italic>e</italic>) Characteristics of the binding site, ℬ, of the spike protein. (<italic>d</italic>) Relative variance of the area and absolute curvature along with average potential. (<italic>e</italic>) average positive and negative potential.</p>
+</caption>
+<graphic xlink:href="EMS102746-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Streamlines and direction of the electric field in the close (top) and open (bottom) configurations. As the spike opens, the streamlines emanating from the upper part of the molecule are observed to open as well. This effect is particularly noticeable for the lines emerging from the RBD domain (opening extremity on the right).</p>
+</caption>
+<graphic xlink:href="EMS102746-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Streamlines of the electric field <inline-formula>
+<mml:math id="M40">
+<mml:mo>(</mml:mo>
+<mml:mi mathvariant="bold">E</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mover accent="true">
+<mml:mi>ψ</mml:mi>
+<mml:mo stretchy="false">^</mml:mo>
+</mml:mover>
+<mml:mo>)</mml:mo>
+</mml:math>
+</inline-formula> in the close (<italic>a</italic>) and open (<italic>b</italic>) configurations over the entire computational domain. The portion of the streamlines where the electric field is pointing away from the protein <inline-formula>
+<mml:math id="M41">
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>.</mml:mo>
+<mml:mi>e</mml:mi>
+<mml:mo>.</mml:mo>
+<mml:mtext>∇</mml:mtext>
+<mml:mi>ψ</mml:mi>
+<mml:mo>⋅</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mi mathvariant="bold">E</mml:mi>
+<mml:mo>⋅</mml:mo>
+<mml:mtext>x</mml:mtext>
+<mml:mo>&lt;</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:math>
+</inline-formula>, and therefore negative charges would be drawn to it, is depicted in blue. (<italic>c</italic> - <italic>e</italic>) Electric potential multipole structure: charge density decomposition over its first four moments <italic>C, D, Q</italic> and <italic>O</italic>. (<italic>c</italic>) and (<italic>e</italic>) represent the principal directions of the dipole <italic>D</italic> (in black) and the quadrupole <italic>Q</italic>, in the initial and final configurations respectively. For the quadrupole, the purple directions (eigenvectors) are associated with negative eigenvalues. The grey one has a positive eigenvalue. All segments lengths are proportional to the strength of the corresponding pole (<italic>i.e.</italic> the norm of the dipole or of the corresponding eigenvalue). The protein binding site is depicted as opaque. (<italic>d</italic>) depicts the evolution of the norm of all four first moments. We use the standard <italic>L<sup>2</sup>
+</italic> entry-wise norm.</p>
+</caption>
+<graphic xlink:href="EMS102746-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>(<italic>a</italic>) Visualization of the top view of the Spike protein molecule (colored by monomer). Color denotes the three monomers (<italic>b</italic>) A cutaway diagram of a general molecular surface depicting the Van der Waals Surface (vdWS), solvent-excluded surface (SES), and solvent-accessible surface (SAS). (<italic>c</italic>) SES representation of the Spike protein oriented the same way as Fig. (<italic>a</italic>) (top view).</p>
+</caption>
+<graphic xlink:href="EMS102746-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<p>Vizualizations of the entire computational domain, SARS-CoV-2 spike protein (frame 1), and finest mesh used for this study (level 11 with 34, 362, 796 nodes). Computational cells are colored by their corresponding tree level (<italic>i.e.</italic> the number of successive mesh subdivisions required for their construction). For visual purposes only half of the mesh is depicted.</p>
+</caption>
+<graphic xlink:href="EMS102746-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<p>(<italic>a</italic>) Evolution of the spike’s Solvent Excluded Surface and electrostatic potential as the maximal resolution increases. (top down view in the closed configuration (frame 1)). (<italic>b</italic> - <italic>d</italic>) Convergence of the interface representation (<italic>e<sub>Г</sub>
+</italic>), surface normal electric potential (<italic>e<sub>E</sub>
+</italic>), and surface potential (<italic>e<sub>ψ</sub>
+</italic>).</p>
+</caption>
+<graphic xlink:href="EMS102746-f008"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Problem parameters and non-dimensional numbers.</p>
+</caption>
+<table frame="below" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="top">Parameter</th>
+<th align="center" valign="top">Symbol</th>
+<th align="center" valign="top">Definition</th>
+<th align="left" valign="top">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">Characteristic length</td>
+<td align="center" valign="top">L</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1Å</td>
+</tr>
+<tr>
+<td align="center" valign="top">Characteristic potential (thermal voltage)</td>
+<td align="center" valign="top">
+<italic>ψ<sub>0</sub>
+</italic>
+</td>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M42">
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+<mml:mi>e</mml:mi>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">2.570 × 10<sup>-2</sup>
+<italic>V</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Vacuum permittivity</td>
+<td align="center" valign="top">
+<italic>є</italic>
+<sub>0</sub>
+</td>
+<td align="center" valign="top">
+<sub>-</sub>
+</td>
+<td align="left" valign="top">8.854 × 10<sup>-12</sup>
+<italic>Fm<sup>-2</sup>
+</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Spike relative permittivity</td>
+<td align="center" valign="top">
+<italic>є</italic>
+<sup>+</sup>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">2</td>
+</tr>
+<tr>
+<td align="center" valign="top">Solvent relative permittivity</td>
+<td align="center" valign="top">
+<italic>є</italic>
+<sup>-</sup>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">7.830 × 10</td>
+</tr>
+<tr>
+<td align="center" valign="top">Boltzmann constant</td>
+<td align="center" valign="top">
+<italic>
+<sup>k</sup>B</italic>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1.381 × 10<sup>-23</sup>
+<italic>JK</italic>
+<sup>-1</sup>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Avogadro number</td>
+<td align="center" valign="top">
+<italic>NA</italic>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">6.022 × 10<sup>23</sup>
+<italic>M</italic>
+<sup>-1</sup>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Elementary charge</td>
+<td align="center" valign="top">e</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1.602 × 10<sup>-19</sup>
+<italic>C</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Temperature</td>
+<td align="center" valign="top">T</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">298.15<italic>K</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Salt concentration</td>
+<td align="center" valign="top">
+<italic>c<sub>b</sub>
+</italic>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1 × 10.0<sup>-3</sup>
+<italic>Mm</italic>
+<sup>-3</sup>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Probe radius</td>
+<td align="center" valign="top">
+<italic>r<sub>p</sub>
+</italic>
+</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1.4Å</td>
+</tr>
+<tr>
+<td align="center" valign="top">Valence of the background electrolyte</td>
+<td align="center" valign="top">z</td>
+<td align="center" valign="top">-</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Non-dimensional inverse of Debbye length</td>
+<td align="center" valign="top">
+<sc>
+<italic>k<sub>d</sub>
+</italic>
+</sc>
+</td>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M43">
+<mml:msqrt>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:msup>
+<mml:mi>c</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>z</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ϵ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+<mml:msup>
+<mml:mi>L</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:msqrt>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">9.207 × 10<sup>-3</sup>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Non-dimensional Bjerrum length</td>
+<td align="center" valign="top">λ<sub>b</sub>
+</td>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M44">
+<mml:mfrac>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+<mml:msub>
+<mml:mi>ϵ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">7.039 × 10<sup>3</sup>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,2463 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS109161</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.23.424177</article-id>
+<article-id pub-id-type="archive">PPR257817</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Identification of COVID-19-relevant transcriptional regulatory networks and associated kinases as potential therapeutic targets</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Su</surname>
+<given-names>Chen</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Rousseau</surname>
+<given-names>Simon</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Emad</surname>
+<given-names>Amin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Electrical and Computer Engineering, McGill University, Montréal, QC, Canada</aff>
+<aff id="A2">
+<label>2</label>The Meakins-Christie Laboratories at the Research Institute of the McGill University Heath Centre Research Institute, &amp; Department of Medicine, Faculty of Medicine, McGill University, Montréal, QC, Canada</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding Author: Amin Emad, 755 McConnell Engineering Building, 3480 University Street, Montreal, Quebec, Canada H3A 0E9, <email>amin.emad@mcgill.ca</email>; Simon Rousseau, RI-MUHC, E M3.2244, 1001 Décarie, Montréal, Canada, H4A 3J1, <email>simon.rousseau@mcgill.ca</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>25</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>23</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Identification of transcriptional regulatory mechanisms and signaling networks involved in the response of host to infection by SARS-CoV-2 is a powerful approach that provides a systems biology view of gene expression programs involved in COVID-19 and may enable identification of novel therapeutic targets and strategies to mitigate the impact of this disease. In this study, we combined a series of recently developed computational tools to identify transcriptional regulatory networks involved in the response of epithelial cells to infection by SARS-CoV-2, and particularly regulatory mechanisms that are specific to this virus. In addition, using network-guided analyses, we identified signaling pathways that are associated with these networks and kinases that may regulate them. The results identified classical antiviral response pathways including Interferon response factors (IRFs), interferons (IFNs), and JAK-STAT signaling as key elements upregulated by SARS-CoV-2 in comparison to mock-treated cells. In addition, comparing SARS-Cov-2 infection of airway epithelial cells to other respiratory viruses identified pathways associated with regulation of inflammation (MAPK14) and immunity (BTK, MBX) that may contribute to exacerbate organ damage linked with complications of COVID-19. The regulatory networks identified herein reflect a combination of experimentally validated hits and novel pathways supporting the computational pipeline to quickly narrow down promising avenue of investigations when facing an emerging and novel disease such as COVID-19.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Host responses to various insults is regulated by distinct sets of regulatory networks coordinating responses matched to the insult. Viral infections of human cells lead to the production of interferons (IFNs) as an antiviral mechanism [<xref ref-type="bibr" rid="R1">1</xref>]. TRIF, RIG-I and MDA-5-mediated activation of Interferon response factors (IRFs) responsible for the expression of antiviral genes, such as type I, II and III IFNs, are amongst critical regulators of antiviral immunity. In turn, Type I, II and III interferons will activate JAK-STAT signaling to further promote antiviral host responses [<xref ref-type="bibr" rid="R2">2</xref>]. This response must be kept in balance as viral clearance mechanisms can lead to tissue damage if not kept in check [<xref ref-type="bibr" rid="R3">3</xref>]. This balance can be especially hard to maintain in the presence of new emerging infections such as the novel coronavirus severe acute respiratory syndrome coronavirus - 2 (SARS-CoV-2) responsible for coronavirus disease 2019 (COVID-19), for which the host is naïve. The loss of a measured response can lead to severe complications of viral illnesses such as severe acute respiratory distress syndrome (ARDS), which has been observed in COVID-19 patients [<xref ref-type="bibr" rid="R1">1</xref>].</p>
+<p id="P3">Unraveling the gene expression programs involved in the response of the host to the infection by SARS-CoV-2 can provide a fundamental understanding of COVID-19 and its complications and can enable identification of therapeutic targets and novel treatments. The transcriptional regulatory network (TRN), composed of transcription factors (TFs) and their target genes, play significant roles in regulating these gene expression programs. Computational reconstruction of ’COVID-19-relevant’ TRNs that depict regulatory influence of TFs on genes differentially expressed due to infection of cells by SARS-CoV-2 would facilitate our understanding of this disease. While comparing the transcriptomic profiles of cells infected with SARS-CoV-2 with normal cells can provide some insight into the host response, understanding the specific response that leads to ARDS and other complications prominent in COVID-19 requires evaluating these molecular profiles against other respiratory viruses.</p>
+<p id="P4">To identify transcriptional regulatory mechanisms involved in the host response to infection by SARS-CoV-2, we analyzed gene expression profiles of human lung epithelial cell lines that were mock-treated or infected by a respiratory virus (SARS-CoV-2, RSV, H1N1 and HPIV3) from a recent study [<xref ref-type="bibr" rid="R4">4</xref>]. SARS-CoV-2 (also named 2019 novel coronavirus (2019-nCoV) or human coronavirus 2019 (hCoV-19)) is a positive-sense single-stranded RNA virus, part of the broad coronavirus family. Similar to SARS-Cov-1 and Middle East respiratory syndrome (MERS), SARS-CoV-2 can cause severe acute respiratory disease in humans [<xref ref-type="bibr" rid="R1">1</xref>]. Respiratory syncytial virus (RSV) is a single-stranded negative-sense virus, a common cause of mostly mild respiratory disease in children. However, both in children [<xref ref-type="bibr" rid="R5">5</xref>] and adults [<xref ref-type="bibr" rid="R3">3</xref>], it can lead to serious lung diseases including ARDS. The influenza A virus H1N1, a negative-sense RNSA virus member of the orthomyxoviridae family, that was responsible for the 2009 swine flu pandemic. Human parainfluenza viruses (HPIV) are negative-sense RNA viruses that cause lower respiratory infections in children, chronically ill and elderly patients [<xref ref-type="bibr" rid="R6">6</xref>].</p>
+<p id="P5">First, using a computational tool that we recently developed for reconstruction of ‘phenotype-relevant’ TRNs (InPheRNo) [<xref ref-type="bibr" rid="R7">7</xref>], we reconstructed COVID-19-relevant TRNs and identified key regulatory TFs involved in the progress of the disease. TRNs are network representations of regulatory mechanisms in a cell, in which nodes are TFs or genes, and each TF-gene edge represents a regulatory effect of the TF on the gene. Unlike other methods for reconstruction of TRNs that are usually agnostic to the phenotype under investigation, InPheRNo utilizes probabilistic graphical models to directly incorporate phenotypic information in the TRN reconstruction. This approach enables identification of transcriptional regulatory mechanisms that are involved in the specific phenotype under investigation by expression profiling (in this study, response of cells infected by SARS-CoV-2 as compared to mock-treated cells or cells infected by other viruses). Our results identified known and novel key regulatory TFs and signaling pathways involved in COVID-19 and its associated complications.</p>
+<p id="P6">Next, using a network-guided approach based on random walks on graphs, we identified kinases that are most associated with the reconstructed COVID-19-relevant TRNs, as regulators of these networks and potential therapeutic targets. Kinases are enzymes that are involved in the regulation of protein activities through phosphorylation and are a major category of drug targets for human diseases. Using data from gene knockdown experiments from the LINCS database [<xref ref-type="bibr" rid="R8">8</xref>], we observed that these kinases indeed influence the expression of genes in the reconstructed TRNs in epithelial cells. Our analyses using network-based algorithms and machine learning tools provided a systems biology perspective of the response of the epithelial cells to infection by SARA-CoV-2 and identified regulatory mechanisms specific to this virus. In addition, our results implicated important families of kinases (including JAK and MAPK family) that may be used as therapeutic targets for COVID-19.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>COVID-19-relevant transcriptional regulatory networks implicate major transcription factors involved in SARS-CoV-2 host response to infection</title>
+<p id="P7">We sought to identify transcriptional regulatory mechanisms involved in the host response to SARS-CoV-2 infection. For this purpose, we obtained gene expression profiles of human lung epithelial cells that were mock-treated or infected by SARS-CoV-2, respiratory syncytial virus (RSV), human parainfluenza virus type 3 (HPIV3), influenza A/Puerto Rico/8/1934 (H1N1) virus (IAV), and IAV that lacks the NS1 protein (IAVdNS1) from a recent study [<xref ref-type="bibr" rid="R4">4</xref>]. The epithelial cells were Normal Human Bronchial Epithelial (NHBE), transformed lung alveolar (A549), A549 cells transduced with a vector expressing human ACE2 (A549-ACE2), and Calu3 cells.</p>
+<p id="P8">To identify COVID-19-relevant TRNs, we used InPheRNo [<xref ref-type="bibr" rid="R7">7</xref>], a method that we recently developed to identify ‘phenotype-relevant’ TRNs using gene expression profiles of multiple samples and their phenotypic labels. InPheRNo is based on a probabilistic graphical model (PGM) designed to integrate the collective regulatory influence of multiple TFs on a gene with the association of the gene’s expression with a phenotype to identify regulatory mechanisms that are phenotype-relevant (as opposed to phenotype-independent). In this approach, first the p-values of gene-phenotype associations (e.g. using differential expression analysis) and p-values of gene-TF associations (using a two-step procedure based on the Elastic Net algorithm) are obtained and provided as input ‘observed variables’ to the PGM. The PGM is then trained on the data to obtain posterior probabilities for each TF-gene pair determining whether the TF regulates the gene in a phenotype-relevant manner (details are provided in the original manuscript [<xref ref-type="bibr" rid="R7">7</xref>]).</p>
+<p id="P9">Using data corresponding to SARS-CoV-2 infected samples and their corresponding mock-treated control, we first performed differential expression analysis and then reconstructed a COVID-19-relevant TRN associated with SARS-CoV-2 infection (as compared to mock-treated samples) using 500 most differentially expressed genes (FDR &lt; 1.42E-3, shown in Supplementary <xref ref-type="supplementary-material" rid="SD2">Table S1</xref>), henceforth called ‘SvM’ (SARS-CoV-2 versus mock-treated). To also identify regulatory mechanisms that are specific to SARS-CoV-2 infection (as opposed to infection by other viruses), we used InPheRNo to reconstruct a COVID-19-relevant TRN using 500 differentially expressed genes (FDR &lt; 1.43E-3, <xref ref-type="supplementary-material" rid="SD1">Supplementary Table S1</xref>) by analyzing data corresponding to epithelial cells infected by SARS-CoV-2, IAV, IAVdNS1, RSV, and HPIV3. Henceforth, we use ‘SvOV’ (SARS-CoV-2 versus other viruses) to refer to the second network. The details of the analysis are provided in Methods and the reconstructed networks are provided in Supplementary <xref ref-type="supplementary-material" rid="SD4">Table S2</xref>.</p>
+<p id="P10">Given the SvM and SvOV COVID-19-relevant TRNs, we ranked TFs based on the number of COVID-19-relevant target genes within each network. <xref rid="T1" ref-type="table">Tables 1</xref>–<xref rid="T2" ref-type="table">2</xref> show the ranked list of top 8 TFs and top 21 TFs that target at least 1% of the considered COVID-19-related genes in SvM and SvOV networks, respectively (see <xref ref-type="supplementary-material" rid="SD6">Supplementary Table S3</xref> for the full ranked list). We compared the targets of these TFs identified by InPheRNo, with their targets determined using ChIP-seq data available in the Gene Transcription Regulation Database (GTRD) database [<xref ref-type="bibr" rid="R9">9</xref>]. Three of the top 8 TFs in the SvM network (NFKB1, STAT1, RELB) were present in the GTRD dataset. Out of the 18 targets identified by InPheRNo for these TFs, 17 were confirmed by GTRD (p= 8.62E-07, hypergeometric test). Similarly, four of the top TFs in the SvOV network (STAT1, RCOR1, EGR1, ZNF512B) were present in this dataset. Out of the 45 targets found for these TFs by InPheRNo, 37 were confirmed using GTRD (p = 2.36E-15, hypergeometric test).</p>
+<p id="P11">Encouragingly, many of these TFs identified by InPheRNo have been previously shown to be activated during COVID-19 or infections by other viruses. For example, Interferon regulatory factor 9 (IRF9), the top hit in <xref rid="T1" ref-type="table">Table 1</xref>, was shown to be activated in SARS-CoV-2 infected NHBE cells [<xref ref-type="bibr" rid="R10">10</xref>]. While interestingly, in contrast to observations with SARS-CoV-1, infection by SARS-Cov-2 failed to limit STAT1 phosphorylation [<xref ref-type="bibr" rid="R11">11</xref>], suggesting that STAT1 activity is maintained in SARS-CoV-2 CaLu-3 infected cells.</p>
+</sec>
+<sec id="S4">
+<title>Functional characterization of COVID-19-relevant TRNs implicate major signaling pathways involved in the disease</title>
+<p id="P12">In order to determine the functional characteristics of gene expression programs involved in COVID-19, we performed pathway enrichment analysis for the implicated TFs and their COVID-19-relevant target genes in the SvM and SvOV networks. For this purpose, we used the gene set characterization (GSC) computational pipeline of KnowEnG (Knowledge Engine for Genomics) analytical platform [<xref ref-type="bibr" rid="R12">12</xref>]. The GSC pipeline enables ‘standard’ gene-set enrichment analysis (using Fisher’s exact test), as well as advanced ‘network-guided’ analysis. The network-guided mode is an implementation of an algorithm called DRaWR [<xref ref-type="bibr" rid="R13">13</xref>], which utilizes random walk with restarts (RWR) algorithm on a user-selected gene interaction network to rank pathways based on their relevance to a query gene-set. Including a gene interaction network (e.g. a protein-protein interaction (PPI) network) enriches the analysis and enables identification of important pathways that may not be detectable using simple overlap-based Fisher’s exact test.</p>
+<p id="P13">To this end, we used the set of top TFs in the SvM and SvOV networks (<xref rid="T1" ref-type="table">Tables 1</xref>–<xref rid="T2" ref-type="table">2</xref>) as separate query sets and performed standard and network-guided (using experimentally verified PPI network from STRING database [<xref ref-type="bibr" rid="R14">14</xref>]) pathway enrichment analysis (using Reactome pathways [<xref ref-type="bibr" rid="R15">15</xref>]) with default parameters (<xref ref-type="supplementary-material" rid="SD7">Supplementary Table S4</xref>). Pathways related to cytokine signaling and interferon signaling (interferon gamma signaling and interferon alpha/beta signaling) were implicated for both TRNs and using standard and network-guided analysis. Next, we repeated the network-guided analysis above by considering each TF and the set of its target genes in the SvM and SvOV networks as a separate query gene set (<xref rid="F1" ref-type="fig">Fig. 1</xref> and <xref ref-type="supplementary-material" rid="SD8">Supplementary Tables S5</xref>–<xref ref-type="supplementary-material" rid="SD9">S6</xref>). <xref rid="F1" ref-type="fig">Fig. 1</xref> shows gene sets that are implicated for at least two TFs and their targets in each TRN. Pathways related to Immune system, cytokines and interferon signaling were again among the pathways implicated for the majority of TFs (and their COVID-19-relevant targets).</p>
+</sec>
+<sec id="S5">
+<title>Identification of kinases associated with COVID-19-relevant TRNs as potential therapeutic targets</title>
+<p id="P14">Kinases are enzymes that are involved in the regulation of protein activities through phosphorylation and are a major category of drug targets for human diseases [<xref ref-type="bibr" rid="R16">16</xref>]. Consequently, we sought to identify human kinases that are most associated with the constructed COVID-19-relevant TRNs as important signal transducers for this disease. For this purpose, we formed a kinase-substrate interaction (KSI) network by aggregating kinase-substrate relationships from three previous studies [<xref ref-type="bibr" rid="R17">17</xref>–<xref ref-type="bibr" rid="R19">19</xref>] (see Methods for details). The aggregated KSI contained 29594 kinase-substrate relationships corresponding to 406 unique kinases and 3942 unique substrates.</p>
+<p id="P15">To identify kinases most associated with COVID-19 we used foRWaRD, a computational tool that we recently developed to rank nodes and sets of nodes in a heterogenous network based on their relevance to a set of query set using random walk with restarts (RWR) [<xref ref-type="bibr" rid="R20">20</xref>]. As input to foRWaRD, we provided the aggregated KSI, a gene-gene interaction network (here we used HumanNet integrated network [<xref ref-type="bibr" rid="R21">21</xref>]), and a query set containing the top TFs obtained from SvM TRN (8 TFs) and SvOV TRN (21 TFs), separately. foRWaRD first forms a heterogenous network by superimposing the substrates on their corresponding gene nodes in the gene-gene interaction network. Then, it performs two runs of the RWR algorithm on this heterogenous network: one run with the query set (set of TFs) as the restart set and another run with all nodes as the restart set (to be used as control). Each run of the RWR provides a probability score for each node (including those corresponding to kinases), representing the relevance of the node to the restart set. Finally, a normalized score for each kinase is obtained by comparing the scores of the two runs of the RWR, and kinases are ranked based on how much their query set score is higher than their background (i.e. control) score. <xref rid="T3" ref-type="table">Table 3</xref> shows the 15 highest ranked kinases for the top TFs corresponding to the SvM network and top TFs corresponding to the SvOV network, respectively. The full ranked lists of kinases are provided in <xref ref-type="supplementary-material" rid="SD10">Supplementary Table S7</xref>. <xref rid="F2" ref-type="fig">Figs. 2</xref> and <xref rid="F3" ref-type="fig">3</xref> show network representations of the interactions among these kinases, their substrates, and the COVID-19-relevant TRNs. <xref rid="F2" ref-type="fig">Fig. 2</xref> only includes direct kinase-TF interactions, while <xref rid="F3" ref-type="fig">Fig. 3</xref> and <xref ref-type="supplementary-material" rid="SD11">Supplementary Table S8</xref> include indirect interactions of kinases and TFs.</p>
+<p id="P16">As can be seen in <xref rid="T3" ref-type="table">Table 3</xref>, several families of kinases are implicated in both networks. JAK1, JAK2, and JAK3, which are identified among the top 15 kinases for both SvM and SvOV TRNs, belong to the Janus kinase family, a family of non-receptor tyrosine kinases [<xref ref-type="bibr" rid="R22">22</xref>]. This family of kinases are involved in the transduction of cytokine-mediated signals through the JAK-STAT pathway. The members of the Janus family and the JAK-STAT pathway have been suggested as potential therapeutic targets in COVID-19 [<xref ref-type="bibr" rid="R23">23</xref>–<xref ref-type="bibr" rid="R26">26</xref>], supporting the validity of the results from this analysis.</p>
+</sec>
+<sec id="S6">
+<title>Evaluation of the predicted kinase-gene relationships using gene knockdown experiments</title>
+<p id="P17">Since foRWaRD incorporates both direct and indirect interactions to identify kinases, we sought to determine whether the knockdown of identified kinases directly influence the expression of the TFs and their target genes in the COVID-19-relevant TRNs. To this end, we obtained gene expression signatures corresponding to shRNA knockdown experiments from the LINCS dataset [<xref ref-type="bibr" rid="R8">8</xref>]. We only focused on experiments performed in A549 cell line, since it is one of the cell lines used in our analysis to construct the COVID-19-relevant TRNs and a cell line shown to be susceptible to SARS-CoV-2 infection [<xref ref-type="bibr" rid="R27">27</xref>]. The gene expression signatures correspond to z-score normalized changes in the expression of 978 ‘L1000 landmark genes’ as a result of knockdown of a single gene, when compared to control (no knockdown). We defined a landmark gene to be positively (or negatively) influenced by the knockdown of a kinase if its expression increased (decreased) as a result of the knockdown and also if its normalized expression change was among the top (bottom) 15% of all landmark genes.</p>
+<p id="P18">Out of the 15 kinases implicated using foRWaRD for the SvM analysis, shRNA knockdown signatures in A549 cells were available for 13 of them. In addition, 10 target genes and 2 TFs from the SvM TRN were among the L1000 landmark genes whose expression change were measured. All of the 2 TFs and the 10 target genes were positively or negatively influenced by the knockdown of at least one of the implicated kinases (<xref ref-type="supplementary-material" rid="SD12">Supplementary Table S9</xref> and <xref ref-type="supplementary-material" rid="SD1">Supplementary Figures S1</xref>–<xref ref-type="supplementary-material" rid="SD3">S2</xref>), supporting the interactions discovered in this study.</p>
+<p id="P19">We repeated the analysis above using the kinases implicated for the SvOV network. Knockdown signatures were only available for 7 (out of 15) implicated kinases. In addition, 14 target genes and 3 TFs from the SvOV TRN were among the L1000 landmark genes. Our analysis showed that 12 target genes (out of 14) and 2 TFs (out of 3) were positively or negatively influenced by the knockdown of at least one of the 7 kinases (<xref rid="F4" ref-type="fig">Figure 4</xref>, <xref ref-type="supplementary-material" rid="SD12">Supplementary Table S9</xref> and <xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S3</xref>). <xref rid="F4" ref-type="fig">Figure 4</xref> shows the histogram of the expression changes of the landmark genes as a result of each kinase knockdown and its effect on the TFs and target genes in the SvOV TRN.</p>
+<p id="P20">Taken together, these results show that our computational pipeline that strings together InPheRNo, KnowEnG’s GSC, and foRWaRD is capable of identifying biologically plausible signaling networks involved in regulating the responsible of airway epithelial cells to SARS-CoV-2.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="discussion | conclusions">
+<title>Discussion and Conclusion</title>
+<p id="P21">The aim of this study was to identify signaling and transcriptional regulatory networks that play key roles in transducing signals specific to SARS-CoV-2 infection of airway epithelial cells in order to better understand the pathophysiology of COVID-19 and provide a list of potential molecular targets for therapies aimed at altering the clinical courses of the disease. The response was studied in comparison to mock-treated cells and other viruses (RSV, H1N1, HPIV3).</p>
+<sec id="S8">
+<title>Insights learned from the regulatory networks associated with SARS-CoV-2 versus mock-treated cells</title>
+<p id="P22">In the first instance, comparing to mock-treated cells, we can identify the key regulatory pathways of antiviral responses. Alterations of these pathways (whether genetic, epigenetic or environmental) can have important consequences for a broad range of infections. If their activity is diminished or impaired, susceptibility to viral infections is expected, with high titers of virus likely increasing infectivity. This is the case for the loss of function of TLR7 [<xref ref-type="bibr" rid="R28">28</xref>] or type I and type III IFN-related genes [<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>] leading to more severe COVID-19 disease in younger individuals. As expected, pathway enrichment analysis showed that immune (cytokine) signaling related to interferon were the top hits, as is expected for viral infection of host cells [<xref ref-type="bibr" rid="R31">31</xref>]. Amongst the lists of TFs identified is IRF9, a TF shown to be activated by SARS-CoV-2 [<xref ref-type="bibr" rid="R10">10</xref>] that forms a trimeric complex with STAT1 and STAT2 termed IFN-stimulated gene factor 3 (ISG3) that binds to the IFN stimulated response element (ISRE) and controls the expression of type I and III IFN essential for the control of Influenza A virus replication [<xref ref-type="bibr" rid="R32">32</xref>]. Interferons alpha and beta (IFN-a and IFN-b) are among the type I IFNs that regulate the activity of immune system and act as antiviral cytokines. A recent study has shown an association between impaired interferon type I response (represented by low activity of IFN-a and IFN-b) and severity of COVID-19 and has suggested blood deficiency in type I IFN as a hallmark of severe manifestation of the disease [<xref ref-type="bibr" rid="R28">28</xref>]. In addition, several studies have suggested type I IFNs as potential antiviral treatments for COVID-19 [<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>]. IFN-g is a cytokine involved in innate and adaptive immunity and is the only member of type II IFNs. A recent study has shown a correlation between COVID-19 severity and a decrease in the production of IFN-g by CD4+ T cells [<xref ref-type="bibr" rid="R31">31</xref>].</p>
+<p id="P23">Pathway enrichment provides a high-level view, which lacks granular information about the regulatory pathways involved. For this reason, we focused our analysis on linking protein kinases to the identified network using foRWaRD. This analysis confirmed the importance of JAK-STAT and NFkB signaling for the expression of IFN genes and antiviral responses in SARS-CoV-2 versus mock-treated cells (<xref rid="F2" ref-type="fig">Fig. 2A</xref> and <xref rid="F3" ref-type="fig">3A</xref>). Identified kinases also included TANK-binding kinase 1 (TBK1) and IKKe, critical regulators of the transcription factor IRF7 that regulate amongst other genes IFN-induced oligodenylate synthetase-like (OASL) and Pentraxin-3 (PTX3) (<xref rid="F2" ref-type="fig">Fig. 2A</xref>). TBK1/IKKe acts downstream of TLR3 and TLR7 via the TRIF- signaling adapter, two TLR identified in genetic studies to confer susceptibility to COVID-19 [<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R34">34</xref>]. Moreover, high circulating expression of PTX3, derived from monocytic and endothelial cells is a predictor of short-term COVID-19 mortality [<xref ref-type="bibr" rid="R35">35</xref>]. The analysis thus identified several relevant pathways to SARS-CoV-2 infection and disease susceptibility/severity.</p>
+</sec>
+<sec id="S9">
+<title>Insights learned from the regulatory networks associated with SARS-CoV-2 versus other respiratory virus- treated cells</title>
+<p id="P24">Investigation of the regulatory networks specifically associated with SARS-CoV-2 can help better understand either acute complications or long-term consequences of COVID-19. This is particularly important for a novel disease, for which limited information is available. Considering that as of December 2020, more than 75 million people have been infected, the potential of diverging responses is huge and can have long-lasting impact on the health of many. Therefore, better understanding the peculiarities of SARS-CoV-2 compared to other viruses is paramount to deal with the coming fall out of the pandemic. When looking at differences between mock- and other viruses-treated cells, the enrichment analysis highlighted a potential role for GPCR signaling associated with the TFs MAX, SP110 and EGR4. GPCRs form a large family of 7-transmembrance cell surface receptors that mediates numerous cellular functions, including cytokine/chemokine signaling involved in leukocyte chemotaxis [<xref ref-type="bibr" rid="R36">36</xref>]. The association with the above-mentioned TFs postulate a role in controlling cell differentiation/cell death programs by GPCR.</p>
+<p id="P25">In the SvOV network, additional protein kinases were identified including MAPK11, MAPK14, BTK, and BMX. MAPK11 and MAPK14 both belong to the p38 MAPK family which are involved in the cellular responses to extracellular stimuli including proinflammatory cytokines such as IL-6 [<xref ref-type="bibr" rid="R37">37</xref>]. Previously, it has been shown that one of the proteins expressed by SARS-CoV virus upregulates p38 MAPK [<xref ref-type="bibr" rid="R38">38</xref>]. A global phosphorylation analysis of SARS-CoV-2 infected epithelial cells also identified MAPK14 and MAPK11 as kinases upregulated during infection that make important contributions to host responses [<xref ref-type="bibr" rid="R39">39</xref>]. Accordingly, inhibition of MAPK14 and MAPK11 family has been proposed as a potential therapeutic approach in COVID-19 [<xref ref-type="bibr" rid="R37">37</xref>]. In addition to be a downstream target of TLR-signaling pathways including TLR3 in airway epithelial cells [<xref ref-type="bibr" rid="R40">40</xref>], MAPK14 regulates IL-6 expression and mRNA stability [<xref ref-type="bibr" rid="R41">41</xref>]. IL-6 circulating levels are elevated in severe COVID-19 [<xref ref-type="bibr" rid="R42">42</xref>]. Moreover, MAPK14 is an important signal transducer of IL-17 in endothelial cells [<xref ref-type="bibr" rid="R43">43</xref>], involved in neutrophilic inflammation, that may be important mediators of thrombosis in COVID-19 via the release of Neutrophil-Extracellular-Traps [<xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R44">44</xref>]. MAPK14 is an important target of the potent corticosteroid dexamethasone [<xref ref-type="bibr" rid="R45">45</xref>], that was shown to decrease mortality in severe COVID-19 [<xref ref-type="bibr" rid="R46">46</xref>].</p>
+<p id="P26">BMX and BTK are non-receptor tyrosine kinases that belong to the Tec kinase family. Tec family has been shown to be involved in the intracellular signaling mechanisms of cytokine receptors and antigen receptor signaling in lymphocytes [<xref ref-type="bibr" rid="R47">47</xref>]. BMX has been shown to link both MYD88, another TLR-signaling adapter, and Focal Adhesion Kinases, a kinase associated with integrin activation to the synthesis of IL-6 [<xref ref-type="bibr" rid="R48">48</xref>]. The inhibition of genes in this family, and particularly BTK [<xref ref-type="bibr" rid="R41">41</xref>], has been proposed as a therapeutic approach to protect COVID-19 patients against pulmonary injury [<xref ref-type="bibr" rid="R42">42</xref>] and to block thrombo-inflammation [<xref ref-type="bibr" rid="R43">43</xref>]. Two potential downstream targets of BTK according to our regulatory networks (<xref rid="F2" ref-type="fig">Fig. 2</xref>B), Tumor necrosis factor ligand superfamily member 14 (TNFS14) and XIAP-associated factor 1 (XAF1) have been identified in a single cell transcriptomic study comparing IAV and SARS-CoV-2 responses [<xref ref-type="bibr" rid="R49">49</xref>]. TNFSF14 is a ligand of the lymphotoxin beta receptor that amplifies NFkB signaling in T lymphocytes to increase IFN-gamma production [<xref ref-type="bibr" rid="R50">50</xref>]. XAF1, as its name implies, binds XIAP (BIRC4) an important regulator of inflammatory signaling and apoptosis, that increases TRAIL-mediated apoptosis in response to IFNb [<xref ref-type="bibr" rid="R51">51</xref>]. While these responses are likely desirable during early phases of the infection, whether they can also contribute to immunopathology in the second sustained phase of the disease warrants further investigation.</p>
+<p id="P27">In conclusion, our results obtained by stringing together three powerful computational tools (InPheRNo, KnowEnG GSC, and foRWaRD) identified regulatory networks, pathways, and kinases, many of which have already been associated with COVID-19 in previous studies. These results also provided further information on putative regulatory mechanisms underpinning the infection of epithelial cells by SARS-CoV-2 and identified novel potential therapeutic targets that can serve as the basis for future identification and development of drugs that mitigate the impact of COVID-19 in individuals at risk of severe complications. The SvM regulatory network was mostly related to classic antiviral response pathways (IRF, IFN, JAK-STAT, etc.) that are well supported by genomic data on diseases susceptibility to COVID-19 [<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R34">34</xref>]. Interestingly, the SvOV regulatory network identified pathways associated with regulation of inflammation (MAPK14) and immunity (BTK, BMX) that may contribute to exacerbate organ damage.</p>
+</sec>
+</sec>
+<sec id="S10" sec-type="methods">
+<title>Methods</title>
+<sec id="S11">
+<title>Data collection</title>
+<p id="P28">We downloaded mock-treated and infected RNA-seq gene expression profiles of human lung epithelial cells from the Gene Expression Omnibus (GEO) database (accession number: GSE147507). For the reconstruction of SARS-CoV-2 versus mock (SvM) TRN, we used 24 samples corresponding to independent biological triplicates of SARS-CoV-2 infected NHBE, A549, A549-ACE2, and Calu3 and their corresponding mock-treated control. For the reconstruction of SARS-CoV-2 versus other viruses (SvOV) TRN, we used 33 samples corresponding to independent biological replicates of A549 cells infected with SARS-CoV-2, RSV, IAV, and HPIV3, NHBE cells infected with SARS-CoV-2, IAV, and IAVdNS, A549-ACE2 cells infected with SARS-CoV-2, and Calu3 cells infected with SARS-CoV-2.</p>
+<p id="P29">We downloaded the list of human TFs from AnimalTFDB [<xref ref-type="bibr" rid="R52">52</xref>]. Experimentally verified protein-protein interaction network from the STRING database [<xref ref-type="bibr" rid="R14">14</xref>] and HumanNet integrated network [<xref ref-type="bibr" rid="R21">21</xref>] were downloaded from KnowEnG’s knowledge network (version 17.06) available at the address <ext-link ext-link-type="uri" xlink:href="https://github.com/KnowEnG/KN_Fetcher/blob/master/Contents.md">https://github.com/KnowEnG/KN_Fetcher/blob/master/Contents.md</ext-link>. The list of target genes for the top TFs (identified using ChIP-seq) was downloaded from the GTRD database (<ext-link ext-link-type="uri" xlink:href="http://gtrd.biouml.org/downloads/20.06/intervals/target_genes/Homo%20sapiens/genes%20promoter%5b-1000,+100%5d/">http://gtrd.biouml.org/downloads/20.06/intervals/target_genes/Homo%20sapiens/genes%20promoter%5b-1000,+100%5d/</ext-link>). In this dataset, a gene is considered to be target of a TF if its promoter region (defined as the interval [-1000, +100] bp relative to gene’s transcriptional start site) contains at least one GTRD meta-cluster for the TF. The meta-clusters reflect ChIP peaks for the same TF-gene but integrated from different experiment conditions and different peak calling methods [<xref ref-type="bibr" rid="R9">9</xref>].</p>
+<p id="P30">To form the aggregated KSI network, we obtained kinase-substrate relationships from three previous studies. The interactions corresponding to homo sapiens were downloaded from PhosphoSitePlus database (www.phosphosite.org) [<xref ref-type="bibr" rid="R17">17</xref>], PhosphoNetworks (www.phosphonetworks.org) [<xref ref-type="bibr" rid="R18">18</xref>], and the supplementary material of an independent study [<xref ref-type="bibr" rid="R19">19</xref>]. After removing duplicate edges, we formed a KSI involving 29594 kinase-substrate relationships corresponding to 406 unique kinases and 3942 unique substrates. LINCS Level 5 consensus signatures (‘trt_sh.cgs’) corresponding to shRNA knockdowns in A549 cell line were obtained from GEO with the accession number (GSE92742). We used the Consensus Gene Signatures (CGS) data since they correspond to gene expression changes that are common among multiple shRNAs that target the same gene, mitigating off-target effects [<xref ref-type="bibr" rid="R53">53</xref>].</p>
+</sec>
+<sec id="S12">
+<title>Reconstruction of COVID-19-relevant TRNs using InPheRNo</title>
+<p id="P31">InPheRNo [<xref ref-type="bibr" rid="R7">7</xref>] is a computational method that utilizes a probabilistic graphical model to combine information on the significance (pseudo p-value) of gene-TF associations (from their expression profiles) with information on the significance (p-value) of gene-phenotype associations to construct phenotyperelevant TRNs. As input, it accepts a list of TFs, the expression profiles of genes and TFs (in multiple samples), and the p-value of association between genes’ expression and a phenotype.</p>
+<p id="P32">To construct the TRNs using InPheRNo, we first performed differential expression analysis using EdgeR [<xref ref-type="bibr" rid="R54">54</xref>] with the cell type as a confounding factor. In the case of SvOV, since for different viruses the measurements were obtained at different time-points, we also included the time of measurement post infection as a confounding factor. Next, we quantile normalized the gene expression profiles using voom [<xref ref-type="bibr" rid="R55">55</xref>] and then z-score normalized the results. We constructed the SvM and SvOV TRNs using 500 most differentially expressed genes. We ran InPheRNo (downloaded from <ext-link ext-link-type="uri" xlink:href="https://github.com/KnowEnG/InPheRNo">https://github.com/KnowEnG/InPheRNo</ext-link>) with 1000 iterations, 500 repeats and default values for other parameters.</p>
+</sec>
+<sec id="S13">
+<title>Pathway enrichment analysis</title>
+<p id="P33">We used KnowEnG’s gene set characterization (GSC) pipeline [<xref ref-type="bibr" rid="R12">12</xref>] (<ext-link ext-link-type="uri" xlink:href="http://www.knoweng.org/analyze">www.knoweng.org/analyze</ext-link>) to perform pathway enrichment analysis. For the standard mode of GSC pipeline (without use of any gene interaction network), we chose Reactome pathways [<xref ref-type="bibr" rid="R15">15</xref>] as the option for target gene sets and the rest of parameters were left as default. We excluded pathways with smaller than 10 genes and adjusted the enrichment p-values (Fisher’s exact test) for multiple tests using Benjamini-Hochberg false discovery rate (FDR). Pathways with FDR &lt; 0.05 were considered statistically significant.</p>
+<p id="P34">For the knowledge-guided mode of the GSC pipeline, we used ‘STRING Experimental PPI’ option for the knowledge network (which corresponds to experimentally verified protein-protein interaction edges from the STRING database [<xref ref-type="bibr" rid="R14">14</xref>]) and the amount of network smoothing was set to the default 50%. Only pathways with ‘difference score’ larger than 0.5, which correspond to those that have a query score higher than the background score, were considered associated with the input query gene set. For enrichment analysis of the set of TFs, the input file to KnowEnG’s GSC pipeline was designed such that the universe (i.e. population) would be equal to the set of all TFs present in our study. For enrichment analysis of a TF and its target genes, the universe was set to be the set of all genes and TFs present in our study.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Figure S1</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Figure_S1.pdf" mimetype="application" mime-subtype="pdf" id="N66426" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Table S1</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S1.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66435" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Figure S2</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Figure_S2.pdf" mimetype="application" mime-subtype="pdf" id="N66444" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Supplementary Table S2</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S2.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66453" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD5">
+<label>Supplementary Figure S3</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Figure_S3.pdf" mimetype="application" mime-subtype="pdf" id="N66462" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD6">
+<label>Supplementary Table S3</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S3.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66471" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD7">
+<label>Supplementary Table S4</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S4.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66480" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD8">
+<label>Supplementary Table S5</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S5.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66489" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD9">
+<label>Supplementary Table S6</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S6.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66498" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD10">
+<label>Supplementary Table S7</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S7.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66507" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD11">
+<label>Supplementary Table S8</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S8.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66516" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD12">
+<label>Supplementary Table S9</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Table_S9.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66525" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD13">
+<label>Supplementary Information</label>
+<media xlink:href="EMS109161-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N66534" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S14">
+<title>Acknowledgements</title>
+<p>This work was supported by Natural Sciences and Engineering Research Council of Canada (NSERC) grant RGPIN-2019-04460 (AE) and McGill Initiative in Computational Medicine (MiCM) (AE and SR).</p>
+</ack>
+<fn-group>
+<fn fn-type="con" id="FN1">
+<p id="P35">
+<bold>Authors’ Contributions</bold>
+</p>
+<p id="P36">AE and SR conceived the study. CS performed the analyses. All authors contributed to the drafting of the manuscript and critical discussion of the results. All authors read and approved the final manuscript.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P37">
+<bold>Competing Interests</bold>
+</p>
+<p id="P38">The authors declare no conflict of interest.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Novel Coronavirus from Patients with Pneumonia in China, 2019</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<volume>382</volume>
+<issue>8</issue>
+<fpage>727</fpage>
+<lpage>33</lpage>
+<comment>Epub 2020/01/25. PubMed PMID: 31978945; PubMed Central PMCID: PMCPMC7092803</comment>
+<pub-id pub-id-type="doi">10.1056/NEJMoa2001017</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Handfield</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kwock</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>MacLeod</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Innate Antiviral Immunity in the Skin</article-title>
+<source>Trends Immunol</source>
+<year>2018</year>
+<volume>39</volume>
+<issue>4</issue>
+<fpage>328</fpage>
+<lpage>40</lpage>
+<comment>Epub 2018/03/13. PubMed PMID: 29526487 PubMed Central PMCID: PMCPMC5993211</comment>
+<pub-id pub-id-type="doi">10.1016/j.it.2018.02.003</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robert</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Verbiest</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Demey</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ieven</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jansens</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jorens</surname>
+<given-names>PG</given-names>
+</name>
+</person-group>
+<article-title>A series of five adult cases of respiratory syncytial virus-related acute respiratory distress syndrome</article-title>
+<source>Anaesth Intensive Care</source>
+<year>2008</year>
+<volume>36</volume>
+<issue>2</issue>
+<fpage>230</fpage>
+<lpage>4</lpage>
+<comment>Epub 2008/03/26. PubMed PMID: 18361015</comment>
+<pub-id pub-id-type="doi">10.1177/0310057X0803600214</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blanco-Melo</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Nilsson-Payant</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>WC</given-names>
+</name>
+<name>
+<surname>Uhl</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hoagland</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Moller</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Imbalanced Host Response to SARS-CoV-2 Drives Development of COVID-19</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<issue>5</issue>
+<fpage>1036</fpage>
+<lpage>45 e9</lpage>
+<comment>Epub 2020/05/18. PubMed PMID: 32416070; PubMed Central PMCID: PMCPMC7227586</comment>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.04.026</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bem</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Kneyber</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>van Woensel</surname>
+<given-names>JB</given-names>
+</name>
+</person-group>
+<article-title>Respiratory syncytial virus-induced paediatric ARDS: why we should unpack the syndrome</article-title>
+<source>Lancet Respir Med</source>
+<year>2017</year>
+<volume>5</volume>
+<issue>1</issue>
+<fpage>9</fpage>
+<lpage>10</lpage>
+<comment>Epub 2016/12/22. PubMed PMID: 28000595</comment>
+<pub-id pub-id-type="doi">10.1016/S2213-2600(16)30425-8</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henrickson</surname>
+<given-names>KJ</given-names>
+</name>
+</person-group>
+<article-title>Parainfluenza viruses</article-title>
+<source>Clin Microbiol Rev</source>
+<year>2003</year>
+<volume>16</volume>
+<issue>2</issue>
+<fpage>242</fpage>
+<lpage>64</lpage>
+<comment>Epub 2003/04/15. PubMed PMID: 12692097 PubMed Central PMCID: PMCPMC153148</comment>
+<pub-id pub-id-type="doi">10.1128/cmr.16.2.242-264.2003</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Emad</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Sinha</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Inference of phenotype-relevant transcriptional regulatory networks elucidates cancer type-specific regulatory mechanisms in a pan-cancer study</article-title>
+<source>To appear in NPJ Systems Biology and Applications bioRxiv</source>
+<year>2018</year>
+<comment>389734</comment>
+<pub-id pub-id-type="doi">10.1101/389734</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Subramanian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Narayan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Corsello</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Peck</surname>
+<given-names>DD</given-names>
+</name>
+<name>
+<surname>Natoli</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Next Generation Connectivity Map: L1000 Platform and the First 1,000,000 Profiles</article-title>
+<source>Cell</source>
+<year>2017</year>
+<volume>171</volume>
+<issue>6</issue>
+<fpage>1437</fpage>
+<lpage>52 e17</lpage>
+<comment>Epub 2017/12/02. PubMed PMID: 29195078; PubMed Central PMCID: PMCPMC5990023</comment>
+<pub-id pub-id-type="doi">10.1016/j.cell.2017.10.049</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yevshin</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Sharipov</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Kolmykov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kondrakhin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kolpakov</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>GTRD: a database on gene transcription regulation-2019 update</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D100</fpage>
+<lpage>D5</lpage>
+<comment>Epub 2018/11/18. PubMed PMID: 30445619 PubMed Central PMCID: PMCPMC6323985</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gky1128</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vishnubalaji</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shaath</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Alajez</surname>
+<given-names>NM</given-names>
+</name>
+</person-group>
+<article-title>Protein Coding and Long Noncoding RNA (lncRNA) Transcriptional Landscape in SARS-CoV-2 Infected Bronchial Epithelial Cells Highlight a Role for Interferon and Inflammatory Response</article-title>
+<source>Genes (Basel)</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>7</issue>
+<fpage>11</fpage>
+<comment>Epub 2020/07/11. PubMed PMID: 32646047 PubMed Central PMCID: PMCPMC7397219</comment>
+<pub-id pub-id-type="doi">10.3390/genes11070760</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lokugamage</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Hage</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>de Vries</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Valero-Jimenez</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Schindewolf</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Dittmann</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Type I Interferon Susceptibility Distinguishes SARS-CoV-2 from SARS-CoV</article-title>
+<source>J Virol</source>
+<year>2020</year>
+<volume>94</volume>
+<issue>23</issue>
+<comment>Epub 2020/09/18. PubMed PMID: 32938761 PubMed Central PMCID: PMCPMC7654262</comment>
+<pub-id pub-id-type="doi">10.1128/JVI.01410-20</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blatti</surname>
+<given-names>C</given-names>
+<suffix>3rd</suffix>
+</name>
+<name>
+<surname>Emad</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Berry</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Gatzke</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Epstein</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lanier</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Knowledge-guided analysis of “omics” data using the KnowEnG cloud platform</article-title>
+<source>PLoS Biol</source>
+<year>2020</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>e3000583</fpage>
+<comment>Epub 2020/01/24. PubMed PMID: 31971940 PubMed Central PMCID: PMCPMC6977717</comment>
+<pub-id pub-id-type="doi">10.1371/journal.pbio.3000583</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blatti</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Sinha</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Characterizing gene sets using discriminative random walks with restart on heterogeneous biological networks</article-title>
+<source>Bioinformatics</source>
+<year>2016</year>
+<volume>32</volume>
+<issue>14</issue>
+<fpage>2167</fpage>
+<lpage>75</lpage>
+<comment>Epub 2016/05/07. PubMed PMID: 27153592 PubMed Central PMCID: PMCPMC4937193</comment>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btw151</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szklarczyk</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gable</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Lyon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Junge</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wyder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Huerta-Cepas</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>STRING v11: protein-protein association networks with increased coverage, supporting functional discovery in genome-wide experimental datasets</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D607</fpage>
+<lpage>D13</lpage>
+<comment>Epub 2018/11/27. PubMed PMID: 30476243 PubMed Central PMCID: PMCPMC6323986</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gky1131</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fabregat</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Korninger</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Viteri</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Sidiropoulos</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Marin-Garcia</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Ping</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Reactome graph database: Efficient access to complex pathway data</article-title>
+<source>PLoS Comput Biol</source>
+<year>2018</year>
+<volume>14</volume>
+<issue>1</issue>
+<fpage>e1005968</fpage>
+<comment>Epub 2018/01/30. PubMed PMID: 29377902 PubMed Central PMCID: PMCPMC5805351</comment>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1005968</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cohen</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Protein kinases--the major drug targets of the twenty-first century?</article-title>
+<source>Nat Rev Drug Discov</source>
+<year>2002</year>
+<volume>1</volume>
+<issue>4</issue>
+<fpage>309</fpage>
+<lpage>15</lpage>
+<comment>Epub 2002/07/18. PubMed PMID: 12120282</comment>
+<pub-id pub-id-type="doi">10.1038/nrd773</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hornbeck</surname>
+<given-names>PV</given-names>
+</name>
+<name>
+<surname>Kornhauser</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Tkachev</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Skrzypek</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Murray</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>PhosphoSitePlus: a comprehensive resource for investigating the structure and function of experimentally determined post- translational modifications in man and mouse</article-title>
+<source>Nucleic Acids Res</source>
+<year>2012</year>
+<volume>40</volume>
+<issue>Database issue</issue>
+<fpage>D261</fpage>
+<lpage>70</lpage>
+<comment>Epub 2011/12/03. PubMed PMID: 22135298 PubMed Central PMCID: PMCPMC3245126</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gkr1122</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Rho</surname>
+<given-names>HS</given-names>
+</name>
+<name>
+<surname>Newman</surname>
+<given-names>RH</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Qian</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>PhosphoNetworks: a database for human phosphorylation networks</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>1</issue>
+<fpage>141</fpage>
+<lpage>2</lpage>
+<comment>Epub 2013/11/15. PubMed PMID: 24227675 PubMed Central PMCID: PMCPMC3866559</comment>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btt627</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Jia</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Quantitative network mapping of the human kinome interactome reveals new clues for rational kinase inhibitor discovery and individualized cancer therapy</article-title>
+<source>Oncotarget</source>
+<year>2014</year>
+<volume>5</volume>
+<issue>11</issue>
+<fpage>3697</fpage>
+<lpage>710</lpage>
+<comment>Epub 2014/07/09. PubMed PMID: 25003367 PubMed Central PMCID: PMCPMC4116514</comment>
+<pub-id pub-id-type="doi">10.18632/oncotarget.1984</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ding</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hostallero</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>El Khili</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Fonseca</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Milette</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Noorah</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A network-informed analysis of SARS-CoV-2 and hemophagocytic lymphohistiocytosis genes’ interactions points to Neutrophil Extracellular Traps as mediators of thrombosis in COVID-19</article-title>
+<source>medRxiv</source>
+<comment>2020:2020.07.01.20144121</comment>
+<pub-id pub-id-type="doi">10.1101/2020.07.01.20144121</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hwang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>CY</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Hart</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Marcotte</surname>
+<given-names>EM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>HumanNet v2: human gene networks for disease research</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D573</fpage>
+<lpage>D80</lpage>
+<comment>Epub 2018/11/13. PubMed PMID: 30418591 PubMed Central PMCID: PMCPMC6323914</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gky1126</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yamaoka</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Saharinen</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Pesu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Holt</surname>
+<given-names>VE</given-names>
+<suffix>3rd</suffix>
+</name>
+<name>
+<surname>Silvennoinen</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>O’Shea</surname>
+<given-names>JJ</given-names>
+</name>
+</person-group>
+<article-title>The Janus kinases (Jaks)</article-title>
+<source>Genome Biol</source>
+<year>2004</year>
+<volume>5</volume>
+<issue>12</issue>
+<fpage>253</fpage>
+<comment>Epub 2004/12/04. PubMed PMID: 15575979 PubMed Central PMCID: PMCPMC545791</comment>
+<pub-id pub-id-type="doi">10.1186/gb-2004-5-12-253</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>YX</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>DW</given-names>
+</name>
+</person-group>
+<article-title>Targeting JAK-STAT Signaling to Control Cytokine Release Syndrome in COVID-19</article-title>
+<source>Trends Pharmacol Sci</source>
+<year>2020</year>
+<volume>41</volume>
+<issue>8</issue>
+<fpage>531</fpage>
+<lpage>43</lpage>
+<comment>Epub 2020/06/26. PubMed PMID: 32580895 PubMed Central PMCID: PMCPMC7298494</comment>
+<pub-id pub-id-type="doi">10.1016/j.tips.2020.06.007</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Seif</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Aazami</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Khoshmirsafa</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kamali</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mohsenzadegan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pornour</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>JAK Inhibition as a New Treatment Strategy for Patients with COVID-19</article-title>
+<source>Int Arch Allergy Immunol</source>
+<year>2020</year>
+<volume>181</volume>
+<issue>6</issue>
+<fpage>467</fpage>
+<lpage>75</lpage>
+<comment>Epub 2020/05/12. PubMed PMID: 32392562 PubMed Central PMCID: PMCPMC7270061</comment>
+<pub-id pub-id-type="doi">10.1159/000508247</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goker Bagca</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Biray Avci</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>The potential of JAK/STAT pathway inhibition by ruxolitinib in the treatment of COVID-19</article-title>
+<source>Cytokine Growth Factor Rev</source>
+<year>2020</year>
+<volume>54</volume>
+<fpage>51</fpage>
+<lpage>62</lpage>
+<comment>Epub 2020/07/09. PubMed PMID: 32636055 PubMed Central PMCID: PMCPMC7305753</comment>
+<pub-id pub-id-type="doi">10.1016/j.cytogfr.2020.06.013</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mehta</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>McAuley</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sanchez</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Tattersall</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Manson</surname>
+<given-names>JJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19: consider cytokine storm syndromes and immunosuppression</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>10229</issue>
+<fpage>1033</fpage>
+<lpage>4</lpage>
+<comment>Epub 2020/03/21. PubMed PMID: 32192578 PubMed Central PMCID: PMCPMC7270045</comment>
+<pub-id pub-id-type="doi">10.1016/S0140-6736(20)30628-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Nie</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hao</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Impact of Mutations in SARS-CoV-2 Spike on Viral Infectivity and Antigenicity</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<issue>5</issue>
+<fpage>1284</fpage>
+<lpage>94 e9</lpage>
+<comment>Epub 2020/07/31. PubMed PMID: 32730807 PubMed Central PMCID: PMCPMC7366990</comment>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.07.012</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadjadj</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yatim</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Barnabei</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Corneau</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Boussier</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Impaired type I interferon activity and inflammatory responses in severe COVID-19 patients</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<issue>6504</issue>
+<fpage>718</fpage>
+<lpage>24</lpage>
+<comment>Epub 2020/07/15. PubMed PMID: 32661059 PubMed Central PMCID: PMCPMC7402632</comment>
+<pub-id pub-id-type="doi">10.1126/science.abc6027</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sallard</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Lescure</surname>
+<given-names>FX</given-names>
+</name>
+<name>
+<surname>Yazdanpanah</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Mentre</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Peiffer-Smadja</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Type 1 interferons as a potential treatment against COVID-19</article-title>
+<source>Antiviral Res</source>
+<year>2020</year>
+<volume>178</volume>
+<comment>104791. Epub 2020/04/11. PubMed PMID: 32275914 PubMed Central PMCID: PMCPMC7138382</comment>
+<pub-id pub-id-type="doi">10.1016/j.antiviral.2020.104791</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Iwasaki</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Type I and Type III Interferons - Induction, Signaling, Evasion, and Application to Combat COVID-19</article-title>
+<source>Cell Host Microbe</source>
+<year>2020</year>
+<volume>27</volume>
+<issue>6</issue>
+<fpage>870</fpage>
+<lpage>8</lpage>
+<comment>Epub 2020/05/29. PubMed PMID: 32464097 PubMed Central PMCID: PMCPMC7255347</comment>
+<pub-id pub-id-type="doi">10.1016/j.chom.2020.05.008</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Clinical and immunological features of severe and moderate coronavirus disease 2019</article-title>
+<source>J Clin Invest</source>
+<year>2020</year>
+<volume>130</volume>
+<issue>5</issue>
+<fpage>2620</fpage>
+<lpage>9</lpage>
+<comment>Epub 2020/03/29. PubMed PMID: 32217835 PubMed Central PMCID: PMCPMC7190990</comment>
+<pub-id pub-id-type="doi">10.1172/JCI137244</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hernandez</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Melki</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Jing</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Habib</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>SSY</given-names>
+</name>
+<name>
+<surname>Danielson</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Life-threatening influenza pneumonitis in a child with inherited IRF9 deficiency</article-title>
+<source>J Exp Med</source>
+<year>2018</year>
+<volume>215</volume>
+<issue>10</issue>
+<fpage>2567</fpage>
+<lpage>85</lpage>
+<comment>Epub 2018/08/26. PubMed PMID: 30143481 PubMed Central PMCID: PMCPMC6170168</comment>
+<pub-id pub-id-type="doi">10.1084/jem.20180628</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van der Made</surname>
+<given-names>CI</given-names>
+</name>
+<name>
+<surname>Simons</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schuurs-Hoeijmakers</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>van den Heuvel</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Mantere</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kersten</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Presence of Genetic Variants Among Young Men With Severe COVID-19</article-title>
+<source>JAMA</source>
+<year>2020</year>
+<comment>Epub 2020/07/25. PubMed PMID: 32706371 PubMed Central PMCID: PMCPMC7382021</comment>
+<pub-id pub-id-type="doi">10.1001/jama.2020.13719</pub-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Bastard</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Le Pen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Moncada-Velez</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inborn errors of type I IFN immunity in patients with life-threatening COVID-19</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>370</volume>
+<issue>6515</issue>
+<comment>Epub 2020/09/26. PubMed PMID: 32972995</comment>
+<pub-id pub-id-type="doi">10.1126/science.abd4570</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brunetta</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Folci</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bottazzi</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>De Santis</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gritti</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Protti</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Macrophage expression and prognostic significance of the long pentraxin PTX3 in COVID-19</article-title>
+<source>Nat Immunol</source>
+<year>2021</year>
+<volume>22</volume>
+<issue>1</issue>
+<fpage>19</fpage>
+<lpage>24</lpage>
+<comment>Epub 2020/11/20. PubMed PMID: 33208929</comment>
+<pub-id pub-id-type="doi">10.1038/s41590-020-00832-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lammermann</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kastenmuller</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Concepts of GPCR-controlled navigation in the immune system</article-title>
+<source>Immunol Rev</source>
+<year>2019</year>
+<volume>289</volume>
+<issue>1</issue>
+<fpage>205</fpage>
+<lpage>31</lpage>
+<comment>Epub 2019/04/13. PubMed PMID: 30977203 PubMed Central PMCID: PMCPMC6487968</comment>
+<pub-id pub-id-type="doi">10.1111/imr.12752</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grimes</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Grimes</surname>
+<given-names>KV</given-names>
+</name>
+</person-group>
+<article-title>p38 MAPK inhibition: A promising therapeutic approach for COVID-19</article-title>
+<source>J Mol Cell Cardiol</source>
+<year>2020</year>
+<volume>144</volume>
+<fpage>63</fpage>
+<lpage>5</lpage>
+<comment>Epub 2020/05/19. PubMed PMID: 32422320 PubMed Central PMCID: PMCPMC7228886</comment>
+<pub-id pub-id-type="doi">10.1016/j.yjmcc.2020.05.007</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kopecky-Bromberg</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Martinez-Sobrido</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>7a protein of severe acute respiratory syndrome coronavirus inhibits cellular protein synthesis and activates p38 mitogen-activated protein kinase</article-title>
+<source>J Virol</source>
+<year>2006</year>
+<volume>80</volume>
+<issue>2</issue>
+<fpage>785</fpage>
+<lpage>93</lpage>
+<comment>Epub 2005/12/28. PubMed PMID: 16378980 PubMed Central PMCID: PMCPMC1346853</comment>
+<pub-id pub-id-type="doi">10.1128/JVI.80.2.785-793.2006</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Memon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Meyer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Correa Marrero</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Global Phosphorylation Landscape of SARS-CoV-2 Infection</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<issue>3</issue>
+<fpage>685</fpage>
+<lpage>712 e19</lpage>
+<comment>Epub 2020/07/10. PubMed PMID: 32645325 PubMed Central PMCID: PMCPMC7321036</comment>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.06.034</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berube</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bourdon</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Rousseau</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Distinct intracellular signaling pathways control the synthesis of IL-8 and RANTES in TLR1/TLR2, TLR3 or NOD1 activated human airway epithelial cells</article-title>
+<source>Cell Signal</source>
+<year>2009</year>
+<volume>21</volume>
+<issue>3</issue>
+<fpage>448</fpage>
+<lpage>56</lpage>
+<comment>Epub 2009/01/06. PubMed PMID: 19121387</comment>
+<pub-id pub-id-type="doi">10.1016/j.cellsig.2008.12.001</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roschewski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lionakis</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Sharman</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Roswarski</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Goy</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Monticelli</surname>
+<given-names>MA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inhibition of Bruton tyrosine kinase in patients with severe COVID-19</article-title>
+<source>Sci Immunol</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>48</issue>
+<comment>Epub 2020/06/07. PubMed PMID: 32503877 PubMed Central PMCID: PMCPMC7274761</comment>
+<pub-id pub-id-type="doi">10.1126/sciimmunol.abd0110</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Treon</surname>
+<given-names>SP</given-names>
+</name>
+<name>
+<surname>Castillo</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Skarbnik</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Soumerai</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Ghobrial</surname>
+<given-names>IM</given-names>
+</name>
+<name>
+<surname>Guerrera</surname>
+<given-names>ML</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The BTK inhibitor ibrutinib may protect against pulmonary injury in COVID-19-infected patients</article-title>
+<source>Blood</source>
+<year>2020</year>
+<volume>135</volume>
+<issue>21</issue>
+<fpage>1912</fpage>
+<lpage>5</lpage>
+<comment>Epub 2020/04/18. PubMed PMID: 32302379 PubMed Central PMCID: PMCPMC7243149</comment>
+<pub-id pub-id-type="doi">10.1182/blood.2020006288</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nicolson</surname>
+<given-names>PL</given-names>
+</name>
+<name>
+<surname>Welsh</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Chauhan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Thomas</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Kahn</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Watson</surname>
+<given-names>SP</given-names>
+</name>
+</person-group>
+<article-title>A rationale for blocking thromboinflammation in COVID-19 with Btk inhibitors</article-title>
+<source>Platelets</source>
+<year>2020</year>
+<volume>31</volume>
+<issue>5</issue>
+<fpage>685</fpage>
+<lpage>90</lpage>
+<comment>Epub 2020/06/20. PubMed PMID: 32552307</comment>
+<pub-id pub-id-type="doi">10.1080/09537104.2020.1775189</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barnes</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Adrover</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Baxter-Stoltzfus</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Borczuk</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cools-Lartigue</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Crawford</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Targeting potential drivers of COVID-19: Neutrophil extracellular traps</article-title>
+<source>J Exp Med</source>
+<year>2020</year>
+<volume>217</volume>
+<issue>6</issue>
+<comment>Epub 2020/04/18. PubMed PMID: 32302401 PubMed Central PMCID: PMCPMC7161085 work. R.E. Schwartz is a Sponsored Advisory Board Member for Miromatrix Inc. J.D. Spicer reported personal fees from Bristol Myers Squibb, personal fees from Astra Zeneca, personal fees from Merck, personal fees from Trans-Hit Bio, and non-financial support from Astra Zeneca outside the submitted work C.C. Yost reports a grant from PEEL Therapeutics, Inc. during the conduct of the study; in addition, C.C. Yost authors a US patent (patent no. 10,232,023 B2) held by the University of Utah for the use of NET-inhibitory peptides for “treatment of and prophylaxis against inflammatory disorders.” PEEL Therapeutics, Inc. has exclusive licensing rights. M. Egeblad reported “other” from Santhera during the conduct of the study; and consulted for CytomX in 2019. No other disclosures were reported</comment>
+<pub-id pub-id-type="doi">10.1084/jem.20200652</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bhattacharyya</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Brewer</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Vogt</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Muglia</surname>
+<given-names>LJ</given-names>
+</name>
+</person-group>
+<article-title>Macrophage glucocorticoid receptors regulate Toll-like receptor 4-mediated inflammatory responses by selective inhibition of p38 MAP kinase</article-title>
+<source>Blood</source>
+<year>2007</year>
+<volume>109</volume>
+<issue>10</issue>
+<fpage>4313</fpage>
+<lpage>9</lpage>
+<comment>Epub 2007/01/27. PubMed PMID: 17255352 PubMed Central PMCID: PMCPMC1885507</comment>
+<pub-id pub-id-type="doi">10.1182/blood-2006-10-048215</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Group</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Horby</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Lim</surname>
+<given-names>WS</given-names>
+</name>
+<name>
+<surname>Emberson</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Mafham</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>JL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Dexamethasone in Hospitalized Patients with Covid-19 - Preliminary Report</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<comment>Epub 2020/07/18. PubMed PMID: 32678530 PubMed Central PMCID: PMCPMC7383595</comment>
+<pub-id pub-id-type="doi">10.1056/NEJMoa2021436</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mano</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Tec family of protein-tyrosine kinases: an overview of their structure and function</article-title>
+<source>Cytokine Growth Factor Rev</source>
+<year>1999</year>
+<volume>10</volume>
+<issue>3-4</issue>
+<fpage>267</fpage>
+<lpage>80</lpage>
+<comment>Epub 2000/01/27. PubMed PMID: 10647781</comment>
+<pub-id pub-id-type="doi">10.1016/s1359-6101(99)00019-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Semaan</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Alsaleh</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gottenberg</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Wachsmann</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Sibilia</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Etk/BMX, a Btk family tyrosine kinase, and Mal contribute to the cross-talk between MyD88 and FAK pathways</article-title>
+<source>J Immunol</source>
+<year>2008</year>
+<volume>180</volume>
+<issue>5</issue>
+<fpage>3485</fpage>
+<lpage>91</lpage>
+<comment>Epub 2008/02/23. PubMed PMID: 18292575</comment>
+<pub-id pub-id-type="doi">10.4049/jimmunol.180.5.3485</pub-id>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhuang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Single-Cell Sequencing of Peripheral Mononuclear Cells Reveals Distinct Immune Response Landscapes of COVID-19 and Influenza Patients</article-title>
+<source>Immunity</source>
+<year>2020</year>
+<volume>53</volume>
+<issue>3</issue>
+<fpage>685</fpage>
+<lpage>96 e3</lpage>
+<comment>Epub 2020/08/14. PubMed PMID: 32783921 PubMed Central PMCID: PMCPMC7368915</comment>
+<pub-id pub-id-type="doi">10.1016/j.immuni.2020.07.009</pub-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tamada</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Shimozaki</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Chapoval</surname>
+<given-names>AI</given-names>
+</name>
+<name>
+<surname>Zhai</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Su</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>SF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>LIGHT, a TNF-like molecule, costimulates T cell proliferation and is required for dendritic cell-mediated allogeneic T cell response</article-title>
+<source>J Immunol</source>
+<year>2000</year>
+<volume>164</volume>
+<issue>8</issue>
+<fpage>4105</fpage>
+<lpage>10</lpage>
+<comment>Epub 2001/02/07. PubMed PMID: 10754304</comment>
+<pub-id pub-id-type="doi">10.4049/jimmunol.164.8.4105</pub-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leaman</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Chawla-Sarkar</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vyas</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Reheman</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tamai</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Toji</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Identification of X-linked inhibitor of apoptosis-associated factor-1 as an interferon-stimulated gene that augments TRAIL Apo2L- induced apoptosis</article-title>
+<source>J Biol Chem</source>
+<year>2002</year>
+<volume>277</volume>
+<issue>32</issue>
+<fpage>28504</fpage>
+<lpage>11</lpage>
+<comment>Epub 2002/05/25. PubMed PMID: 12029096</comment>
+<pub-id pub-id-type="doi">10.1074/jbc.M204851200</pub-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>HM</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>AnimalTFDB 2.0: a resource for expression, prediction and functional study of animal transcription factors</article-title>
+<source>Nucleic Acids Res</source>
+<year>2015</year>
+<volume>43</volume>
+<issue>Database issue</issue>
+<fpage>D76</fpage>
+<lpage>81</lpage>
+<comment>PubMed PMID: 25262351 PubMed Central PMCID: PMCPMC4384004</comment>
+<pub-id pub-id-type="doi">10.1093/nar/gku887</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Greenside</surname>
+<given-names>PG</given-names>
+</name>
+<name>
+<surname>Natoli</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lahr</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Wadden</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Tirosh</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Evaluation of RNAi and CRISPR technologies by large-scale gene expression profiling in the Connectivity Map</article-title>
+<source>PLoS Biol</source>
+<year>2017</year>
+<volume>15</volume>
+<issue>11</issue>
+<fpage>e2003213</fpage>
+<comment>Epub 2017/12/01. PubMed PMID: 29190685 PubMed Central PMCID: PMCPMC5726721</comment>
+<pub-id pub-id-type="doi">10.1371/journal.pbio.2003213</pub-id>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robinson</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>McCarthy</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Smyth</surname>
+<given-names>GK</given-names>
+</name>
+</person-group>
+<article-title>edgeR: a Bioconductor package for differential expression analysis of digital gene expression data</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<issue>1</issue>
+<fpage>139</fpage>
+<lpage>40</lpage>
+<comment>Epub 2009/11/17. PubMed PMID: 19910308 PubMed Central PMCID: PMCPMC2796818</comment>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btp616</pub-id>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Law</surname>
+<given-names>CW</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>voom</surname>
+<given-names>Smyth GK</given-names>
+</name>
+</person-group>
+<article-title>Precision weights unlock linear model analysis tools for RNA-seq read counts</article-title>
+<source>Genome Biol</source>
+<year>2014</year>
+<volume>15</volume>
+<issue>2</issue>
+<fpage>R29</fpage>
+<comment>Epub 2014/02/04. PubMed PMID: 24485249 PubMed Central PMCID: PMCPMC4053721</comment>
+<pub-id pub-id-type="doi">10.1186/gb-2014-15-2-r29</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig position="float" id="F1">
+<label>Figure 1</label>
+<caption>
+<p>Pathway enrichment analysis using network-guided gene set characterization pipeline of KnowEnG. The columns correspond to top TFs and their COVID-19-relevant targets identified using InPheRNo. Only pathways that have been implicated for at least two TFs (and their targets) are depicted (see Supplementary Tables S5 and S6 for the full list). The heatmap shows the ‘difference score’ assigned to each pathway using KnowEnG. Cases in which the score was &lt;0.5 are shown as white. A) Implicated pathways for top TFs in the SvM TRN. B) Implicated pathways for top TFs in the SvOV network.</p>
+</caption>
+<graphic xlink:href="EMS109161-f001"/>
+</fig>
+<fig position="float" id="F2">
+<label>Figure 2</label>
+<caption>
+<p>Network representation of direct interactions between implicated kinases, TFs and genes associated with COVID-19. Kinases are depicted as orange ellipses, TFs are depicted as green rectangles and target genes are depicted as grey ellipses. Only direct kinase-TF interactions present in the aggregated KSI are depicted. A) Network corresponding to the SvM analysis. B) Network corresponding to the SvOV analysis.</p>
+</caption>
+<graphic xlink:href="EMS109161-f002"/>
+</fig>
+<fig position="float" id="F3">
+<label>Figure 3</label>
+<caption>
+<p>Network representation of indirect interactions between implicated kinases, substrates, TFs and genes associated with COVID-19. Kinases are depicted as orange ellipses, substrates that interact with at least one of the implicated TFs in the HumanNet integrated network are depicted as blue ellipses, TFs are depicted as green rectangles and target genes are depicted as grey ellipses. Directed edges show interactions between kinases and their substrates (obtained from the aggregated KSI) as well as TFs and their target genes (obtained using InPheRNo). Undirected edges correspond to interactions between substrates and TFs (obtained from HumanNet Integrated network). A) Network corresponding to the SvM analysis. B) Network corresponding to the SvOV analysis.</p>
+</caption>
+<graphic xlink:href="EMS109161-f003"/>
+</fig>
+<fig position="float" id="F4">
+<label>Figure 4</label>
+<caption>
+<p>The histogram of z-score normalized gene expression changes of LINCS L1000 landmark genes in A549 cells as a result of knockdown of kinases implicated in the SvOV analysis. Each histogram corresponds to the knockdown of one kinase. Vertical lines depict the 15<sup>th</sup> and 85<sup>th</sup> percentiles and red stars show the TFs and target genes in the SvOV network that are positively or negatively influenced by the experiment.</p>
+</caption>
+<graphic xlink:href="EMS109161-f004"/>
+</fig>
+<table-wrap position="float" id="T1" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Top 8 TFs implicated in the SvM (SARS-CoV-2 vs. mock-treated) network. The TFs are ranked based on the number of their COVID-19-relevant target genes identified by InPheRNo. The second column shows the percent of the considered genes that each TF regulates.</p>
+</caption>
+<table rules="all" frame="box">
+<thead>
+<tr>
+<th align="center" valign="middle">TranscriptionFactors</th>
+<th align="center" valign="middle">Percent of target genes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">IRF9</td>
+<td align="center" valign="middle">3.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IRF7</td>
+<td align="center" valign="middle">1.96%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">NFKB1</td>
+<td align="center" valign="middle">1.74%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">MAFF</td>
+<td align="center" valign="middle">1.53%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">SP110</td>
+<td align="center" valign="middle">1.09%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RELB</td>
+<td align="center" valign="middle">1.09%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">STAT1</td>
+<td align="center" valign="middle">1.09%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">BATF2</td>
+<td align="center" valign="middle">1.09%</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap position="float" id="T2" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<p>Top 21 TFs implicated in the SvOV (SARS-CoV-2 vs. other viruses) network. The TFs are ranked based on the number of their COVID-19-relevant target genes identified by InPheRNo. The second column shows the percent of the considered genes that each TF regulates.</p>
+</caption>
+<table rules="all" frame="box">
+<thead>
+<tr>
+<th align="center" valign="middle">Transcription Factors</th>
+<th align="center" valign="middle">Percent of target genes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">STAT1</td>
+<td align="center" valign="middle">5.89%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">STAT2</td>
+<td align="center" valign="middle">2.95%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">MLX</td>
+<td align="center" valign="middle">2.74%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">EGR4</td>
+<td align="center" valign="middle">1.47%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RCOR1</td>
+<td align="center" valign="middle">1.47%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">SP140L</td>
+<td align="center" valign="middle">1.47%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">TP53</td>
+<td align="center" valign="middle">1.26%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RCOR2</td>
+<td align="center" valign="middle">1.26%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">MAX</td>
+<td align="center" valign="middle">1.26%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">ZNF496</td>
+<td align="center" valign="middle">1.26%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">ZNF512B</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">SMAD7</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">SOX12</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IRF2</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">HDX</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">EGR1</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">SP110</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IRF9</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">ZNF143</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">NFIX</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+<tr>
+<td align="center" valign="middle">ZBTB32</td>
+<td align="center" valign="middle">1.05%</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap position="float" id="T3" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<p>Top 15 kinases identified using foRWaRD for the top TFs in SvM and SvOV networks. The kinases are ranked based on the ratio of their query set probability score to their background probability score. Any ratio score &gt;1 implies that the kinase is scored higher using the top TF query set compared to its control.</p>
+</caption>
+<table rules="all" frame="box">
+<thead>
+<tr>
+<th align="center" colspan="2" valign="middle">Ranked list of Kinases<break/>(based on middle 8 TFs in<break/>SvM network)</th>
+<th align="center" colspan="2" valign="middle">Ranked list of Kinases<break/>(based on middle 21 TFs in<break/>SvOV network)</th>
+</tr>
+<tr>
+<th align="center" valign="middle">Kinase</th>
+<th align="center" valign="middle">Ratio Score</th>
+<th align="center" valign="middle">Kinase</th>
+<th align="center" valign="middle">Ratio Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">JAK2</td>
+<td align="center" valign="middle">45.76</td>
+<td align="center" valign="middle">MYO3A</td>
+<td align="center" valign="middle">11.60</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IKBKE</td>
+<td align="center" valign="middle">26.20</td>
+<td align="center" valign="middle">JAK3</td>
+<td align="center" valign="middle">10.74</td>
+</tr>
+<tr>
+<td align="center" valign="middle">MAP2K5</td>
+<td align="center" valign="middle">23.88</td>
+<td align="center" valign="middle">VRK3</td>
+<td align="center" valign="middle">10.34</td>
+</tr>
+<tr>
+<td align="center" valign="middle">CHUK</td>
+<td align="center" valign="middle">17.17</td>
+<td align="center" valign="middle">ADCK1</td>
+<td align="center" valign="middle">9.74</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IKBKB</td>
+<td align="center" valign="middle">14.22</td>
+<td align="center" valign="middle">JAK1</td>
+<td align="center" valign="middle">8.69</td>
+</tr>
+<tr>
+<td align="center" valign="middle">JAK3</td>
+<td align="center" valign="middle">10.47</td>
+<td align="center" valign="middle">MAP2K5</td>
+<td align="center" valign="middle">8.19</td>
+</tr>
+<tr>
+<td align="center" valign="middle">PRKDC</td>
+<td align="center" valign="middle">9.12</td>
+<td align="center" valign="middle">BMX</td>
+<td align="center" valign="middle">7.97</td>
+</tr>
+<tr>
+<td align="center" valign="middle">LIMK2</td>
+<td align="center" valign="middle">8.26</td>
+<td align="center" valign="middle">HIPK4</td>
+<td align="center" valign="middle">7.48</td>
+</tr>
+<tr>
+<td align="center" valign="middle">FGFR3</td>
+<td align="center" valign="middle">8.24</td>
+<td align="center" valign="middle">JAK2</td>
+<td align="center" valign="middle">7.46</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RIPK1</td>
+<td align="center" valign="middle">7.89</td>
+<td align="center" valign="middle">MAP3K13</td>
+<td align="center" valign="middle">7.34</td>
+</tr>
+<tr>
+<td align="center" valign="middle">JAK1</td>
+<td align="center" valign="middle">7.48</td>
+<td align="center" valign="middle">LCK</td>
+<td align="center" valign="middle">6.63</td>
+</tr>
+<tr>
+<td align="center" valign="middle">IRAKI</td>
+<td align="center" valign="middle">6.48</td>
+<td align="center" valign="middle">CAMK2B</td>
+<td align="center" valign="middle">6.34</td>
+</tr>
+<tr>
+<td align="center" valign="middle">FLT1</td>
+<td align="center" valign="middle">5.66</td>
+<td align="center" valign="middle">MAPK14</td>
+<td align="center" valign="middle">6.32</td>
+</tr>
+<tr>
+<td align="center" valign="middle">MAP3K8</td>
+<td align="center" valign="middle">5.54</td>
+<td align="center" valign="middle">BTK</td>
+<td align="center" valign="middle">6.13</td>
+</tr>
+<tr>
+<td align="center" valign="middle">TBK1</td>
+<td align="center" valign="middle">5.28</td>
+<td align="center" valign="middle">MAPK11</td>
+<td align="center" valign="middle">6.05</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

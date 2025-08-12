@@ -1,0 +1,2599 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS136072</article-id>
+<article-id pub-id-type="doi">10.1101/2021.10.01.462821</article-id>
+<article-id pub-id-type="archive">PPR403772</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Hierarchical Gaussian Processes and Mixtures of Experts to Model COVID-19 Patient Trajectories</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Cui</surname>
+<given-names>Sunny</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<email>scui@princeton.edu</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Yoo</surname>
+<given-names>Elizabeth C.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<email>elizabeth.yoo@princeton.edu</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Didong</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<email>didongli@princeton.edu</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Laudanski</surname>
+<given-names>Krzysztof</given-names>
+</name>
+<xref ref-type="aff" rid="A4">4</xref>
+<email>krzysztof.laudanski@uphs.upenn.edu</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Engelhardt</surname>
+<given-names>Barbara E.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A5">5</xref>
+<xref ref-type="aff" rid="A6">6</xref>
+<email>bee@princeton.edu</email>
+</contrib>
+<aff id="A1">
+<label>1</label>Department of Computer Science, Princeton University, Princeton, NJ, USA</aff>
+<aff id="A2">
+<label>2</label>Department of Operations Research and Financial Engineering, Princeton University, Princeton, NJ, USA</aff>
+<aff id="A3">
+<label>3</label>Department of Biostatistics, University of California, Los Angeles, Los Angeles, CA, USA</aff>
+<aff id="A4">
+<label>4</label>Department of Anesthesiology and Critical Care, Hospital of the University of Pennsylvania, Philadelphia, PA, USA</aff>
+<aff id="A5">
+<label>5</label>Center for Statistics and Machine Learning, Princeton University, Princeton, NJ, USA</aff>
+<aff id="A6">
+<label>6</label>Gladstone Institutes, San Francisco, CA, USA</aff>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>06</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>04</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Gaussian processes (GPs) are a versatile nonparametric model for nonlinear regression and have been widely used to study spatiotemporal phenomena. However, standard GPs offer limited interpretability and generalizability for datasets with naturally occurring hierarchies. With large-scale, rapidly-updating electronic health record (EHR) data, we want to study patient trajectories across diverse patient cohorts while preserving patient subgroup structure. In this work, we partition our cohort of over 2000 COVID-19 patients by sex and ethnicity. We develop and apply a hierarchical Gaussian process and a mixture of experts (MOE) hierarchical GP model to fit patient trajectories on clinical markers of disease progression. A case study for albumin, an effective predictor of COVID-19 patient outcomes, highlights the predictive performance of these models. These hierarchical spatiotemporal models of EHR data bring us a step closer toward our goal of building flexible approaches to capture patient data that can be used in real-time systems<xref ref-type="fn" rid="FN1">*</xref>.</p>
+</abstract>
+<kwd-group>
+<kwd>COVID-19</kwd>
+<kwd>electronic health record</kwd>
+<kwd>Gaussian processes</kwd>
+<kwd>patient trajectories</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">The highly contagious nature of the emergent coronavirus (COVID-19) and limited knowledge of treatment methods necessitate decision support tools that can efficiently estimate and predict patient trajectories in order to measure disease progression. Notably, recent findings report considerable disparities in manifestations of COVID-19 across racial minorities within the United States, with a disproportionately high frequency of hospitalizations among African American, Hispanic, and Native American populations.<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup> Higher rates of obesity, a known high-risk comorbidity, are observed in marginalized groups, which contribute to more severe illnesses and higher mortality rates for these patients.<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup> Worse outcomes arise due to a complex combination of physiological, socioeconomic, behavioral, and cultural factors. A model that can account for group structures that arise both inherently and environmentally is necessary in order to develop clinical recommendations tailored to individual patients and to mitigate bias in treatment procedures; at the same time, that model should also allow for the sharing of signal across groups when patient group sample sizes are small.</p>
+<p id="P3">The Hospitals at the University of Pennsylvania (HUP) COVID-19 dataset contains clinical observations of 2069 patients who tested positive for COVID-19 via a PCR test between April 2020 to August 2020 at the University of Pennsylvania Medical Center (UPMC) hospital in Philadelphia, PA.</p>
+<p id="P4">This anonymized dataset includes the following patient information:<list list-type="bullet" id="L1">
+<list-item>
+<p id="P5">patient demographic information including age, sex and ethnicity;</p>
+</list-item>
+<list-item>
+<p id="P6">labs and vital sign measurements, including blood serum creatinine, partial pressure of oxygen, and total urine output;</p>
+</list-item>
+<list-item>
+<p id="P7">procedural information, including details of mechanical ventilation, nasal cannula, and liters of oxygen flow; and</p>
+</list-item>
+<list-item>
+<p id="P8">medication information including type, dosage, and time of administration.</p>
+</list-item>
+</list>
+</p>
+<p id="P9">With an emergent disease like COVID-19, we want a model that is robust to missing and noisy patient data, and also computationally tractable to allow continuous data updates. Known for their flexibility, interpretability, and uncertainty quantification, Gaussian processes (GPs) have proven useful in machine learning,<sup>
+<xref ref-type="bibr" rid="R3">3</xref>
+</sup> spatiotemporal statistics,<sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup> and functional data analysis.<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup> Among their applications, GP regression is a nonparametric regression model that places a distribution on arbitrary nonlinear functions with smoothness modulated by the selected kernel function.<sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup> Updated by observations, the GP posterior enables predictions and uncertainty estimates at unobserved locations on sequences, such as the time or space domain, including the future. Due to the Gaussian assumption of the joint distributions over observations, the posterior is Gaussian with closed-form mean and variance terms.</p>
+<p id="P10">Previous work has exploited the flexibility of GPs to obtain insights into problems in healthcare, including early detection of sepsis through multi-output GPs,<sup>
+<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R8">8</xref>
+</sup> online updates of patient vital signals with sparse multi-output GPs,<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup> and reliable prediction of adverse hospital events by jointly modeling longitudinal trajectories and time-to-event data.<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup>
+</p>
+<p id="P11">For the task of modeling disease trajectories, particularly for a large patient cohort, using standard GP regression is insufficient because many complex diseases such as lupus and pneumonia manifest heterogeneously in patients across different demographic and clinical sub-groups.<sup>
+<xref ref-type="bibr" rid="R11">11</xref>,<xref ref-type="bibr" rid="R12">12</xref>
+</sup> Noting this heterogeneity, prior work placed a hierarchy on scleroderma patients at the population, subgroup, and individual levels.<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup> B-splines were used to model each subgroup trajectory and a GP was used to capture noise.</p>
+<p id="P12">Although the MedGP approach<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup> combined information across patients using an empirical Bayes approach, allowing subgroups to be captured via kernel parameters, it lacks a rigorous approach to evaluating group structure and posteriors. Motivated by the need to explicitly account for group structure, our framework builds on the premise of a group structure in the patient population and provides a fully Bayesian treatment of hierarchical disease trajectory modeling.</p>
+<p id="P13">The contributions of this work are as follows: At a high level, we develop a flexible Gaussian process that is able to capture sparse, noisy, electronic health record (EHR) time-series data. More specifically, we build a hierarchical mixture of experts (MOE) Gaussian process (GP) regression model that allows sharing of strength across patient samples with known group structure. The MOE allows each sample to participate in multiple patient groups simultaneously, such as inclusion in both the female (sex) and Black (race) patient groups. Furthermore, our fast closed-form inference method allows us to apply this framework to hundreds of COVID-19 patient trajectories to show its robustness in fitting a variety of clinically important covariates.</p>
+<p id="P14">This paper is organized as follows: In <xref ref-type="sec" rid="S2">Section 2</xref>, we discuss the background for standard, hierarchical, and MOE Gaussian process regression models. We introduce our framework of MOE hierarchical Gaussian process regression in <xref ref-type="sec" rid="S5">Section 3</xref>. We demonstrate the performance of our framework on COVID-19 patient EHR data and discuss the implications of these results in <xref ref-type="sec" rid="S8">Section 4</xref>. We conclude by exploring future directions in <xref ref-type="sec" rid="S9">Section 5</xref>.</p>
+</sec>
+<sec id="S2" sec-type="intro">
+<label>2</label>
+<title>Background</title>
+<p id="P15">In this section, we provide a brief summary of GP regression and its extension to a Bayesian hierarchical setting.</p>
+<sec id="S3">
+<label>2.1</label>
+<title>Gaussian process regression (GPR)</title>
+<p id="P16">We consider the Bayesian analysis of standard linear regression <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>β</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula>, where <italic>β</italic> is the weights of the linear model, <italic>x<sub>i</sub>
+</italic> are regressors, and <italic>f</italic>(<italic>x<sub>i</sub>
+</italic>) is the noiseless function. Given observed data <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi mathvariant="script">D</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>X</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>Y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> where <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:mi>X</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> are regressors such as time across n total observations, and <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mi>Y</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> are noisy, scalar responses, then we can write each response as <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> where <inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>∼</mml:mo>
+<mml:mi mathvariant="script">N</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> is Gaussian white noise. Given a new set of regressors <inline-formula>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>, the goal is to predict the responses <inline-formula>
+<mml:math id="M8">
+<mml:mrow>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>.</p>
+<p id="P17">We can extend these linear models to nonlinear regression functions using Gaussian processes. Gaussian process regression is a probability distribution over arbitrary smooth functions such that any finite realization is a multivariate Gaussian random variable. For any observations <inline-formula>
+<mml:math id="M9">
+<mml:mrow>
+<mml:mi>X</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>,<disp-formula id="FD1">
+<mml:math id="M10">
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>⊤</mml:mo>
+</mml:msup>
+<mml:mo>∼</mml:mo>
+<mml:mi>G</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>⊤</mml:mo>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>κ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>m</italic>(⋅) is the mean function and <inline-formula>
+<mml:math id="M11">
+<mml:mrow>
+<mml:mi>κ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> is a positive definite kernel function. As in prior work, the mean function <italic>m</italic> is assumed to be zero.<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup> There are many possible positive definite kernel functions <italic>κ</italic>, including exponential (Ornstein-Uhlenbeck), squared exponential, and Matérn covariance functions. These covariance functions include parameters that control the spatial variance and decay of the dependency over the domain; these kernel parameters are often estimated by maximizing the log likelihood (MLE):<disp-formula id="FD2">
+<mml:math id="M12">
+<mml:mrow>
+<mml:mi>log</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>Y</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:mi>X</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mi mathvariant="script">N</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>Y</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>Γ</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msup>
+<mml:mi>Y</mml:mi>
+<mml:mo>⊤</mml:mo>
+</mml:msup>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>Γ</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>I</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mi>Y</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:mo>Γ</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>I</mml:mi>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mi>N</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mi>log</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>2</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M13">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>κ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>. Let <inline-formula>
+<mml:math id="M14">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>κ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>X</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M15">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mrow>
+<mml:mo>∗</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>κ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> then the posterior of <italic>Y</italic>
+<sub>∗</sub> is given by<disp-formula id="FD3">
+<mml:math id="M16">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mi>∣</mml:mi>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>X</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>Y</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>=</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi mathvariant="script">N</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>μ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mo>Σ</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:msub>
+<mml:mi>μ</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>=</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mo>Γ</mml:mo>
+<mml:mo>∗</mml:mo>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>Γ</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>I</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mi>Y</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Σ</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>=</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mrow>
+<mml:mo>∗</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mo>Γ</mml:mo>
+<mml:mo>∗</mml:mo>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>Γ</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mi>I</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mo>∗</mml:mo>
+</mml:msub>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P18">A point estimate of <italic>Y</italic>
+<sub>∗</sub> is given by <italic>µ</italic>
+<sub>∗</sub>, the posterior mean, while Σ<sub>∗</sub> is the variance of this posterior mean.</p>
+<p id="P19">The computational complexity of inference for GPR is O(<italic>n</italic>
+<sup>3</sup>) because of the need to invert Γ, an <italic>n</italic> by <italic>n</italic> matrix. Fortunately, there is an immense literature on scalable inference algorithms for GPs, including tapering.<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup> The idea of tapering is to impose zero correlation between two points that are not close to each other by multiplying <italic>κ</italic> by a tapering function <inline-formula>
+<mml:math id="M17">
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mo>:</mml:mo>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msub>
+<mml:mo>:</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>κ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>. For example, when <inline-formula>
+<mml:math id="M18">
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mo>‖</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+<mml:mo>‖</mml:mo>
+</mml:mrow>
+<mml:mo>&lt;</mml:mo>
+<mml:mo>∈</mml:mo>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mspace width="0.2em"/>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mrow>
+<mml:mo>‖</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+<mml:mo>‖</mml:mo>
+</mml:mrow>
+<mml:mo>≥</mml:mo>
+<mml:mo>∈</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>, resulting in a sparse block diagonal covariance matrix.</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Hierarchical Gaussian process (HGP) regression</title>
+<p id="P20">One of the main challenges in predicting future values of a disease trajectory or imputing unobserved values within a trajectory is that biological and environmental factors lead to high variance in patient state and disease progression. For instance, many diseases include one or more disease subtypes, and the progression and severity of a disease can vary across patients with different ages, sexes, or chronic conditions.</p>
+<p id="P21">For datasets with known subgroups, hierarchical models are a natural choice because they allow the sharing of information across and within subgroups. The use of hierarchical models allows precise modeling of each subgroup and sharing of signal across all of the subgroups; it is particularly beneficial in the case where each subgroup has a small sample size.</p>
+<p id="P22">Hierarchical structure can be enforced through the mean function, the covariance function, or a structured prior. Prior work [14] placed a hierarchy on the mean function parameters to model <italic>PM</italic>
+<sub>2.5</sub> levels, a measurement of air quality, much like the spline model for individualized disease prediction.<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup> Other work [15] placed a hierarchy on gene expression at two levels—each experiment and each replicate gene—to model heterogeneity. Conjugate inverse Gamma priors were placed on the kernel parameters to model the relationships between low and high accuracy experiments.<sup>
+<xref ref-type="bibr" rid="R16">16</xref>
+</sup> Variants of the hierarchical model include hierarchical MOE that lends a tree structure in computing parameter values,<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup> deep GPs in which inputs to each GP have their own GP prior.<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup> This work uses subsets of inducing points to fit experts, which hold information at the group and individual levels.<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>
+</p>
+</sec>
+</sec>
+<sec id="S5">
+<label>3</label>
+<title>Hierarchical Gaussian process regression for patient trajectories</title>
+<p id="P23">In the context of prior work, we develop a Bayesian hierarchical GP regression model for patient data. We group the patient population by attributes including sex and ethnicity. We impose a hierarchy on these trajectories at the group and individual levels by letting the mean of each level in the hierarchy be distributed by a Gaussian process parameterized for the level above. We use <inline-formula>
+<mml:math id="M19">
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>K</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula> as the group-level subscript and <inline-formula>
+<mml:math id="M20">
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> as the patient-level subscript in group <italic>k</italic>. All patients in the kth subgroup share an underlying trajectory modeled by <italic>g<sub>k</sub>
+</italic>(<italic>x</italic>). Patient <italic>i</italic> in subgroup <italic>k</italic> is associated with a unique trajectory, denoted by <italic>f<sub>k,i</sub>
+</italic>(<italic>x</italic>), that is influenced by various factors including demographics, lifestyle choices, genetic predispositions, and pre-existing conditions. Then,<disp-formula id="FD4">
+<mml:math id="M21">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>∼</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>G</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>i</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>∼</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>G</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>f</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P24">Let <inline-formula>
+<mml:math id="M22">
+<mml:mrow>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> be the collection of noisy observations of clinical markers of <italic>N<sub>k</sub>
+</italic> patients in subgroup <italic>k</italic> at time points <inline-formula>
+<mml:math id="M23">
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>:</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The covariance between the data <italic>Y</italic> and the functions f(·), g(·) is<disp-formula id="FD5">
+<mml:math id="M24">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>Cov</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>=</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>Cov</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mo>=</mml:mo>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>f</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mspace width="0.2em"/>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>k</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>κ</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mtext>otherwise</mml:mtext>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<sec id="S6">
+<label>3.1</label>
+<title>HGP kernel functions and tapering</title>
+<p id="P25">Our model uses an additive hierarchical kernel, similar to that introduced by [15], with tapering that further enforces sparsity. For flexibility in the smoothness of the inferred functions, we choose the Matérn kernel with parameter <italic>ν</italic> that controls the smoothness of the GP:<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup>
+<disp-formula id="FD6">
+<mml:math id="M25">
+<mml:mrow>
+<mml:mi>κ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mi>σ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>Γ</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>ν</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msup>
+<mml:mn>2</mml:mn>
+<mml:mrow>
+<mml:mi>ν</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>ν</mml:mi>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+<mml:mi>γ</mml:mi>
+</mml:mfrac>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>ν</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mi>K</mml:mi>
+<mml:mi>ν</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>ν</mml:mi>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+<mml:mi>γ</mml:mi>
+</mml:mfrac>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>K<sub>ν</sub>
+</italic> is the modified Bessel function of the second kind with order <italic>ν</italic>. In practice, we estimate these parameters by maximizing the likelihood. In our model, we set kernel parameter <inline-formula>
+<mml:math id="M26">
+<mml:mrow>
+<mml:mi>ν</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>5</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</inline-formula> at the group level, and <inline-formula>
+<mml:math id="M27">
+<mml:mrow>
+<mml:mi>ν</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>3</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</inline-formula> at the individual level.</p>
+<p id="P26">With this kernel function, we model the data distribution as multivariate normal.<disp-formula id="FD7">
+<mml:math id="M28">
+<mml:mrow>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>∣</mml:mi>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>∼</mml:mo>
+<mml:mi mathvariant="script">N</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>∣</mml:mi>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mo>Σ</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P27">The parameters <italic>θ</italic> are <inline-formula>
+<mml:math id="M29">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>α</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>β</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>γ</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The covariance matrix Σ<sub>
+<italic>n</italic>
+</sub> is written as<disp-formula id="FD8">
+<mml:math id="M30">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Σ</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mi>f</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>β</mml:mi>
+<mml:mo>⋅</mml:mo>
+<mml:mi>I</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mo>Γ</mml:mo>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mtext>otherwise</mml:mtext>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P28">Both Γ<sub>
+<italic>g</italic>
+</sub> and Γ<sub>
+<italic>f</italic>
+</sub> are matrices formed by evaluating <italic>κ<sub>g</sub>
+</italic> and <italic>κ<sub>f</sub>
+</italic>, respectively, on <italic>x<sub>k,i</sub>
+</italic> and <inline-formula>
+<mml:math id="M31">
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula>. These covariance matrices inherit a natural block structure from the kernels (<xref ref-type="fig" rid="F2">Fig. 2</xref>). To scale up the HGP with computational complexity O(<italic>n</italic>
+<sup>3</sup>), we further perform tapering to enforce relationships only between close time points. Tapering encodes sparsity in the covariance matrix on the off-diagonal elements that are more distant from each other in time, which improves inference tractability.<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>
+</p>
+</sec>
+<sec id="S7">
+<label>3.2</label>
+<title>Mixture of experts</title>
+<p id="P29">Although the HGP allows us to model group structure and individual patient trajectories that differ from the group, its exponential cost with respect to number of groups renders it impractical for large patient cohorts with many groups. Because each patient belongs to multiple groups simultaneously – sex, ethnicity, and disease subtype for instance – we want a tractable way to combine information from all of the patient's group attributes, i.e., an additive kernel. Thus, we extend the HGP with mixture of experts (MOE) kernels at the group level (<xref ref-type="fig" rid="F3">Fig. 3</xref>). Originally developed to handle multiple modalities in large datasets,<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> MOE GPs can be adapted to a hierarchical setting such that the group-level kernel is the sum of attribute kernels of patients belonging to that group. An ensemble of local <italic>experts</italic> allows the kernel function to adapt to each observation,<sup>
+<xref ref-type="bibr" rid="R22">22</xref>
+</sup> which in our case corresponds to a patient. Again, we use a tapered Matérn 5/2 kernel at the group level and a tapered Matérn 3/2 kernel at the patient level. We perform efficient close-form inference using the SciPy Optimizer.</p>
+</sec>
+</sec>
+<sec id="S8">
+<label>4</label>
+<title>Experiments</title>
+<p id="P30">We first benchmark our MOE HGP model, using HUP patient trajectories, against standard GPR and an HGP. We then present examples of fitted and predicted trajectories of cluster representatives, or patients whose trajectory minimizes the Wasserstein distance to all other patients in their subgroup. Intuitively, the cluster representative corresponds to the patient who best captures the canonical trajectory of that group.</p>
+<p id="P31">We evaluate the performance of our MOE HGP on COVID-19 patient trajectories from the Hospitals at the University of Pennsylvania (HUP). For the purposes of model fitting, we only consider patient trajectories with over 25 observations corresponding to unique time points. We group patients based on attributes of sex (<italic>male</italic> and <italic>female</italic>) and ethnicity (<italic>Black</italic> and <italic>white</italic>). We create balanced patient cohorts with 30 patients per permutation of groups (i.e., 30 Black women, 30 Black men, 30 white women, 30 white men).</p>
+<p id="P32">For each patient and each covariate, we select 25% of the measurements randomly as the test set and use the remaining measurements as the training set. It is also possible to include future time points in the test set, albeit at the expense of GP model performance as test points extend further into the future, meaning there is greater uncertainty in the predictions.<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup> To evaluate performance, we use mean squared error (MSE) and <italic>R</italic>
+<sup>2</sup> metrics to compare the train and test sets to predicted values.</p>
+<p id="P33">We also evaluate the 95% confidence intervals (CIs) to measure model calibration for GPR, HGP, and MOE HGP. In our discussion, the values reported for 95% CI calibration refer to the percentage of points that fall outside the 95% confidence interval. We focus on <italic>albumin</italic> as our covariate of interest, as it has been shown to be a clinical marker of COVID-19 progression.<sup>
+<xref ref-type="bibr" rid="R23">23</xref>
+</sup> The results for <italic>albumin</italic> are representative of trends across covariates in the dataset (see <xref ref-type="supplementary-material" rid="SD1">Supplementary material for details</xref>).</p>
+<p id="P34">The shapes of the patient trajectories for albumin vary greatly (<xref ref-type="fig" rid="F4">Fig. 4</xref>). GPR cannot, for example, capture the trajectory of patient 11, but the HGP and MOE HGP are able to do so. For patient 38, the more granular trends for the first few time points are captured by the MOE HGP, but not the HGP. The average train MSE across patients for the covariate albumin is the lowest for the MOE HGP. The average test MSE across patients is comparable across the three models. However, the train and test <italic>R</italic>
+<sup>2</sup> values, and the 95% CI calibration, are much better across patients for the HGP and MOE HGP as compared to GPR (<xref ref-type="table" rid="T1">Table 1</xref>).</p>
+<p id="P35">We find substantial overlap in the the patient trajectories that benefit from the MOE HGP and HGP over GPR. Patient 7's trajectory is a canonical case in which the <italic>R</italic>
+<sup>2</sup> value is greatly improved with the HGP and MOE HGP (<xref ref-type="fig" rid="F5">Fig. 5</xref>, Top). The mean function for GPR appears to a running average in the first half of the observed time points. The HGP and MOE HGP both provide better fits where GPR cannot. Similar to patient 7, patient 2's trajectory has higher variance with GPR (<xref ref-type="fig" rid="F5">Fig. 5</xref>, Bottom). This large variance has negative consequences on the 95% CI calibration. This patient has eight test points, so GPR gives a 95% CI of 0%, but the HGP and MOE HGP give 95% CIs of 25% since they each have two “outlier” test points. Taken together, these empirical results suggest that the two hierarchical models are more effective on these complex patient trajectories.</p>
+<p id="P36">The importance of group structure becomes more evident when we examine the kernel parameters at the patient level. The MOE HGP has lower spatial variance across all patients, as reflected in the distribution of the patient-level kernel variance parameters. GPR, lacking a group structure, defaults to learning a higher variance parameter. The structure of the MOE HGP is also useful for comparison across groups. When partitioning the patient cohort by ethnicity and sex, we see that Black patients have higher variance parameters than white patients do (<xref ref-type="fig" rid="F6">Fig. 6</xref>). We do not observe meaningful differences in these parameters between male and female patients.</p>
+<p id="P37">Next, we fit the three models to the following clinical markers of COVID-19 disease progression for a randomly selected patient: <italic>anion gap</italic>, <italic>creatinine</italic>, <italic>partial pressure of oxygen</italic> (<italic>PO</italic>
+<sub>2</sub> Arterial), <italic>blood carbon dioxide levels</italic> (<italic>CO</italic>
+<sub>2</sub>), <italic>fraction of inspired oxygen</italic> (<italic>FIO</italic>
+<sub>2</sub>) and <italic>blood oxygen saturation</italic> (Arterial <italic>O</italic>
+<sub>2</sub> Content) (<xref ref-type="fig" rid="F7">Fig. 7</xref>). Our experiments suggest that the MOE HGP effectively fits these markers for any randomly selected patient in the cohort.</p>
+<p id="P38">Across patients and groups, we see that the HGP and MOE HGP consistently outperform GPR in fitting patient trajectories for albumin, blood <italic>CO</italic>
+<sub>2</sub>, fraction of oxygen inspired <italic>FIO</italic>
+<sub>2</sub>, and lactic acid (<xref ref-type="supplementary-material" rid="SD1">Supplementary material Fig. 1-3</xref>, <xref ref-type="supplementary-material" rid="SD1">5</xref>). These covariates – albumin as an indicator of kidney function and the remaining covariates as indicators of cardiovascular function – can inform immediate treatment decisions. Furthermore, the MOE HGP demonstrates superior uncertainty quantification over the HGP by giving the best 95% CI calibration at no observed cost to the test MSE, as reported for albumin, blood <italic>CO</italic>
+<sub>2</sub>, fraction of oxygen inspired <italic>FIO</italic>
+<sub>2</sub> (<xref ref-type="table" rid="T1">Table 1</xref>, <xref ref-type="supplementary-material" rid="SD1">Supplementary material Tables 2</xref>–<xref ref-type="supplementary-material" rid="SD1">4</xref>). The MOE HGP's strong performance, particularly in capturing complex trajectories with low spatial variance, can be attributed to its incorporation of group structures.</p>
+</sec>
+<sec id="S9" sec-type="conclusions">
+<label>5</label>
+<title>Conclusion</title>
+<p id="P39">We propose a hierarchical mixture of experts Gaussian process (MOE HGP) model to fit and predict COVID-19 patient trajectories for clinically relevant covariates. We show that our MOE HGP model is effective in analyzing covariates and provides an in-depth analysis for albumin. We demonstrate the robustness of our model for an individual patient on indicators of blood oxygen levels like arterial <italic>PO</italic>
+<sub>2</sub>, <italic>CO</italic>
+<sub>2</sub> and <italic>FIO</italic>
+<sub>2</sub>. Theses covariates are noisy yet useful for monitoring patient state in ICUs. Overall, the MOE HGP allows us to model groups separately while sharing signal across groups to enable more precise modeling of the natural group structure in patient populations without losing statistical power.</p>
+<p id="P40">A natural extension of this work is to generalize the model to perform multi-output predictions. Because clinical covariates are often correlated, a multi-output GP that captures correlations between disparate covariates, in addition to correlations between observations within a single covariate, would be useful for more accurately modeling of clinical markers across time. With a multi-output model, we may include larger patient cohorts that are more diverse with respect to group attributes that could serve as proxies of socioeconomic status such as zip code, marriage status, and insurance status. We anticipate that we would be able to leverage such group structure to explore differences in disease trajectory or biases in treatment. Other group attributes like age, body mass index (BMI), and estimated glomerular filtration rate (eGFR) inform our understanding of how comorbidities such as obesity and renal disease impact disease progression within a certain socioeconomic or ethnic subpopulation.</p>
+<p id="P41">Another direction of future work may be to apply contrastive learning, or methods that capture differences between the groups using parameters present in one but not the other.<sup>
+<xref ref-type="bibr" rid="R24">24</xref>
+</sup> Contrastive modeling has been applied to linear dimension reduction<sup>
+<xref ref-type="bibr" rid="R25">25</xref>
+</sup> and formalized to a probabilistic model-based alternative.<sup>
+<xref ref-type="bibr" rid="R26">26</xref>,<xref ref-type="bibr" rid="R27">27</xref>
+</sup> With an extension of probabilistic contrastive modeling to Gaussian processes, we could improve the group-based prior for our model with information regarding differences between patients from traditionally marginalized populations, the “foreground” group, and their majority counterparts, the “background” group.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Materials</label>
+<media xlink:href="EMS136072-supplement-Supplementary_Materials.pdf" mimetype="application" mime-subtype="pdf" id="N68381" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S10">
+<label>6</label>
+<title>Acknowledgments and Appendices</title>
+<p>We would like to thank the University of Pennsylvania Medical Center for providing the data and consultation regarding clinical domain knowledge. This work was funded in part by a COVID-19 grant from the Fast Grants program, a grant from the Helmsley Trust, a grant from the NIH Human Tumor Atlas Research Program, NIH NHLBI R01 HL133218, and NSF CAREER AWD1005627.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<label>*</label>
+<p id="P42">The code and supplementary material are available at: <ext-link ext-link-type="uri" xlink:href="https://github.com/bee-hive/HGP-MOE">https://github.com/bee-hive/HGP-MOE</ext-link>
+</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Karaca-Mandic</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Georgiou</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Sen</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Assessment of COVID-19 hospitalizations by race/ethnicity in 12 states</article-title>
+<source>JAMA internal medicine</source>
+<year>2021</year>
+<volume>181</volume>
+<fpage>131</fpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rodriguez</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Solomon</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>de Lemos</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Das</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Morrow</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Bradley</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Elkind</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Matsouaka</surname>
+<given-names>RA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Racial and ethnic differences in presentation and outcomes for patients hospitalized with COVID-19: findings from the American Heart Association's COVID-19 Cardiovascular Disease Registry</article-title>
+<source>Circulation</source>
+<year>2021</year>
+<volume>143</volume>
+<fpage>2332</fpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rasmussen</surname>
+<given-names>CE</given-names>
+</name>
+</person-group>
+<article-title>Gaussian processes in machine learning</article-title>
+<source>Summer school on machine learning</source>
+<year>2003</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Banerjee</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Carlin</surname>
+<given-names>BP</given-names>
+</name>
+<name>
+<surname>Gelfand</surname>
+<given-names>AE</given-names>
+</name>
+</person-group>
+<source>Hierarchical modeling and analysis for spatial data</source>
+<year>2014</year>
+<publisher-name>CRC press</publisher-name>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>JQ</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>Gaussian process regression analysis for functional data</source>
+<year>2011</year>
+<publisher-name>CRC Press</publisher-name>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Ghosal</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Van der Vaart</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Fundamentals of nonparametric Bayesian inference</source>
+<year>2017</year>
+<publisher-name>Cambridge University Press</publisher-name>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Futoma</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hariharan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heller</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Sendak</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Brajer</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Clement</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bedoya</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>O’brien</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<source>An improved multi-output Gaussian process RNN with real-time validation for early sepsis detection</source>
+<conf-name>Machine Learning for Healthcare Conference</conf-name>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Futoma</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hariharan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heller</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Learning to detect sepsis with a multitask Gaussian process RNN classifier</source>
+<conf-name>International Conference on Machine Learning</conf-name>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>L-F</given-names>
+</name>
+<name>
+<surname>Dumitrascu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Darnell</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chivers</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Draugelis</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Engelhardt</surname>
+<given-names>BE</given-names>
+</name>
+</person-group>
+<article-title>Sparse multi-output Gaussian processes for online medical time series prediction</article-title>
+<source>BMC Medical Informatics and Decision Making</source>
+<year>2020</year>
+<volume>20</volume>
+<fpage>152</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schulam</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Saria</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>A framework for individualizing predictions of disease trajectories by exploiting multi-resolution structure</article-title>
+<source>arXiv preprint</source>
+<year>2016</year>
+<elocation-id>arXiv:1601.04674</elocation-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tan</surname>
+<given-names>TC</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Magder</surname>
+<given-names>LS</given-names>
+</name>
+<name>
+<surname>Petri</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<article-title>Differences between male and female systemic lupus erythematosus in a multiethnic population</article-title>
+<source>The Journal of Rheumatology</source>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gutiérrez</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Masiá</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mirete</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Soldán</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Carlos Rodríguez</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Padilla</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hernández</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Royo</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Martin-Hidalgo</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>The influence of age and gender on the population-based incidence of community-acquired pneumonia caused by different microbial pathogens</article-title>
+<source>Journal of Infection</source>
+<year>2006</year>
+<volume>53</volume>
+<fpage>166</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kaufman</surname>
+<given-names>CG</given-names>
+</name>
+<name>
+<surname>Schervish</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Nychka</surname>
+<given-names>DW</given-names>
+</name>
+</person-group>
+<article-title>Covariance tapering for likelihood-based estimation in large spatial data sets</article-title>
+<source>Journal of the American Statistical Association</source>
+<year>2008</year>
+<volume>103</volume>
+<fpage>1545</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Bi</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Improving satellite-based pm2.5 estimates in China using Gaussian processes modeling in a Bayesian hierarchical setting</article-title>
+<source>Scientific Reports</source>
+<year>2017</year>
+<volume>7</volume>
+<fpage>7048</fpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hensman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lawrence</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Rattray</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Hierarchical Bayesian modelling of gene expression time series across irregularly sampled replicates and clusters</article-title>
+<source>BMC Bioinformatics</source>
+<year>2013</year>
+<volume>14</volume>
+<fpage>252</fpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Qian</surname>
+<given-names>PZG</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>CFJ</given-names>
+</name>
+</person-group>
+<article-title>Bayesian hierarchical modeling for integrating low-accuracy and high-accuracy experiments</article-title>
+<source>Technometrics</source>
+<year>2008</year>
+<volume>50</volume>
+<fpage>192</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ng</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Deisenroth</surname>
+<given-names>MP</given-names>
+</name>
+</person-group>
+<article-title>Hierarchical mixture-of-experts model for large-scale Gaussian process regression</article-title>
+<source>arXiv preprint</source>
+<year>2014</year>
+<elocation-id>arXiv:1412.3078</elocation-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Damianou</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lawrence</surname>
+<given-names>ND</given-names>
+</name>
+</person-group>
+<article-title>Deep Gaussian processes</article-title>
+<source>Artificial intelligence and statistics</source>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>B-J</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>K-E</given-names>
+</name>
+</person-group>
+<article-title>Hierarchically-partitioned Gaussian process approximation</article-title>
+<source>Artificial Intelligence and Statistics</source>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Stein</surname>
+<given-names>ML</given-names>
+</name>
+</person-group>
+<source>Interpolation of spatial data: some theory for kriging</source>
+<publisher-name>Springer Science &amp; Business Media</publisher-name>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rasmussen</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Ghahramani</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Infinite mixtures of Gaussian process experts</article-title>
+<source>Advances in neural information processing systems</source>
+<year>2002</year>
+<volume>2</volume>
+<fpage>881</fpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Fu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Human motion tracking by temporal-spatial local Gaussian process experts</article-title>
+<source>IEEE Transactions on Image Processing</source>
+<year>2010</year>
+<volume>20</volume>
+<fpage>1141</fpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>feng Huang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Hypoalbuminemia predicts the outcome of COVID-19 independent of age and co-morbidity</article-title>
+<source>Journal of Medical Virology</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zou</surname>
+<given-names>JY</given-names>
+</name>
+<name>
+<surname>Hsu</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Parkes</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>RP</given-names>
+</name>
+</person-group>
+<article-title>Contrastive learning using spectral methods</article-title>
+<source>Advances in Neural Information Processing Systems</source>
+<year>2013</year>
+<volume>26</volume>
+<fpage>2238</fpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abid</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Bagaria</surname>
+<given-names>VK</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Exploring patterns enriched in a dataset with contrastive principal component analysis</article-title>
+<source>Nature Communications</source>
+<year>2018</year>
+<month>May</month>
+<volume>9</volume>
+<fpage>2134</fpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Jones</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Engelhardt</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Probabilistic contrastive principal component analysis</article-title>
+<source>arXiv preprint</source>
+<year>2020</year>
+<elocation-id>arXiv:2012.07977</elocation-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jones</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Townes</surname>
+<given-names>FW</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Engelhardt</surname>
+<given-names>BE</given-names>
+</name>
+</person-group>
+<article-title>Contrastive latent variable modeling with application to case-control sequencing experiments</article-title>
+<source>arXiv preprint</source>
+<year>2021</year>
+<elocation-id>arXiv:2102.06731</elocation-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>Patient cohort breakdown. Cohort size (top left); patient mortality by ethnicity (top right); patient mortality by age and sex (males bottom left and females bottom right)</p>
+</caption>
+<graphic xlink:href="EMS136072-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>Model setup (left) and block structure of HGP covariance matrix (right).</title>
+</caption>
+<graphic xlink:href="EMS136072-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>Model setup (left) and MOE HGP covariance matrix (right).</title>
+</caption>
+<graphic xlink:href="EMS136072-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Cluster representative fits for covariate <bold>albumin</bold>. Patient 11 is a white male; Patient 23 is a Black female. Patient 38 is a white female.</p>
+</caption>
+<graphic xlink:href="EMS136072-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<title>Exemplars of patient trajectories benefiting from HGP and MOE HGP.</title>
+</caption>
+<graphic xlink:href="EMS136072-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig. 6</label>
+<caption>
+<title>Patient level kernel parameters for GPR versus the MOE HGP for <italic>albumin</italic>.</title>
+</caption>
+<graphic xlink:href="EMS136072-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Fig. 7</label>
+<caption>
+<title>Covariate trajectories for a randomly selected patient in the cohort to demonstrate the robustness of the MOE HGP.</title>
+</caption>
+<graphic xlink:href="EMS136072-f007"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Model metrics for covariate albumin</title>
+</caption>
+<table frame="box" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="middle" style="border-right: solid thin">Model</th>
+<th align="center" valign="middle" style="border-right: solid thin">Train MSE</th>
+<th align="center" valign="middle" style="border-right: solid thin">Test MSE</th>
+<th align="center" valign="middle" style="border-right: solid thin">% of Patient Train <italic>R</italic>
+<sup>2</sup>s for which Model &gt; GPR</th>
+<th align="center" valign="middle" style="border-right: solid thin">% of Patient Test <italic>R</italic>
+<sup>2</sup>s for which Model &gt; GPR</th>
+<th align="center" valign="middle" style="border-right: solid thin">% of Patient 95% CIs for which Model is better than GPR</th>
+<th align="center" valign="middle">% of Patient 95% CIs for which Model is same as GPR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top" style="border-right: solid thin">GPR</td>
+<td align="center" valign="top" style="border-right: solid thin">0.04</td>
+<td align="center" valign="top" style="border-right: solid thin">0.21</td>
+<td align="center" valign="top" style="border-right: solid thin">—</td>
+<td align="center" valign="top" style="border-right: solid thin">—</td>
+<td align="center" valign="top" style="border-right: solid thin">—</td>
+<td align="center" valign="top">—</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="border-right: solid thin">HGP</td>
+<td align="center" valign="top" style="border-right: solid thin">0.03</td>
+<td align="center" valign="top" style="border-right: solid thin">0.23</td>
+<td align="center" valign="top" style="border-right: solid thin">73.17</td>
+<td align="center" valign="top" style="border-right: solid thin">58.54</td>
+<td align="center" valign="top" style="border-right: solid thin">21.95</td>
+<td align="center" valign="top">60.98</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="border-right: solid thin">MOE</td>
+<td align="center" valign="top" style="border-right: solid thin">0.02</td>
+<td align="center" valign="top" style="border-right: solid thin">0.21</td>
+<td align="center" valign="top" style="border-right: solid thin">60.98</td>
+<td align="center" valign="top" style="border-right: solid thin">53.66</td>
+<td align="center" valign="top" style="border-right: solid thin">21.95</td>
+<td align="center" valign="top">68.29</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

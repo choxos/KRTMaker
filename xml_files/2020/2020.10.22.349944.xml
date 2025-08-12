@@ -1,0 +1,1213 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS100942</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.22.349944</article-id>
+<article-id pub-id-type="archive">PPR229379</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>OmicLoupe: Facilitating biological discovery by interactive exploration of multiple omic datasets and statistical comparisons</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Willforss</surname>
+<given-names>Jakob</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Siino</surname>
+<given-names>Valentina</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Levander</surname>
+<given-names>Fredrik</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Immunotechnology, Lund University, Lund, Sweden</aff>
+<aff id="A2">
+<label>2</label>National Bioinformatics Infrastructure Sweden (NBIS), Science for Life Laboratory, Lund University, Lund, Sweden</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author. <email>fredrik.levander@immun.lth.se</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>24</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>22</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Visual exploration of gene product behavior across multiple omic datasets can pinpoint technical limitations in data and reveal biological trends. The OmicLoupe software was developed to facilitate such exploration and provides more than 15 interactive cross-dataset visualizations for omic data. It expands visualizations to multiple datasets for quality control, statistical comparisons and overlap and correlation analyses, while allowing for rapid inspection and downloading of selected features. The usage of OmicLoupe is demonstrated in three diverse studies, including an analysis of SARS-CoV-2 infection across omic layers, based on previously published proteomics and transcriptomics studies. OmicLoupe is available at quantitativeproteomics.org/omicloupe</p>
+</abstract>
+<kwd-group>
+<kwd>visualization</kwd>
+<kwd>RShiny</kwd>
+<kwd>multiomics</kwd>
+<kwd>interactive</kwd>
+<kwd>explorative analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Background</title>
+<p id="P2">Omic analysis carries the potential to reveal new biological understanding and serve as a source of biomarkers. Still, omic data are challenging to work with, in part as they often contain considerable variation within and between experiments driven by both biological and technical factors, such as differing experimental conditions or sampling procedures. This variation needs to be considered to correctly interpreting the data. Furthermore, choices of algorithms and statistical procedures for processing the data cause additional differences in the final results [<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>]. The variation seen in the data can represent valuable biological trends, but can also be caused by nuisance factors, such as batch effects [<xref ref-type="bibr" rid="R3">3</xref>] or sample-to-sample technical variation. If the sources of trends in a dataset are understood, the dataset’s reliability can be assessed, and robust approaches of analysis and follow-up studies can be designed. Visualization is a critical tool for developing this understanding.</p>
+<p id="P3">In comparative studies, one commonly overlooked aspect is the in-depth analysis of how individual features, such as transcripts or proteins, detected in one set of samples behave in other samples, datasets, or types of omics. Quality visualizations such as principal component analysis (PCA), and visualizations based on the outcome of statistical comparisons such as volcano plots and p-value histograms are often used to study trends within datasets. As an extension, several approaches to multiomics have been presented where the aim is to project down multiple sets of data to the same low dimensional space, such that they can be jointly visualized and inspected [<xref ref-type="bibr" rid="R4">4</xref>–<xref ref-type="bibr" rid="R6">6</xref>]. These provide useful overviews of multiomic datasets, but does not offer a detailed view of how individual features behave across multiple datasets in statistical comparisons.</p>
+<p id="P4">Here, we propose an approach where single dataset visualization approaches are expanded to allow direct comparisons across datasets. Use cases are, for example, (1) Biomarker studies where an initial set of candidates is to be validated (2) Time-series experiment where the global expression is inspected, for instance, at different times after infection (3) Multiomics experiments where multiple types of data are produced for the same or similar biological systems and (4) Detailed studies of comparisons between methods or software approaches. To facilitate such analyses, we here introduce the interactive software OmicLoupe, which leverages additions to standard visualizations to allow for explorations of features and conditions across datasets beyond simple thresholds, giving insight which otherwise might be lost. The tool aims to be easy to use, directly interface with upstream software and to enable exploration and exporting parts of particular interest in the data. In the present work, we further demonstrate how OmicLoupe can be used to rapidly explore complex datasets in three different use cases</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>Software implementation</title>
+<p id="P5">To improve the accessibility and capability of analysis of complex datasets, we developed OmicLoupe. It is an interactive piece of software accessible through any web browser (<ext-link ext-link-type="uri" xlink:href="quantitativeproteomics.org/omicloupe">quantitativeproteomics.org/omicloupe</ext-link>), which can either be accessed online or installed and launched locally as an R package (<ext-link ext-link-type="uri" xlink:href="https://github.com/ComputationalProteomics/OmicLoupe">https://github.com/ComputationalProteomics/OmicLoupe</ext-link>). A Singularity container for execution without any prior dependency installation, and video tutorials are available to increase its accessibility. The code follows a modular design, promoting the extension of OmicLoupe with additional visualizations in the future.</p>
+<p id="P6">OmicLoupe is built as a collection of modules, each performing a certain part of the analysis (<xref ref-type="fig" rid="F1">Figure 1</xref>). It is built to fit into upstream workflows and can handle any combination of one or two expression datasets where the data are presented as tables with samples as columns and features (genes, proteins, transcripts or other measured features) per rows (illustrated in <xref ref-type="supplementary-material" rid="SD1">Supplementary Materials S1</xref>). Statistical visualizations require columns with p-value, false discovery rate (FDR) corrected p-values, fold change (difference of means between the two compared groups) and average feature level. These values are provided by up-stream software such as NormalyzerDE [<xref ref-type="bibr" rid="R7">7</xref>] or R packages such as Limma [<xref ref-type="bibr" rid="R8">8</xref>] for most types of omics or DESeq2 [<xref ref-type="bibr" rid="R9">9</xref>], for RNA-seq expression data. After loading the data in the web interface, the visualizations can be accessed immediately.</p>
+<p id="P7">The general analysis workflow is shown in <xref ref-type="fig" rid="F1">Figure 1</xref>. The workflow starts with the user assessing their data using the sample-wide quality visualizations, including boxplots, density plots, bar plots, dendrograms, histograms, and principal component plots. These visualizations commonly reveal outlier samples and the presence of systematic effects in the data. Further, for studies involving two datasets, OmicLoupe provides the side-by-side study of whether these effects are uniquely present in one or both of the datasets. These visualizations help the user to make decisions on how to best perform analysis such as outlier omissions, or decisions on what statistical comparisons to perform, and to judge the reliability of the data.</p>
+<p id="P8">Next, the user can screen overlaps between statistical comparisons and sample conditions by inspecting whether features pass specific statistical cutoffs (p-value, FDR, optionally in combination with fold change) in one or several statistical comparisons (i.e. specific treatments or time points) or datasets. This overlap is illustrated by Venn diagrams for pairwise comparisons and UpSet plots [<xref ref-type="bibr" rid="R10">10</xref>] for a higher number of comparisons, with the UpSet visualization designed to efficiently compare a high number of overlaps. Further, for statistical comparisons, overlaps can be split by fold direction giving a better sense of whether overlaps indicate a shared abundance pattern. A novel visualization illustrates the fraction of features that change abundance in the same direction for low- and high-p-values, and the fold patterns of shared features are highlighted. These illustrations jointly provide a detailed view of similarities between contrasts. For both statistical and qualitative UpSet plots and for the Venn comparisons, subsets can be directly inspected and exported. Single features can be chosen for closer inspection in the Feature check module to evaluate in detail how their abundance values are distributed over any sample condition, shown either as raw data points or by using box- or violin plots.</p>
+<p id="P9">Finally, to explore patterns across comparisons, the user can study pairwise comparisons and inspect how either significant or selected features in one dataset distribute across the volcano and MA scatter plots, as well as in p-value histograms. These visualizations can further be colored on any user-specified feature column and can be colored on respective loadings in the principal component plots, revealing groups of features strongly linked to specific principal components. Together, this yields an in-depth understanding of similarities and differences between contrasts and can display target features of interest. Similarly, for overlaps, single features can be selected and inspected in the Feature check module.</p>
+<p id="P10">Beyond the previously mentioned, further specialized visualizations are provided. An analysis approach for identifying features uniquely present in certain conditions is provided as an UpSet plot, which can highlight features for which the abundance is below detection limit for certain samples. A correlation plot allows direct illustration of feature correlation patterns between data layers based on the same set of samples, for instance multiomics or alternative software processing of the same dataset. All the plots discussed above can be downloaded in PNG or vector format and can be customized, providing publication ready visualizations (<xref ref-type="fig" rid="F2">Figures 2</xref> to 7 in the present study are examples of visualizations generated using OmicLoupe). Furthermore, settings used at any point can be saved as a JSON file to ensure reproducibility (outlined in <xref ref-type="supplementary-material" rid="SD1">Supplementary S2</xref> and available at <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4110102">https://doi.org/10.5281/zenodo.4110102</ext-link> for the figures presented in this work).</p>
+<p id="P11">To summarize, OmicLoupe provides a tool to rapidly assess datasets for technical trends and for in-depth studies of statistical comparisons and individual analytes.</p>
+</sec>
+<sec id="S4">
+<title>Case 1: Effects of data processing software on differential expression analysis outcome</title>
+<p id="P12">To assess the utility and validity of the approaches introduced in OmicLoupe, we started by analyzing spike-in proteomic data that have previously been explored extensively in a comparison of data processing software for data-independent acquisition (DIA) LC-MS/MS data [<xref ref-type="bibr" rid="R1">1</xref>]. This dataset consists of <italic>E. coli</italic> and yeast proteins spiked at two different concentrations into a human proteome background. The two mixtures were analyzed in triplicates. In the original work, the data were processed using five different software, allowing for a comparison of their relative performance. The software used were PeakView, Skyline, OpenSwath, DIA Umpire, and Spectronaut, where only DIA Umpire was used without matching to a previously generated spectral library. This dataset was employed as an example with known ground truth where concentrations of proteins from different organisms were known, allowing assessment of how well the visualizations illustrate the known underlying trends. Further, it demonstrates how OmicLoupe can be used to assess the impact of different DIA software methods for processing the same set of samples.</p>
+<p id="P13">Upon inspection in OmicLoupe, the quality control visualizations show that the choice of software impacts the resulting absolute values, as illustrated in the density plots shown in <xref ref-type="fig" rid="F2">Figure 2A</xref>. Less obvious differences are seen between the spike-in levels, although upon inspection in a dendrogram, the difference between OpenSwath and PeakView appeared smaller than their respective spike-in levels (<xref ref-type="supplementary-material" rid="SD1">Supplementary S3</xref>). It can be noted that the intensity values were scaled to reach similar levels in subsequent analyses in the original study for this reason. Qualitative inspection was performed to identify proteins only detected by certain software processing methods. Here, the majority of proteins (2453) were detected by all five methods, and 1101 proteins were detected by all methods except DIA Umpire. Conversely, DIA Umpire identified 477 proteins that were not detected by any other method (highlighted in blue, <xref ref-type="fig" rid="F2">Figure 2B</xref>), although PeakView identified a higher number of proteins uniquely (648, <xref ref-type="fig" rid="F2">Figure 2B</xref>). Upon statistically comparing the abundances between the spike-in levels, a considerable number of proteins were also uniquely identified as differentially expressed by PeakView (488 spike-ins). Eleven proteins were found to be significant but with opposing direction of change when comparing PeakView and Spectronaut output (highlighted in blue, <xref ref-type="fig" rid="F2">Figure 2C</xref>). Out of these, all eleven were yeast protein, correctly identified as downregulated by PeakView.</p>
+<p id="P14">To further elucidate the underlying differences in the processed data from DIA Umpire and PeakView, a closer inspection of the statistical distributions was made in OmicLoupe. Out of the six statistical figures, the volcano plots are illustrated in <xref ref-type="fig" rid="F3">Figure 3</xref> (all six can be found in the <xref ref-type="supplementary-material" rid="SD1">Supplementary Material S4</xref>). Inspection of features passing the thresholds FDR &lt; 0.05 and fold change (log2) &gt; 1 (<xref ref-type="fig" rid="F3">Figure 3A</xref>) shows a considerable number of common statistical features with the same abundance change directions (blue) but it is notable that a larger number of features are identified only after PeakView processing. These are distributed across all significance levels and folds, with no evident trends for a higher concentration of lower abundance values. A handful of features are found to be changing in opposite direction between the groups (green) and were compared to the expected regulation pattern. Here, it was found that all features with a positive log2 fold in both methods were true positives, while out of the two with negative fold-change, one was a false positive. This indicates how OmicLoupe could be used to qualitatively give indications of the reliability of features across comparisons by using fold change. Interestingly, sets of features found to be changing in one group are clustering around zero-fold change in the other method, indicating a different ability of the software to handle these features. Further inspection of the ground truth (<xref ref-type="fig" rid="F3">Figure 3B</xref>) illustrates the respective types of spike-in. For PeakView, there seems to be, in particular for yeast, a considerable number of false negatives identified, while for DIA Umpire these are less common. To illustrate the joint use of the two methods, a subset of features identified after processing by both methods was inspected (<xref ref-type="fig" rid="F3">Figure 3C</xref>). Here, a set of features, only identified as differentially abundant after PeakView processing (yellow in <xref ref-type="fig" rid="F3">Figure 3A</xref>), was highlighted and their distribution after DIA Umpire processing inspected. One exception was significant in both cases, seen as the green point with lowest p-value (highest along the y-axis). Interestingly, the features represented a mix of true positives (<italic>E. Coli</italic>) and false positives (human). The true positives were found with greater fold change in DIA Umpire (two rightmost green points in <xref ref-type="fig" rid="F3">Figure 3C</xref>, DIA Umpire panel). From these observations, we conclude that OmicLoupe allows for fine-grained analysis of differences resulting from data processing using different software and allows careful inspection of specific data points across multiple datasets.</p>
+</sec>
+<sec id="S5">
+<title>Case 2: Analysis of matched proteome and transcriptome data</title>
+<p id="P15">Multiomics studies of the same biological samples are becoming increasingly more frequent, but how to integrate the data types and finding important features remains challenging. We thus investigated how OmicLoupe can be used for direct comparisons of different data types taken from the same set of samples, to reveal features only detected in certain conditions, and common patterns of observed abundance level changes. For this purpose, a comprehensive multiomics dataset from endometrial cancer samples was downloaded [<xref ref-type="bibr" rid="R11">11</xref>]. Multiple types of data, including proteomics and RNA-seq, were acquired for the samples in the original study, and the features had been mapped to common gene identifiers. The samples are classified in different histological types, including Copy Number Variation (CNV) high, which includes serous samples and cancers penetrating at least 50% of the endometrial wall and CNV low consisting of samples penetrating less than 50% of the endometrial wall. Here, the statistical analysis focused on the comparison between these groups.</p>
+<p id="P16">A first view using the PCA module revealed a primary separation between most normal samples and tumor samples (<xref ref-type="fig" rid="F4">Figure 4A</xref>). This separation was similar in both proteomics and RNA-seq datasets, with few noticeable differences. Further, a partial separation between CNV high and CNV low can be seen along with the second principal component. PCA analysis without the control samples group was also performed using the function available in OmicLoupe (<xref ref-type="supplementary-material" rid="SD1">Supplementary S5</xref>). To study the similarity of the statistical comparisons across the two data types, features with positive abundance change and with low p-values were highlighted in the RNA-seq contrast (by dragging directly in the figure) between CNV high and CNV low to see how these distribute in the corresponding contrast in the proteomics dataset (<xref ref-type="fig" rid="F4">Figure 4B</xref>). The majority of features were also upregulated in the proteomics data with three exceptions, namely FOLR3, STEAP1B and TBL1D31. Genes of interest, including TP53, which was discussed in the original study, were inspected using the Feature check (<xref ref-type="fig" rid="F4">Figure 4C</xref>), which showed a reversed pattern in transcriptomics and proteomics. Finally, the correlation between transcriptomics and proteomics was studied. Pearson and Spearman correlations are illustrated in <xref ref-type="fig" rid="F4">Figure 4D</xref> and showed similar median values (0.51 Pearson) to those presented in the original study, with a small number of inversely correlated features.</p>
+<p id="P17">This demonstrates how OmicLoupe can be used to inspect similarities and differences between layers of omic data generated from the same set of samples, providing an improved understanding of both the general expression profiles and individual gene products.</p>
+</sec>
+<sec id="S6">
+<title>Case 3: Cross dataset comparisons of proteome and transcriptome data from two published SARS-CoV-2 studies</title>
+<p id="P18">When studying proteins, for instance involved in certain diseases, validation of key proteins in multiple experimental setups can provide valuable biological information. However, it can be demanding to handle omic data from different studies. We aimed to assess whether OmicLoupe could facilitate this process and aid in finding shared key features. Herein, we examined SARS-CoV-2 infection of two model systems from different studies with time series data to find overlapping features. The first study employed human colon epithelial carcinoma cell line (Caco-2) infected by the virus at different time points (2, 6, 10 and 24 hours), with corresponding control samples, and with both proteomics and translatomics read-out (Bojkova <italic>et al.</italic>, 2020). In the second study [<xref ref-type="bibr" rid="R12">12</xref>], the transcriptomic analysis had been performed on human intestinal organoids, representing the human gut, infected with the virus at time points 0, 24 and 60 hours and in two different media: differentiation and expansion media. The datasets were first overviewed individually using OmicLoupe and then analyzed jointly to find common patterns.</p>
+<p id="P19">For the proteomics study, the initial quality control revealed two aspects in the data influencing the subsequent analysis. Quality control visualizations using PCA and dendrograms revealed clustering of samples according to a sample name-based categorization, thought to be the plating numbers of the cell lines (<xref ref-type="fig" rid="F5">Figure 5A</xref>). To compensate for this effect, this number was included as a covariate in the statistical tests, and the impact of including it was investigated in OmicLoupe. The inclusion of this covariate led to a considerably higher number of features detected as significantly different at the thresholds employed (FDR &lt; 0.05 and log2 fold change &gt; 0.3), as exemplified for the comparison of infected samples at 6 hours versus infected samples at 2 hours (<xref ref-type="fig" rid="F5">Figure 5B</xref>). Next, OmicLoupe was used to study control and infected samples independently (as illustrated in <xref ref-type="supplementary-material" rid="SD1">Supplementary S6</xref>). Here, a clear pattern was seen in the infected samples, with the 24 hours infected samples separating out along PC1, while the 10 hours samples showed a weaker separation. In the control samples, the trend was less clear, and the control 6 hours samples appeared as weak outliers. In order to study the potential impact of these group comparisons, control and infected samples at 6 and 2 hours were compared, as depicted in <xref ref-type="fig" rid="F5">Figure 5C</xref>. A strong effect of decreasing abundance is seen in control 6 hours, while in infected 6 hours the trend is smaller, with known viral proteins being clearly upregulated. This unexpected distribution of the 6 hours control samples led us to focus on comparisons between infected samples, and the 24 hours infected versus control comparison.</p>
+<p id="P20">To study the viral distribution between the infected conditions we highlighted proteins with known annotation related to either virus or virus receptors (According to UniProt <ext-link ext-link-type="uri" xlink:href="https://covid-19.uniprot.org">https://covid-19.uniprot.org</ext-link>, downloaded 2th of July 2020) in comparisons of 6, 10 and 24 hours infected samples compared to 2 hours infected samples. <xref ref-type="fig" rid="F6">Figure 6A</xref> clearly shows how the viral proteins are increasing in abundance in infected cells at 10 hours and even more at 24 hours. This first overview serves as quality control and is in line with what was shown in the original study. For the transcriptomic dataset, using the same cutoff parameters used for the proteomic study, a first evaluation shows that at 24 hours after infection in the differentiation media, 654 transcripts are differentially expressed, while in the expansion media after 24 hours of infection, 438 transcripts are differentially expressed.</p>
+<p id="P21">Furthermore, to study the potential of OmicLoupe, the results from the proteomic study were compared to the transcriptomic dataset. Here, the two datasets can easily be uploaded and compared based on their time points. To make a similar comparison in the two datasets, we decided to compare the proteomic and the transcriptomic data at 24 hours, despite one outlier sample being identified in the transcriptomics data at this time point (the PCA plot for the transcriptomics data illustrating this outlier is shown in <xref ref-type="supplementary-material" rid="SD1">Supplementary S7</xref>). The distribution of the significant genes in the proteomic study in comparison with the transcriptomic study (expansion media), is depicted in the volcano plot in <xref ref-type="fig" rid="F6">Figure 6B</xref>. Of particular interest are the significant genes that are shared between the datasets at 24 hours after infection. At the set threshold (FDR &lt; 0.05 and log2 fold change &gt; 0.3), 38 differentially expressed genes are shared between the proteomic and the transcriptomic data after 24 hours of infection in the differentiation media. For the extension media, 23 genes are significantly shared between the proteomic and transcriptomic datasets after 24 hours of viral infection. The overlap between the IDs in both datasets is displayed in the UpSet plot in <xref ref-type="fig" rid="F6">Figure 6C</xref>. Interestingly, 7 genes were overlapping between the proteomic dataset and the transcriptomic study (differential and expansion media). As an example, one of those shared genes, CD47, is depicted in <xref ref-type="fig" rid="F6">figure 6D</xref>. CD47 is a leukocyte surface antigene, which has been shown to be upregulated after a viral infection, including SARS-CoV-2 infection, as a host response to the infection [<xref ref-type="bibr" rid="R13">13</xref>]. These overlapping groups were further analyzed in STRING [<xref ref-type="bibr" rid="R14">14</xref>] to investigate the relevant pathways connected to these significant genes identified. Of biological interest is that one of the main regulated Reactome [<xref ref-type="bibr" rid="R15">15</xref>] pathways is neutrophil degranulation, which in many studies has been reported as a key biological process during the SARS-CoV-2 infection [<xref ref-type="bibr" rid="R16">16</xref>–<xref ref-type="bibr" rid="R18">18</xref>].</p>
+<p id="P22">In summary, in this third case study, OmicLoupe was used to perform a parallel analysis of two datasets from different types of omics (proteomics and transcriptomics) to investigate the response to infection over time. Both these datasets were obtained from published studies. By straightforward visualizations, we demonstrate the feasibility of using this tool to easily identify significantly changing gene products, common to both datasets, which can be used for further analysis, such as GO enrichment and pathway analysis.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="discussion">
+<title>Discussion</title>
+<p id="P23">Visualization is an important tool to fully explore omics datasets and to highlight features that can be difficult to assess with numbers alone. Consequently, there are many new software solutions for omic data visualization presented over the past few years. These include a range of user-friendly stand-alone software for omics visualization such as Perseus [<xref ref-type="bibr" rid="R19">19</xref>] for proteomics, or shiny-based software such as ShinyOmics [<xref ref-type="bibr" rid="R20">20</xref>], which provides a flexible quality-oriented interface to omic data, and WIlsON [<xref ref-type="bibr" rid="R21">21</xref>] providing high-quality interactive figures based on an open file format but only limited abilities to compare features. Intervene is a software focusing on comparisons [<xref ref-type="bibr" rid="R22">22</xref>], aiming to provide various types of overlap information, but only based on fold change information and not allowing for feature-by-feature examination. Furthermore, software dedicated to incorporating multiple layers of omics such as MixOmics [<xref ref-type="bibr" rid="R23">23</xref>] has extensive multiomics integration capabilities, but does so on a sample-wide scale rather than focusing on the behavior of single features. Despite these notable examples and several more new visualization software packages now being available, we have failed to find software performing several of the functionalities for multiple comparisons across datasets provided by OmicLoupe. Key features in OmicLoupe like the side-by-side data distribution comparison volcano and MA plots, with labeling of key features across the comparisons and of datasets, as well as the ability to rapidly switch to individual feature views across samples, enable a deeper understanding of the individual features in the data.</p>
+<p id="P24">The implementation of UpSet plots with optional splitting based on changes in abundance direction, can rapidly help in determining reproducibility across datasets. While standard statistical comparison, using strict thresholds in many cases is the default option, underlying trends can be found in plots such as UpSet with less strict thresholds, when the data are lacking power.</p>
+<p id="P25">Here, we explored three diverse datasets to highlight different aspects of OmicLoupe’s functionality. By comparing the impact of different proteomics software processing methods, we could study in detail differences in outcome between the methods, and identify specific features handled correctly only by one or some of the methods. Next, multiomics exploration with both transcriptomic and proteomic data obtained from the same samples gave the opportunity to explore features across omic layers. Here, we identified an overall similarity of trends across the omic data layers, and rapidly illustrated the correlations of transcripts and proteins. Further, we visualized key features in detail, including TP53, a key protein discussed in the original study, and detected differences at transcript and protein level. This demonstrates how OmicLoupe can confirm and provide extended knowledge for existing data. Finally, we used two separate SARS-CoV-2 studies to profile intestine cells during infection. OmicLoupe was used to identify and navigate technical limitations, including a batch effect, and a seeming lower reliability of one set of control samples. The overall regulation patterns were relatively different, as expected due to the different types of samples, but still subsets of features with joint abundance changes were identified. These were downloaded and enriched, revealing biological trends in line with what had been observed in prior studies.</p>
+<p id="P26">The cases presented in this manuscript are common examples of challenges encountered when analyzing omics data. Beyond these, the OmicLoupe software has the potential to be used in a wide range of scenarios, to better understand both single- and multiple- omics datasets. To this end, we believe usability is of critical importance for this kind of software, and OmicLoupe has a straightforward interface, with user help text complemented with video tutorials at the website. Having these at hand may mean the difference in how extensively the data could be explored, and thus how well they can be understood. We thus encourage users to test the software, provide feedback about its functionality and to comment on possible useful new extensions.</p>
+</sec>
+<sec id="S8" sec-type="conclusions">
+<title>Conclusions</title>
+<p id="P27">Here, we have presented OmicLoupe, which both introduces novel approaches for comparative visualization cross dataset and presents these in an interactive easy-to-use software. We have demonstrated its utility on three diverse datasets, starting with a technical dataset to demonstrate how OmicLoupe can be used for comparing processing methods and how the cross-comparison fold can provide important information. Secondly, we explored a multi-omic cancer dataset illustrating how same-sample cross-omics can be readily illustrated. Finally, to demonstrate its versatility, we reanalyzed two recently published SARS-CoV-2 datasets, performed comparative explorations of these datasets and rapidly identified proteins and RNA transcripts showing the same abundance change trends across both studies. Based on these results and usage on other datasets, we propose that OmicLoupe can be a versatile tool in many expression omics-based analyses, both for novice and expert users. We provide it for usage by the community, as an R-package and as an online server.</p>
+</sec>
+<sec sec-type="methods" id="S9">
+<title>Methods</title>
+<sec id="S10">
+<title>Development</title>
+<p id="P28">OmicLoupe is implemented using R (v3.6.3) and RShiny (v1.4.0.2), using packages providing interactive visualizations: Plotly (v4.9.2.1), DT (v0.13) and packages for data visualization: ggplot2 (v3.3.0), GGally (v1.5.0), UpSetR (v1.4.0, [<xref ref-type="bibr" rid="R10">10</xref>]) and dplyr (v0.8.5) for data processing. The code is developed in modules to facilitate reusability. Further, a Singularity container [<xref ref-type="bibr" rid="R24">24</xref>] was prepared allowing immediate local execution without being required to install the R package dependencies.</p>
+</sec>
+<sec id="S11">
+<title>Dataset analysis</title>
+<p id="P29">OmicLoupe was evaluated using three datasets covering different use cases. An R notebook containing the code used for preprocessing the datasets together with an HTML-document with the code output is outlined in the <xref ref-type="supplementary-material" rid="SD1">Supplementary S8</xref> and accessible on the DOI: <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4110102">https://doi.org/10.5281/zenodo.4110102</ext-link>.</p>
+</sec>
+<sec id="S12">
+<title>Case 1: Technical spike-in dataset</title>
+<p id="P30">A technical dataset was employed where proteins from human, <italic>E. coli</italic> and yeast had been spiked in at controlled concentrations [<xref ref-type="bibr" rid="R1">1</xref>] and subsequently analyzed using five different DIA methods. The data was downloaded from ProteomeXchange [<xref ref-type="bibr" rid="R25">25</xref>] at the ID PXD002952, selecting the data generated on the TripleTOF 6600 instrument with 32 fixed-size windows for all five methods. The HYE110 dataset was used, with a spike-in difference of log2 fold 3. The raw data matrices were preprocessed both into five separate data matrices, and into a single merged matrix consisting of all joint protein entries. They were subsequently log2-transformed and rolled up to protein level using an R-reimplementation (github.com/ComputationalProteomics/ProteinRollup) of the DanteR RRollup [<xref ref-type="bibr" rid="R26">26</xref>], using default settings and excluding proteins supported by a single peptide. Statistical contrasts between the two concentration levels were subsequently calculated using Limma [<xref ref-type="bibr" rid="R8">8</xref>] as provided by NormalyzerDE [<xref ref-type="bibr" rid="R7">7</xref>], and resulting p-values adjusted for multiple hypothesis testing using the Benjamini-Hochberg procedure [<xref ref-type="bibr" rid="R27">27</xref>].</p>
+</sec>
+<sec id="S13">
+<title>Case 2: Multiomics dataset</title>
+<p id="P31">A multiomics dataset from a study investigating 95 prospectively collected endometrial carcinoma tumors [<xref ref-type="bibr" rid="R11">11</xref>] divided into four histological groups, including copy number (CNV)-high (serous cancer -a rare aggressive variant, and cancers with more than 50% penetrance of the endometrial wall) and CNV-low (less than 50% penetrance of the endometrial wall). The data matrices and meta information were downloaded from the supplementary information of the original study. Samples omitted from the original study were similarly omitted, as specified in the matrix obtained from the original supplementary. Further, upon inspection with OmicLoupe the set of normal samples was identified as a strong outgroup and omitted to avoid influence in the statistical procedure. The original dataset contains multiple layers of omic data, out of which the following two were used in the present study: proteomics and mRNA levels. For the proteomics matrix, statistical contrasts were calculated using Limma [<xref ref-type="bibr" rid="R8">8</xref>] in NormalyzerDE and Benjamini-Hochberg [<xref ref-type="bibr" rid="R27">27</xref>] corrected FDR values were calculated. For the transcriptomics matrices the data was provided as RSEM estimated counts. It was first transformed with Voom with quality weights [<xref ref-type="bibr" rid="R28">28</xref>] and subsequently processed using Limma [<xref ref-type="bibr" rid="R8">8</xref>]. Statistical contrasts were for both data types calculated between samples classified as CNV-high and CNV-low.</p>
+</sec>
+<sec id="S14">
+<title>Case 3: SARS-CoV-2 datasets</title>
+<p id="P32">The first dataset analyzed in this case study is a recently published SARS-CoV-2 proteomic dataset [<xref ref-type="bibr" rid="R29">29</xref>], where human colon epithelial carcinoma cell line (Caco-2) was infected by SARS-CoV-2 and proteomic analyses were performed on samples at four time points (2, 6, 10, 24 hours after infection), both for infected samples, and samples treated with a mock infection. The proteomic data and metadata were generously provided by the authors in the supplementary materials of the study Zero-values were replaced with NA, and the protein abundance values were log2 transformed. Statistical contrasts were calculated using Limma [<xref ref-type="bibr" rid="R8">8</xref>] in NormalyzerDE [<xref ref-type="bibr" rid="R7">7</xref>] and resulting p-values FDR-corrected using the Benjamini-Hochberg procedure [<xref ref-type="bibr" rid="R27">27</xref>]. Initially, statistical comparisons were made between infected and control samples at each of the four time points (2, 6, 10 and 24 hours after infection). After initial explorations in OmicLoupe a batch effect was identified, which was subsequently included as a covariate in the statistical test, as described in the results section.</p>
+<p id="P33">The second dataset was from human intestinal organoids infected with SARS-CoV-2 in both differentiation and expansion media and analyzed at two time points after infection (24 and 60 hours) using transcriptomics [<xref ref-type="bibr" rid="R12">12</xref>]. The data was retrieved from the NCBI Gene Expression Omnibus (GEO) database, from the accession number GSE149312. The data were TMM normalized, and Voom transformed [<xref ref-type="bibr" rid="R28">28</xref>] with quality weights. Subsequently, statistical calculations were carried out using Limma [<xref ref-type="bibr" rid="R8">8</xref>], comparing infected samples at 24 and 60 hours after infection to the uninfected reference. P-values were FDR-corrected using the Benjamini-Hochberg procedure [<xref ref-type="bibr" rid="R27">27</xref>].</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary</label>
+<media xlink:href="EMS100942-supplement-Supplementary.pdf" mimetype="application" mime-subtype="pdf" id="N66258" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S15">
+<title>Acknowledgements</title>
+<p>We want to thank Victor Lindh whose master’s thesis project allowed us to explore ideas which later were further developed here. We also thank OmicLoupe users who have tested and provided valuable feedback. Finally, we would like to thank the authors behind the four datasets used in the three case studies who generously provided their data for further use in an accessible way.</p>
+<sec id="S16">
+<title>Funding</title>
+<p>JW and FL were supported by the Swedish Foundation for Environmental Strategic Research (Mistra Biotech). VS and FL were supported by Olle Engkvist Byggmästare (193-0623) and the Technical Faculty at Lund University (Proteoforms@LU).</p>
+</sec>
+</ack>
+<sec id="S17" sec-type="data-availability">
+<title>Availability of data and materials</title>
+<list list-type="bullet" id="L1">
+<list-item>
+<p id="P34">On its main page (<ext-link ext-link-type="uri" xlink:href="http://quantitativeproteomics.org/omicloupe">http://quantitativeproteomics.org/omicloupe</ext-link>), a public server running OmicLoupe can be accessed, as well as links to video tutorials.</p>
+</list-item>
+<list-item>
+<p id="P35">The R package and its source code is available at github.com/ComputationalProteomics/OmicLoupe with DOI: <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4113746">https://doi.org/10.5281/zenodo.4113746</ext-link>
+</p>
+</list-item>
+<list-item>
+<p id="P36">A singularity container is available at <ext-link ext-link-type="uri" xlink:href="http://singularity-hub.org/collections/4795">singularity-hub.org/collections/4795</ext-link> which allows execution with no need to install dependencies.</p>
+</list-item>
+<list-item>
+<p id="P37">The data used for case study 1 is accessible through the ProteomeXchange database under ID PXD002952 (<ext-link ext-link-type="uri" xlink:href="http://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD002952">http://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD002952</ext-link>)</p>
+</list-item>
+<list-item>
+<p id="P38">The data used for case study 2 is accessible from the study by Dou <italic>et al</italic> [<xref ref-type="bibr" rid="R11">11</xref>] (<ext-link ext-link-type="uri" xlink:href="https://doi.org/10.1016/j.cell.2020.01.026">https://doi.org/10.1016/j.cell.2020.01.026</ext-link>) and is based on Supplementary <xref ref-type="supplementary-material" rid="SD1">Tables 1 and 2</xref>.</p>
+</list-item>
+<list-item>
+<p id="P39">The proteomics data used for case study 3 is accessible from the study by Klann <italic>et al</italic> [<xref ref-type="bibr" rid="R29">29</xref>] (<ext-link ext-link-type="uri" xlink:href="https://doi.org/10.1038/s41586-020-2332-7">https://doi.org/10.1038/s41586-020-2332-7</ext-link>) and is based on Supplementary <xref ref-type="supplementary-material" rid="SD1">Tables 1 and 2</xref>.</p>
+</list-item>
+<list-item>
+<p id="P40">The transcriptomics data used for case study 3 is accessible through the Gene Expression Omnibus database under ID GSE149312 (<ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149312">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149312</ext-link>)</p>
+</list-item>
+<list-item>
+<p id="P41">The settings used in OmicLoupe to produce all visualizations in the manuscript and supplementary materials are available at <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4110102">https://doi.org/10.5281/zenodo.4110102</ext-link> and outlined in <xref ref-type="supplementary-material" rid="SD1">Supplementary S2</xref>.</p>
+</list-item>
+<list-item>
+<p id="P42">The R code for processing these datasets into a format compatible with OmicLoupe is available at <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4110102">https://doi.org/10.5281/zenodo.4110102</ext-link> and outlined in <xref ref-type="supplementary-material" rid="SD1">Supplementary S8</xref>. These output matrices are available from the corresponding author on reasonable request.</p>
+</list-item>
+</list>
+</sec>
+<fn-group>
+<title>Declarations</title>
+<fn id="FN1">
+<p id="P43">
+<bold>Ethics approval and consent to participate</bold>
+</p>
+<p id="P44">Not applicable</p>
+</fn>
+<fn id="FN2">
+<p id="P45">
+<bold>Consent for publication</bold>
+</p>
+<p id="P46">Not applicable</p>
+</fn>
+<fn id="FN3" fn-type="conflict">
+<p id="P47">
+<bold>Competing interests</bold>
+</p>
+<p id="P48">The authors declare that they have no competing interests.</p>
+</fn>
+<fn id="FN4" fn-type="con">
+<p id="P49">
+<bold>Authors’ contributions</bold>
+</p>
+<p id="P50">The study was conceived by JW and FL. The software development was carried out by JW with input about functionality from VS and FL. Data analysis was performed by JW and VS. The manuscript was drafted by JW and was expanded, edited and approved by all authors.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Navarro</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kuharev</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gillet</surname>
+<given-names>LC</given-names>
+</name>
+<name>
+<surname>Bernhardt</surname>
+<given-names>OM</given-names>
+</name>
+<name>
+<surname>MacLean</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Röst</surname>
+<given-names>HL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A multicenter study benchmarks software tools for label-free proteome quantification</article-title>
+<source>Nat Biotechnol</source>
+<year>2016</year>
+<volume>34</volume>
+<fpage>1130</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Välikangas</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Suomi</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Elo</surname>
+<given-names>LL</given-names>
+</name>
+</person-group>
+<article-title>A comprehensive evaluation of popular proteomics software workflows for label-free proteome quantification and imputation</article-title>
+<source>Brief Bioinform</source>
+<year>2017</year>
+<volume>19</volume>
+<fpage>1344</fpage>
+<lpage>55</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Goh WW</surname>
+<given-names>Bin</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<chapter-title>Why Batch Effects Matter in Omics Data, and How to Avoid Them</chapter-title>
+<source>Trends Biotechnol</source>
+<publisher-name>Elsevier Ltd</publisher-name>
+<year>2017</year>
+<volume>35</volume>
+<fpage>498</fpage>
+<lpage>507</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rohart</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Eslami</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Matigian</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Bougeard</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>LêCao</surname>
+<given-names>KA</given-names>
+</name>
+</person-group>
+<article-title>MINT: A multivariate integrative method to identify reproducible molecular signatures across independent experiments and platforms. BMC Bioinformatics</article-title>
+<source>BMC Bioinformatics</source>
+<year>2017</year>
+<volume>18</volume>
+<fpage>1</fpage>
+<lpage>13</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Singh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shannon</surname>
+<given-names>CP</given-names>
+</name>
+<name>
+<surname>Gautier</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Rohart</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Vacher</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tebbutt</surname>
+<given-names>SJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DIABLO: An integrative approach for identifying key molecular drivers from multi-omics assays</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<fpage>3055</fpage>
+<lpage>62</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>LêCao</surname>
+<given-names>KA</given-names>
+</name>
+<name>
+<surname>Boitard</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Besse</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Sparse PLS discriminant analysis: Biologically relevant feature selection and graphical displays for multiclass problems</article-title>
+<source>BMC Bioinformatics</source>
+<year>2011</year>
+<volume>12</volume>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Willforss</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chawade</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Levander</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>NormalyzerDE: Online Tool for Improved Normalization of Omics Expression Data and High-Sensitivity Differential Expression Analysis</article-title>
+<source>J Proteome Res</source>
+<year>2019</year>
+<volume>18</volume>
+<fpage>732</fpage>
+<lpage>40</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ritchie</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Phipson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Law</surname>
+<given-names>CW</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Limma powers differential expression analyses for RNA-sequencing and microarray studies</article-title>
+<source>Nucleic Acids Res</source>
+<year>2015</year>
+<volume>43</volume>
+<fpage>e47</fpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Love</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Huber</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Anders</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2</article-title>
+<source>Genome Biol</source>
+<year>2014</year>
+<volume>15</volume>
+<fpage>550</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Conway</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Lex</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gehlenborg</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>UpSetR: An R package for the visualization of intersecting sets and their properties</article-title>
+<source>Bioinformatics</source>
+<year>2017</year>
+<volume>33</volume>
+<fpage>2938</fpage>
+<lpage>40</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kawaler</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Cui Zhou</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gritsenko</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Blumenberg</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Proteogenomic Characterization of Endometrial Carcinoma</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>180</volume>
+<fpage>729</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lamers</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Beumer</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>van der Vaart</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Knoops</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Puschhof</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Breugem</surname>
+<given-names>TI</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 productively infects human gut enterocytes</article-title>
+<source>Science (80-. )</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>50</fpage>
+<lpage>4</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tal</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Dulgeroff</surname>
+<given-names>LBT</given-names>
+</name>
+<name>
+<surname>Myers</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Cham</surname>
+<given-names>LB</given-names>
+</name>
+<name>
+<surname>Mayer-Barber</surname>
+<given-names>KD</given-names>
+</name>
+<name>
+<surname>Bohrer</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Upregulation of CD47 Is a Host Checkpoint Response to Pathogen Recognition</article-title>
+<source>Am Soc Microbiol</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jensen</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Kuhn</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Stark</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chaffron</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Creevey</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Muller</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>STRING 8 - A global view on proteins and their functional interactions in 630 organisms</article-title>
+<source>Nucleic Acids Res</source>
+<year>2009</year>
+<volume>37</volume>
+<fpage>412</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Jassal</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Matthews</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Viteri</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gong</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lorente</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Fabregat</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<chapter-title>The reactome pathway knowledgebase</chapter-title>
+<source>Nucleic Acids Res</source>
+<publisher-name>Oxford University Press</publisher-name>
+<year>2020</year>
+<volume>48</volume>
+<fpage>D498</fpage>
+<lpage>503</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Clinical features of patients infected with 2019 novel coronavirus in Wuhan, China</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<fpage>497</fpage>
+<lpage>506</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hemmat</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Derakhshani</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bannazadeh Baghi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Silvestris</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Baradaran</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>De Summa</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Neutrophils, Crucial, or Harmful Immune Cells Involved in Coronavirus Infection: A Bioinformatics Study</article-title>
+<source>Front Genet</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zuo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yalavarthi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Gockman</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zuo</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Madison</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Neutrophil Extracellular Traps in COVID-19</article-title>
+<source>JCI Insight</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>e138999</fpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tyanova</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Temu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Sinitcyn</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Carlson</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hein</surname>
+<given-names>MY</given-names>
+</name>
+<name>
+<surname>Geiger</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Perseus computational platform for comprehensive analysis of (prote)omics data</article-title>
+<source>Nat Methods</source>
+<year>2016</year>
+<volume>13</volume>
+<fpage>731</fpage>
+<lpage>40</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Surujon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Van Opijnen</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>ShinyOmics: Collaborative exploration of omics-data. BMC Bioinformatics</article-title>
+<source>BMC Bioinformatics</source>
+<year>2020</year>
+<volume>21</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schultheis</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kuenne</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Preussner</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wiegandt</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Fust</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bentsen</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>WIlsON: Web-based Interactive Omics VisualizatioN</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<fpage>1055</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Khan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mathelier</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Intervene: A tool for intersection and visualization of multiple gene or genomic region sets. BMC Bioinformatics</article-title>
+<source>BMC Bioinformatics</source>
+<year>2017</year>
+<volume>18</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rohart</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Gautier</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lê Cao</surname>
+<given-names>KA</given-names>
+</name>
+</person-group>
+<article-title>mixOmics: An R package for ‘omics feature selection and multiple data integration</article-title>
+<source>PLoS Comput Biol</source>
+<year>2017</year>
+<volume>13</volume>
+<fpage>1</fpage>
+<lpage>19</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kurtzer</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Sochat</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Bauer</surname>
+<given-names>MW</given-names>
+</name>
+</person-group>
+<article-title>Singularity: Scientific containers for mobility of compute</article-title>
+<source>PLoS One</source>
+<year>2017</year>
+<volume>12</volume>
+<fpage>1</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vizcaíno</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Deutsch</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Csordas</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Reisinger</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ríos</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ProteomeXchange provides globally coordinated proteomics data submission and dissemination</article-title>
+<source>Nat Biotechnol</source>
+<year>2014</year>
+<volume>32</volume>
+<fpage>223</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Polpitiya</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Qian</surname>
+<given-names>WJ</given-names>
+</name>
+<name>
+<surname>Jaitly</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Petyuk</surname>
+<given-names>VA</given-names>
+</name>
+<name>
+<surname>Adkins</surname>
+<given-names>JN</given-names>
+</name>
+<name>
+<surname>Camp</surname>
+<given-names>DG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DAnTE: A statistical tool for quantitative analysis of -omics data</article-title>
+<source>Bioinformatics</source>
+<year>2008</year>
+<volume>24</volume>
+<fpage>1556</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Benjamini</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hochberg</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing</article-title>
+<source>R Stat Soc</source>
+<year>1995</year>
+<volume>57</volume>
+<fpage>289</fpage>
+<lpage>300</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Law</surname>
+<given-names>CW</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Smyth</surname>
+<given-names>GK</given-names>
+</name>
+</person-group>
+<article-title>Voom: Precision weights unlock linear model analysis tools for RNA-seq read counts</article-title>
+<source>Genome Biol</source>
+<year>2014</year>
+<volume>15</volume>
+<fpage>1</fpage>
+<lpage>17</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klann</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Koch</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Krause</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 infected host cell proteomics reveal potential therapy targets</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>469</fpage>
+<lpage>72</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>The OmicLoupe workflow</title>
+<p>OmicLoupe is designed to easily interface with the upstream data generation process and to work on any expression data matrix. It provides the ability to explore up to two datasets, and provides comparative views between statistical contrasts performed either within one dataset or across multiple. It is organized in modules allowing rapidly shifting from a sample-wide view, to inspect individual statistical comparisons, overlaps between multiple comparisons, to understanding single features. (Adapted from schematics shown at <ext-link ext-link-type="uri" xlink:href="http://quantitativeproteomics.org/omicloupe">http://quantitativeproteomics.org/omicloupe</ext-link>).</p>
+</caption>
+<graphic xlink:href="EMS100942-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Effects of data processing using different software</title>
+<p>Illustrations of data after processing with software: PeakView (pw), Skyline (sl), OpenSwath (os), DIA Umpire (du) and Spectronaut (sn). (A) Density distributions, available in OmicLoupe’s Quality panel, are colored on the data source (left) and spike-in level (right), respectively. (B) Features uniquely identified (not missing in all samples) after processing of different methods, with DIA Umpire highlighted. (B) UpSet plots of the features that were found as significantly differentially abundant (FDR &lt; 0.05, log2 fold change &gt; 1) when data had been processed using the different software. In C, features that are changing upwards or downwards in the comparison are displayed separately to visualize contradictory abundance changes due to differential processing. Eleven proteins that were deemed significantly changing, but with opposing direction of change after processing in PeakView and Spectronaut are highlighted in blue.</p>
+</caption>
+<graphic xlink:href="EMS100942-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Comparison of contrast between spike-in levels in DIA Umpire and PeakView</title>
+<p>These panels show part of the statistical interface in OmicLoupe. Panel A) shows features passing the significance threshold FDR &lt; 0.05 and log2 fold &gt; 0.5 in individual datasets, and in both. Green points (“contra” in the legend), are passing the significance threshold in both datasets, but with reversed log2 fold direction. Panel B) shows coloring based on the spike-in source. Panel C) show the outcome of interactively highlighting a set of five features only significant in PeakView and one significant in both. This reveals their distribution in DIA Umpire, showing that the features upregulated in both are true positives, while one of the two found in lower abundance in DIA Umpire is a false hit.</p>
+</caption>
+<graphic xlink:href="EMS100942-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Illustrations of multiomics data investigated in Case 2</title>
+<p>A) Principal component illustration present in the quality module, comparing proteomics and transcriptomics. As can be seen, the major trends are similar between the two data types. B) Distribution of how high-significance features upregulated in RNA-seq distribute in the proteomics dataset. C) Boxplots of TP53, identified in the dataset across the four studied sample classifications using the feature check module. D) Correlation distributions between the RNA-seq and proteomics features using the correlation module.</p>
+</caption>
+<graphic xlink:href="EMS100942-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>Quality inspection of the SARS-CoV-2 proteomics dataset</title>
+<p>A) Inspection revealed a separation of samples along the second principal component likely related to a plating effect. This was compensated for in subsequent statistical tests by including it as a covariate. B) The impact of performing differential expression analysis without and with including the putative plating number as a covariate. The inclusion of the covariate yielded 345 new statistical features while losing six as compared to not including the covariate. C) Comparison of control samples 6h and 2h shows many features with a decrease in abundance, indicating that the mock treatment might influence the data. Comparison between infected samples at 6h and 2h show more limited differences, with seven detected viral proteins among those with increased abundance at 6 hours indicated in red circles (log2 fold change &gt; 0.3) out of which two passed the FDR threshold.</p>
+</caption>
+<graphic xlink:href="EMS100942-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<title>Inspection of trends in SARS-CoV-2 proteomics and transcriptomics datasets</title>
+<p>Statistical analysis performed using the following settings: FDR &lt; 0.05 and log2 fold change &gt; 0.3. For both datasets, data from 24 hours after viral infection are used A) Inspection of infected samples, 10 hours and 24 hours compared to 2 hours, colored by proteins known as virus proteins and virus receptors revealed a clear upregulation among virus proteins. B) Direct comparison of infected and control at 24 hours after infection in proteomics and comparison between the proteomic dataset and the transcriptomic dataset (expansion media). The coloring is based on in which dataset the gene products pass the significance threshold. Green points (“contra” in the legend), are passing the significance threshold in both datasets, but with reversed log2 fold direction. This comparison revealed a set of shared proteins, both changing abundance in the same or opposite direction. C) Illustration of the shared significant genes between proteomic and transcriptomic (differential and expansion media) datasets. D) CD47 distribution at different time points in the proteomic study and in the transcriptomic data.</p>
+</caption>
+<graphic xlink:href="EMS100942-f006"/>
+</fig>
+</floats-group>
+</article>

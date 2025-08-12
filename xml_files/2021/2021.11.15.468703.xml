@@ -1,0 +1,1277 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS139964</article-id>
+<article-id pub-id-type="doi">10.1101/2021.11.15.468703</article-id>
+<article-id pub-id-type="archive">PPR422751</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Sensitive identification of known and unknown protease activities by unsupervised linear motif deconvolution</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Uzozie</surname>
+<given-names>Anuli C.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="fn" rid="FN1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>Theodore G.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="fn" rid="FN1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Siyuan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Lange</surname>
+<given-names>Philipp F.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="corresp" rid="CR1">#</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Pathology, University of British Columbia, Vancouver, BC, Canada</aff>
+<aff id="A2">
+<label>2</label>Michael Cuccione Childhood Cancer Research Program, BC Children’s Hospital Research Institute, Vancouver, BC, Canada</aff>
+<aff id="A3">
+<label>3</label>Department of Molecular Oncology, BC Cancer, Vancouver, BC, Canada</aff>
+<author-notes>
+<fn id="FN1" fn-type="equal">
+<label>*</label>
+<p id="P1">Contributed equally</p>
+</fn>
+<corresp id="CR1">
+<label>#</label>Correspondence to: Philipp F. Lange, PhD, BC Children’s Hospital, 950 West 28th Avenue, Vancouver, BC Canada, V5Z 4H4, <email>philipp.lange@ubc.ca</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>19</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+<license>
+<ali:license_ref>https://europepmc.org/downloads/openaccess</ali:license_ref>
+<license-p>This preprint is made available via the <ext-link ext-link-type="uri" xlink:href="https://europepmc.org/downloads/openaccess">Europe PMC open access subset</ext-link>, for unrestricted research re-use and secondary analysis in any form or by any means with acknowledgement of the original preprint source.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P2">The cleavage-site specificities for many proteases are not well-understood, restricting the utility of supervised classification methods. We present an algorithm and web interface to overcome this limitation through the unsupervised detection of overrepresented patterns in protein sequence data, providing insight into the mixture of protease activities contributing to a complex system.</p>
+<p id="P3">Here, we apply the RObust LInear Motif Deconvolution (RoLiM) algorithm to confidently detect substrate cleavage patterns for SARS-CoV-2 Mpro protease in N terminome data of an infected human cell line. Using mass spectrometry-based peptide data from a case-control comparison of 341 primary urothelial bladder cancer cases and 110 controls, we identified distinct sequence motifs indicative of increased MMP activity in urine from cancer patients. Evaluation of N terminal peptides from patient plasma post-chemotherapy detected novel Granzyme B/Corin activity.</p>
+<p id="P4">RoLiM will enhance unbiased investigation of peptide sequences to establish the composition of known and uncharacterized protease activities in biological systems.</p>
+</abstract>
+<kwd-group>
+<kwd>protease</kwd>
+<kwd>N termini</kwd>
+<kwd>substrate</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1">
+<title>Abbreviations</title>
+<glossary>
+<def-list>
+<def-item>
+<term>RoLiM</term>
+<def>
+<p id="P5">RObust LInear Motif Deconvolution</p>
+</def>
+</def-item>
+<def-item>
+<term>PTM</term>
+<def>
+<p id="P6">Post-translational modification</p>
+</def>
+</def-item>
+</def-list>
+</glossary>
+</sec>
+<sec id="S2" sec-type="intro">
+<title>Introduction</title>
+<p id="P7">Proteolysis affects most proteins in a cell. Protein function, localization or other properties are altered by proteolysis. Although advances in proteomics have enabled comprehensive identification of proteins in complex biological samples, the direct detection of protease activity remains challenging. This is due in part to (i) relatively low abundance of some proteolytic products, (ii) detection of a protease does not directly imply activity or co-localization with its substrate at the time of detection and (iii) simultaneous activity of multiple proteases. Hence, the detection of proteolytic activity is typically accomplished by observation of protease substrates pattern. This can be accomplished with experimental approaches involving termini enrichment<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup> or with activity based probes which directly recognize active proteases<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup>.</p>
+<p id="P8">Statistical algorithms are critical to derive biological insights from massive peptidomic datasets. Such algorithms should be able to address two main questions: (i) how accurately do peptide motifs identified in a data signify substrate cleavage or substrate cleavage pattern, and (ii) can detected sequence patterns be correctly linked to protease activity? Currently, there are two major strategies used for the indirect detection of proteolytic activity in large-scale peptide data generated by mass spectrometry. One approach is to predict putative protease cleavage sites based on observation of known cleavage events corresponding to a particular protease. Two popular algorithms that make use of this strategy are Proteasix and PROSPERous<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. Here, supervised learning algorithms can be trained to recognize the sequence features characteristic of cleavage sites in the known substrates of a protease. Although this strategy has proven effective in certain contexts for some well characterized proteases<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>
+</sup>, it fails to account for the activity of less-understood proteases. Moreover, cleavage event data have been compiled over a substantial period of time via a shifting landscape of methodologies which vary drastically in both comprehensiveness and reliability. This strategy’s reliance on previous, curated data for the training of supervised learning algorithms makes it vulnerable to data that are either no longer current, relevant, or accurate.</p>
+<p id="P9">The second approach relies on unsupervised motif detection for the analysis of existing sequence determinants of post-translational modifications (PTMs). These algorithms notably include Motif-X/Momo and GibbsCluster<sup>
+<xref ref-type="bibr" rid="R5">5</xref>–<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. Momo supports the analysis of data sets containing multiple sequences with fixed central residues and these central residues are usually the target of a covalent modification such as phosphorylation<sup>
+<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. Although these tools are promising resources for the unbiased analysis of PTM data centered around a modified residue, they are not suitable for the analysis of proteolytic data sets. Unlike other PTMs, proteolytic events are centered around a bond between two residues. Moreover, the amino acids found adjacent to proteolytic cleavage sites are highly variable and depend on the specific protease responsible for a cleavage event. Proteolytic data sets therefore lack the fixed central residue required by these tools, even if the sequence alignment is shifted in order to center the sequences around a residue position rather than the cleavage site.</p>
+<p id="P10">Gibbs clustering, a popular Markov chain Monte Carlo algorithm used for clustering of sequence data sets<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>, is among the few algorithms that can align and cluster amino acid sequences without restriction to specified central residues. The GibbsCluster algorithm (GibbsCluster 2.0) relies on a non-deterministic algorithm (Gibbs sampling). This limits the reproducibility of results between runs and poses a major challenge to its use for analysing proteolytic input data, where the mixture of activities contributing to the composition of a sample is complex and the number of different protease activities (clusters) not known a priori.</p>
+<p id="P11">In the present study, we extend a motif deconvolution algorithm we recently developed, RObust LInear Motif Deconvolution (RoLiM)<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup> to overcome the challenges associated with the unsupervised detection of protease activity in complex biological samples. We evaluate the performance of RoLiM in comparison to Proteasix and Gibbs clustering. In a re-analysis of protein N termini enriched from SARS-Cov2-infected human cell lines we demonstrate that RoLiM can identify new, uncharacterized protease activities. In re-analyses of urine collected from patients with urothelial bladder cancer, and extracellular fluids collected post chemotherapy from hematopoietic cancer patients we demonstrate that RoLiM can identify multiple cancer associated protease activities in complex extracellular fluids, and accurately assign identified protease patterns to known proteases or protease families.</p>
+</sec>
+<sec id="S3" sec-type="results">
+<title>Results</title>
+<p id="P12">We recently developed the Robust Linear Motif Deconvolution (RoLiM) algorithm for unbiased detection of statistically enriched amino acid patterns, and demonstrated that it exceeds existing solutions in robustness and versatility<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. We further demonstrated its application to the analysis of over 60 covalent protein modifications across 30 human tissues.</p>
+<p id="P13">Here, we set out to explore RoLiM’s application to protein cleavage controlled by proteases.</p>
+<sec id="S4">
+<title>Identification of unknown proteolytic activities by unsupervised RoLiM analysis</title>
+<p id="P14">We first tested the hypothesis that unsupervised analysis of protein cleavage sequence data enables the detection of unknown proteolytic activities missed by algorithms trained on existing knowledge. The MEROPS database<sup>
+<xref ref-type="bibr" rid="R10">10</xref>,<xref ref-type="bibr" rid="R11">11</xref>
+</sup> is considered the most comprehensive repository of protease/peptidase information. It contains 92,216 substrate cleavage site information for 5267 peptidases<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup> in the form of substrate sequences with lengths of 8 amino acids.</p>
+<p id="P15">Curated protease databases, in particular MEROPS, remain the backbone of many protease prediction algorithms. This presents a major limitation that centers on the inability of such algorithms to (i) detect enriched substrate patterns that are not categorized in the database, and (ii) match patterns to identify activities from proteases lacking curated cleavage site information. We benchmarked the performance of RoLiM with Proteasix which we believe is the most comparable tool for the prediction of protease activity in comprehensive peptide datasets.</p>
+<p id="P16">We first evaluated the ability to detect the activity of an unknown protease in a complex system. We used the newly emerged SARS-CoV-2 virus as a model system in which the viral protease characteristics are known, but masked from the algorithms. Meyer and colleagues<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup> studied proteolysis induced by SARS-CoV-2 infection in cell lines using a mass spectrometry-based N termini enrichment method<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>. We tested the ability of unsupervised (RoLiM) and supervised (Proteasix) algorithms to predict protease activities from N termini quantified in A549-Ace2 human lung cell line pre- and post-SARS-Cov2 infection (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table 1</xref>, <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1A</xref>, see Materials and Methods for details). We further sought to determine the capability of each algorithm to impartially identify substrate cleavage patterns that appear at defined timepoints after viral infection, and to possibly pinpoint likely proteases responsible for these proteolytic activities. Both approaches identified apoptotic signatures from caspases and granzymes 6-hr post infection (<xref ref-type="fig" rid="F1">Figs. 1A and 1B</xref>).</p>
+<p id="P17">In addition, RoLiM found enriched patterns after 12 h and 24 h respectively (<xref ref-type="fig" rid="F1">Fig. 1B</xref> and <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1B</xref>). At the 24 h timepoint, RoLiM detected a statistically enriched substrate motif (LQ|X) that could not be confidently assigned to any human protease in the MEROPS database. The intensity profile of the LQ|X pattern was clearly distinct from all other detected patterns (<xref ref-type="fig" rid="F1">Fig. 1B</xref>). The intensity of individual peptides contributing to the LQ|X motif is shown in <xref ref-type="fig" rid="F1">Fig. 1C</xref>. Meyer et al further validated the LQ|X pattern identified by RoLiM to be unique to the viral protease MPro (<xref ref-type="fig" rid="F1">Fig. 1D</xref>). This analysis revealed the complete reliance on curated information in the MEROPS database by Proteasix as a key limitation. Proteasix also cannot identify cleavage events and peptide signatures for proteases with no known substrate cleavage information as well as proteases not associated with the organism(s) of interest. RoLiM, but not Proteasix, detected an activity that could be linked to infection by the novel SARS-CoV-2 virus. This confirms our hypothesis that unsupervised analysis of protease cleavage sequences enables the unbiased detection of unknown and unexpected cleavage patterns irrespective of organism specificity and prior knowledge.</p>
+</sec>
+<sec id="S5">
+<title>Implementation of proteolysis-specific functionality in RoLiM</title>
+<p id="P18">We previously described the RoLiM algorithm in detail and evaluated sensitivity, false discovery rates, and robustness against changes in data composition<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. Compared to existing algorithms for site-specific motif detection, particularly, Motif-X and Momo, RoLiM enabled a more robust and unbiased characterization of PTM modification sequence motifs, including phosphorylation, in large complex biological datasets. RoLiM further supports even-length sequence alignment centered around a (cleaved) peptide bond. To evaluate its ability to characterize protease substrate specificities we first sought to characterize the MEROPS human protease substrate data using RoLiM. MEROPS documents 884 known and putative human peptidases, including about 520 identified peptidases. Yet of these, we found that only 287 have at least one known physiological substrate and only 132 have more than 5 (<xref ref-type="fig" rid="F2">Fig. 2A</xref>) clearly demonstrating our limited knowledge, even for a well-studied organism.</p>
+<p id="P19">We next reviewed two major public repositories - PubMed<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> to retrieve the number of scientific literature on each human protease, and ArrayExpress<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup> to tally how often each protease has been reported in high-throughput functional genomics datasets (<xref ref-type="supplementary-material" rid="SD3">Supplementary Table 2</xref>). The results shown in <xref ref-type="fig" rid="F2">Figs. 2A and 2B</xref> underscore the deficit in existing knowledge on human protease substrates, for both well-studied and poorly characterized proteases.</p>
+<p id="P20">For further analysis, our input data consisted of sequences retrieved from the MEROPS database, filtered for “human active” protease substrates (indicating confirmed activity in humans), and synthetic and theoretical peptides were removed. Using the default settings for our algorithm (see Methods), we detected 261 patterns for 108 human proteases across all catalytic mechanisms (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 2A</xref>). We found that less than 20% of the 261 patterns were non-discriminatory while 70% of patterns differentiated between catalytic types and about 50% of the patterns was even able to discriminate different proteases of the same family (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 2b</xref>).</p>
+<p id="P21">To enrich the unsupervised analysis of RoLiM with annotation based on existing knowledge - one of the key benefits of supervised algorithms, we decided to match patterns identified in the input data set to patterns associated with MEROPS proteases. To provide a comprehensive view of matched proteases and enable identification of unique pattern-protease matches as well as highly unspecific patterns or proteases we developed the protease substrate clustermap and heatmap (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 2C</xref>). RoLiM now provides users with a simple interface and processing steps for highly robust and sensitive unsupervised identification of proteolytic activities combined with intuitive annotation of known activities (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 1A and 2C</xref>).</p>
+</sec>
+<sec id="S6">
+<title>Improved extraction of distinct protease patterns from mixed protease activity data</title>
+<p id="P22">We next assessed the ability of RoLiM and Gibbs clustering (GibbsCluster 2.0), an unsupervised motif discovery tool<sup>
+<xref ref-type="bibr" rid="R16">16</xref>
+</sup>, to correctly reject spurious patterns in a random sequence set that does not contain any statistically overrepresented patterns. The GibbsCluster algorithm takes a prespecified number of clusters and initializes the clustering workflow by randomly assigning each input sequence to one of those clusters. Clusters are represented by a stacked bar chart representing the Kullback Leibler Divergence (KLD) of each cluster and, cumulatively, the KLD of the system, as well as by a logo map corresponding to each pattern. To compare the performance of RoLiM and GibbCluster (v 2.0), we analyzed an <italic>in silico</italic> designed set of 1000 random 8 residue long sequences derived from the Swiss Prot human proteome (<xref ref-type="supplementary-material" rid="SD4">Supplementary Table 3</xref>, see Methods). Gibbs clustering selected an optimal result of 15 enriched patterns (average system KLD = 2.893) and respective logo maps, equal to the maximum number of clusters tested in this experiment (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 3 and 4</xref>). RoLiM on the other hand produced an empty result set using the same input data and similar settings confirming its robustness against random noise.</p>
+<p id="P23">Following this, we compared the capability of RoLiM and Gibbs clustering to discern different patterns using a defined <italic>in silico</italic> mixture of actual protease substrate sequences. This comprised 964 sequences generated from 194 substrate sequences of caspase-6, 469 substrate sequences of cathepsin B, and 301 substrate sequences of matrix metallopeptidase 9 (MMP-9) derived from MEROPS. To simulate background noise, 987 theoretical peptides built from random alignment of 8 amino acids were also included (<xref ref-type="supplementary-material" rid="SD5">Supplementary Table 4</xref>). As shown in <xref ref-type="fig" rid="F3">Fig. 3A</xref>, the caspase-6 subset is characterized by enriched acidic residues, particularly in the p4, p3 and p1 positions, along with valine in the p4 position. The cathepsin B substrate set is characterized by enrichment of small and hydrophobic residues with strong overrepresentation of glycine in positions p1 and P3’ respectively (<xref ref-type="fig" rid="F3">Fig. 3B</xref>). Substrates for MMP-9 also displayed small and hydrophobic residues in several positions (<xref ref-type="fig" rid="F3">Fig. 3C</xref>). Based on sequence composition, we anticipated that caspase-6 and cathepsin B substrates would be relatively easy to separate. While same would hold for cathepsin B and MMP-9, similarities in the amino acid composition of their substrates would prove challenging to a clustering-based approach when the subsets are combined. Logo maps corresponding to the mixed substrate data without and with background noise are presented in <xref ref-type="fig" rid="F3">Figs. 3D and 3E</xref> respectively. These underscore the profound similarity of MMP-9 and cathepsin B substrates. Gibbs clustering was performed on the final data set with background noise using settings similar to the defaults in our algorithm (See Methods). Gibbs Clustering selected a solution of two clusters, with an average system KLD of 3.432 (<xref ref-type="fig" rid="F3">Fig. 3F</xref>). Even if forced to separate into three clusters based on prior knowledge of three mixed activities, Gibbs clustering failed to resolve MMP-9 and cathepsin B substrates into separate clusters (<xref ref-type="fig" rid="F3">Figs. 3G-I</xref>). RoLiM detected patterns in the mixed sample that mapped effectively to known MEROPS patterns from the three proteases used to compose the test dataset. As shown in <xref ref-type="fig" rid="F3">Fig. 3J</xref>, distinct pattern matches were observed for cathepsin B as well as multiple caspases and matrix metallopeptidases including caspase-6 and MMP-9. Sequence logos for enriched patterns are depicted in <xref ref-type="fig" rid="F3">Figs. 3K</xref> to N. The same patterns matching these proteases also matched other proteases from similar MEROPS families. This is a consequence of the fact that proteases from the same family often exhibit extremely identical, if not similar cleavage site specificity. These results demonstrate the efficacy of the pattern detection performed by our sequence clustering algorithm, to resolve a convoluted sample into meaningful subsets and link it to prior knowledge of biological activity. In addition to a simple user-interface (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1A</xref>), RoLiM provides multiple ways for users to extract protease and protease substrate patterns from complex datasets, and to visualize the result based on quantitative and statistical assessment.</p>
+</sec>
+<sec id="S7">
+<title>Sensitive detection of cancer and treatment specific protease activities in biofluids</title>
+<p id="P24">Lastly, we re-analyzed two peptidomic and terminomic datasets to demonstrate the application of RoLiM to the identification of proteolytic activities in extracellular fluids of cancer patients. In a multi-centre study on bladder cancer, Frantzi et al<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup> analyzed 1,357 patient urine samples by mass spectrometry-based proteomics and validated urine-based biomarker panels for detecting urothelial bladder cancer. A case-control comparison between 341 primary urothelial bladder cancer cases and 110 urologic controls identified 382 potential biomarkers (reported in <xref ref-type="supplementary-material" rid="SD4">Supplementary Table 3</xref> in <sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>). RoLiM analysis on the 382 peptide biomarkers showed a distinct enrichment of sequence patterns surrounding the peptide N and C termini that were in line with matrix metalloproteinase (MMP) specificity motifs (<xref ref-type="fig" rid="F4">Figs. 4A and 4B</xref>). Perhaps due to the absence of a suitable software, the authors did not thoroughly investigate reported peptide sequences for protease substrate motifs. They however report the presence of peptide fragments from a metalloproteinase domain-containing protein 22 (ADAM22), and metalloproteinase with thrombospondin motifs 1 (ADAMTS1). In line with the author’s report, we found evidence for increased MMP cleavage of protein substrates in patients with urothelial bladder cancer compared to disease-free controls. MMP9 and MMP10 were also part of a reported 10-marker ELISA-based assay that enabled discrimination (AUC = 0.85, 95% CI, 0.80-0.91) of urothelial bladder cancer patients from healthy and benign controls<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup> further supporting the assumption that a majority of the 382 peptide biomarkers were a result of cancer associated MMP activity.</p>
+<p id="P25">A second study investigated the induction of cellular apoptosis during chemotherapy<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>. The detection of proteolytic fragments released into body fluids by apoptotic tumor cells could offer novel indicators of chemotherapy-induced cell death. Using an N-terminomic approach, Wiita et al.,<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> found distinct biological signatures of apoptosis in the plasma of hematologic malignancy patients after chemotherapy. These proteolytically generated fragments were notably absent in normal blood. We re-analyzed the non-redundant peptide sequences reported by the authors (Dataset S1 in Witta et al, 2014) for all patient cancers combined (301 sequences), for patient cancer-specific signatures (90 sequences absent in normal controls), and for N termini unique to normal controls. Consistent with the author’s findings, RoLiM clearly identified a caspase D|G and D|A (p1|p1’) signature in a combined analysis of fragments from all cancer patients (<xref ref-type="fig" rid="F4">Figs. 4C and 4D</xref>). RoLiM also revealed a single amino acid (x|S) pattern from MMPs as well as a weak motif for multiple serine proteases including granzymes. Interestingly, this apoptosis related to granzyme signature (R|S[LIV]) was more pronounced in cancer-specific fragments, along with a distinct caspase motif (<xref ref-type="fig" rid="F4">Figs. 4E and 4F</xref>) supporting the sensitivity of the RoLiM algorithm to even detect minor disease related activities among normal proteolytic background activities. The granzyme signature was not described in the paper, and points to the relevant application of RoLiM for unbiased investigation of protease substrate motifs. RoLiM did not detect any overrepresented pattern in the subset of 83 N termini detected in only normal controls.</p>
+</sec>
+</sec>
+<sec id="S8" sec-type="discussion">
+<title>Discussion</title>
+<p id="P26">RoLiM was developed to expand on key functionalities of existing motif discovery and protease prediction tools, and deliver more robust results. The development and characterization of RoLiM is detailed in Smith et al., 2021<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. Unlike existing tools including Proteasix, Gibbs clustering and Motif-X/Momo, our generalized workflow circumvents the need for a sequence position descriptive input file, or a fixed central residue, and is optimally suited for the analysis of proteolytic data sets. Furthermore, the inclusion of a positional weighting term in the enrichment calculation emphasizes low diversity positions, thus increasing the ability to deconvolute different activities that often have determining sequence features in the same position<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. Dynamic background frequency adjustment ensures that individual amino acid frequencies are averaged across a background proteome while correcting for the removal of amino acids from the foreground. Vigorous multiple testing is performed where p-values are Bonferroni corrected based on the total number of residues that could be detected at a particular point in the data flow of the algorithm<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. In addition to enriched individual amino acids, the RoLiM algorithm detects cumulative enrichment of groups of biochemically similar amino acids in the same position, here described as compound residues. This functionality is essential since protease cleavage site specificities are often determined by the general physico-chemical properties of flanking amino acids around the P1 residue rather than a single specific amino acid.</p>
+<p id="P27">We demonstrated that, in contrast to machine learning based algorithms like Proteasix, RoLiM is not limited to the identification of previously characterized activities. This utility of RoLiM is highlighted in our analysis of time-course data profiling proteolysis in SARS-CoV-2 infected human cell lines. Results from RoLiM analysis revealed more biologically-relevant information that was not limited to pre-existing protease data in MEROPS. While our tool supports the identification of unknown protease substrate patterns in convoluted datasets, additional validation would be needed to verify the protease activity in biological samples.</p>
+<p id="P28">We also confirmed that RoLiM outperforms alternative unsupervised algorithms, such as Gibbs clustering, that fail to ignore noise and perform poorly in discerning highly similar activities. RoLiM provides null statistics for data lacking overrepresented patterns rather than randomly assigning clusters to likely motifs. Additionally, the descriptive statistics and visual outputs provided by our algorithm supports easy and clear interpretation of individual protease patterns and explicitly conveys the wealth of cleavage event data stored within the MEROPS database. This sets RoLiM apart from other existing motif predictors and sequence clustering software.</p>
+<p id="P29">Protein fragments, including disease-associated peptides exist in body fluids<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R20">20</xref>,<xref ref-type="bibr" rid="R21">21</xref>
+</sup>. In hematologic malignancies, cellular components in the interstitial space is bathed in a different milieu of substances in comparison to the same extracellular space in normal conditions<sup>
+<xref ref-type="bibr" rid="R22">22</xref>,<xref ref-type="bibr" rid="R23">23</xref>
+</sup>. This is mostly due to the presence of tumor infiltrating cells and the effect of their interactions with other cells in the cancer micro environment. Understanding the protease network in hematologic diseases at different timepoints is relevant for the pathophysiology and discovery of potential markers. Our non-deterministic algorithm strongly supports the unbiased exploration of peptide classifiers, and simplifies the detection of additional leads for follow-up validation of protease-substrate relationships. For example, Wiita et al<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> did not detect the apoptosis related granzyme signature (R|S[LIV]) in their data on all hematopoietic cancers. An indication of this signature is weakly present in our RoLiM data on all cancers and this signature is further confirmed as significantly overrepresented in the cancer-specific data subset.</p>
+<p id="P30">In summary, our work for the first time establishes a robust pattern detection algorithm for the identification and annotation of protease activities. RoLiM is designed to meet the needs of researchers for detailed exploration of complex peptidomic and terminomic data to draw biological insights and/or generate testable hypotheses. Our re-analyses of diverse data identify SARS-CoV-2 protease activity in infected cells and link proteolytic products in liquid biopsies to cancer and treatment specific protease activities, demonstrating the profound insights that can be obtained from RoLiM analyses.</p>
+</sec>
+<sec id="S9">
+<title>Experimental Section</title>
+<sec id="S10">
+<title>Database information</title>
+<sec id="S11">
+<title>Swiss-Prot data</title>
+<p id="P31">Context sequences were imported from an offline copy of the Swiss-Prot human proteome<sup>
+<xref ref-type="bibr" rid="R24">24</xref>
+<xref ref-type="bibr" rid="R25">25</xref>
+</sup> stored in FASTA format. These sequences were used for the extension of input peptides by mapping peptides to the proteome using a combination of protein accession numbers and regular expression formats. The human Swiss-Prot proteome is also used by default to calculate expected amino acid frequencies. A similar approach will work for other organism-specific Swiss-Prot proteome.</p>
+</sec>
+<sec id="S12">
+<title>MEROPS data</title>
+<p id="P32">An offline copy of the MEROPS database version 12.0 was used<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup>. The proteolytic cleavage event data stored in MEROPS were used to generate data sets of protease substrates. These sequences were retrieved from the database, partitioned by protease, and analysed as input data sets using default algorithm settings. RoLiM was used to detect enriched patterns in each of these protease substrate data sets. Proteases analysed for patterns were restricted to those flagged as “human active,” in the database, and synthetic sequences were excluded from the analyses. MEROPS is an active and expanding database, therefore the offline copy used by this tool will periodically be rebuilt (including computation and storage of protease substrate patterns) when a new version of MEROPS becomes available.</p>
+</sec>
+</sec>
+<sec id="S13">
+<title>Data Input and processing</title>
+<p id="P33">RoLiM has a simple and intuitive user interface(<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1</xref>). It accepts a number of foreground data set formats as input. These formats include pre- aligned sequences of equal width which can be supplied as a text file (pre-aligned text file). Peptides and accompanying protein IDs may also be supplied in the form of a text file (text file peptide list). For peptide lists, RoLiM automatically extends and aligns the N- and C- terminal cleavage sites of each peptide based on the selected FASTA file. All sequences in the text file input must be of equal length to allow for the analysis of post translational modifications centered around a particular bond. A FASTA file applicable to the context data can be selected as either the default Swiss-Prot Human FASTA file, or other FASTA file uploaded by the user (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1</xref>).</p>
+<p id="P34">The data processing steps are as described in Smith et al.,<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>
+</p>
+</sec>
+<sec id="S14">
+<title>Comparison RoLiM and Proteasix</title>
+<p id="P35">Quantified N termini reported in <xref ref-type="supplementary-material" rid="SD2">Supplementary Table 1</xref> in Meyer et al.,<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup> were analyzed with Proteasix and RoLiM. For analysis in Proteasix, the data was prepared in the required input format, and analyzed with the protease predictor tool using the default settings. The resulting output is summarized in <xref ref-type="supplementary-material" rid="SD6">Supplementary Table 5</xref>. Proteasix matches a peptide to multiple proteases with identical cleavage patterns. We selected sequence-protease matches with a specificity threshold &gt;= 95. For each protease, the average N termini intensity was determined by calculating the mean intensity for all peptide sequences (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table 1</xref>) matched to that protease. The resulting data matrix consisted of proteases (rows) and associated sequence averages across all timepoints (columns). A row-wise normalization to the 0 h control was performed on this data. For each row, the average pattern intensity for 0h M, 0h A, 0h B, 0h C was subtracted from the intensity values at timepoints 6 h, 12 h and 24 h respectively. A heatmap with row-wise hierarchical clustering was plotted using the ggplot’s heatmap.2 function in R.</p>
+<p id="P36">With RoLiM, N termini were analyzed using the default setting with the following additional changes: p value threshold of 0.05, minimum occurrence set to 5% of the input (4, 7, 8, 17 sequences respectively), width at 8, and centered sequences activated. Overrepresented patterns identified by RoLiM and grouped according to each timepoint are listed in <xref ref-type="supplementary-material" rid="SD7">Supplementary Table 6</xref>. Each pattern was matched to the corresponding sequences in <xref ref-type="supplementary-material" rid="SD2">Supplementary Table 1</xref> based on its P4 – P4’ alignment. The resulting matrix contained a list of all quantified N termini from Meyer et al, each with an associated RoLiM pattern. The abundance of a pattern across all timepoints was determined using the average intensity of all peptides linked to that pattern. This generated a matrix containing all identified patterns (rows), and the mean intensity of matched peptides per pattern across all timepoints (columns). A row-wise normalization to the 0 h control was performed on this matrix. For each row, the average pattern intensity for 0h M, 0h A, 0h B, 0h C was subtracted from the intensity values at timepoints 6 h, 12 h and 24 h respectively. The resulting data with normalized ratios to timepoint 0 was used as input for hierarchical clustering plots in R using ggplot’s heatmap.2 function.</p>
+</sec>
+<sec id="S15">
+<title>Comparison of RoLiM and Gibbs Clustering</title>
+<p id="P37">An analysis of the frequency of false positive detection by our algorithm was already conducted and is described in Smith et al.,<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>.</p>
+<sec id="S16">
+<title>Generation of <italic>in silico</italic> datasets</title>
+<p id="P38">An <italic>in silico</italic> set of 1000 sequences containing non-fixed positional amino acids was randomly constructed from the Swiss Prot human proteome using NumPy arrays<sup>
+<xref ref-type="bibr" rid="R26">26</xref>
+</sup> in Python. This data (<xref ref-type="supplementary-material" rid="SD4">Supplementary Table 3</xref>) was supplied as input, and Gibbs clustering was run over a range of 1 to 15 possible clusters respectively (the minimum and maximum settings for the web interface). A motif length of 8 (the full length of the input sequences) was selected, the simple shift move of the algorithm which attempts realignment of the dataset was disabled, and the trash cluster for outlier rejection was enabled at 0. All other settings were kept at their default values. The same data was supplied as input for RoLiM using the default settings, a width of 8 and centered sequences checked. The Human Swiss Prot Fasta was supplied as context proteome.</p>
+</sec>
+<sec id="S17">
+<title>Mixed protease data set</title>
+<p id="P39">This data set was generated using a combination of human protease substrate sequences from the MEROPS database. This included 194 caspase-6 substrates, 469 cathepsin B substrates, 301 matrix metalloproteinase 9 substrates, and 987 random Swiss Prot human protein sequences (<xref ref-type="supplementary-material" rid="SD5">Supplementary Table 4</xref>). Gibbs clustering was run over 1 to 15 possible clusters, motif length of 8 (the full length of the input sequences) was selected, the simple shift move of the algorithm which attempts realignment of the dataset was disabled, and the trash cluster for outlier rejection was enabled at 0. All other settings were kept at their default values. The same data was supplied as input for RoLiM using the default settings, a width of 8 and centered sequences checked. The Human Swiss Prot Fasta was supplied as background proteome.</p>
+</sec>
+</sec>
+<sec id="S18">
+<title>Urinary peptidome data</title>
+<p id="P40">We analyzed N and C terminally extended, non-redundant sequences reported by Frantzi and colleagues (<xref ref-type="supplementary-material" rid="SD4">Supplementary Table 3</xref> in <sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>). RoLiM default settings of p value &lt; 0.001, minimum frequency of 20 was used. A width of 8 was maintained and centered sequences option was checked.</p>
+</sec>
+<sec id="S19">
+<title>Hematologic cancer data</title>
+<p id="P41">Non-redundant sequences reported for all cancers combined, or for cancer-specific patients in Wiita et al (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table S1</xref> in <sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>) were analyzed. RoLiM settings were p value cut-off of 0.001, minimum frequency of 5., width at 8, and centered sequences activated.</p>
+</sec>
+<sec id="S20">
+<title>Data output files</title>
+<p id="P42">Logo maps used were generated in WebLogo<sup>
+<xref ref-type="bibr" rid="R27">27</xref>
+</sup>. RoLiM automatically generated logo maps for data analyzed with the algorithm. Logomaps were used to visualize the amino acid distribution of each subset of aligned input sequences exactly matching one of the detected patterns.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Information</label>
+<caption>
+<p id="P43">Additional details for experimental analyses are provided and include input data, figures and results.</p>
+</caption>
+<media xlink:href="EMS139964-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N66452" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Table 1</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_1.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66461" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Table 2</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_2.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66470" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Supplementary Table 3</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_3.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66479" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD5">
+<label>Supplementary Table 4</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_4.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66488" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD6">
+<label>Supplementary Table 5</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_5.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66497" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD7">
+<label>Supplementary Table 6</label>
+<media xlink:href="EMS139964-supplement-Supplementary_Table_6.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66506" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S21">
+<title>Acknowledgements</title>
+<p>We thank Lorenz Nierves for discussions and constructive feedback, and Enes K. Ergin for contributions with database literature search.</p>
+<sec id="S22">
+<title>Funding sources</title>
+<p>This work was partially supported by grants from the Natural Sciences and Engineering Research Council of Canada (NSERC) (#RGPIN-2018-05645), the Michael Cuccione Foundation and the BC Children’s Hospital Foundation (to P.F.L.). A.C.U. was supported by fellowships from the BC Children’s Hospital Research Institute and Michael Cuccione Childhood Cancer Research Program and T.G.S was supported by a NSERC CREATE studentship. P.F.L was supported by the Canada Research Chairs program, the Michael Smith Foundation for Health Research Scholar program and the Michael Cuccione Foundation.</p>
+</sec>
+</ack>
+<fn-group>
+<fn id="FN2" fn-type="conflict">
+<p id="P44">
+<bold>Competing Interests</bold>
+</p>
+<p id="P45">All authors declare no competing interests</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>(1)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Savickas</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kastl</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Auf dem Keller</surname>
+<given-names>U</given-names>
+</name>
+</person-group>
+<article-title>Combinatorial Degradomics: Precision Tools to Unveil Proteolytic Processes in Biological Systems</article-title>
+<source>Biochim Biophys Acta Proteins Proteom</source>
+<year>2020</year>
+<volume>1868</volume>
+<issue>6</issue>
+<elocation-id>140392</elocation-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>(2)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fonović</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bogyo</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Activity-Based Probes as a Tool for Functional Proteomic Analysis of Proteases</article-title>
+<source>Expert Rev Proteomics</source>
+<year>2008</year>
+<volume>5</volume>
+<issue>5</issue>
+<fpage>721</fpage>
+<lpage>730</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>(3)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klein</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Eales</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zürbig</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Vlahou</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mischak</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Stevens</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Proteasix: A Tool for Automated and Large-Scale Prediction of Proteases Involved in Naturally Occurring Peptide Generation</article-title>
+<source>Proteomics</source>
+<year>2013</year>
+<volume>13</volume>
+<issue>7</issue>
+<fpage>1077</fpage>
+<lpage>1082</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>(4)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Leier</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Marquez-Lago</surname>
+<given-names>TT</given-names>
+</name>
+<name>
+<surname>Akutsu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Haffari</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chou</surname>
+<given-names>K-C</given-names>
+</name>
+<name>
+<surname>Webb</surname>
+<given-names>GI</given-names>
+</name>
+<name>
+<surname>Pike</surname>
+<given-names>RN</given-names>
+</name>
+<name>
+<surname>Hancock</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>PROSPERous: High-Throughput Prediction of Substrate Cleavage Sites for 90 Proteases with Improved Accuracy</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>4</issue>
+<fpage>684</fpage>
+<lpage>687</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>(5)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Grant</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Noble</surname>
+<given-names>WS</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>TL</given-names>
+</name>
+</person-group>
+<article-title>MoMo: Discovery of Statistically Significant Post-Translational Modification Motifs</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<issue>16</issue>
+<fpage>2774</fpage>
+<lpage>2782</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>(6)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chou</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Schwartz</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Biological Sequence Motif Discovery Using Motif-x</article-title>
+<source>Curr Protoc Bioinformatics</source>
+<year>2011</year>
+<volume>13</volume>
+<fpage>Unit 13.15</fpage>
+<lpage>24</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>(7)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schwartz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gygi</surname>
+<given-names>SP</given-names>
+</name>
+</person-group>
+<article-title>An Iterative Statistical Approach to the Identification of Protein Phosphorylation Motifs from Large-Scale Data Sets</article-title>
+<source>Nat Biotechnol</source>
+<year>2005</year>
+<volume>23</volume>
+<issue>11</issue>
+<fpage>1391</fpage>
+<lpage>1398</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>(8)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andreatta</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lund</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Simultaneous Alignment and Clustering of Peptide Data Using a Gibbs Sampling Approach</article-title>
+<source>Bioinformatics</source>
+<year>2013</year>
+<volume>29</volume>
+<issue>1</issue>
+<fpage>8</fpage>
+<lpage>14</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>(9)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Uzozie</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lange</surname>
+<given-names>PF</given-names>
+</name>
+</person-group>
+<article-title>Robust Unsupervised Deconvolution of Linear Motifs Characterizes 68 Protein Modifications at Proteome Scale</article-title>
+<source>Sci Rep</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1038/s41598-021-01971-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>(10)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rawlings</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Barrett</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Bateman</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>MEROPS: The Peptidase Database</article-title>
+<source>Nucleic Acids Res</source>
+<year>2010</year>
+<volume>38</volume>
+<issue>Database issue</issue>
+<fpage>D227</fpage>
+<lpage>33</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>(11)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rawlings</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Barrett</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Thomas</surname>
+<given-names>PD</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bateman</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Finn</surname>
+<given-names>RD</given-names>
+</name>
+</person-group>
+<article-title>The MEROPS Database of Proteolytic Enzymes, Their Substrates and Inhibitors in 2017 and a Comparison with Peptidases in the PANTHER Database</article-title>
+<source>Nucleic Acids Res</source>
+<year>2018</year>
+<volume>46</volume>
+<issue>D1</issue>
+<fpage>D624</fpage>
+<lpage>D632</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>(12)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Meyer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chiaravalli</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gellenoncourt</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brownridge</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bryne</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Daly</surname>
+<given-names>LA</given-names>
+</name>
+<name>
+<surname>Grauslys</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Walter</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Agou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chakrabarti</surname>
+<given-names>LA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Characterising Proteolysis during SARS-CoV-2 Infection Identifies Viral Cleavage Sites and Cellular Targets with Therapeutic Potential</article-title>
+<source>Nat Commun</source>
+<year>2021</year>
+<volume>12</volume>
+<issue>1</issue>
+<elocation-id>5553</elocation-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>(13)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weng</surname>
+<given-names>SSH</given-names>
+</name>
+<name>
+<surname>Demir</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ergin</surname>
+<given-names>EK</given-names>
+</name>
+<name>
+<surname>Dirnberger</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Uzozie</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tuscher</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Nierves</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Tsui</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Huesgen</surname>
+<given-names>PF</given-names>
+</name>
+<name>
+<surname>Lange</surname>
+<given-names>PF</given-names>
+</name>
+</person-group>
+<article-title>Sensitive Determination of Proteolytic Proteoforms in Limited Microscale Proteome Samples</article-title>
+<source>Mol Cell Proteomics</source>
+<year>2019</year>
+<volume>18</volume>
+<issue>11</issue>
+<fpage>2335</fpage>
+<lpage>2347</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>(14)</label>
+<element-citation publication-type="journal">
+<collab>NCBI Resource Coordinators</collab>
+<article-title>Database Resources of the National Center for Biotechnology Information</article-title>
+<source>Nucleic Acids Res</source>
+<year>2018</year>
+<volume>46</volume>
+<issue>D1</issue>
+<fpage>D8</fpage>
+<lpage>D13</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>(15)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Athar</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Füllgrabe</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>George</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Iqbal</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Huerta</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Ali</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Snow</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Fonseca</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Petryszak</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Papatheodorou</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ArrayExpress Update - from Bulk to Single-Cell Expression Data</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D711</fpage>
+<lpage>D715</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>(16)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andreatta</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Alvarez</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>GibbsCluster: Unsupervised Clustering and Alignment of Peptide Sequences</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<issue>W1</issue>
+<fpage>W458</fpage>
+<lpage>W463</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>(17)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frantzi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>van Kessel</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Zwarthoff</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Marquez</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rava</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Malats</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Merseburger</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Katafigiotis</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Stravodimos</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Mullen</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Development and Validation of Urine-Based Peptide Biomarker Panels for Detecting Bladder Cancer in a Multi-Center Study</article-title>
+<source>Clin Cancer Res</source>
+<year>2016</year>
+<volume>22</volume>
+<issue>16</issue>
+<fpage>4077</fpage>
+<lpage>4086</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>(18)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>L-M</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dai</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chai</surname>
+<given-names>KX</given-names>
+</name>
+<name>
+<surname>Dyrskjøt</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sanchez-Carbayo</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Szarvas</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zwarthoff</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Lokeshwar</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Jeronimo</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>External Validation of a Multiplex Urinary Protein Panel for the Detection of Bladder Cancer in a Multicenter Cohort</article-title>
+<source>Cancer Epidemiol Biomarkers Prev</source>
+<year>2014</year>
+<volume>23</volume>
+<issue>9</issue>
+<fpage>1804</fpage>
+<lpage>1812</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>(19)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wiita</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Hsu</surname>
+<given-names>GW</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Esensten</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Wells</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Circulating Proteolytic Signatures of Chemotherapy-Induced Cell Death in Humans Discovered by N-Terminal Labeling</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2014</year>
+<volume>111</volume>
+<issue>21</issue>
+<fpage>7594</fpage>
+<lpage>7599</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>(20)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lichtenthaler</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>Lemberg</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Fluhrer</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Proteolytic Ectodomain Shedding of Membrane Proteins in Mammals-Hardware, Concepts, and Recent Developments</article-title>
+<source>EMBO J</source>
+<year>2018</year>
+<volume>37</volume>
+<issue>15</issue>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>(21)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wildes</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wells</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Sampling the N-Terminal Proteome of Human Blood</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2010</year>
+<volume>107</volume>
+<issue>10</issue>
+<fpage>4561</fpage>
+<lpage>4566</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>(22)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Medyouf</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>The Microenvironment in Human Myeloid Malignancies: Emerging Concepts and Therapeutic Implications</article-title>
+<source>Blood</source>
+<year>2017</year>
+<volume>129</volume>
+<issue>12</issue>
+<fpage>1617</fpage>
+<lpage>1626</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>(23)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Petricoin</surname>
+<given-names>EF</given-names>
+</name>
+<name>
+<surname>Belluco</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Araujo</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Liotta</surname>
+<given-names>LA</given-names>
+</name>
+</person-group>
+<article-title>The Blood Peptidome: A Higher Dimension of Information Content for Cancer Biomarker Discovery</article-title>
+<source>Nat Rev Cancer</source>
+<year>2006</year>
+<volume>6</volume>
+<issue>12</issue>
+<fpage>961</fpage>
+<lpage>967</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>(24)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bairoch</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Apweiler</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>The SWISS-PROT Protein Sequence Database and Its Supplement TrEMBL in 2000</article-title>
+<source>Nucleic Acids Res</source>
+<year>2000</year>
+<volume>28</volume>
+<issue>1</issue>
+<fpage>45</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>(25)</label>
+<element-citation publication-type="journal">
+<collab>UniProt Consortium</collab>
+<article-title>UniProt: A Worldwide Hub of Protein Knowledge</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D506</fpage>
+<lpage>D515</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>(26)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van der Walt</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Colbert</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>The NumPy Array: A Structure for Efficient Numerical Computation</article-title>
+<source>Comput Sci Eng</source>
+<year>2011</year>
+<volume>13</volume>
+<issue>2</issue>
+<fpage>22</fpage>
+<lpage>30</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>(27)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Crooks</surname>
+<given-names>GE</given-names>
+</name>
+<name>
+<surname>Hon</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chandonia</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Brenner</surname>
+<given-names>SE</given-names>
+</name>
+</person-group>
+<article-title>WebLogo: A Sequence Logo Generator</article-title>
+<source>Genome Res</source>
+<year>2004</year>
+<volume>14</volume>
+<issue>6</issue>
+<fpage>1188</fpage>
+<lpage>1190</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Unbiased detection of unknown sequence patterns in SARS-Cov2 infected human cell line.</title>
+<p>
+<bold>A</bold>. Heatmap on normalized peptide intensity ratios for protease activities predicted by Proteasix at different time points after SARS-Cov2 infection of human A549-Ace2 cell line. See Methods for details of the analysis.</p>
+<p>
+<bold>B.</bold> Heatmap on normalized peptide intensity ratios for enriched patterns detected by RoLiM at specific time points after viral infection. Row wise hierarchical clusters group patterns unique to one or more timepoint post-infection.</p>
+<p>
+<bold>C</bold>. Line plot shows the normalized intensity of peptides with the..[L][Q]…. pattern in infected (6 h, 12 h, 24 h) and non-infected (0M, 24M) cells at all timepoints studied.</p>
+<p>
+<bold>D</bold>. Aligned sequence logo for SARS-CoV-2 MPro protease documented in MEROPS.</p>
+</caption>
+<graphic xlink:href="EMS139964-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>MEROPS human proteases.</title>
+<p>
+<bold>A</bold>. Barplots show the number and percentage of 520 curated MEROPS human proteases with known physiological substrates (blue bars) along with the number of times a protease has been identified and/or characterized in ArrayExpress, a publicly accessible repository for high-throughput proteomics and genomics data (brown bars). The five proteases with the highest counts in ArrayExpress are highlighted.</p>
+<p>
+<bold>B.</bold> Bubbleplot shows the poor relationship between proteases having known physiological substrates, the number of literature citations for these proteases in PubMed and the depth of functional studies reported in ArrayExpress.</p>
+</caption>
+<graphic xlink:href="EMS139964-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Comparison of GibbsCluster and RoLiM on a mixed MEROPS protease substrate set.</title>
+<p>
+<bold>A-E.</bold> Aligned sequence logo for (A) 194 caspase-6 substrates, (B) 469 cathepsin-B substrates, (C) 301 substrates of MMP-9, (D) mix of 964 sequences from A, B and C. (E) sequences in D and an additional 1000 theoretical random sequences to simulate noise. See Methods for more details of the analysis.</p>
+<p>
+<bold>F</bold>. Gibbs Cluster analysis of 1951 mixed protease sequences with background noise. GibbsCluster stacked bar chart shows Cluster 2 is the selected solution with the highest average system KLD.</p>
+<p>
+<bold>G, H, I.</bold> Logo map of patterns selected for 2 cluster solution shows enriched features consistent with (G) co-clustering of cathepsin B and MMP-9 substrates and (H) caspase-6 sequences respectively. (I) logo map for the third cluster did not resolve cathepsin B and MMP-9 co-clusters.</p>
+<p>
+<bold>J.</bold> RoLiM clustermap displaying patterns detected in mixed MEROPS sample containing caspase-6, cathepsin B and MMP-9 substrates. Each column represents a sequence in the data set and each row represents a pattern detected by RoLiM. Both rows and columns are clustered and the matching dendograms are shown to the left and above the clustermap respectively. Pattern distances are encoded as length in the dendograms. Next to the clustermap is a heatmap displaying the patterns detected along with protease specificity annotation from the pre-computed MEROPS protease substrate patterns included in RoLiM.</p>
+<p>
+<bold>K-N.</bold> Sequence logos for enriched patterns identified by RoLiM for proteases in a mixed MEROPS protease sample subset.</p>
+</caption>
+<graphic xlink:href="EMS139964-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>RoLiM enables robust and accurate characterization of protease activities in extracellular fluids from cancer patients.</title>
+<p>
+<bold>A.</bold> RoLiM analysis on 382 potential peptide biomarkers for primary urothelial bladder cancer. Clustermap shows patterns enriched in peptide data, and heatmap depicts the main proteases (MMPs) annotated with these patterns.</p>
+<p>
+<bold>B.</bold> Sequence logos from aligned peptides with MMP motif.</p>
+<p>
+<bold>C, D</bold>. RoLiM analysis on 301 sequences reported by Wiita et al., in all patient cancers (C) and the sequence logos for predicted caspase and MMP proteases (D).</p>
+<p>
+<bold>E, F.</bold> RoLiM analysis on 90 sequences uniquely identified by Wiita et al., in only cancer samples (E) and the sequence logos for predicted caspase and granzyme B / Corin proteases (D).</p>
+</caption>
+<graphic xlink:href="EMS139964-f004"/>
+</fig>
+</floats-group>
+</article>

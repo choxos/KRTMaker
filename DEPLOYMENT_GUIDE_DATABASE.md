@@ -79,8 +79,8 @@ python manage.py populate_articles
 # 📅 2021: 2,765 papers  
 # 📅 2022: 3,848 papers
 # 📅 2023: 4,063 papers
+# 📅 2025: 2,298 papers (latest year)
 # 📅 2024: 3,534 papers
-# 📅 2025: 2,298 papers
 # 🎯 Total papers available: 19,405
 # ...
 # 🎉 DATABASE POPULATION COMPLETE
@@ -111,7 +111,8 @@ python manage.py populate_articles --start-year 2023 --end-year 2025
 
 # Popular year choices:
 python manage.py populate_articles --start-year 2023 --end-year 2023  # 4,063 papers
-python manage.py populate_articles --start-year 2024 --end-year 2024  # 3,534 papers
+python manage.py populate_articles --start-year 2025 --end-year 2025  # 2,298 papers (latest year)
+# python manage.py populate_articles --start-year 2024 --end-year 2024  # 3,534 papers
 ```
 
 ### 3. Update Mode (Add New Articles Only)
@@ -140,7 +141,7 @@ python manage.py populate_articles --dry-run
 python manage.py populate_articles --force-refresh
 
 # Combine options
-python manage.py populate_articles --start-year 2024 --end-year 2025 --update-only
+python manage.py populate_articles --start-year 2024 --end-year 2026 --update-only
 ```
 
 ---
@@ -179,8 +180,8 @@ Year        Papers    Percentage
 2021        2,765        14.2%
 2022        3,848        19.8%
 2023        4,063        20.9% (Peak Year!)
+2025        2,298        11.8%        (latest)
 2024        3,534        18.2%
-2025        2,298        11.8% (Partial)
 ────────────────────────────────
 TOTAL      19,405       100.0%
 ```

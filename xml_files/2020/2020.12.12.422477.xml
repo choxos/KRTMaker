@@ -1,0 +1,1516 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>BioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS108622</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.12.422477</article-id>
+<article-id pub-id-type="archive">PPR254346</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Computational Analysis of Dynamic Allostery and Control in the three SARS-CoV-2 non-structural proteins</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Dubanevics</surname>
+<given-names>Igors</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Heaton</surname>
+<given-names>Charles</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Riechmann</surname>
+<given-names>Carlos</given-names>
+</name>
+<xref ref-type="aff" rid="A3">c</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>McLeish</surname>
+<given-names>Tom C.B.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>School of Natural Sciences, University of York, UK</aff>
+<aff id="A2">
+<label>b</label>Department of Physics, University of York, UK</aff>
+<aff id="A3">
+<label>c</label>Department of Biology, University of York, UK</aff>
+<pub-date pub-type="nihms-submitted">
+<day>19</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>14</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+<license license-type="open-access" xlink:href="https://europepmc.org/downloads/openaccess">
+<license-p>This preprint is made available via the <ext-link ext-link-type="uri" xlink:href="https://europepmc.org/downloads/openaccess">Europe PMC open access subset</ext-link>, for unrestricted research re-use and secondary analysis in any form or by any means with acknowledgement of the original preprint source.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), which caused the COVID-19 pandemic, has no vaccine or antiviral drugs available to the public, at the time of writing. The virus' non-structural proteins are promising drug targets because of their vital role in the viral cycle. A significant body of work has been focused on finding inhibitors which covalently and competitively bind the active site of the non-structural proteins, but little has been done to address regions other than the active site, i.e. for non-competitive inhibition. Here we extend previous work on the SARS-CoV-2 M<sup>pro</sup> (nsp5) to three other SARS-CoV-2 proteins: host shutoff factor (nsp1), papain-like protease (nsp3, also known as PLpro) and RNA-dependent RNA-polymerase (nsp12, also known as RdRp) in complex with nsp7 and nsp8 cofactors. Using open-source software (DDPT) to construct Elastic Network Models (ENM) of the chosen proteins we analyse their fluctuation dynamics and thermodynamics, as well as using this protein family to study convergence and robustness of the ENM. Exhaustive 2-point mutational scans of the ENM and their effect on fluctuation free energies suggest several new candidate regions, distant from the active site, for control of the proteins' function, which may assist the drug development based on the current small molecule binding screens. The results also provide new insights, including non-additive effects of double-mutation or inhibition, into the active biophysical research field of protein fluctuation allostery and its underpinning dynamical structure.</p>
+</abstract>
+<kwd-group>
+<kwd>Coronavirus</kwd>
+<kwd>Protein Dynamics</kwd>
+<kwd>Allostery</kwd>
+<kwd>Computational Biophysics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">During 2020, a rapidly spreading viral disease, COVID-19, caused by the novel coronavirus SARS-CoV-2, has generated a global pandemic. Although early fast-tracked vaccines are in development, no vaccine or specific anti-viral drugs are publicly available at the time of writing. Furthermore, in the longer term, the identification of all potential inhibitor sites at all points of the viral life-cycle is of interest in support of a flexible pharmaceutical response. In this work we focus on the low-frequency dynamical structure of three the virus' proteins important for the viral cycle. These are host shutoff factor (nsp1), papain-like protease (nsp3, also known as PLpro) and RNA-dependent RNA-polymerase (nsp12, also known as RdRp) in complex with nsp7 and nsp8 cofactors. To this end we develop and test an elastic network model (ENM) - based methodology recently tested on the SARS-CoV-2 M<sup>pro</sup> (<xref ref-type="bibr" rid="R1">1</xref>) that analyses the low-frequency structure of protein dynamics. Since the ENM analysis permits rapid scanning of potential binding and mutation sites that offer critical control of the protein dynamics, we identify critical residues for potential allosteric control of their function. The work is informative for inhibitor design by identifying control regions of the proteins that are distant from, rather than proximal to, its active sites. Computational studies such as this one may go hand-in-hand with rapid experimental binding scans of small-molecules (<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R3">3</xref>), to identify those agents most likely to inhibit protein function as those which bind to sites critical to the functional dynamics.</p>
+<p id="P3">Allosteric mechanisms for distant control of binding and activation fall into two main classes: those which invoke significant conformational change (the original scenario of Monod, Wyman and Changeaux (<xref ref-type="bibr" rid="R4">4</xref>), and mechanisms that invoke the modification of thermal (entropic) fluctuations about a fixed, mean conformation (<xref ref-type="bibr" rid="R5">5</xref>–<xref ref-type="bibr" rid="R8">8</xref>). Such 'fluctuation allostery' recruits mostly global, low-frequency modes of internal protein motion, which are well-captured by correspondingly coarse-grained mechanical representations of the protein (<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R10">10</xref>). One effective tool at this level is the Elastic Network Model (ENM) (<xref ref-type="bibr" rid="R11">11</xref>). The ENM resolves protein structure at the level of alpha-carbon sites only, which are represented as nodes connected by harmonic springs within a fixed cut-off radius from each other. Local point mutation can be modelled by changing the moduli of springs attached to the corresponding residue, and effector-binding by the addition of nodes (and local harmonic potentials) at the corresponding co-ordinates. The most significant contributions to both the correlated dynamics of distant residues, and to the entropy arising from structural fluctuation, come from global (‘low frequency’) modes, which are well-captured by the ENM approximation. This approach was successfully used to identify candidate control residues whose mutation may control allostery of effector-binding in the homodimer transcription factor CAP (<xref ref-type="bibr" rid="R12">12</xref>), and very recently to identify similar candidates for functional control of the SARS-CoV-2 M<sup>pro</sup> (<xref ref-type="bibr" rid="R1">1</xref>), some of which have been identified experimentally.</p>
+<p id="P4">These studies have shown that, while the ENM approximation (ignoring e.g., side-chain structure) does not capture the quantitative values of free energies, it does rank their values qualitatively, and correctly identifies the functional form of the protein's low-frequency modes, as well as residues which present as candidates for allosteric control through mutation. The method, and the open software (‘DDPT’) used in the previous studies on allosteric homodimers, and confirmed by experimental calorimetry on model-designed mutations (<xref ref-type="bibr" rid="R13">13</xref>), is deployed here in a similar way (see <xref ref-type="sec" rid="S12">Methods section</xref>) to a coarse-grained ENM models of three further SARS-CoV-2 proteins.</p>
+<p id="P5">There are a number of free parameter choices and possible extensions of the ENM that present themselves as candidates for optimising the reliability and robustness of its results on dynamic protein analysis. In particular, the choice of cut-off distance below which the ENM model constructs a harmonic potential between any two C-alpha atoms of a protein, is a parameter that needs to be chosen with care. Too small a cut-off risks creating a model with sub-critical connectivity and containing unphysical normal modes of zero elastic modulus. Too large a cut-off creates an over-rigid model of the protein, which fails to capture important low-frequency global modes of motion. Ideally one might expect a universal optimum value for the cut-off, but the question arises of legitimate protein-dependent tuning. Secondly, the simplest ENM model imposes a universal bond stiffness, irrespective of whether two C-alpha carbons are neighbours along the protein backbone, or proximate because of the native state fold. The covalent forces in the first case would be expected to deliver stronger stiffness than the non-covalent bonds in the second. An extension to the ENM that contains two populations of spring constants corresponding to these two populations was investigated by Ming and Wall (<xref ref-type="bibr" rid="R14">14</xref>). In the light of these aspects of residual freedom within the set of ENM models, we exploit this set of studies of SARS-CoV-2 proteins to examine the effect of such enhanced ENMs, and of varying cut-offs in bond distance and normal mode sum on the key predictions of allosteric control, in order to improve an understanding of the ENM coarse-graining process.</p>
+<p id="P6">In the following, <xref ref-type="sec" rid="S2">section 2</xref> summarises the results on SARS-CoV-2 M<sup>pro</sup> reported in (<xref ref-type="bibr" rid="R1">1</xref>), extending them to explore the reliability and robustness of the ENM approach in terms of (i) cut-off distance, (ii) cut-off in mode number, (iii) choice of backbone stiffness constant. Then <xref ref-type="sec" rid="S7">section 3</xref> presents the results of ENM analysis on the host shutoff factor (nsp1), the papain-like protease (nsp3) and RNA-dependent RNA-polymerase (nsp12). The final, concluding, section reviews the potential for small-molecule inhibition of these proteins, and the additional physics of protein dynamics that they serve to expose.</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>The SARS-CoV-2 Main Protease Protein: Review and ENM Model Development</title>
+<p id="P7">In its active form M<sup>pro</sup> is a two-protomer homodimer with one active site per homodimer chain (<xref ref-type="bibr" rid="R15">15</xref>). A recent study characterised a SARS-CoV M<sup>pro</sup> mutation, S284-T285-I286/A, which dynamically enhanced the protease catalytic activity more than three-fold (<xref ref-type="bibr" rid="R16">16</xref>).</p>
+<sec id="S3">
+<label>A</label>
+<title>ENM Results for Allosteric Control</title>
+<p id="P8">Such experimental findings support the hypothesis of dynamically driven allosteric M<sup>pro</sup> control of SARS-CoV-2 M<sup>pro</sup>, and provide a structure (6lu7) on which to base an ENM construction. All three PDB files used in this study were derived from original crystallographic structure of SARS-CoV-2 M<sup>pro</sup> with N3 inhibitor.</p>
+<p id="P9">A recent crystal structure for the SARS-CoV-2 M<sup>pro</sup> is shown in front view in <xref ref-type="fig" rid="F1">figure 1</xref>, alongside the ENM model of (<xref ref-type="bibr" rid="R1">1</xref>), and the structure of the first non-trivial normal mode. That work took C<sub>
+<italic>α</italic>
+</sub> node masses as the whole residue mass, and uses a cut-off distance for harmonic connecting springs of 8 Å, based on optimising the comparison of mode structures between ENM and full Molecular Dynamics simulations, in previous work on Catabolite Activator Protein (<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R17">17</xref>). Away from the dimer interface, the protein structure is dominated by beta-sheets, while the interface itself is composed of adjacent helices and loops. Although M<sup>pro</sup> is a relatively compact protein (fewer than 310 residues per chain), it plays a vital role in the viral cycle of both coronaviruses: it divides polyproteins expressed from the viral mRNA into its functional non-structural units (<xref ref-type="bibr" rid="R18">18</xref>). This functional role makes SARS-CoV-2 M<sup>pro</sup> an appealing target for drug design.</p>
+<p id="P10">In case of the bound N3 inhibitor, the short polypeptide AVL was coarse-grained in the same way as the main chain amino acids while the other heavy atoms (C, N and O) have been treated as individual nodes with atomic masses. The analysis showed that SARS-CoV-2 M<sup>pro</sup> possesses a rich dynamical structure that supports several long-distance allosteric effects through thermal excitation of global normal modes. In particular the motions in the vicinity of two active sites are correlated within the first 25 non-trivial normal modes, especially in the singly-bound dimer. This correlation appears in the two-point dynamic correlation map derived from the ENM for the apo protein shown in <xref ref-type="fig" rid="F1">figure 1b</xref> (lower half). The figure also displays a corresponding two-point distance map (top quadrant), from which it can be seen that most, but crucially not all, dynamic correlations arise through proximity. Although, at the level of ENM calculations, this does not lead to cooperativity in the WT structure, it does render the protein susceptible to the introduction of cooperativity by mutation.</p>
+<p id="P11">Our methodology is further supported by the ENM dynamics sensitivity to residue 214 and 284-286 mutations which have been shown by experiment to dynamically control SARS-CoV M<sup>pro</sup>. The ENM calculations have identified new sites whose local thermal dynamics dynamically correlate with those of the active sites, and which also appear on global maps for allosteric control by single or double mutations. Examples of the reports available from the ENM calculations that expose such structure are given in <xref ref-type="fig" rid="F1">figure 1</xref>, showing a dynamical residue-residue correlation map. Double-mutation scans are also instructive, and were presented in (<xref ref-type="bibr" rid="R1">1</xref>).</p>
+</sec>
+<sec id="S4">
+<label>B</label>
+<title>Using the SARS-CoV-2 M<sup>pro</sup> for ENM Model Development</title>
+<p id="P12">The computations in (<xref ref-type="bibr" rid="R1">1</xref>) chose mode and distance cutoffs by balancing the requirements of: (i) sufficient spatial resolution of dynamics; (ii) requirements not to include unphysically small-scale structure; (iii) acceptable convergence of thermodynamic calculations; (vi) compatibility with the previous studies (<xref ref-type="bibr" rid="R19">19</xref>). These led to the choice of summing the first real 25 modes in SARS-CoV-2 M<sup>pro</sup> ENM calculations.</p>
+<p id="P13">Other previous work has suggested a simple development of the ENM model in which the different chemical character of main-chain and other bonds in globular proteins is recognised by allocating two, rather than one single, spring constant to ENM models (<xref ref-type="bibr" rid="R14">14</xref>). Specifically, main chain bonds are modelled by a stronger harmonic potential than all other bonds within the ENM cut-off, which continue with an otherwise uniform spring stiffness. In the light of the choice of parameters offered by the two cut-offs required in ENM models (bond distance and mode number), as well as the possibility of more accurate models using two spring stiffnesses rather than one, before embarking on the analysis of other key proteins in the SARS-CoV-2 family, we explored the parameter choice using the SARS-CoV-2 M<sup>pro</sup> already explored in depth. Moreover, in this study we used a ENM with all elastic network node mass set to 1 atm. This simplification has been used in previous studies (<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R19">19</xref>) and has shown no difference between the mass-weighted model when computing relative fluctuation free-energy change.</p>
+<sec id="S5">
+<label>B.1</label>
+<title>ENM Cut-offs in bond distance and normal mode sum</title>
+<p id="P14">
+<xref ref-type="fig" rid="F2">Figure 2a</xref> reports the average correlation of ENM and experimental b-factors over the entire protein structure for the SARS-CoV-2 M<sup>pro</sup> homodimer as a function of the upper cut-off in the sum of normal modes, and for a range of cut-off distances used in assembling the ENM. The results agree with earlier studies that indicate that the bond-distance cut-off needs to be at the least 8 Å in order to capture the experimental residue dynamics with acceptable accuracy. By the point at which the first 12 modes have been included in the sum, the model/experiment correlation is above 0.5. Adding higher modes only marginally improves agreement up to the first 100 modes, beyond which there is certainly unphysical structure being included. Beyond a bond distance cut-off of 8 Å the correlation remains optimised with this behaviour up to a cut-off of 10 Å, at which point there appears a small decrease in correlation as more modes are incorporated up to the 20th.</p>
+<p id="P15">The b-factor calculations were complemented, as a function of the same varying parameters, by comparing predictions of the allosteric free-energy. The allosteric measure used is the ratio of dissociation constants for second and first inhibitor binding <italic>K</italic>2<italic>/K</italic>1. The results, shown in <xref ref-type="fig" rid="F2">figure 2b</xref>, are noisier than the b-factor computations. This is expected, since the allosteric free-energy is a second order difference of free energies, while the b-factor is a first-order quantity. Nevertheless, this measure displays a greater sensitivity to the lower limit for acceptable bond distance cutoff than does the b-factor, for in this case acceptable convergence is found only at a 9 Å cutoff and above. In regard to the mode-sum, convergence is optimised from 10-25 modes, after which adding further modes is visible, by comparing results with different distance cutoffs, as a noisier process. In conclusion, the two measures taken together suggest, for the standard ENM model, that a 9 Å - 10 Å cutoff together with a mode sum to 25 non-trivial modes is an optimal choice.</p>
+</sec>
+<sec id="S6">
+<label>B.2</label>
+<title>BENM (Backbone-enhanced Elastic Network Model)</title>
+<p id="P16">
+<xref ref-type="fig" rid="F2">Figure 2c</xref> reports the distribution function for normal mode stiffness for SARS-CoV-2 M<sup>pro</sup> homodimer for a range of relative values of the main-chain stiffness, employing the previously-optimised choice of 9 Å for the bond distance cut-off. We find, just as did Ming and Wall in (<xref ref-type="bibr" rid="R14">14</xref>), that increasing the backbone stiffness generates a bimodal distribution of mode stiffness, rather than the single-peaked distribution of the standard ENM. From this point of view, the value of backbone stiffness appears crucial for a physically accurate coarse-grained model of protein dynamics.</p>
+<p id="P17">One way to motivate a choice of backbone stiffness among the range of possible values, is to optimise the faithfulness of the ENM coarse-grained model to a finer-grained fully-atomistic model. To this end, an all-atom molecular dynamics simulation of the apo SARS-CoV-2 M<sup>pro</sup> homodimer was made, using the AMBER potential scheme (<xref ref-type="bibr" rid="R20">20</xref>). After equilibration, data from a run of 20 ns simulated dynamics was used to identify the normal modes of motion of the set of C<sub>
+<italic>α</italic>
+</sub> atoms (see <xref ref-type="sec" rid="S12">methods section</xref>). Their distribution is also recorded in <xref ref-type="fig" rid="F2">figure 2c</xref>, and like the ENM models with enhanced backbone stiffness, displays a bimodal distribution. However, none of the ENM models was able to capture both the frequency ratio of the two peaks and also their relative peak-integrals (intensities). Choosing to optimise the frequency ratio (of 4 seen in the AMBER simulations) suggests a ratio of backbone to non-backbone bond stiffness of 25 in the case of SARS-CoV-2 M<sup>pro</sup>, which we note is about a factor of 2 smaller than the value found by Ming and Wall, suggesting that the optimisation may be structure-dependent.</p>
+<p id="P18">At first sight, this finding would appear problematic from the point of view of predicting dynamics correlations and allosteric control using ENM models. however, when the thermodynamic quantity of allosteric free energy is calculated for the same range of backbone stiffness (as shown in <xref ref-type="fig" rid="F2">figure 2d</xref>) there is essentially no dependence beyond a slight change developed at a spring stiffness ratio of 10. Although the mode distribution is strongly affected by this enhanced family of models beyond the standard, fixed-stiffness ENM, both fluctuation correlations and the set of key thermodynamic quantities are insensitive, at least for the SARS-CoV-2 M<sup>pro</sup> homodimer. For this reason, and so that the simulations of the other SARS-CoV-2 proteins of this study may be directly compared to the previous studies on SARS-CoV-2 M<sup>pro</sup>, in the analyses of the following section we employ the standard ENM, with a single bond stiffness between C<sub>
+<italic>α</italic>
+</sub> atoms, ENM node mass equal to 1 atm: while the suitable cut-off was determined by finding the best B-factor correlation with ENM normal modes. The cut-offs used in this study can be found in <xref ref-type="table" rid="T1">table 1</xref>.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S7">
+<label>3</label>
+<title>Results on three new SARS-CoV-2 proteins</title>
+<p id="P19">The standard ENM, together with the optimisation of bond-distance and mode-sum cut-offs described in the previous section were applied to three further members of the SARS-CoV-2 protein family. The aims of the computational modelling are twofold: (i) as in previous work on SARS-CoV-2 M<sup>pro</sup>, forensic investigation of the coarse-grained dynamic structure of the proteins may identify accessible residues, sensitive to the control of protein function, that offer the promise of binding targets in future therapeutics; (ii) although there are naturally universal features, each structure is as individual in its dynamic, as in its static, structure. Each case illuminates the physics of protein dynamics, and how it supports the thermodynamics of allosteric control. In particular we shall be interested in the connection between the unperturbed dynamic correlation structure, and the protein response to mutation. Specific pairs of sites whose mutation effects add non-linearly will be of especial interest, as this feature corresponds to the potential for allostery. In each of the three cases below, therefore, we will present data on residue-residue dynamic correlation (compared with a residue proximity map), a spatial structure in which correlations with a particular chosen residue are presented, and maps of two-mutation effects on an appropriate free energy. The latter calculation includes a map of non-linear effects, in which the effect of linear addition of both mutations is subtracted from the combined effect.</p>
+<sec id="S8">
+<label>A</label>
+<title>Host shutoff factor (nsp1)</title>
+<p id="P20">In cells infected by SARS-CoV-2, the single-domain protein nsp1 (see <xref ref-type="fig" rid="F3">figure 3b</xref> for a ribbon structure diagram) is implicated centrally in a complex of mechanisms that inhibit host gene expression. Its fold is unusual, consisting of a distorted beta-barrel with an associated helix. Its binding to the 40S ribosomal subunit inhibits host ribosome assembly and also induces endonucleolytic cleavage and degradation of host mRNAs. Of especial interest are therefore residues with strong dynamical correlation with the binding site, which probably implicates, among others, the charged residue K49 (<xref ref-type="bibr" rid="R21">21</xref>). <xref ref-type="fig" rid="F3">Figure 3a</xref> reports the strength and sign of residue-residue dynamic correlations (lower right half) and a proximity map (upper left half) for comparison. As in the previous case of SARS-CoV-2 M<sup>pro</sup>, most of the strong correlations arise from spatial proximity, but the contact and correlation maps differ strongly from that previous study, as the nsp1 does not possess the subunit structure of SARS-CoV-2 M<sup>pro</sup>, and both the helix and barrel structure give rise to multiple correlations perpendicular to the main diagonal of the plots. There are three notable regions of correlation that do not correspond to spatial proximity: between residues in the vicinities of 20 and 75, of 30 and 110, and of 45 and 90. The last of these is shown together with the real-space dynamic correlation to residue Q46 in <xref ref-type="fig" rid="F3">figure 3b</xref>. This visualises how the motion of this site, implicated in functional binding, propagates outward to the beta-sheets and helices on the surface of the protein.</p>
+<p id="P21">The two-point mutation analyses, by which all springs connected to each of the two residues to relax, or to stiffen, their environment, are displayed in <xref ref-type="fig" rid="F3">figure 3c and 3d</xref> respectively. Because nsp1 is monomeric, with a single but as yet uncertain binding site, results for changes to the total (entropic) free energy (rather than binding, or allosteric free energies as in other cases) are given as a function of the double mutation. Strong control regions for the free energy appear in the vicinities of residues 45-50, 65-70 and 80-85. Non-additive effects of the mutations are displayed by subtracting the free energy changes from the sum of the effects of the two corresponding single mutations (upper left half of plots in <xref ref-type="fig" rid="F3">3c and 3d</xref>. There is an intriguing difference between the cases of relaxation and stiffening. in the former, non-linear effects are mainly anti-cooperative (in the sense of binding) (increased effect on double mutation), and correlate with pairs in which both mutations have strong effects on the free energy. On stiffening, non-linear effects of both signs are in evidence, with anti-cooperative cases arising as with relaxation. However, co-operative nonlinearities are also now in evidence (coloured green in <xref ref-type="fig" rid="F3">figure 3d</xref>) and correlate with the proximity measure (<xref ref-type="fig" rid="F3">figure 3a</xref> upper half). This is the expected non-linearity from a simple, single mode (‘allosteron’) model of entropic free energy change on equal bond stiffening - the two different signs displayed by nsp1 illustrate the two mechanisms of single mode, and mode-mixing allostery proposed in (<xref ref-type="bibr" rid="R22">22</xref>).</p>
+</sec>
+<sec id="S9">
+<label>B</label>
+<title>Papain-like protease (nsp3)</title>
+<p id="P22">The papain-like protease PLpro enzyme is required for processing viral polyproteins to generate a functional replicase complex. It binds to its target on two sites, on each beta-sheet extremity of its two domains (<xref ref-type="bibr" rid="R23">23</xref>). As well as the binding domains for its cleavage activity, PLpro possesses an inhibitor binding site proximal to residue 273. <xref ref-type="fig" rid="F4">Figure 4</xref> displays the two-point dynamic correlation of the ENM structure for nsp3 based on the PDB file 6WX4 (<xref ref-type="bibr" rid="R24">24</xref>) in apo form (panel a) and with an inhibitor bound (ligand VIR251) (panel c). The corresponding real-space correlations mapped to residue 273, adjacent to the inhibitor binding site, are displayed in panels b and d. Note that, as in the other proteins surveyed, most strong correlations are due to spatial proximity, but that the real-space representations help to identify moderately strong (anti-) correlated motion between the inhibitor site and the helical and beta-sheet cleavage protein-binding domains. There are non-proximal positive correlations between 0-50 and 200-220 in both apo and holo1 forms (vertical rectangle on <xref ref-type="fig" rid="F4">figure 4 a and c</xref>), and residues 273 and 293 adjacent to the active site correlate with the protein's C-terminus.</p>
+<p id="P23">There are a few specific points to note in the dynamic structure. First, there are, as with SARS-CoV-2 M<sup>pro</sup>, but even more prominently, ‘H-shaped’ regions of strong positive correlation. This pattern has previously been identified as arising from local hinge-like motions (<xref ref-type="bibr" rid="R1">1</xref>). Second, there are notable changes in the cross-correlation between apo and holo1 forms of the protein. There is a strong increase in negative correlation between dynamics at the inhibitor site, and with the inter-domain helix (including residue 250; this is marked by the small rectangle on <xref ref-type="fig" rid="F4">figure 4c</xref> and the vertical rectangle on <xref ref-type="fig" rid="F4">4 b and d</xref>). Conversely, on inhibitor binding there is a decrease of the negative dynamic correlation on the terminal beta-sheet (horizontal rectangle to left of <xref ref-type="fig" rid="F4">4 b and d</xref>). Additionally, the negative correlation with the other beta sheet moves towards the end of the protein (three beta-strands on the right of <xref ref-type="fig" rid="F4">4 b and d</xref>). Finally, the middle helix (right short helix marked by a rectangle in <xref ref-type="fig" rid="F4">4 b and d</xref>) suffers a decrease in its positive cross-correlation on lingand binding; in the holo1 form the correlation is more focused around the ligand.</p>
+<p id="P24">The double-mutation scans (of <xref ref-type="fig" rid="F4">figure 4 e and f</xref>) in this case are calculated to measure the effect on free energy of binding at the inhibitor site, so now map a free-energy change rather than a total free energy. However, they possess the same properties in relaxation and stiffening as did nsp1, with the same correlation between co-operative (negative sign) free energy of combination with spatial proximity. Under local bond weakening by a factor of 0.25, the strongest control sites for the inhibitor binding energy are 1-2, 49, 61-2, 196-8 and 315-317. More potential control sites appear when local bonds are stiffened by a factor 4.0, at 1, 37, 120-30, 209, 220-2, 233, 235 and 314-316. Interestingly, the biologically active residues do not appear strongly on the control map, which may indicate an evolved stability to evolutionary point mutation of this family of viral proteins.</p>
+</sec>
+<sec id="S10">
+<label>C</label>
+<title>RNA-dependent RNA-polymerase (nsp7, 8 and 12)</title>
+<p id="P25">The final structure of this investigation is the SARS-CoV-2 RNA-dependent RNA polymerase (RdRp), a large 4-chain proteins of over 1000 residues, which regulates viral replication. RdRp (PDB: 7BV1 (<xref ref-type="bibr" rid="R25">25</xref>))consists of three non-structural proteins: 12 (chain A), 8 (chains B and D) and 7 (chain C). This enzyme, a much larger structure than the other three proteins of the study, has notwithstanding been proposed as a potential therapeutic target to inhibit viral infection (<xref ref-type="bibr" rid="R26">26</xref>). It is, for example, the target of the drug Remdesivir. Because of the size of the protein, we did not perform 2-point mutation scans for this study, but focused on the dynamic correlation map (see <xref ref-type="fig" rid="F1">figure 1</xref>). Residue numbers on the cross-correlation map correspond to index of amino acids and heteroatoms as they appear in the PDB file, because all four chains have missing amino acid regions. In addition to features noted in the other proteins of our sample, the considerably larger size of the RNA-dependent RNA-polymerase permits dynamic structure to emerge at a larger lengthscale. At a more fine-grained view, a set of richly-structured positive cross-correlation profiles are located around the corresponding distance map regions. Negatively correlated regions also populate the map, especially along chain B and almost exclusively along chain D. This effect might be attributed to the incompleteness of chain D (from the point of view of the PDB file) and its distance from the main protein body nsp12.</p>
+<p id="P26">The amino acid at 557-th (re-indexed residue 478) position in RdRp has been previously shown to promote fidelity in RNA synthesis (<xref ref-type="bibr" rid="R27">27</xref>) and is located in the active site (<xref ref-type="fig" rid="F5">Fig. 5b</xref>, dashed square). This is the residue that we have chosen to represent spatial dynamic correlations, colour-coded in <xref ref-type="fig" rid="F1">figure 1 b</xref>, which indicate a positively correlated core region proximal to the reference residue, complemented by a negatively-correlated periphery, some of which appears in helices at a considerable distance. This large structure provides plenty of opportunities for targeting regions away form the active site on the surface of the protein, like nsp8 chain D.</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="discussion">
+<label>4</label>
+<title>Discussion</title>
+<p id="P27">The ENM analysis reinforces previous findings in application to other proteins, including SARS-CoV-2 M<sup>pro</sup>, that local harmonic potentials within the equilibrium protein structure, but without mean structural change can identify candidate biologically active sites for control of protein function in other examples of the SARS-CoV-2 family. Furthermore, it it is not always necessary to possess holo forms of the proteins to locate those active sites, whose correlated, and functional, dynamics are already clear in the apo form. Calculations of those sites where total free energies are sensitive to mutations converge well with the limit of the sum over normal modes. The convergence of calculations of control of the binding or allosteric free energies are more subject to noise, being higher-order difference-quantities, but sufficiently to identify strong candidates for control regions. Computational studies such as this, therefore, accompany and support concurrent experimental programs of scanning for small-molecule binding candidates to the protein.</p>
+<p id="P28">Because ENM calculations identify entropic contributions to free-energy arising from fluctuations around a mean conformation, they typically deliver a sizeable fraction of the thermal energy <italic>k<sub>B</sub>T</italic> per mode affected. This sets the typical scale at a few kJ per mole for the free-energy changes predicted by the model, represented in the results presented here. Previous work has found that experimental free energies are typically ordered in the same sequence as the ENM values, though larger by factors that may arise through coupling of the global modes to unresolved local modes (<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R28">28</xref>).</p>
+<p id="P29">The ENM models employed in this study was specific for given inhibitors, where these apply. Other ligands might, of course, show different behaviour in the corresponding holo structures and display other “hot-spots”, however, the appearance of active regions, and their coupling, in the apo structure suggests that there are general properties that emerge from the global elastic structure of the protein. The advantage of these coarse-grained studies is that they complement searches for ligands that bind to target proteins by focusing on sites whose local structural dynamics correlate with those at active sites at a lower computational cost than the full molecular MD.</p>
+<p id="P30">The family of SARS-COV-2 proteins in this study exhibited both universal and specific features in their coarse-grained fluctuation dynamics. In general, positive dynamic residue-residue correlations were dominated by proximity effects, with a few notable allosteric exceptions in each case. On the other hand, strong negative correlations appeared ubiquitously without proximity. New features of coarse-granined dynamics appeared in the largest of the family, the RNA-dependent RNA-polymerase.</p>
+<p id="P31">As well as providing specific information on its particular proteins, the findings of this study also contribute to the large programme of research on the structure of protein dynamics in general, and on fluctuation-induced allostery without confor-mational change in particular. As noted above, positive dynamic correlations between distant (allosteric) sites appear to be relatively rare (most strong dynamic correlation arises through spatial proximity between residues). In each case for spatially distant correlations to occur, more than one normal mode anti-nodes of global protein dynamics must coincide.</p>
+<p id="P32">The study has also identified general ways in which which double mutations contribute in a weakly non-linear addition. Across all proteins of this study, patterns of bond-weakening (through mutation or binding) and bond-strengthening are similar, with the latter exhibiting greater correlation of (negative) non-linearities with spatial proximity. The practically-relevant proteins of this set are therefore able to illustrate examples evolved in nature, of the subtle design principles involved in generating allosteric combinations of either sign, recently theoretically related to the shift of the normal mode structure on the first binding (or bond-stiffening) event (<xref ref-type="bibr" rid="R22">22</xref>).</p>
+<p id="P33">In conclusion, the SARS-COV-2 family of proteins offer a rich set of examples of functional, coarse-grained, protein dynamics. It may be possible to exploit the detailed understanding of these features in future therapeutics; already they have deepened our understanding of how static and dynamic structures of proteins work together in establishing function.</p>
+</sec>
+<sec id="S12" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<p id="P34">Normal Mode Analysis (NMA) of ENM describes protein motions around equilibrium and can be used to calculate the partition function for large scale harmonic thermal fluctuations in protein structure, including those responsible for allostery (<xref ref-type="bibr" rid="R29">29</xref>). Two main approximations of NMA are: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P35">The structure fluctuates about at local energy minimum. Consequently no other structures beyond the given equilibrium can be explored.</p>
+</list-item>
+<list-item>
+<p id="P36">The force field everywhere arises from sums over ENM harmonic</p>
+</list-item>
+</list>
+</p>
+<p id="P37">The whole NMA method can be reduced to three steps: <list list-type="order" id="L2">
+<list-item>
+<p id="P38">Construct mass-weighted Hessian for a system. For a protein ENM the system consists of the co-ordinates of the C-alpha atoms (<italic>N</italic>) for each residue from the corresponding PDB structure.</p>
+</list-item>
+<list-item>
+<p id="P39">Diagonalise the mass-weighted Hessian to find eigenvectors and eigenvalues of the normal modes.</p>
+</list-item>
+<list-item>
+<p id="P40">Calculate the partition function (and so free energy) from the product over the normal mode harmonic oscillations.</p>
+</list-item>
+</list>
+</p>
+<p id="P41">The diagonalisation of the 3<italic>N</italic> × 3<italic>N</italic> mass-weighted Hessian matrix is written as <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:msup>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>A</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mover accent="true">
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>H</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="true">˜</mml:mo>
+</mml:mover>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>A</mml:mi>
+</mml:mstyle>
+<mml:mo>=</mml:mo>
+<mml:mo>Λ</mml:mo>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M2">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>H</mml:mi>
+<mml:mo>˜</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mo>∂</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>∂</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msqrt>
+<mml:mrow>
+<mml:msub>
+<mml:mi>m</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msqrt>
+<mml:mo>∂</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:msqrt>
+<mml:mrow>
+<mml:msub>
+<mml:mi>m</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>: the potential energy function <italic>V</italic> ; distance between nodes <italic>r</italic>; node masses <italic>m</italic>. The eigenvectors of the mass-weighted Hessian matrix, columns of <bold>A</bold>, are the normal mode eigenvectors <bold>a</bold>. <disp-formula id="FD2">
+<mml:math id="M3">
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>A</mml:mi>
+</mml:mstyle>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>∣</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> Λ is a 3<italic>N</italic> × 3<italic>N</italic> diagonal matrix with diagonal values equal to the associated normal modes' squared angular frequencies <italic>ω</italic>
+<sup>2</sup>. The potential function used in this study is: <disp-formula id="FD3">
+<mml:math id="M4">
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mo>≤</mml:mo>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mo>&gt;</mml:mo>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>r<sub>c</sub>
+</italic> is a cut-off radius, which for this work is set at 8 Å; while <italic>r</italic>
+<sup>(0)</sup> is the equilibrium distance between nodes derived form PDB crystallographic structure. For the wild-type protein, all spring constants are equal <italic>k<sub>ij</sub>
+</italic> = <italic>k</italic>=1 kcal Å<sup>−2</sup> mol<sup>−1</sup>.</p>
+<sec id="S13">
+<title>Cross-correlation of Motion</title>
+<p id="P42">The cross-correlation, <italic>C</italic>, is estimated between an ENM node pair as a normalised dot product sum between their normal mode eigenvectors over <italic>v</italic> modes. <disp-formula id="FD4">
+<label>[1]</label>
+<mml:math id="M5">
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>v</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mi>v</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mi>v</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mi>v</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>a</mml:mi>
+</mml:mstyle>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mi>v</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P43">
+<italic>C</italic> value of 1 implies perfectly correlated motion, −1 perfectly anti-correlated motion and 0 implies totally non-correlated motion.</p>
+</sec>
+<sec id="S14">
+<title>Normal Mode Fluctuation Free Energy</title>
+<p id="P44">Using statistical mechanics it is possible to calculate an estimate to the fluctuation free energy of a system using the frequency of vibrations such as the normal modes. For this method, the partition function for the quantum harmonic oscillator (<xref ref-type="bibr" rid="R30">30</xref>), <italic>Z</italic>, for normal mode <italic>k</italic> is given as <disp-formula id="FD5">
+<mml:math id="M6">
+<mml:msub>
+<mml:mi>Z</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>exp</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>ℏ</mml:mi>
+<mml:msub>
+<mml:mi>ω</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>exp</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>ℏ</mml:mi>
+<mml:msub>
+<mml:mi>ω</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula> where <italic>k<sub>B</sub>
+</italic> is the Boltzmann's constant, <italic>ħ</italic> is the reduced Planck's constant, <italic>T</italic> is temperature in Kelvin and <italic>ω</italic> is, already mentioned, angular frequency. Gibbs free energy (for a given mode) expressed in terms of partition function, with an approximation of little change in volume, can be written as <disp-formula id="FD6">
+<label>[2]</label>
+<mml:math id="M7">
+<mml:msub>
+<mml:mi>G</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mi>ln</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>exp</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>ℏ</mml:mi>
+<mml:msub>
+<mml:mi>ω</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mi>ℏ</mml:mi>
+<mml:msub>
+<mml:mi>ω</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S15">
+<title>Ligand Dissociation Constant</title>
+<p id="P45">When free energy change ∆<italic>G</italic> (<bold>SI, Sec. C</bold>) is known for a dissociation reaction, corresponding dissociation constant <italic>K</italic> can be estimated via <disp-formula id="FD7">
+<label>[3]</label>
+<mml:math id="M8">
+<mml:mi>K</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>exp</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:mi>G</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S16">
+<title>Molecular Dynamics Simulation</title>
+<p id="P46">Comparison between Backbone Enhanced ENM, ENM and Molecular Dynamics simulation was carried out by calculating the distributions of eigenfrequencies from the Normal Mode Analysis (NMA) of these three models. The eigenfrequencies for the two ENM models were calculated using the DDPT software while the molecular dynamics eigenfrequencies were calculated by generating a trajectory from the molecular dynamics simulation software Amber (<xref ref-type="bibr" rid="R20">20</xref>) and then using DDPT to find the eigenfrequencies from the trajectory. Amber relies on force fields (the Amber force field ff14SB was used (<xref ref-type="bibr" rid="R31">31</xref>) in this calculation) to calculate forces between atoms and uses integration algorithms to calculate atom's trajectories over time. Before a simulation is run, the input protein structure was energy minimised and equilibrated. The pmemd.cuda program was used to implement both pre simulation energy minimisation equilibrations and the production simulation from which the eigenfrequencies are found. CUDA is used to parallelise calculation of the trajectories to run calculations on gpus rather than cpus. The simulations were carried out in an implicit solvent. The amber analysis program cpptraj is used to convert the binary output of pmemed.cuda to a readable trajectory format. The final trajectory from the production simulation is then used to calculate a covariance matrix using the COVAR program in DDPT. COVAR calculates a mass weighted Hessian matrix which is diagonalised. The eigenfrequencies are found through the FREQEN DDPT program.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S17">
+<title>Acknowledgments</title>
+<p>ID is grateful for computational support from Research Coding Club at the University of York. TCBM acknowledges support from the EPSRC (UK) through an Established Career Fellowship in the Physics of Life programme. We are grateful to Dr. Alice von der Heydt, Prof. Peter O'Brian and Dr. Sarah Harris for useful discussions. CH would like to acknowledge guidance from Dr. Agnes Noy and George Watson for their guidance and expertise in running the Amber simulations.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dubanevics</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>McLeish</surname>
+<given-names>TC</given-names>
+</name>
+</person-group>
+<article-title>Computational analysis of dynamic allostery and control in the sars-cov-2 main protease</article-title>
+<source>J The Royal Soc Interface</source>
+<year>2021</year>
+<volume>18</volume>
+<comment>??–??</comment>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Synchrotron</surname>
+<given-names>Diamond</given-names>
+</name>
+</person-group>
+<article-title>Main Protease Structure and XChem Fragment Screen (Link)</article-title>
+<year>2020</year>
+<date-in-citation>Online: accessed 18/10/2020</date-in-citation>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robinson</surname>
+<given-names>CV</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Allosteric inhibition of the sars-cov-2 main protease–insights from mass spectrometry-based assays</article-title>
+<source>Angewandte Chemie Int Ed</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Monod</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wyman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Changeux</surname>
+<given-names>JP</given-names>
+</name>
+</person-group>
+<article-title>On the nature of allosteric transitions—a plausible model</article-title>
+<source>J Mol Biol</source>
+<year>1965</year>
+<volume>12</volume>
+<fpage>88</fpage>
+<lpage>118</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cooper</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dryden</surname>
+<given-names>DT</given-names>
+</name>
+</person-group>
+<article-title>Allostery without conformational change. a plausible model</article-title>
+<source>Eur Biophys J</source>
+<year>1984</year>
+<volume>11</volume>
+<fpage>103</fpage>
+<lpage>109</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hawkins</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>McLeish</surname>
+<given-names>TC</given-names>
+</name>
+</person-group>
+<article-title>Dynamic allostery of protein alpha helical coiled-coils</article-title>
+<source>J The Royal Soc Interface</source>
+<year>2006</year>
+<volume>3</volume>
+<fpage>125</fpage>
+<lpage>138</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McLeish</surname>
+<given-names>TCB</given-names>
+</name>
+<name>
+<surname>Rodgers</surname>
+<given-names>TL</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<article-title>Allostery without conformation change: modelling protein dynamics at multiple scales</article-title>
+<source>Phys biology</source>
+<year>2013</year>
+<volume>10</volume>
+<comment>056004</comment>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schaefer</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>VonDerHeydt</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>McLeish</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>The ‘allosteron’ model for entropic allostery of self-assembly</article-title>
+<source>Philos Transactions</source>
+<year>2018</year>
+<volume>373</volume>
+<comment>20170186</comment>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Go</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Noguti</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Nishikawa</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Dynamics of a small globular protein in terms of low-frequency vibrational modes</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>1983</year>
+<volume>80</volume>
+<fpage>3696</fpage>
+<lpage>3700</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brooks</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Normal modes for specific motions of macromolecules: application to the hinge-bending mode of lysozyme</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>1985</year>
+<volume>82</volume>
+<fpage>4995</fpage>
+<lpage>4999</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bahar</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Atilgan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Erman</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Direct evaluation of thermal fluctuations in proteins using a single-parameter harmonic potential</article-title>
+<source>Fold Des</source>
+<year>1997</year>
+<volume>2</volume>
+<fpage>173</fpage>
+<lpage>181</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rodgers</surname>
+<given-names>TL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Modulation of global low-frequency motions underlies allosteric regulation: demonstration in crp/fnr family transcription factors</article-title>
+<source>PLoS biology</source>
+<year>2013</year>
+<volume>11</volume>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rodgers</surname>
+<given-names>TL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ddpt: a comprehensive toolbox for the analysis of protein motion</article-title>
+<source>BMC Bioinforma</source>
+<year>2013</year>
+<volume>14</volume>
+<fpage>183</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ming</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wall</surname>
+<given-names>ME</given-names>
+</name>
+</person-group>
+<article-title>Allostery in a coarse-grained model of protein dynamics</article-title>
+<source>Phys Rev Lett</source>
+<year>2005</year>
+<volume>95</volume>
+<comment>198103</comment>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Muramatsu</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sars-cov 3cl protease cleaves its c-terminal autoprocessing site by novel subsite cooperativity</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2016</year>
+<volume>113</volume>
+<fpage>12997</fpage>
+<lpage>13002</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lim</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Dynamically-driven enhancement of the catalytic machinery of the sars 3c-like protease by the s284-t285-i286/a mutations on the extra domain</article-title>
+<source>PloS one</source>
+<year>2014</year>
+<volume>9</volume>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Townsend</surname>
+<given-names>PD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The role of protein-ligand contacts in allosteric regulation of the escherichia coli catabolite activator protein</article-title>
+<source>J Biol Chem</source>
+<year>2015</year>
+<volume>290</volume>
+<fpage>22225</fpage>
+<lpage>22235</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pillaiyar</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Manickam</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Namasivayam</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Hayashi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>SH</given-names>
+</name>
+</person-group>
+<article-title>An overview of severe acute respiratory syndrome–coronavirus (sars-cov) 3cl protease inhibitors: Peptidomimetics and small molecule chemotherapy</article-title>
+<source>J medicinal chemistry</source>
+<year>2016</year>
+<volume>59</volume>
+<fpage>6595</fpage>
+<lpage>6628</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Townsend</surname>
+<given-names>PD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Global low-frequency motions in protein allostery: Cap as a model system</article-title>
+<source>Biophys reviews</source>
+<year>2015</year>
+<volume>7</volume>
+<fpage>175</fpage>
+<lpage>182</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Salomon-Ferrer</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>An overview of the amber biomolecular simulation package</article-title>
+<source>WIREs Comput Mol Sci</source>
+<year>2013</year>
+<volume>3</volume>
+<fpage>198</fpage>
+<lpage>210</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Menezez</surname>
+<given-names>GdL</given-names>
+</name>
+<name>
+<surname>da Silva</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Identification of potential drugs against sars-cov-2 non-structural protein 1 (nsp1)</article-title>
+<source>J Biomol Struct Dyn</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McLeish</surname>
+<given-names>TCB</given-names>
+</name>
+<name>
+<surname>VonDerHeydt</surname>
+<given-names>AC</given-names>
+</name>
+</person-group>
+<article-title>How proteins' negative cooperativity emerges from entropic optimisation of versatile collective fluctuations</article-title>
+<source>J Chem Phys</source>
+<year>2019</year>
+<volume>151</volume>
+<comment>215101</comment>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shin</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Papain-like protease regulates sars-cov-2 viral spread and innate immunity</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>587</volume>
+<fpage>657</fpage>
+<lpage>662</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rut</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Activity profiling and structures of inhibitor-bound sars-cov-2-plpro protease provides a framework for anti-covid-19 drug design</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yin</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for inhibition of the rna-dependent rna polymerase from sars-cov-2 by remdesivir</article-title>
+<source>Science</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aftab</surname>
+<given-names>SO</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Analysis of sars-cov-2 rna-dependent rna polymerase as a potential therapeutic drug target using a computational approach</article-title>
+<source>J Transl Medicine</source>
+<year>2020</year>
+<volume>18</volume>
+<fpage>275</fpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kirchdoerfer</surname>
+<given-names>RN</given-names>
+</name>
+<name>
+<surname>Ward</surname>
+<given-names>AB</given-names>
+</name>
+</person-group>
+<article-title>Structure of the sars-cov nsp12 polymerase bound to nsp7 and nsp8 co-factors</article-title>
+<source>Nat communications</source>
+<year>2019</year>
+<volume>10</volume>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hawkins</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>McLeish</surname>
+<given-names>TC</given-names>
+</name>
+</person-group>
+<article-title>Coupling of global and local vibrational modes in dynamic allostery of proteins</article-title>
+<source>Biophys J</source>
+<year>2006</year>
+<volume>91</volume>
+<fpage>2055</fpage>
+<lpage>2062</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bahar</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Lezon</surname>
+<given-names>TR</given-names>
+</name>
+<name>
+<surname>Bakan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shrivastava</surname>
+<given-names>IH</given-names>
+</name>
+</person-group>
+<article-title>Normal mode analysis of biomolecular structures: functional mechanisms of membrane proteins</article-title>
+<source>Chem reviews</source>
+<year>2010</year>
+<volume>110</volume>
+<fpage>1463</fpage>
+<lpage>1497</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Blundell</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Blundell</surname>
+<given-names>KM</given-names>
+</name>
+</person-group>
+<source>Concepts in thermal physics</source>
+<publisher-name>OUP Oxford</publisher-name>
+<year>2009</year>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maier</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ff14sb: Improving the accuracy of protein side chain and backbone parameters from ff99sb</article-title>
+<source>J Chem Theory Comput</source>
+<year>2015</year>
+<volume>11</volume>
+<fpage>3696</fpage>
+<lpage>3713</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>Dynamics of the SARS-CoV-2 M<sup>pro</sup> ENM. <bold>a</bold>, Secondary structure cartoon (orange); C<sub>
+<italic>α</italic>
+</sub> atom nodes (marine); node-connecting springs in black; the first real fluctuation mode eigenvector displacement (yellow) are scaled 5 times. The ENM was generated with PyANM plugin in PyMOL. <bold>b</bold>, The cross correlation of the motion of 6lu7 apo ENM. The cross-correlation maps calculated for the first real 25 modes (bottom-right region of the plots) and spacing between residues (C<sub>
+<italic>α</italic>
+</sub> nodes) and ligand nodes (top-left region of the plots) for the apo form. The first colour scale shows the extent of cross correlation, with a cross correlation of 1 (red) indicating perfectly correlated motion, −1 (blue) showing perfectly anti-correlated motion and 0 (white) no correlation. The second colour scale (black to white) depicts the Euclidean distance between two ENM's nodes in the Cartesian space in 0-16 Å range.</p>
+</caption>
+<graphic xlink:href="EMS108622-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<p>SARS-CoV-2 M<sup>pro</sup> ENM response to the cut-off distance and backbone spring constant variation. <bold>a</bold>, B-factor correlation with the ENM normal modes with the real mode summation for a range of cut-off distances between 7 and 15 Å. <bold>b</bold>, Ligand dissociation ratio versus the mode summation for the cut-off in range of 8 to 15 Å. <bold>c</bold>, Density-of-states distribution for the ENM with varied backbone spring constant between 1 to 100 for 9 Å cut-off. <bold>d</bold> Ligand dissociation ratio versus the mode summation for the backbone spring constant between 1 to 100 for 9 Å cut-off.</p>
+</caption>
+<graphic xlink:href="EMS108622-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>Dynamics of the SARS-CoV-2 Host Shutoff Factor ENM (PDB: 7K7P). <bold>a</bold>, The cross-correlation maps calculated for the first real 25 modes (bottom-right region of the plot) and spacing between residues (top-left region of the plot) for apo form. <bold>b</bold>, A real-space representation of the correlations in 7K7P ENM with respect to residue Q46 (green sphere). The cross correlation matrix was calculated using only the C<sub>
+<italic>α</italic>
+</sub> atoms for the protein. <bold>c</bold>, 2-point mutational map for 7K7P ENM with all possible pairwise combinations of residue mutations with equal spring constant change <italic>k<sub>R</sub>/k</italic> = 0.25 over the first real 25 fluctuation modes. A map for the fluctuation free energy change (bottom-right region of the plot) plots the relative change in free energy to the wild type ((<italic>G<sub>mut</sub> − G<sub>wt</sub>
+</italic>)<italic>/|G<sub>wt</sub>|</italic>) due to the dimensionless change in the spring constant (<italic>k<sub>R</sub>/k</italic>) for the mutated residue with the residue number shown. White corresponds to values of free energy predicted by the wild-type ENM. Red corresponds to an increase in (<italic>G<sub>mut</sub> − G<sub>wt</sub>
+</italic>)<italic>/|G<sub>wt</sub>|</italic> (decreased value of <italic>G<sub>mut</sub>
+</italic> comparing to <italic>G<sub>wt</sub>
+</italic>), whereas blue corresponds to a decrease in ((<italic>G<sub>mut</sub> − G<sub>wt</sub>
+</italic>)<italic>/|G<sub>wt</sub>|</italic>) (increased value of <italic>G<sub>mut</sub>
+</italic> comparing to <italic>G<sub>wt</sub>
+</italic>). A map for the relative fluctuation free energy change 2-point additivity (top-left region of the plot) plots the difference in the relative change in free energy for 2-point mutation and two single 1-point mutations (<italic>G<sub>ij</sub>
+</italic> − <italic>G<sub>i</sub>
+</italic> − <italic>G<sub>j</sub>
+</italic>). White corresponds to <italic>G<sub>ij</sub> − G<sub>i</sub> − Gj</italic> = 0.0, i.e. non-synergistic 2-point mutation. Purple corresponds to an increase in <italic>G<sub>ij</sub> − G<sub>i</sub> − Gj</italic> (2-point mutation effect on free-energy is greater than combination of two separate 1-point mutations), whereas blue corresponds to a decrease in <italic>G<sub>ij</sub>
+</italic> − <italic>G<sub>i</sub>
+</italic> − <italic>G<sub>j</sub>
+</italic> (2-point mutation effect on free-energy is smaller than combination of two separate 1-point mutations). <bold>d</bold>, 2-point mutational map for 7K7P ENM with all possible pairwise combinations of residue mutations with equal spring constant change <italic>k<sub>R</sub>/k</italic> = 4.00 over the first real 25 fluctuation modes.</p>
+</caption>
+<graphic xlink:href="EMS108622-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Dynamics of the PLpro ENM dynamics (PDB: 6WX4). <bold>a</bold>, The cross-correlation maps calculated for the first real 25 modes (bottom-right region of the plot) and spacing between residues (top-left region of the plot) for apo form. <bold>b</bold>, A real-space representation of the correlations in 6WX4 ENM with respect to residue 273 (green sphere). The cross correlation matrix was calculated using only the C<sub>
+<italic>α</italic>
+</sub> atoms for the protein. <bold>c</bold>, The cross-correlation maps calculated for the first real 25 modes (bottom-right region of the plot) and spacing between residues (top-left region of the plot) for holo1 form with VIR251 inhibitor. <bold>d</bold>, A real-space representation of the correlations in 6WX4 ENM with respect to residue 273 (green sphere). The cross correlation matrix was calculated using only the C<sub>
+<italic>α</italic>
+</sub> atoms for the protein and all heavy atoms for the ligand (VIR251 inhibitor) shown as sticks. <bold>e</bold>, 2-point mutational map for 6WX4 ENM with all possible pairwise combinations of residue mutations with equal spring constant change <italic>k<sub>R</sub>/k</italic> = 0.25 over the first real 25 fluctuation modes. A map for the fluctuation free energy change (bottom-right region of the plot) plots the relative change in free energy to the wild type ((∆<italic>G<sub>mut</sub> −</italic> ∆<italic>G<sub>wt</sub>
+</italic>)<italic>/|</italic>∆<italic>G<sub>wt</sub>|</italic>) due to the dimensionless change in the spring constant (<italic>k<sub>R</sub>/k</italic>) for the mutated residue with the residue number shown. White corresponds to values of free energy predicted by the wild-type ENM. Red corresponds to an increase in (∆<italic>G<sub>mut</sub> −</italic> ∆<italic>G<sub>wt</sub>
+</italic>)<italic>/|</italic>∆<italic>G<sub>wt</sub>|</italic> (decreased value of <italic>G<sub>mut</sub>
+</italic> comparing to ∆<italic>G<sub>wt</sub>
+</italic>), whereas blue corresponds to a decrease in ((∆<italic>G<sub>mut</sub> −</italic> ∆<italic>G<sub>wt</sub>
+</italic>)<italic>/|</italic>∆<italic>G<sub>wt</sub>|</italic>) (increased value of ∆<italic>G<sub>mut</sub>
+</italic> comparing to ∆<italic>G<sub>wt</sub>
+</italic>). A map for the relative fluctuation free energy change 2-point additivity (top-left region of the plot) plots the difference in the relative change in free energy for 2-point mutation and two single 1-point mutations (∆<italic>G<sub>ij</sub> −</italic> ∆<italic>G<sub>i</sub> −</italic> ∆<italic>Gj</italic>). White corresponds to ∆<italic>G<sub>ij</sub> −</italic> ∆<italic>G<sub>i</sub> −</italic> ∆<italic>G<sub>j</sub>
+</italic> = 0.0, i.e. non-synergistic 2-point mutation. Purple corresponds to an increase in <italic>G<sub>ij</sub>
+</italic> − <italic>G<sub>i</sub>
+</italic> − <italic>G<sub>j</sub>
+</italic> (2-point mutation effect on free-energy is greater than combination of two separate 1-point mutations), whereas blue corresponds to a decrease in ∆<italic>G<sub>ij</sub>
+</italic> − ∆<italic>G<sub>i</sub>
+</italic> − ∆<italic>G<sub>j</sub>
+</italic> (2-point mutation effect on free-energy is smaller than combination of two separate 1-point mutations). <bold>f</bold>, 2-point mutational map for 6WX4 ENM with all possible pairwise combinations of residue mutations with equal spring constant change <italic>k<sub>R</sub>/k</italic> = 4.00 over the first real 25 fluctuation modes.</p>
+</caption>
+<graphic xlink:href="EMS108622-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<p>Dynamics of the SARS-CoV-2 Rd-Rp ENM (PDB: 7BV1). <bold>a</bold>, The cross-correlation maps calculated for the first real 25 modes (bottom-right region of the plot) and spacing between residues (top-left region of the plot) for apo form. Labels on x-axis indicate protein chain IDs. <bold>b</bold>, A real-space representation of the correlations in 6WX4 ENM with respect to residue L557 (green sphere), residue 478 on the plot. The cross correlation matrix was calculated using only the C<sub>
+<italic>α</italic>
+</sub> atoms for the protein and heavy heteroatoms, e.g. Zn.</p>
+</caption>
+<graphic xlink:href="EMS108622-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>SARS-CoV-2 non-structural proteins' key information used in this study: non-structural protein ID; PDB ID; ENM cut-off distance based on B-factor correlation.</title>
+</caption>
+<table frame="void" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Protein</th>
+<th align="left" valign="top">nsp ID</th>
+<th align="left" valign="top">PDB ID</th>
+<th align="left" valign="top">Cut-off [Å]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">SARS-CoV-2 Main Protease (Mpro)</td>
+<td align="center" valign="top">5</td>
+<td align="center" valign="top">6LU7</td>
+<td align="center" valign="top">9.0</td>
+</tr>
+<tr>
+<td align="left" valign="top">SARS-CoV-2 Host Shutoff Factor</td>
+<td align="center" valign="top">1</td>
+<td align="center" valign="top">7K7P</td>
+<td align="center" valign="top">12.0</td>
+</tr>
+<tr>
+<td align="left" valign="top">SARS-CoV-2 Papain-like Protease (PLpro)</td>
+<td align="center" valign="top">3</td>
+<td align="center" valign="top">6WX4</td>
+<td align="center" valign="top">11.0</td>
+</tr>
+<tr>
+<td align="left" valign="top">SARS-CoV-2 RNA-dependent RNA-polymerase (RdRp)</td>
+<td align="center" valign="top">7,8,12</td>
+<td align="center" valign="top">7BV1</td>
+<td align="center" valign="top">12.0</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

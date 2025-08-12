@@ -69,6 +69,7 @@ python manage.py migrate
 
 | Dataset | Papers | Storage | Time Estimate |
 |---------|--------|---------|---------------|
+| 2025 only | ~2,300  | ~80 MB  | 30 min    |
 | 2024 only | ~15,000 | ~500 MB | 2-3 hours |
 | 2020-2025 | ~350,000 | ~12 GB | 24-48 hours |
 | Full future | ~500,000+ | ~20 GB | Ongoing |
@@ -80,18 +81,24 @@ python manage.py migrate
 ### Step 1: Test with Small Dataset
 
 ```bash
-# Test with 10 papers from 2024 (recommended first step)
-python manage.py download_xml_files --start-year 2024 --end-year 2024 --limit-per-year 10
+# Test with 10 papers from 2025 (recommended first step - current year)
+python manage.py download_xml_files --start-year 2025 --end-year 2025 --limit-per-year 10
+
+# Alternative: Test with 2024 papers
+# python manage.py download_xml_files --start-year 2024 --end-year 2024 --limit-per-year 10
 
 # Verify the download worked
-python manage.py download_xml_files --stats-only --start-year 2024 --end-year 2024
+python manage.py download_xml_files --stats-only --start-year 2025 --end-year 2025
 ```
 
-### Step 2: Download Recent Papers (2024)
+### Step 2: Download Recent Papers (2025)
 
 ```bash
-# Download all 2024 papers (good for testing the complete system)
-python manage.py download_xml_files --start-year 2024 --end-year 2024
+# Download all 2025 papers (good for testing the complete system - current year)
+python manage.py download_xml_files --start-year 2025 --end-year 2025
+
+# Or download 2024 papers (larger dataset for comprehensive testing)
+# python manage.py download_xml_files --start-year 2024 --end-year 2024
 
 # Expected: ~15,000 papers, ~500 MB, 2-3 hours
 ```

@@ -1,0 +1,1622 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS102245</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.27.357954</article-id>
+<article-id pub-id-type="archive">PPR231253</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Tuning intrinsic disorder predictors for virus proteins</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Almog</surname>
+<given-names>Gal</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Olabode</surname>
+<given-names>Abayomi S</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">†</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Poon</surname>
+<given-names>Art FY</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Pathology &amp; Laboratory Medicine, Western University, London, Canada</aff>
+<aff id="A2">
+<label>2</label>Department of Applied Mathematics, Western University, London, Canada</aff>
+<aff id="A3">
+<label>3</label>Department of Microbiology &amp; Immunology, Western University, London, Canada</aff>
+<author-notes>
+<corresp id="CR1">
+<label>†</label>corresponding author</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>29</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>27</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Many virus-encoded proteins have intrinsically disordered regions that lack a stable folded three-dimensional structure. These disordered proteins often play important functional roles in virus replication, such as down-regulating host defense mechanisms. With the widespread availability of next-generation sequencing, the number of new virus genomes with predicted open reading frames is rapidly outpacing our capacity for directly characterizing protein structures through crystallography. Hence, computational methods for structural prediction play an important role. A large number of predictors focus on the problem of classifying residues into ordered and disordered regions, and these methods tend to be validated on a diverse training set of proteins from eukaryotes, prokaryotes and viruses. In this study, we investigate whether some predictors outperform others in the context of virus proteins. We evaluate the prediction accuracy of 21 methods, many of which are only available as web applications, on a curated set of 126 proteins encoded by viruses. Furthermore, we apply a random forest classifier to these predictor outputs. Based on cross-validation experiments, this ensemble approach confers a substantial improvement in accuracy, <italic>e</italic>.<italic>g</italic>., a mean 36% gain in Matthews correlation coefficient. Lastly, we apply the random forest predictor to SARS-CoV-2 ORF6, an accessory gene that encodes a short (61 AA) and moderately disordered protein that inhibits the host innate immune response.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">For almost a century, it was assumed that proteins required a properly folded and stable three-dimensional or tertiary structure in order to function [<xref ref-type="bibr" rid="R1">1</xref>–<xref ref-type="bibr" rid="R3">3</xref>]. More recently, it has become evident that many proteins and protein regions are disordered, which are referred to as intrinsically disordered proteins (IDPs) and intrinsically disordered protein regions (IDPRs), respectively. Both IDPs and IDPRs can perform important biological functions despite lacking a properly folded and stable tertiary structure [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R4">4</xref>].</p>
+<p id="P3">These kinds of proteins are an important area of research because they play major roles in cell regulation, signalling, differentiation, survival, apoptosis and proliferation [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R6">6</xref>]. Some are also postulated to be involved in disease etiology and could represent potential targets for new drugs [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R8">8</xref>]. Virus-encoded IDPs facilitate multiple functions such as adaptation to new or dynamic host environments, modulating host gene expression to promote virus replication, or counteracting host-defense mechanisms [<xref ref-type="bibr" rid="R9">9</xref>–<xref ref-type="bibr" rid="R11">11</xref>]. IDPRs may be more tolerant of non-synonymous mutations than ordered protein regions [<xref ref-type="bibr" rid="R12">12</xref>], which may partly explain why virus genomes can tolerate high mutation rates [<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R14">14</xref>]. Viruses also have very compact genomes with overlapping reading frames [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>], in which mutations may potentially modify multiple proteins. This may confer viruses a greater capacity to acquire novel functions and interactions [<xref ref-type="bibr" rid="R17">17</xref>]. Overlapping regions tend to be more structurally disordered when compared to non-overlapping regions [<xref ref-type="bibr" rid="R18">18</xref>].</p>
+<p id="P4">Several experimental techniques are available to detect IDPs and IDPRs. The most common methods identify either protein regions in crystal structures that have unresolvable coordinates (X-ray crystallography) or regions in nuclear magnetic resonance (NMR) structures that have divergent structural conformations [<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>]. Other experimental techniques include circular dichroism (CD) spectroscopy and limited proteolysis (LiP) [<xref ref-type="bibr" rid="R1">1</xref>]. The challenge, however, is that these methods are very labour-intensive and difficult to scale up to track the rapidly accumulating number of unique protein sequences in public databases [<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R19">19</xref>]. At the time of this writing, over 60 million protein sequences have been deposited in the Uniprot database, yet only 0.02% of these sequences have been annotated for disorder [<xref ref-type="bibr" rid="R6">6</xref>]. As a result, numerous computational techniques that could potentially predict intrinsic disorder in protein sequences have been developed. These techniques work based on the assumptions that compared to IDPs and IDPRs, ordered proteins have a different amino acid composition as well as levels of sequence conservation [<xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R22">22</xref>]. To date about 60 predictors for intrinsic disorder in proteins have been developed [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R24">24</xref>], which can be broadly classified into three major categories. The first category, the scoring function-based methods, predict protein disorder solely based on basic statistics of amino acid propensities, physio-chemical properties of amino acids and residue contacts in folded proteins to detect regions of high energy. A second category is characterized by the use of machine learning classifiers (<italic>e</italic>.<italic>g</italic>., regularized regression models or neural networks) to predict protein disorder based on amino acid sequence properties. The third category are meta-predictors that predict disorder from an ensemble of predictive methods from the other two categories [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R25">25</xref>].</p>
+<p id="P5">Different predictors of intrinsic disorder are developed on a variety of methodologies and will inevitably vary with respect to their sensitivities and biases in application to different protein sequences. As a result, it has been relatively difficult to benchmark these methods to identify a single disorder prediction method that can be classified as the most accurate relative to the others [<xref ref-type="bibr" rid="R24">24</xref>]. The DisProt database is a good resource for obtaining experimental data that has been manually curated for disorder in proteins, and can be used for benchmarking the performance of disorder predictors. As of April 27th, 2020, the Disprot protein database contained <italic>n</italic> = 3500 proteins of which 126 were virus-encoded proteins that have been annotated for intrinsic disorder as a presence-absence characteristic at the amino acid level [<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>]. Previously, Tokuriki <italic>et al</italic>. [<xref ref-type="bibr" rid="R14">14</xref>] reported preliminary evidence that when compared to non-viruses, viral proteins possess many distinct biophysical properties including having shorter disordered regions. We are not aware of a published study that has previously benchmarked predictors of intrinsic disorder specifically for viral proteins. Here, we report results from a comparison of 21 disorder predictors on viral proteins from the DisProt database to firstly determine which methods work best for viruses, and secondly to generate inputs for an ensemble predictor that we evaluate alongside the predictors used individually.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Data collection</title>
+<p id="P6">The Database of Protein Disorder (DisProt) [<xref ref-type="bibr" rid="R28">28</xref>] was used to collect virus protein sequences annotated with intrinsically disordered regions, based on experimental data derived from various detection methods; <italic>e</italic>.<italic>g</italic>., X-ray crystallography, NMR spectroscopy, CD spectroscopy (both far and near UV) and protease sensitivity. DisProt records include the amino acid sequence and all disordered regions annotated with the respective detection methods as well as specific experimental conditions. At the time of our study, DisProt contained 3,500 author-verified proteins, of which all viral proteins were collected for the present study. A total of 126 virus proteins were obtained, derived from different detection methods. Similarly, a set of 126 non-viral proteins was sampled at random without replacement from the protein database for comparison.</p>
+<p id="P7">We evaluated a number of disorder prediction programs and web applications. From the methods tested, we selected a subset of predictors favouring those that were developed more recently, are actively maintained, and performed well in previous method comparison studies [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. Where alternate settings or different versions based on training data were available for a given predictor, we tested all combinations. Our final set of 21 prediction methods tested were: SPOT-Disorder2 [<xref ref-type="bibr" rid="R30">30</xref>], PONDR-FIT [<xref ref-type="bibr" rid="R31">31</xref>], IUPred2 (short and long) [<xref ref-type="bibr" rid="R32">32</xref>], PONDR (VLXT, XL1-XT, CAN-XT, VL3-BA, and VSL2 variants) [<xref ref-type="bibr" rid="R33">33</xref>], Disprot (VL2 and variants VL2-V, -C and -S; VL3, VL3H, and VSLB) [<xref ref-type="bibr" rid="R34">34</xref>], CSpritz (short and long) [<xref ref-type="bibr" rid="R35">35</xref>], and ESpritz (variants trained on X-ray, NMR, and Disprot data) [<xref ref-type="bibr" rid="R36">36</xref>]. Although several other predictor models have been released online, the respective web services were unavailable or broken over the course of our data collection.</p>
+<p id="P8">To obtain disorder predictions from the methods that were only accessible as web applications, <italic>i</italic>.<italic>e</italic>., with no source code or compiled binary standalone distribution, we wrote Python scripts to automate the process of submitting protein sequence inputs and parsing HTML outputs. We used Selenium in conjunction with ChromeDriver (v81.0.4044.69) [<xref ref-type="bibr" rid="R37">37</xref>] to automate the web browsing and form submission processes. For each predictor, we implemented a delay of 90 seconds between consecutive protein sequence queries to avoid overloading the webservers hosting the respective predictor algorithms with repeated requests. Due to issues with the Disprot webserver, we were only able to obtain predictions for the non-viral protein data set for 13 of the predictors.</p>
+<p id="P9">We converted each DisProt record to a binary vector corresponding to ordered/disordered state of residues in the amino acid sequence. To compare results between disorder prediction algorithms, we dichotomized continuous-valued residue predictions, <italic>i</italic>.<italic>e</italic>., intrinsic disorder probability, by locating the threshold that maximized the Matthews correlation coefficient (MCC) for each predictor applied to the DisProt training data. This optimal threshold was estimated using Brent’s root-finding algorithm as implemented by the <italic>optim</italic> function in the R statistical computing environment (version 3.4.4). In addition, we calculated the accuracy, specificity and sensitivity for each predictor from the contingency table of DisProt residue labels and dichotomized predictions.</p>
+</sec>
+<sec id="S4">
+<title>Ensemble classifier training and validation</title>
+<p id="P10">To assess whether the accuracy of existing predictors could be further improved on the virus-specific data set, we trained an ensemble classifier on the outputs of all predictors as features. Specifically, we used the random forest method implemented in the <italic>scikit</italic>-<italic>learn</italic> (version 0.23.1) Python module [<xref ref-type="bibr" rid="R38">38</xref>], which employs a set of de-correlated decision trees and averages their respective outputs to obtain an ensemble prediction [<xref ref-type="bibr" rid="R39">39</xref>]. To reduce bias, random forests fit the same decision trees to many bootstrap samples of the training data, and each committee of trees ‘votes’ for a particular classification [<xref ref-type="bibr" rid="R40">40</xref>]. By splitting the trees based on different samples of features, random forests reduce the correlation between trees and the overall variance.</p>
+<p id="P11">We split the viral protein data into random testing and training subsets, with 30% of protein sequences reserved for testing. Due to class imbalance in the data (<italic>i</italic>.<italic>e</italic>., only a minority of residues are labeled as disordered), we used stratified random sampling using the ‘StratifiedShuffleSplit’ function in the <italic>scikit</italic>-<italic>learn</italic> module. This function stratifies the data by label so that a constant proportion of labels is maintained in the training subset. Continuous-valued outputs from each predictor were normalized to a zero mean and unit variance. Thus, we did not apply the dichotomizing thresholds to these features (predictor outputs) when training the random forest classifier.</p>
+<p id="P12">We used 5-fold cross validation to tune the four hyper-parameters of the random forest classifier; namely: (1) the number of decision trees; (2) the maximum depth of any given decision tree; and the minimum number of samples required to split (3) an internal node or (4) a leaf node. To further minimize the effect of class imbalance in our data, we used over-sampling to balance the data with synthetic cases [<xref ref-type="bibr" rid="R41">41</xref>]. As suggested in [<xref ref-type="bibr" rid="R42">42</xref>], we applied an over-sampling procedure at every iteration of the cross-validation analysis to avoid over-optimistic results. We used the Python package <italic>imbalanced</italic>-<italic>learn</italic> [<xref ref-type="bibr" rid="R43">43</xref>] to over-sample the minority class (residues in intrinsically disordered regions) using the synthetic minority oversampling technique (SMOTE) [<xref ref-type="bibr" rid="R44">44</xref>]. SMOTE generates new cases by sampling the original data at random with replacement, evaluates each sample’s <italic>k</italic> nearest neighbours in the feature space, and then generates new synthetic samples along the vectors joining the sample to one of the neighbouring points. Over-sampling enables decision trees to be more generalizable by amplifying the decision region of the minority class.</p>
+<p id="P13">Using the optimized tuning parameters, we fit the final model on all of the training data. We applied this final model to generate predictions on the reserved testing data and calculated the MCC, sensitivity, specificity and accuracy. We repeated this process 10 times with randomly generated seeds to split the data into training and testing subsets, and averaged these performance metrics across replicates.</p>
+</sec>
+<sec id="S5">
+<title>Comparison to non-viral data</title>
+<p id="P14">To characterize how the performance of individual disorder predictors might vary among proteins from viruses and non-viruses, we computed the root mean square error (RMSE) for all continuousvalued predictions relative to the Disprot label (0, 1). We visualized this error distribution using principal component analysis (PCA). As well, we trained a support vector machine (SVM) on the RMSE values to determine whether the virus/non-virus labels were separable in this space. We used the default radial basis kernel with the C-classification SVM method implemented in the R package <italic>e1071</italic> [<xref ref-type="bibr" rid="R45">45</xref>], with 100 training subsets sampled at random without replacement for half of the data, and the remaining half for validation.</p>
+</sec>
+<sec id="S6">
+<title>Data availability</title>
+<p id="P15">We have released the Python scripts for automating queries to the disorder prediction web servers under a permissive free software license at <ext-link ext-link-type="uri" xlink:href="https://github.com/PoonLab/Floppy/">https://github.com/PoonLab/Floppy/</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<sec id="S8">
+<title>Viral and non-viral proteins have similar levels of disorder</title>
+<p id="P16">We obtained 126 viral and 126 randomly selected non-viral protein sequences from the DisProt database. The sequences were already annotated manually by a panel of experts for the presence or absence of disorder at each amino acid position, based on experimental data [<xref ref-type="bibr" rid="R27">27</xref>]. <xref ref-type="supplementary-material" rid="SD1">Supplementary Tables S1 and S2</xref> summarize the composition of the viral and non-viral protein datasets, respectively. The viral protein data set represents 22 virus families and 48 species. Not surprisingly, human immunodeficiency virus type 1 was disproportionately represented in these data with 16 entries corresponding to seven different gene products. Similarly, the non-viral protein data set was predominated by 75 human proteins, followed by 23 proteins from the yeast <italic>Saccharomyces cerevisiae</italic>. We found no significant difference in amino acid sequence lengths between viruses and all other organisms (Wilcoxon rank sum test, <italic>P</italic> = 0.60), with median lengths of 355 [interquartile range, IQR: 145–846] and 395 [203–729] amino acids, respectively. Furthermore, the dispersion in sequence lengths was significantly greater among viral proteins relative to the nonviral proteins (Ansari-Bradley test, <italic>P</italic> = 0.0028). There was no significant difference in the proportion of residues in disordered regions between the viral and non-viral data (Wilcoxon <italic>P</italic> = 0.97). The mean proportions were 0.30 (interquartile range, IQR [0.07-0.42]) for viral and 0.30 [0.07-0.47] for non-viral proteins, and similar numbers of proteins exhibited complete disorder (13 and 9, respectively).</p>
+</sec>
+<sec id="S9">
+<title>Divergent predictions of disorder in viral proteins</title>
+<p id="P17">Our first objective was to benchmark the performance of different predictors of intrinsic protein disorder to determine which predictor conferred the highest accuracy for viral proteins. These predictors generate continuous-valued outputs that generally correspond to the estimated probability that the residue is in an intrinsically disordered region. To create a uniform standard for comparison to the binary presence-absence labels, we optimized the disorder prediction thresholds as a tuning parameter for each predictor for the viral and non-viral datasets, respectively (<xref ref-type="supplementary-material" rid="SD1">Supplementary Tables S3 and S4</xref>). Put simply, residues with values above the threshold were classified as disordered. We used both the Matthews correlation coefficient (MCC, ranging from – 1 to +1 [<xref ref-type="bibr" rid="R46">46</xref>]) and area under the receiver-operator characteristic curve (AUC, ranging from 0 to 1) to quantify the performance of each predictor.</p>
+<p id="P18">These quantities were significantly correlated (Spearman’s <italic>ρ</italic> = 0.95, <italic>P</italic> = 5.2 × 10<sup>−6</sup>) and identified ESpritz.Disprot, CSpritz.Long and SPOT.Disorder2 as the most effective predictors for the viral proteins (<xref ref-type="fig" rid="F1">Figure 1A</xref>). ESpritz.Disprot obtained the highest overall values for both MCC and AUC (0.46 and 0.85, respectively). We note that SPOT.Disorder2 has recently been reported to exhibit a high degree of prediction accuracy for proteins of varying length [<xref ref-type="bibr" rid="R47">47</xref>]. In contrast, the predictors Disprot-VL2-V, PONDR-XL1 and PONDR-CAN performed very poorly on the viral dataset with MCC &lt; 0.2 and AUC &lt; 0.65. VL2-V is a ‘flavour’ of the VL2 predictors which were allowed to specialize on different subsets of a partitioned training set; for example, V tended to call higher levels of disorder in proteins of Archaebacteria [<xref ref-type="bibr" rid="R34">34</xref>]. Similarly, PONDR-XL1 was optimized to predict longer disordered regions and PONDR-CAN was trained specifically on calcineurins (a protein phosphatase) that is known to perform poorly on other proteins [<xref ref-type="bibr" rid="R48">48</xref>].</p>
+<p id="P19">
+<xref ref-type="fig" rid="F1">Figure 1B</xref> compares the MCC values for non-viral and viral protein data sets. Predictors exhibited substantially less variation in MCC for the non-viral data — put another way, the majority of predictors were more accurate at predicting disorder in viral proteins. The entire set of MCC, AUC, sensitivity and specificity values for both data sets are summarized in <xref ref-type="supplementary-material" rid="SD1">Supplementary Tables S3 and S4</xref>. To examine potential differences among predictors in greater detail, we calculated the RMSE for each protein and predictor and used a principal components analysis to visualize the resulting matrix (<xref ref-type="fig" rid="F2">Figure 2</xref>). The PCA indicated that the different predictors did not exhibit markedly divergent error profiles at the level of entire proteins. However, a support vector machine classifier trained on a random half of these data obtained, on average, an AUC of 0.75 (<italic>n</italic> = 100, range = 0.65 – 0.83), indicating that the viral and non-viral protein labels were appreciably separable with respect to these RMSE values.</p>
+</sec>
+<sec id="S10">
+<title>Ensemble prediction</title>
+<p id="P20">Ensemble classifiers are expected to perform better than their constituent models because they can reduce overfitting of the data by the latter [<xref ref-type="bibr" rid="R49">49</xref>]. Although multiple predictive models of protein disorder employ an ensemble approach, none of them has been trained specifically on viral protein data. We trained a random forest classifier on the outputs of the predictors used in our study using 10 random training subsets of the viral protein data. Next, we validated the performance of this ensemble model in comparison to these individual predictors to determine if training on viral data conferred a significant advantage. We found that the ensemble classifier performed substantially better, with a mean MCC of 0.72 (range 0.62 – 0.86). This corresponded to a roughly 27% improvement relative to ESpritz.Disorder, the best performing disorder predictor on these data (<xref ref-type="fig" rid="F1">Figure 1</xref>).</p>
+<p id="P21">To examine the relative contribution of the different predictors used as inputs for the ensemble method, we evaluated the feature importance of each input (<xref ref-type="fig" rid="F3">Figure 3</xref>) — roughly the prevalence of that feature among the decision trees comprising the random forest. We observed that the individual accuracy of a predictor did not necessarily correspond to its feature importance. Specifically, the best predictors (ESpritz.Disprot, CSpritz.Long and SPOT-Disorder.2) tended to be assigned higher importance values. On the other hand, both Disprot-VL2.C and Disprot-VL2.V also displayed high importance despite having some of the worst accuracy measures when evaluated individually (<xref ref-type="fig" rid="F1">Figure 1</xref>).</p>
+</sec>
+<sec id="S11">
+<title>Example: SARS-CoV-2 accessory protein 6</title>
+<p id="P22">To illustrate the use of our ensemble model on a novel protein, we applied this model and the 21 individual predictors to the accessory protein encoded by ORF6 in the novel 2019 coronavirus that was first isolated in Wuhan, China (designated SARS-CoV-2). ORF6 is one of the eight accessory genes of this virus. Its protein product is involved in antagonizing interferon activity thereby suppressing host immune response [<xref ref-type="bibr" rid="R50">50</xref>]. The protein is predicted to be highly disordered, particularly in its C-terminal region that contains short linear motifs involved in numerous biological activities [<xref ref-type="bibr" rid="R51">51</xref>]. We used a heatmap (<xref ref-type="fig" rid="F4">Figure 4</xref>) to visually summarize results from the ensemble method and individual predictors, mapped to the ORF6 amino acid sequence. Overall, most predictors assigned a higher probability of disorder in the C-terminal region of the protein, with the conspicuous exception of PONDR-XL1 and PONDR-CAN, which did not predict any disordered residues in this region. We also observed considerable variation among predictors around this overall trend. Although the PONDR-XL1 predictor is documented to omit the first and last 15 residues from disorder predictions, we observed that only 14 residues were reported this way — this treatment was also obtained for PONDR-CAN, although it was not a documented behaviour of that predictor.</p>
+</sec>
+</sec>
+<sec id="S12" sec-type="conclusions">
+<title>Concluding remarks</title>
+<p id="P23">Intrinsically disordered protein regions play an essential role in many viral functions [<xref ref-type="bibr" rid="R11">11</xref>]. It is therefore important to predict these regions accurately in order to make biological inferences from sequence variation. In this study, we found that predictive models of intrinsic disorder were more divergent in performance when evaluated on viral proteins than non-viral proteins. We note that many of these predictors could only be accessed through web applications, and some services become unavailable at different points of our study. Although we obtained more accurate predictions — or at least, predictions that were more concordant with an expert-curated database of intrinsic protein disorder [<xref ref-type="bibr" rid="R27">27</xref>] — using an ensemble ‘machine learning’ method, the erratic availability of the constituent predictors presents a significant obstacle to the practical utility of such approaches. Hence, we encourage researchers in the field of disorder prediction to support open science by releasing their source code or compiled binaries for local execution.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Tables</label>
+<media xlink:href="EMS102245-supplement-Supplementary_Tables.pdf" mimetype="application" mime-subtype="pdf" id="N66277" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S13">
+<title>Acknowledgements</title>
+<p>This work was supported in part by grants from the Natural Sciences and Engineering Research Council of Canada (NSERC, RGPIN-2018-05516) and from the Canadian Institutes of Health Research (CIHR, PJT-155990).</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Necci</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Piovesan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Dosztányi</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Tompa</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Tosatto</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>A comprehensive assessment of long intrinsic protein disorder from the DisProt database</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>3</issue>
+<fpage>445</fpage>
+<lpage>452</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+</person-group>
+<article-title>Intrinsically disordered proteins and their ‘mysterious’ (meta) physics</article-title>
+<source>Frontiers in Physics</source>
+<year>2019</year>
+<volume>7</volume>
+<fpage>10</fpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lichtenthaler</surname>
+<given-names>FW</given-names>
+</name>
+</person-group>
+<article-title>100 Years “Schlussel-Schloss-Prinzip”: What made Emil Fischer use this analogy?</article-title>
+<source>Angewandte Chemie International Edition in English</source>
+<year>1995</year>
+<volume>33</volume>
+<issue>23-24</issue>
+<fpage>2364</fpage>
+<lpage>2374</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wright</surname>
+<given-names>PE</given-names>
+</name>
+<name>
+<surname>Dyson</surname>
+<given-names>HJ</given-names>
+</name>
+</person-group>
+<article-title>Intrinsically unstructured proteins: re-assessing the protein structure-function paradigm</article-title>
+<source>Journal of molecular biology</source>
+<year>1999</year>
+<volume>293</volume>
+<issue>2</issue>
+<fpage>321</fpage>
+<lpage>331</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kozlowski</surname>
+<given-names>LP</given-names>
+</name>
+<name>
+<surname>Bujnicki</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>MetaDisorder: a meta-server for the prediction of intrinsic disorder in proteins</article-title>
+<source>BMC bioinformatics</source>
+<year>2012</year>
+<volume>13</volume>
+<issue>1</issue>
+<fpage>111</fpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katuwawala</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Oldfield</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kurgan</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Accuracy of protein-level disorder predictions</article-title>
+<source>Brief Bioinform</source>
+<year>2019</year>
+<volume>46</volume>
+<fpage>48</fpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Oldfield</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Intrinsically disordered proteins in human diseases: introducing the D2 concept</article-title>
+<source>Annu Rev Biophys</source>
+<year>2008</year>
+<volume>37</volume>
+<fpage>215</fpage>
+<lpage>246</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>KN</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Kurgan</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Untapped potential of disordered proteins in current druggable human proteome</article-title>
+<source>Current drug targets</source>
+<year>2016</year>
+<volume>17</volume>
+<issue>10</issue>
+<fpage>1198</fpage>
+<lpage>1205</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gitlin</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hagai</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>LaBarbera</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Solovey</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Andino</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Rapid evolution of virus sequences in intrinsically disordered protein regions</article-title>
+<source>PLoS pathogens</source>
+<year>2014</year>
+<volume>10</volume>
+<issue>12</issue>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xue</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Blocquel</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Habchi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>AV</given-names>
+</name>
+<name>
+<surname>Kurgan</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural disorder in viral proteins</article-title>
+<source>Chemical reviews</source>
+<year>2014</year>
+<volume>114</volume>
+<issue>13</issue>
+<fpage>6880</fpage>
+<lpage>6911</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mishra</surname>
+<given-names>PM</given-names>
+</name>
+<name>
+<surname>Verma</surname>
+<given-names>NC</given-names>
+</name>
+<name>
+<surname>Rao</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Nandi</surname>
+<given-names>CK</given-names>
+</name>
+</person-group>
+<article-title>Intrinsically disordered proteins of viruses: Involvement in the mechanism of cell regulation and pathogenesis</article-title>
+<source>Progress in Molecular Biology and Translational Science</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walter</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Charon</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Lachat</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Leger</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lafforgue</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comparative analysis of mutational robustness of the intrinsically disordered viral protein VPg and of its interactor eIF4E</article-title>
+<source>PloS one</source>
+<year>2019</year>
+<volume>14</volume>
+<issue>2</issue>
+<fpage>e0211725</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sanjuán</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Nebot</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Chirico</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Mansky</surname>
+<given-names>LM</given-names>
+</name>
+<name>
+<surname>Belshaw</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Viral mutation rates</article-title>
+<source>Journal of virology</source>
+<year>2010</year>
+<volume>84</volume>
+<issue>19</issue>
+<fpage>9733</fpage>
+<lpage>9748</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tokuriki</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Oldfield</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Berezovsky</surname>
+<given-names>IN</given-names>
+</name>
+<name>
+<surname>Tawfik</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Do viral proteins possess unique biophysical features?</article-title>
+<source>Trends in biochemical sciences</source>
+<year>2009</year>
+<volume>34</volume>
+<issue>2</issue>
+<fpage>53</fpage>
+<lpage>59</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cotmore</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>Tattersall</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kerr</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Parrish</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Linden</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Structure and organization of the viral genome</article-title>
+<source>Parvoviruses Hodder Arnold, London, United Kingdom</source>
+<year>2005</year>
+<fpage>73</fpage>
+<lpage>94</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>The evolutionary genetics of emerging viruses</article-title>
+<source>Annu Rev Ecol Evol Syst</source>
+<year>2009</year>
+<volume>40</volume>
+<fpage>353</fpage>
+<lpage>372</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Belshaw</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pybus</surname>
+<given-names>OG</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>The evolution of genome compression and genomic novelty in RNA viruses</article-title>
+<source>Genome research</source>
+<year>2007</year>
+<volume>17</volume>
+<issue>10</issue>
+<fpage>1496</fpage>
+<lpage>1504</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rancurel</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Khosravi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Romero</surname>
+<given-names>PR</given-names>
+</name>
+<name>
+<surname>Karlin</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Overlapping genes produce proteins with unusual sequence properties and offer insight into de novo protein creation</article-title>
+<source>Journal of virology</source>
+<year>2009</year>
+<volume>83</volume>
+<issue>20</issue>
+<fpage>10719</fpage>
+<lpage>10736</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Ferreon</surname>
+<given-names>ACM</given-names>
+</name>
+<name>
+<surname>Moran</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Gambin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Deniz</surname>
+<given-names>AA</given-names>
+</name>
+</person-group>
+<chapter-title>Single-molecule fluorescence studies of intrinsically disordered proteins</chapter-title>
+<source>Methods in enzymology</source>
+<volume>472</volume>
+<publisher-name>Elsevier</publisher-name>
+<year>2010</year>
+<fpage>179</fpage>
+<lpage>204</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DeForte</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+</person-group>
+<article-title>Resolving the ambiguity: Making sense of intrinsic disorder when PDB structures disagree</article-title>
+<source>Protein Science</source>
+<year>2016</year>
+<volume>25</volume>
+<issue>3</issue>
+<fpage>676</fpage>
+<lpage>688</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Lawson</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Romero</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Oh</surname>
+<given-names>JS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Intrinsically disordered protein</article-title>
+<source>Journal of molecular graphics and modelling</source>
+<year>2001</year>
+<volume>19</volume>
+<issue>1</issue>
+<fpage>26</fpage>
+<lpage>59</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+</person-group>
+<article-title>What does it mean to be natively unfolded?</article-title>
+<source>European Journal of Biochemistry</source>
+<year>2002</year>
+<volume>269</volume>
+<issue>1</issue>
+<fpage>2</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>A comprehensive review and comparison of existing computational methods for intrinsically disordered protein and region prediction</article-title>
+<source>Briefings in bioinformatics</source>
+<year>2019</year>
+<volume>20</volume>
+<issue>1</issue>
+<fpage>330</fpage>
+<lpage>346</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Atkins</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Boateng</surname>
+<given-names>SY</given-names>
+</name>
+<name>
+<surname>Sorensen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>McGuffin</surname>
+<given-names>LJ</given-names>
+</name>
+</person-group>
+<article-title>Disorder prediction methods, their applicability to different protein targets and their usefulness for guiding experimental studies</article-title>
+<source>International journal of molecular sciences</source>
+<year>2015</year>
+<volume>16</volume>
+<issue>8</issue>
+<fpage>19040</fpage>
+<lpage>19054</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Rong</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>An overview of predictors for intrinsically disordered proteins over 2010–2014</article-title>
+<source>International journal of molecular sciences</source>
+<year>2015</year>
+<volume>16</volume>
+<issue>10</issue>
+<fpage>23446</fpage>
+<lpage>23462</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Piovesan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Tabaro</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Micetic</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Necci</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Quaglia</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Oldfield</surname>
+<given-names>CJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DisProt 7.0: a major update of the database of disordered proteins</article-title>
+<source>Nucleic acids research</source>
+<year>2017</year>
+<volume>45</volume>
+<issue>D1</issue>
+<fpage>D219</fpage>
+<lpage>D227</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hatos</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hajdu-Soltész</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Monzon</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Palopoli</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Álvarez</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Aykac-Fas</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DisProt: intrinsic protein disorder annotation in 2020</article-title>
+<source>Nucleic acids research</source>
+<year>2020</year>
+<volume>48</volume>
+<issue>D1</issue>
+<fpage>D269</fpage>
+<lpage>D276</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="web">
+<collab>DisProt</collab>
+<comment>Available from: <ext-link ext-link-type="uri" xlink:href="https://www.disprot.org/">https://www.disprot.org/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nielsen</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Mulder</surname>
+<given-names>FA</given-names>
+</name>
+</person-group>
+<article-title>Quality and bias of protein disorder predictors</article-title>
+<source>Scientific reports</source>
+<year>2019</year>
+<volume>9</volume>
+<issue>1</issue>
+<fpage>5137</fpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hanson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Paliwal</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Litfin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>SPOT-Disorder2: Improved Protein Intrinsic Disorder Prediction by Ensembled Deep Learning</article-title>
+<source>Genomics, proteomics &amp; bioinformatics</source>
+<year>2019</year>
+<volume>17</volume>
+<issue>6</issue>
+<fpage>645</fpage>
+<lpage>656</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xue</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Dunbrack</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Uversky</surname>
+<given-names>VN</given-names>
+</name>
+</person-group>
+<article-title>PONDR-FIT: a metapredictor of intrinsically disordered amino acids</article-title>
+<source>Biochimica et Biophysica Acta (BBA)-Proteins and Proteomics</source>
+<year>2010</year>
+<volume>1804</volume>
+<issue>4</issue>
+<fpage>996</fpage>
+<lpage>1010</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mészáros</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Erdős</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Dosztányi</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>IUPred2A: context-dependent prediction of protein disorder as a function of redox state and protein binding</article-title>
+<source>Nucleic acids research</source>
+<year>2018</year>
+<volume>46</volume>
+<issue>W1</issue>
+<fpage>W329</fpage>
+<lpage>W337</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peng</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Radivojac</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Vucetic</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Obradovic</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Length-dependent prediction of protein intrinsic disorder</article-title>
+<source>BMC bioinformatics</source>
+<year>2006</year>
+<volume>7</volume>
+<issue>1</issue>
+<fpage>208</fpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>[34]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vucetic</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Obradovic</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Flavors of protein disorder</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2003</year>
+<volume>52</volume>
+<issue>4</issue>
+<fpage>573</fpage>
+<lpage>584</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>[35]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walsh</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Di Domenico</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Vullo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pollastri</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Tosatto</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>CSpritz: accurate prediction of protein disorder segments with annotation for homology, secondary structure and linear motifs</article-title>
+<source>Nucleic acids research</source>
+<year>2011</year>
+<volume>39</volume>
+<issue>suppl_2</issue>
+<fpage>W190</fpage>
+<lpage>W196</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>[36]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walsh</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Di Domenico</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Tosatto</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>ESpritz: accurate and fast prediction of protein disorder</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<issue>4</issue>
+<fpage>503</fpage>
+<lpage>509</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>[37]</label>
+<element-citation publication-type="web">
+<collab>ChromeDriver: WebDriver for Chrome;</collab>
+<comment>Available from: <ext-link ext-link-type="uri" xlink:href="https://chromedriver.chromium.org/">https://chromedriver.chromium.org/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>[38]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gramfort</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Michel</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Thirion</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Grisel</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine learning in Python</article-title>
+<source>the Journal of machine Learning research</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>2825</fpage>
+<lpage>2830</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>[39]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Breiman</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Random forests</article-title>
+<source>Machine learning</source>
+<year>2001</year>
+<volume>45</volume>
+<issue>1</issue>
+<fpage>5</fpage>
+<lpage>32</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>[40]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Hastie</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Tibshirani</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Friedman</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<chapter-title>The Elements of Statistical Learning</chapter-title>
+<source>Springer Series in Statistics</source>
+<publisher-loc>New York, NY, USA</publisher-loc>
+<publisher-name>Springer New York Inc</publisher-name>
+<year>2001</year>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>[41]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Japkowicz</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<chapter-title>The class imbalance problem: Significance and strategies</chapter-title>
+<source>Proc of the IntÕl Conf on Artificial Intelligence</source>
+<year>2000</year>
+<volume>56</volume>
+<publisher-name>Citeseer</publisher-name>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>[42]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hemmerich</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Asilar</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Ecker</surname>
+<given-names>GF</given-names>
+</name>
+</person-group>
+<article-title>COVER: conformational oversampling as data augmentation for molecules</article-title>
+<source>Journal of Cheminformatics</source>
+<year>2020</year>
+<volume>12</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>[43]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lemaître</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Nogueira</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Aridas</surname>
+<given-names>CK</given-names>
+</name>
+</person-group>
+<article-title>Imbalanced-learn: A python toolbox to tackle the curse of imbalanced datasets in machine learning</article-title>
+<source>The Journal of Machine Learning Research</source>
+<year>2017</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>559</fpage>
+<lpage>563</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>[44]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chawla</surname>
+<given-names>NV</given-names>
+</name>
+<name>
+<surname>Bowyer</surname>
+<given-names>KW</given-names>
+</name>
+<name>
+<surname>Hall</surname>
+<given-names>LO</given-names>
+</name>
+<name>
+<surname>Kegelmeyer</surname>
+<given-names>WP</given-names>
+</name>
+</person-group>
+<article-title>SMOTE: synthetic minority oversampling technique</article-title>
+<source>Journal of artificial intelligence research</source>
+<year>2002</year>
+<volume>16</volume>
+<fpage>321</fpage>
+<lpage>357</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>[45]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chang</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>CJ</given-names>
+</name>
+</person-group>
+<article-title>LIBSVM: A library for support vector machines</article-title>
+<source>ACM transactions on intelligent systems and technology (TIST)</source>
+<year>2011</year>
+<volume>2</volume>
+<issue>3</issue>
+<fpage>1</fpage>
+<lpage>27</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>[46]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Boughorbel</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jarray</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>El-Anbari</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Optimal classifier for imbalanced data using Matthews Correlation Coefficient metric</article-title>
+<source>PloS one</source>
+<year>2017</year>
+<volume>12</volume>
+<issue>6</issue>
+<fpage>e0177678</fpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>[47]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hanson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Paliwal</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Improving protein disorder prediction by deep bidirectional long short-term memory recurrent neural networks</article-title>
+<source>Bioinformatics</source>
+<year>2017</year>
+<volume>33</volume>
+<issue>5</issue>
+<fpage>685</fpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>[48]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Romero</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Obradovic</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Gamer</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Dunker</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Sequence complexity of disordered protein</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2001</year>
+<volume>42</volume>
+<issue>1</issue>
+<fpage>38</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>[49]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Attia</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Ensemble Prediction of Intrinsically Disordered Regions in Proteins</article-title>
+<source>BMC Bioinformatics</source>
+<year>2012</year>
+<volume>13</volume>
+<issue>1</issue>
+<fpage>111</fpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>[50]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuen</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>JY</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Mak</surname>
+<given-names>LF</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 nsp13, nsp14, nsp15 and orf6 function as potent interferon antagonists</article-title>
+<source>Emerging Microbes &amp; Infections</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>29</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>[51]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giri</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Bhardwaj</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Shegane</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gehi</surname>
+<given-names>BR</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Gadhave</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Dark Proteome of Newly Emerged SARS-CoV-2 in Comparison with Human and Bat Coronaviruses</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Performance of predictors on viral data set. (A) Scatterplot of MCC and AUC values for 21 predictors applied to the viral protein data set. (B) Slopegraph comparing the MCC values for 13 predictors applied to both non-viral and viral data sets. Because the three variants of the ESpritz model obtained identical MCC values, the corresponding labels were merged. Two labels (PONDRFIT, PONDR.VSL2) were displaced to prevent overlaps on the left and right sides, respectively.</p>
+</caption>
+<graphic xlink:href="EMS102245-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Principal components analysis plot of the root mean squared errors (RMSEs) for 13 disorder predictors on viral (red, triangles) and non-viral (blue, circles) protein sequences. The percentages of total variance explained by the first two principal components are indicated in parentheses in the respective axis labels.</p>
+</caption>
+<graphic xlink:href="EMS102245-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Box plot of the average decrease in Gini impurity by each feature in the random forest, for 10 random runs of the random forest model. Vertical line indicates the median, the box is the interquartile range (IQR; range from first to third quartiles). The left whisker extends to the first datum greater that Q1 − 1.5 × IQR and the right whisker extends to the last datum smaller than Q3 + 1.5 × IQR. Individual points are outliers that lie outside this range.</p>
+</caption>
+<graphic xlink:href="EMS102245-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Disorder Predictions for novel ORF6 in SARS-CoV-2. The first row represents the random forest model predictions, with subsequent rows corresponding to individual predictors. The entire protein length is represented on the x-axis, each grid is an amino acid. Red squares indicate disordered predictions and blue squares indicate ordered predictions.</p>
+</caption>
+<graphic xlink:href="EMS102245-f004"/>
+</fig>
+</floats-group>
+</article>

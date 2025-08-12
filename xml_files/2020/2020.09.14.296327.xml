@@ -1,0 +1,1187 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS95131</article-id>
+<article-id pub-id-type="doi">10.1101/2020.09.14.296327</article-id>
+<article-id pub-id-type="archive">PPR214146</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>The Coronavirus Network Explorer: Mining a large-scale knowledge graph for effects of SARS-CoV-2 on host cell function</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Krämer</surname>
+<given-names>Andreas</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">✉</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Billaud</surname>
+<given-names>Jean-Noël</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Tugendreich</surname>
+<given-names>Stuart</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Shiffman</surname>
+<given-names>Dan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Jones</surname>
+<given-names>Martin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Green</surname>
+<given-names>Jeff</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">✉</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>QIAGEN Digital Insights, Redwood City, CA 94063, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<bold>Correspondence</bold>: <email>andreas.kramer@qiagen.com</email>, <email>jeff.green@qiagen.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>17</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>14</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Building on recent work that identified human host proteins that interact with SARS-CoV-2 viral proteins in the context of an affinity-purification mass spectrometry screen, we use a machine learning-based approach to connect the viral proteins to relevant biological functions and diseases in a large-scale knowledge graph derived from the biomedical literature. Our aim is to explore how SARS-CoV-2 could interfere with various host cell functions, and also to identify additional drug targets amongst the host genes that could potentially be modulated against COVID-19. Results are presented in the form of interactive network visualizations, that allow exploration of underlying experimental evidence. A selection of networks is discussed in the context of recent clinical observations.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), a member of the coronavirus family, is the etio-logic agent of the pandemic COVID-19. Like other positive-stranded RNA viruses, its encoded proteins interact with proteins of the infected host cell at various stages of the replicative cycle, including with those involved in the immune response. Such proteins therefore represent possible targets for the development of antiviral strategies. Recently Gordon <italic>et al.</italic> (<xref ref-type="bibr" rid="R1">1</xref>) identified human host proteins that bind to overexpressed SARS-CoV-2 viral proteins in immortalized human cells using an affinity-purification mass spectrometry screen. Proteins identified were functionally characterized and screened for existing drug targets to identify drugs that could potentially be repurposed against COVID-19 (<xref ref-type="bibr" rid="R1">1</xref>).</p>
+<p id="P3">Our goal is to illuminate possible molecular mechanisms permitting viral proteins to affect a range of host cell and immune functions that have been shown to be relevant in the context of COVID-19. For this purpose we integrate SARS-CoV-2 viral proteins into a large-scale knowledge graph (KG) through the viral-host protein interactions identified in Gordon <italic>et al.</italic> (<xref ref-type="bibr" rid="R1">1</xref>). The KG represents existing experimental evidence from the biomedical literature mostly in the form of signed cause-effect relationships (edges). These edges connect different entities (nodes) including genes, drugs, microRNAs, biological functions, diseases, and pathways; and they relate to different underlying functional mechanisms such as expression/transcription, activation/inhibition, phosphorylation, protein-protein binding among others. Each relationship has a positive or negative sign indicating the direction of the effect, i.e. whether it leads to an increase or decrease (<xref ref-type="bibr" rid="R2">2</xref>). Underlying the KG is the QIAGEN Knowledge Base (KB), a large structured collection of biomedical content that has been manually curated from the lierature for the past 20 years, and also integrates content from third-party databases. At present, the KB contains over 7 million findings, a large subset of which are represented in the KG with approximately 120,000 nodes and 3.7 million edges.</p>
+</sec>
+<sec id="S2">
+<title>Approach</title>
+<p id="P4">The outline of our approach is shown in <xref ref-type="fig" rid="F1">Figure 1</xref>. For each member of a pre-selected set of biologically relevant endpoint functions (including some diseases and signaling pathways), we construct a network (a subgraph of the KG) that connects viral proteins to the specified endpoint through causal paths. These causal paths involve genes (or other molecules) that are important in the given functional context, and therefore indicate a possible mechanism with which viral proteins may affect the particular host function. Because of the high connectivity of the KG, a large number of molecules may be associated with the host function, so in order to construct focused networks, care must be taken regarding the choice of intermediary genes and molecules. For this reason, we use a machine learning model trained on prior knowledge, that computes a signed score for each gene indicating the likelihood of an activating or inhibiting effect on the end-point function, where the direction of the effect is given by the sign of the score. The purpose of the model is twofold: (<xref ref-type="bibr" rid="R1">1</xref>) the prediction of novel gene-function associations independent of whether direct literature evidence is available or not, and (<xref ref-type="bibr" rid="R2">2</xref>) the prioritization of genes predicted to be most relevant in the given functional context.</p>
+<p id="P5">Connections from the viral proteins to the selected endpoint functions were made through short directed paths in the KG involving the highest scoring genes in the given context, where protein-protein binding edges can be traversed in both ways. Therefore, in every network there will always be at least one causal path from any viral protein to the endpoint function through edges supported by literature evidence. Since viral proteins are connected through protein-protein binding edges to the rest of the network it is impossible to make predictions about their direction of effect on the endpoint function. However, we can use other available information to make inferences about the activation status of the intermediary genes. For instance, recent research (<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R7">7</xref>) indicates that SARS-Cov-2 has an activating effect on coagulation of blood (severe coagulopathy has been detected in many patients with severe disease) which allows us to infer that network proteins predicted to have an activating effect on coagulation would potentially need to be inhibited to counteract viral effects, i.e. drugs targeting those proteins would need to be antagonists. Many of the intermediary genes found in our networks are already targets for existing drugs that could potentially be repurposed against COVID-19. Considering the direction of the effect is an important criterion for the selection of most promising candidates.</p>
+<p id="P6">Existing network-based approaches in the context of COVID-19 mostly focus on protein-protein and co-expression networks using standard enrichment-based functional and pathway analysis, or employing network topology measures to identify possible targets (<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R12">12</xref>). Gysi <italic>et al.</italic> (<xref ref-type="bibr" rid="R13">13</xref>), based on the Gordon <italic>et al.</italic> (<xref ref-type="bibr" rid="R1">1</xref>) dataset in conjunction with the human interactome, provide a systematic exploration of state-of-the art network algorithms (proximity-based, diffusion-based, and based on graph convolutional networks) with the primary goal of ranking candidate drugs for repurposing. To our knowledge, none of these approaches currently leverages the direction of effects, i.e. activation vs. inhibition.</p>
+</sec>
+<sec id="S3">
+<title>Implementation</title>
+<p id="P7">We implemented a web-based interface through which networks computed with the algorithm outlined above can be accessed for interactive exploration. This interface enables the user to select a particular endpoint function, as well as the direction of the effect (activating or inhibiting) that infection with SARS-CoV-2 is thought to have on this function. In the resulting displayed networks (for examples see <xref ref-type="fig" rid="F3">Figures 3</xref>–<xref ref-type="fig" rid="F5">5</xref>) the user can click on any entity (node or edge) to reveal underlying findings from the literature, or a description of the selected entity itself. Colors of gene nodes indicate whether that particular gene is inferred to be activated (orange) or inhibited (blue) in order to achieve the preselected effect on the endpoint function. In addition, we also annotated genes with associated signaling pathways, colored according to their predicted activation state. Nodes whose activation status cannot be inferred, either because they are only connected by unsigned binding edges, or do not meet a required score threshold, are shown in white. Genes that are targets for existing drugs are marked with a purple border. Selecting such a node will display the drugs targeting that gene along with each drug's predicted effect on the endpoint function. The web application also allows the user to search for specific genes or pathways in order to narrow down the number of networks to peruse.</p>
+</sec>
+<sec id="S4" sec-type="methods">
+<title>Methods</title>
+<sec id="S5">
+<title>Prior knowledge-based machine learning model for scoring gene-function relationships</title>
+<p id="P8">Prediction and scoring of causal gene-function relationships involves two parts, an unsupervised step to construct gene embeddings in a high-dimensional vector space, and a supervised step to make predictions about the gene-function relationships themselves. Building on an assumption that expression relationships encode information about gene function, the unsupervised step builds gene feature vectors by leveraging downstream causal gene expression signatures derived from the literature. It is important to distinguish this from gene expression patterns found in expression datasets: Here, expression signatures are created from individual published gene-to-gene expression or transcription relationships, not from datasets. The supervised step then employs a linear least-square regression model for each function using observed signed causal gene-function relationships from the literature as training data. Below we provide a brief description of the steps involved in this method, a deeper discussion and evaluation of the approach will be given elsewhere (manuscript in preparation).</p>
+<p id="P9">Causal gene expression signatures are represented by a signed bipartite adjacency matrix <italic>W</italic> where rows represent the genes (or other molecules) for which we wish to compute embeddings, and columns represent genes of the downstream expression signature (<xref ref-type="fig" rid="F2">Figure 2a</xref>). The matrix elements are <inline-formula>
+<mml:math id="M1">
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>±</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> if an observatiion of gene <italic>i</italic> regulating gene <italic>j</italic> exists in the literature, where the positive sign stands for observed up-regulation and the negative sign for observed down-regulation. It is <italic>W<sub>ij</sub>
+</italic> = 0 if there is no recorded relationship, and <italic>N<sub>i</sub>
+</italic> denotes the total number of genes found to be regulated by gene <italic>i</italic>. From <italic>W</italic> we construct the “coactivity” matrix <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mi>S</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>W</mml:mi>
+<mml:msup>
+<mml:mi>W</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+</mml:math>
+</disp-formula> which is positive definite with diagonal elements being equal to one. We then take the low-rank approximation of <italic>S</italic>, <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M3">
+<mml:mover accent="true">
+<mml:mi>S</mml:mi>
+<mml:mo stretchy="true">˜</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:mi>U</mml:mi>
+<mml:mo>Λ</mml:mo>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+</mml:math>
+</disp-formula> where Λ is an <italic>N</italic>-dimensional diagonal matrix containing the top <italic>N</italic> eigenvalues of <italic>S</italic>, and column vectors of <italic>U</italic> are the corresponding <italic>N</italic> normalized eigenvectors. The row vectors of <italic>U</italic> form the desired <italic>N</italic>-dimensional feature representations of genes (<xref ref-type="fig" rid="F2">Figure 2b</xref>). In the model used for this application we included 2314 genes, and set <italic>N</italic> = 100.</p>
+<p id="P10">Causal gene-function effects from the literature are captured similarly in a signed bipartite adjacency matrix <italic>Y</italic>, with rows representing genes, and columns representing downstream functions (<xref ref-type="fig" rid="F2">Figure 2c</xref>). It is <italic>Y<sub>ij</sub>
+</italic> = ±1 if the gene-function effect is activating (+1), or inhibiting (−1), else <italic>Y<sub>ij</sub>
+</italic> = 0 if there is no observed effect. We build a model predicting the effect of gene <italic>i</italic> on function <italic>j</italic> from the gene feature vector <inline-formula>
+<mml:math id="M4">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> by using linear regression, i.e. minimizing the least-squares loss <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M5">
+<mml:mi>L</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>β</mml:mi>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> where the parameter vector <inline-formula>
+<mml:math id="M6">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is determined for each function <italic>j</italic>. It follows that <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M7">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>β</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:mi>U</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> so that predicted signed scores <italic>P<sub>ij</sub>
+</italic> can then be expressed as orthogonal projections of the column vectors <inline-formula>
+<mml:math id="M8">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> of <italic>Y</italic> onto the subspace spanned by the top eigenvectors of <italic>S</italic> (<xref ref-type="fig" rid="F2">Figure 2d</xref>), <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M9">
+<mml:mi>P</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>U</mml:mi>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:mi>Y</mml:mi>
+</mml:math>
+</disp-formula> In order to determine top-scoring genes for a given function <italic>j</italic>, we sort the elements of row vectors <inline-formula>
+<mml:math id="M10">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> of <italic>P</italic> by their absolute value. A meaningful cutoff is obtained by looking at the distribution of values in <inline-formula>
+<mml:math id="M11">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="true">→</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>, i.e. applying a transformatin to <italic>z</italic>-scores, <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M12">
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mtext>mean</mml:mtext>
+<mml:mo>(</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>p</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>std</mml:mtext>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>p</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S6">
+<title>Network algorithm</title>
+<p id="P11">The network-generating algorithm consists of the following steps (see <xref ref-type="fig" rid="F1">Figure 1</xref>):</p>
+<p id="P12">For each endpoint function <italic>F</italic> we determine the set of top-scoring genes associated with <italic>F</italic> where each gene <italic>g</italic> meets a cut off |<italic>z<sub>gF</sub>
+</italic>| ≥ 2. Then, for each viral protein <italic>V</italic> we construct the network neighborhood of <italic>V</italic> by collecting all genes directly connected to <italic>V</italic> (through edges from Gordon <italic>et al.</italic> (<xref ref-type="bibr" rid="R1">1</xref>)), and additionally genes that can be reached from <italic>V</italic> by traversing two subsequent protein-protein binding edges (“2 hops”) but also obey a “specificity” criterion ensuring that connections do not occur through network hubs, and providing an external parameter to control network size. In particular, for a given gene <italic>g</italic> that is connected through 2 hops to <italic>V</italic> we calculate the quantity <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M13">
+<mml:mi>s</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>g</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>g</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>E</italic> is the total number of protein-protein binding edges, <italic>d<sub>g</sub>
+</italic> is the node degree of <italic>g</italic>, and the sum runs over all intermediate genes <italic>g′</italic> connecting <italic>V</italic> to <italic>g</italic>. For the application, we imposed a cut off <italic>s</italic> ≤ 0.001, which led to reasonable network sizes.</p>
+<p id="P13">For any given function <italic>F</italic> from <xref ref-type="table" rid="T1">Table 1</xref> we collect all viral proteins <italic>V<sub>i</sub>
+</italic> for which the intersection <italic>G<sub>i</sub>
+</italic> of the set of topscoring genes of <italic>F</italic> and the network neighborhood of <italic>V<sub>i</sub>
+</italic> is not empty, and together they form the “core” of the network for function <italic>F</italic>. Apart from the protein-protein binding edges, this core network can still be unconnected as a subgraph of the KG. In the next step, in order to show supporting evidence from the literature, we therefore include additional genes from the KG (with emphasis on high-scoring ones w.r.t. <italic>F</italic>) to create a connected subgraph. For the subset of gene nodes <italic>g</italic> in the KG that were assigned a <italic>z</italic>-score <italic>z<sub>gF</sub>
+</italic>, and that are connected by an edge, we define edge weights <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M14">
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mrow>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mrow>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> which are used to compute shortest paths from genes in the sets <italic>G<sub>i</sub>
+</italic> to the endpoint function <italic>F</italic> within the KG (similarly gene-function edges are assigned a weight <italic>w</italic> = |<italic>z<sub>gF</sub>
+</italic>|<sup>−1/2</sup>). Shortest paths constructed this way are enriched in high-scoring genes. In addition to shortest paths we also add slightly longer paths (based on a heuristic) to control network size. In a final s tep, in order to provide additional context, some network genes are also connected to nodes representing signaling pathways in which these genes play a role.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="discussion">
+<title>Discussion</title>
+<p id="P14">Endpoint functions and pathways for which networks were computed are shown in <xref ref-type="table" rid="T1">Table 1</xref>. These networks represent the large spectrum of the host biology affected by the viral infection. Immunological signaling pathways (IL-1, IL-6, IL-8 to name a few) are included as they describe broadly the impact of the inflammatory setting in COVID-19 patients. We have also included networks that display biological endpoints observed in severe or critically-ill COVID-19 patients such as pneumonia, respiratory failure, myocarditis. A set of networks presents the complex viral life cycle and its counterpart host response (Replication of coronavirus, budding of virus, entrance of virus, antiviral response, etc.) and finally a set of networks that are possibly hijacked by the virus itself for its replication/multiplication or transmission (endocytosis, endoplasmic reticulum stress response, etc.).</p>
+<p id="P15">Below we discuss three of the networks as examples.</p>
+<sec id="S8">
+<title>Network: Promotion of coagulation of blood</title>
+<p id="P16">Most people infected with SARS-CoV-2 will experience mild to moderate respiratory illness and recover promptly. However, in some cases, severe disease occurs with major pathophysiological and sometimes lethal outcomes. Co-morbidities such as cardiovascular, renal, and respiratory preexisting conditions contribute to the severity seen in these patients. One drastic impact seen is the change in hemostasis after SARS-CoV-2 infection. Severe coagulopathy can arise and is associated with increased fatality rates in severely ill patients. The SARS-CoV-2 infection induces a pro-coagulative state and may result in vascular leakage and disseminated intravascular coagulation. The proinflammatory unbalance is thought to be one of the key factors of this uncontrolled clotting consequence seen in severe COVID-19 (<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R14">14</xref>). The network presented here (<xref ref-type="fig" rid="F3">Figure 3</xref>) displays the interrelations between some of the key host molecules involved in the coagulation cascade, such as F3/tissue factor, F10, PLAT/plasminogen activator, and angiogenic factors or molecules related to angiogenesis balance such as F2RL1/proteinase-activated receptor 2 and EDN1/endothelin 1, PF4/Platelet factor 4 and several viral proteins (nsp9, nsp13, orf3a, orf9c, orf8). The severity of COVID-19 is generally a consequence of hypercytokinemia ("cytokine storm") with its dramatic increase of chemokines and their cellular consequences (e.g. increase of neutrophils, thrombocytopenia, endothelialitis). Therefore, this network also displays the contribution of increased proinflammatory molecules or signaling pathways (IL1B, IL6, IL8, IL17a) and upregulated chemokine signaling (CXCR4 signaling, CCL5) observed in severe COVID-19 outcomes. This network highlights the importance of understanding the molecular interplay between the players, and as shown recently, anticoagulant treatment appears to decrease mortality in severe COVID-19 patients.</p>
+</sec>
+<sec id="S9">
+<title>Network: Promotion of pneumonia</title>
+<p id="P17">Viral pneumonia with acute respiratory distress syndrome (ARDS) is one of the extreme consequences of COVID-19, a condition requiring mechanical ventilation as treatment. Patients with these severe conditions develop progressive respiratory failure following dramatic cascades of events. Dysfunctional immune responses in these patients will induce these events and are characterized by low IFN type I, III, a high pro-inflammatory setting, elevated chemokine secretion, high infiltration of myeloid and T cells in the lung, and finally severe pulmonary edema and pneumonia (<xref ref-type="bibr" rid="R15">15</xref>–<xref ref-type="bibr" rid="R17">17</xref>). This network (<xref ref-type="fig" rid="F4">Figure 4</xref>) shows the possible interplay among type I Interferons, interleukins, the glucocorticoid receptor, sensors of viral infections and elements of the JAK/STAT pathway or the coagulation cascade and key coronaviral proteins that might promote pneumonia.</p>
+</sec>
+<sec id="S10">
+<title>Network: Promotion of IL6 signaling</title>
+<p id="P18">IL6 is an important pleiotropic interleukin that signals through the JAK/STAT (JAK1 and STAT3 in particular) and the MAPK pathway. It is expressed by immune cells (dendritic cells, macrophages, B cells and also epithelial cells) and it is involved in many biological processes including cell survival, apoptosis, maturation of T cells, TH1/Th2/Th17 differentiation/balance, and inflammation. I L6 i s d escribed a s a p ro-inflammatory cytokine, secreted in response to IL1B and TNF stimulation. The severe or critical cases of COVID-19 correlate with high levels of IL6 (during the cytokine storm) and low lymphocyte counts (<xref ref-type="bibr" rid="R18">18</xref>–<xref ref-type="bibr" rid="R21">21</xref>). Furthermore, higher levels of IL6 correlate with the risk of developing ARDS. As such, clinical trials are now ongoing and are designed to target IL6 using monoclonal antibody therapy (Tocilizumab and Sarilumab) as IL6 seems to be one of the key promoters of fatal outcomes. IL6 signaling described in this network (<xref ref-type="fig" rid="F5">Figure 5</xref>) includes all the major proinflammatory cytokines (IL1B, IL17, TNF and IL6,). Several key molecules of inflammation signaling are also present such as RELA, IKBKB, RIPK1 as well as MAPK signaling. It is thought that all these genes are either upregulated or predicted to be activated and would participate in the general increase of IL6 signaling and its unfortunate consequences in COVID-19.</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P19">We have presented the Coronavirus Network Explorer (CNE), a tool to explore how SARS-CoV2 may interfere with various cell functions through interactions with host genes. The CNE also suggests potential novel drug targets as well as existing drugs that could be repurposed against COVID-19. Our approach involves “mining” of a large-scale literature-derived knowledge graph by finding host genes that are predicted by a machine learning algorithm to be most relevant in a given functional context, and that are also closely associated with viral proteins through network interactions. These genes, connected viral proteins, and impacted biological pathways and processes are displayed together in a network in which edges generally represent experimentally observed relationships between nodes, illuminating potential underlying molecular mechanisms. We have discussed a small selection of these networks in order to demonstrate that our approach can identify biologically plausible hypotheses. These hypotheses are grounded in actual immunological, virological and pathological observations seen in SARS-CoV-2 infected patients as demonstrated by underlying literature findings. In future work, our plan is to further improve on these networks, making mechanisms more explicit by adding more relevant, possibly inferred causal connections, and taking into account specifc cell type or tissue contexts.</p>
+<p id="P20">Interestingly, some of the drugs identified in our networks have been mentioned as potential therapeutic, or have been identified using other methods (<xref ref-type="bibr" rid="R22">22</xref>), validating our own approach. For instance, Baricitinib is a JAK1/2 inhibitor approved for Rheumatoid Arthritis and it is now tested in phases III clinical trial for treatment of moderate to severe COVID-19 patients (<xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R24">24</xref>). Baricitinib's mechanism proposal includes inhibition of viral entry via ACE2-mediated endocytosis. Our algorithm highlighted other potential mechanisms to counteract SARS-CoV-2 infection such as interfering with PDGF signaling in addition to the known inhibition of the gp130 cytokines (IL-6, IL-12, etc.). Anakinra, a known IL1-R antagonist has been also identified in two of our networks describing potential pathological consequences or co-morbidities factoring into COVID-19 (asthma, fibrosis). Anakinra is now tested in phases III clinical trials (<xref ref-type="bibr" rid="R25">25</xref>). Finally, we have also identified Siltuximab, an anti-IL6, present in 28 of 70 networks, this monoclonal antibody is currently being tested for potential COVID-19 treatment (<xref ref-type="bibr" rid="R26">26</xref>).</p>
+<p id="P21">In conclusion, using a network algorithm combined with a machine learning model based on prior knowledge, we have explored possible molecular mechanisms of SARS-CoV-2 infection and proposed a set of networks that describe the pathogenesis of COVID-19. More validation will be required but evidence from on-going clinical trials confirm the well-foundedness of our proposal to discover new avenues for existing drugs.</p>
+</sec>
+</body>
+<back>
+<ack id="S12">
+<title>Acknowledgements</title>
+<p>We would like to thank Bob Rebres and Andreea Pasare for guidance and discussion. We thank Shawn Bauer for critical reading of the manuscript, and especially thank Craig Upson for helping to build the CNE.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<p id="P22">
+<bold>Availability</bold>
+</p>
+<p id="P23">The Coronavirus Network Explorer (CNE) has been made freely available to the scientific community as a web-based resource at <ext-link ext-link-type="uri" xlink:href="https://digitalinsights.qiagen.com/coronavirus-network-explorer">https://digitalinsights.qiagen.com/coronavirus-network-explorer</ext-link>. Each interactive network has an individual URL that can be shared independently. In addition to the CNE, networks have also been made available within QIAGEN Ingenuity Pathway Analysis (IPA) (<ext-link ext-link-type="uri" xlink:href="https://www.qiagen.com/qiagen-ipa">https://www.qiagen.com/qiagen-ipa</ext-link>) to allow exploration in the context of other datasets.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<issue>7816</issue>
+<fpage>459</fpage>
+<lpage>468</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krämer</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Causal analysis approaches in Ingenuity Pathway Analysis</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>4</issue>
+<fpage>523</fpage>
+<lpage>530</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Teuwen</surname>
+<given-names>LA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19: the vasculature unleashed</article-title>
+<source>Nature reviews Immunology</source>
+<year>2020</year>
+<volume>20</volume>
+<issue>7</issue>
+<fpage>389</fpage>
+<lpage>391</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ackermann</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pulmonary Vascular Endothelialitis, Thrombosis, and Angiogenesis in Covid-19</article-title>
+<source>The New England journal of medicine</source>
+<year>2020</year>
+<volume>383</volume>
+<issue>2</issue>
+<fpage>120</fpage>
+<lpage>128</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Becker</surname>
+<given-names>RC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19 update: Covid-19-associated coagulopathy</article-title>
+<source>Journal of thrombosis and thrombolysis</source>
+<year>2020</year>
+<volume>50</volume>
+<issue>1</issue>
+<fpage>54</fpage>
+<lpage>67</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Costanzo</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Coagulopathy, thromboembolic complications, and the use of heparin in COVID-19 pneumonia</article-title>
+<source>Journal of vascular surgery. Venous and lymphatic disorders</source>
+<year>2020</year>
+<volume>8</volume>
+<issue>5</issue>
+<fpage>711</fpage>
+<lpage>716</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Terpos</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Hematological findings and complications of COVID-19</article-title>
+<source>American journal of hematology</source>
+<year>2020</year>
+<volume>95</volume>
+<issue>7</issue>
+<fpage>834</fpage>
+<lpage>847</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Prasad</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Targeting hub genes and pathways of innate immune response in COVID-19: A network biology perspective</article-title>
+<source>International journal of biological macromolecules</source>
+<year>2020</year>
+<volume>163</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kumar</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Integrative Network Biology Framework Elucidates Molecular Mechanisms of SARS-CoV-2</article-title>
+<source>Pathogenesis</source>
+<year>2020</year>
+<fpage>3581857</fpage>
+<comment>SSRN</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Network-based drug repurposing for novel coronavirus 2019-nCoV/SARS-CoV-2</article-title>
+<source>Cell discovery</source>
+<year>2020</year>
+<volume>6</volume>
+<fpage>14</fpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nunnari</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Network perturbation analysis in human bronchial epithelial cells following SARS-CoV2 infection</article-title>
+<source>Experimental cell research</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>2</issue>
+<comment>112204</comment>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Messina</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19: viral-host interactome analyzed by network based-approach model to study pathogenesis of SARS-CoV-2 infection</article-title>
+<source>Journal of translational medicine</source>
+<year>2020</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>233</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gysi</surname>
+<given-names>DM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Network Medicine Framework for Identifying Drug Repurposing Opportunities for COVID-19</article-title>
+<year>2020</year>
+<comment>arXiv:2004.07229v1</comment>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Anticoagulant treatment is associated with decreased mortality in severe coronavirus disease 2019 patients with coagulopathy</article-title>
+<source>Journal of thrombosis and haemostasis : JTH</source>
+<year>2020</year>
+<volume>18</volume>
+<issue>5</issue>
+<fpage>1094</fpage>
+<lpage>1099</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadjadj</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Impaired type I interferon activity and inflammatory responses in severe COVID-19 patients</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<issue>6504</issue>
+<fpage>718</fpage>
+<lpage>724</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>JS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19</article-title>
+<source>Science immunology</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>49</issue>
+<fpage>eabd1554</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schulte-Schrepping</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Severe COVID-19 Is Marked by a Dysregulated Myeloid Cell Compartment</article-title>
+<source>Cell</source>
+<year>2020</year>
+<issue>20</issue>
+<fpage>30992</fpage>
+<lpage>2</lpage>
+<comment>S0092-8674</comment>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Herold</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Elevated levels of IL-6 and CRP predict the need for mechanical ventilation in COVID-19</article-title>
+<source>The Journal of allergy and clinical immunology</source>
+<year>2020</year>
+<volume>146</volume>
+<issue>1</issue>
+<fpage>128</fpage>
+<lpage>136.e4</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weiskopf</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Phenotype and kinetics of SARS-CoV-2-specific T cells in COVID-19 patients with acute respiratory distress syndrome</article-title>
+<source>Science immunology</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>48</issue>
+<fpage>eabd2071</fpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>John Wherry</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>T cell responses in patients with COVID-19</article-title>
+<source>Nature reviews Immunology</source>
+<year>2020</year>
+<volume>20</volume>
+<issue>9</issue>
+<fpage>529</fpage>
+<lpage>536</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giamarellos-Bourboulis</surname>
+<given-names>EJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Complex Immune Dysregulation in COVID-19 Patients with Severe Respiratory Failure</article-title>
+<source>Cell host and microbe</source>
+<year>2020</year>
+<volume>27</volume>
+<issue>6</issue>
+<fpage>992</fpage>
+<lpage>1000.e3</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Richardson</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Baricitinib as potential treatment for 2019-nCoV acute respiratory disease</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>10223</issue>
+<fpage>e30</fpage>
+<lpage>e31</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Barret</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Treatment of Moderate to Severe Coronavirus Disease (COVID-19) in Hospitalized Patients</article-title>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://clinicaltrials.gov/ct2/show/NCT04321993">https://clinicaltrials.gov/ct2/show/NCT04321993</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="web">
+<collab>Hospital of Prato</collab>
+<article-title>Baricitinib in Symptomatic Patients Infected by COVID-19: an Open-label, Pilot Study</article-title>
+<source>BARI-COVID</source>
+<year>2020</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://clinicaltrials.gov/ct2/show/NCT04320277">https://clinicaltrials.gov/ct2/show/NCT04320277</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="web">
+<collab>Swedish Orphan Biovitrum</collab>
+<article-title>Efficacy and Safety of Emapalumab and Anakinra in Reducing Hyperinflammation and Respiratory Distress in Patients With COVID-19 Infection</article-title>
+<year>2020</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://clinicaltrials.gov/ct2/show/NCT04324021">https://clinicaltrials.gov/ct2/show/NCT04324021</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<collab>University Hospital, Ghent</collab>
+<article-title>Treatment of COVID-19 Patients With Anti-interleukin Drugs (COV-AID)</article-title>
+<year>2020</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://clinicaltrials.gov/ct2/show/NCT04330638">https://clinicaltrials.gov/ct2/show/NCT04330638</ext-link>
+</comment>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>High-level outline of the network algorithm (see also <xref ref-type="sec" rid="S5">Methods</xref> section). Network creation involves three major steps: (1) the selection of top-scoring genes in the context of the given endpoint function as described in the <xref ref-type="sec" rid="S5">Methods</xref> section and shown in <xref ref-type="fig" rid="F2">Figure 2</xref>, (2) the intersection of this set of genes with network neighborhoods of viral proteins, and (3) the connection of viral proteins to the endpoint function through shortest paths in the knowledge graph.</p>
+</caption>
+<graphic xlink:href="EMS95131-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<p>Outline of the prior knowledge-based machine learning approach for scoring gene-function relationships as described in the <xref ref-type="sec" rid="S5">Methods</xref> section. The algorithm assumes that gene expression changes caused by a given gene encode its effect on biological function. <italic>N</italic>-dimensional embeddings are computed for each gene from literature-derived gene expression relationships. These in turn are used as feature vectors in a linear regression model trained on gene-function effects from the literature.</p>
+</caption>
+<graphic xlink:href="EMS95131-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>Network: Promotion of coagulation of blood. See <xref ref-type="sec" rid="S8">Discussion</xref> section.</p>
+</caption>
+<graphic xlink:href="EMS95131-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Network: Promotion of pneumonia. See <xref ref-type="sec" rid="S8">Discussion</xref> section.</p>
+</caption>
+<graphic xlink:href="EMS95131-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<p>Network: Promotion of IL6 signaling. See <xref ref-type="sec" rid="S8">Discussion</xref> section.</p>
+</caption>
+<graphic xlink:href="EMS95131-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Endpoint functions and pathways for which networks were computed. These networks represent the large spectrum of the host biology affected by the viral infection, including immunological signaling pathways, biological endpoints observed in severe or critically-ill COVID-19 patients, the viral life cycle and its counterpart host response, and host functions that are possibly hijacked by the virus itself for its replication/multiplication or transmission.</p>
+</caption>
+<table frame="void" rules="none">
+<tbody>
+<tr>
+<td align="left" valign="top">AMPK Signaling</td>
+<td align="left" valign="top">Fragmentation of Golgi apparatus</td>
+<td align="left" valign="top">Macroautophagy of cells</td>
+</tr>
+<tr>
+<td align="left" valign="top">Antiviral response</td>
+<td align="left" valign="top">Fusion of cells</td>
+<td align="left" valign="top">Macropinocytosis</td>
+</tr>
+<tr>
+<td align="left" valign="top">Apoptosis</td>
+<td align="left" valign="top">Fusion of phagosomes</td>
+<td align="left" valign="top">Mitosis</td>
+</tr>
+<tr>
+<td align="left" valign="top">Asthma</td>
+<td align="left" valign="top">Fusion of vesicles</td>
+<td align="left" valign="top">Myocarditis</td>
+</tr>
+<tr>
+<td align="left" valign="top">Autophagy</td>
+<td align="left" valign="top">G Beta Gamma Signaling</td>
+<td align="left" valign="top">PDGF Signaling</td>
+</tr>
+<tr>
+<td align="left" valign="top">Budding of virus</td>
+<td align="left" valign="top">Glycolysis of cells</td>
+<td align="left" valign="top">PTEN Signaling</td>
+</tr>
+<tr>
+<td align="left" valign="top">CDK5 Signaling</td>
+<td align="left" valign="top">HIV infection</td>
+<td align="left" valign="top">Phagocytosis</td>
+</tr>
+<tr>
+<td align="left" valign="top">CXCR4 Signaling</td>
+<td align="left" valign="top">HMGB1 Signaling</td>
+<td align="left" valign="top">Pneumonia</td>
+</tr>
+<tr>
+<td align="left" valign="top">Cell cycle progression</td>
+<td align="left" valign="top">Hemoglobinopathy</td>
+<td align="left" valign="top">Production of reactive oxygen species</td>
+</tr>
+<tr>
+<td align="left" valign="top">Cellular homeostasis</td>
+<td align="left" valign="top">Hemostasis</td>
+<td align="left" valign="top">Pulmonary Hypertension</td>
+</tr>
+<tr>
+<td align="left" valign="top">Chemotaxis</td>
+<td align="left" valign="top">Hypertension</td>
+<td align="left" valign="top">Release of virus</td>
+</tr>
+<tr>
+<td align="left" valign="top">Clathrin mediated endocytosis</td>
+<td align="left" valign="top">I-<italic>κ</italic>B kinase/NF-<italic>κ</italic>B cascade</td>
+<td align="left" valign="top">Replication of RNA virus</td>
+</tr>
+<tr>
+<td align="left" valign="top">Coagulation of blood</td>
+<td align="left" valign="top">IGF-1 Signaling</td>
+<td align="left" valign="top">Replication of coronavirus</td>
+</tr>
+<tr>
+<td align="left" valign="top">Concentration of cholesterol</td>
+<td align="left" valign="top">IL-1 Signaling</td>
+<td align="left" valign="top">Respiratory failure</td>
+</tr>
+<tr>
+<td align="left" valign="top">Degradation of Golgi apparatus</td>
+<td align="left" valign="top">IL-2 Signaling</td>
+<td align="left" valign="top">SAPK/JNK Signaling</td>
+</tr>
+<tr>
+<td align="left" valign="top">Degranulation of cells</td>
+<td align="left" valign="top">IL-6 Signaling</td>
+<td align="left" valign="top">Stabilization of mRNA</td>
+</tr>
+<tr>
+<td align="left" valign="top">Diabetes mellitus</td>
+<td align="left" valign="top">IL-8 Signaling</td>
+<td align="left" valign="top">Synthesis of lipid</td>
+</tr>
+<tr>
+<td align="left" valign="top">Edema of pericardial cavity</td>
+<td align="left" valign="top">Import of protein</td>
+<td align="left" valign="top">Synthesis of phospholipid</td>
+</tr>
+<tr>
+<td align="left" valign="top">Endocytosis</td>
+<td align="left" valign="top">Infection by RNA virus</td>
+<td align="left" valign="top">Synthesis of reactive oxygen species</td>
+</tr>
+<tr>
+<td align="left" valign="top">Endoplasmic reticulum stress response of cells</td>
+<td align="left" valign="top">Inflammation of respiratory system</td>
+<td align="left" valign="top">Transport of virus</td>
+</tr>
+<tr>
+<td align="left" valign="top">Engulfment of cells</td>
+<td align="left" valign="top">Inhibition of ARE-Mediated mRNA Degradation Pathway</td>
+<td align="left" valign="top">Viral Infection</td>
+</tr>
+<tr>
+<td align="left" valign="top">Entrance of virus</td>
+<td align="left" valign="top">Internalization of protein</td>
+<td align="left" valign="top">Viral life cycle</td>
+</tr>
+<tr>
+<td align="left" valign="top">Exocytosis</td>
+<td align="left" valign="top">Interphase</td>
+<td align="left" valign="top"> </td>
+</tr>
+<tr>
+<td align="left" valign="top">Fibrosis</td>
+<td align="left" valign="top">M phase</td>
+<td align="left" valign="top"> </td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

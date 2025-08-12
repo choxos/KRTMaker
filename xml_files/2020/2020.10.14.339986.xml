@@ -1,0 +1,2196 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS98592</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.14.339986</article-id>
+<article-id pub-id-type="archive">PPR226690</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>A Common Methodological Phylogenomics Framework for intra-patient heteroplasmies to infer SARS-CoV-2 sublineages and tumor clones</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Utro</surname>
+<given-names>Filippo</given-names>
+</name>
+<email>futro@us.ibm.com</email>
+<uri content-type="orcid" xlink:href="https://orcid.org/0000-0003-3226-7642">https://orcid.org/0000-0003-3226-7642</uri>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Levovitz</surname>
+<given-names>Chaya</given-names>
+</name>
+<email>clevovi@us.ibm.com</email>
+<uri content-type="orcid" xlink:href="https://orcid.org/0000-0002-9251-2294">https://orcid.org/0000-0002-9251-2294</uri>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Rhrissorrakrai</surname>
+<given-names>Kahn</given-names>
+</name>
+<email>krhriss@us.ibm.com</email>
+<uri content-type="orcid" xlink:href="https://orcid.org/0000-0002-1567-9090">https://orcid.org/0000-0002-1567-9090</uri>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Parida</surname>
+<given-names>Laxmi</given-names>
+</name>
+<uri content-type="orcid" xlink:href="https://orcid.org/0000-0002-7872-5074">https://orcid.org/0000-0002-7872-5074</uri>
+<xref ref-type="corresp" rid="CR1">1</xref>
+</contrib>
+<aff id="A1">IBM Research, T.J. Watson Research Center, Yorktown Heights, NY, 10598, USA</aff>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<label>1</label>corresponding author: <email>parida@us.ibm.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>17</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>15</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/3.0/">
+<license-p>licensed under Creative Commons License CC-BY <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/3.0/">https://creativecommons.org/licenses/by/3.0/</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">We present a common methodological framework to infer the phylogenomics from genomic data, be it reads of SARS-CoV-2 of multiple COVID-19 patients or bulk DNAseq of the tumor of a cancer patient. The commonality is in the phylogenetic retrodiction based on the genomic reads in both scenarios. While there is evidence of heteroplasmy, i.e., multiple lineages of SARS-CoV-2 in the same COVID-19 patient; to date, there is no evidence of sublineages recombining within the same patient. The heterogeneity in a patient's tumor is analogous to intra-patient heteroplasmy and the absence of recombination in the cells of tumor is a widely accepted assumption. Just as the different frequencies of the genomic variants in a tumor presupposes the existence of multiple tumor clones and provides a handle to computationally infer them, we postulate that so do the different variant frequencies in the viral reads, offering the means to infer the multiple co-infecting sublineages. We describe the Concerti computational framework for inferring phylogenies in each of the two scenarios. To demonstrate the accuracy of the method, we reproduce some known results in both scenarios. We also make some additional discoveries. We uncovered new potential parallel mutation in the evolution of the SARS-CoV-2 virus. In the context of cancer, we uncovered new clones harboring resistant mutations to therapy from clinically plausible phylogenetic tree in a patient.</p>
+</abstract>
+<kwd-group>
+<title>Keywords and phrases</title>
+<kwd>tumor evolution</kwd>
+<kwd>clonal evolution</kwd>
+<kwd>phylogeny</kwd>
+<kwd>COVID-19</kwd>
+</kwd-group>
+<kwd-group>
+<title>2012 ACM Subject Classification</title>
+<kwd>Applied computing</kwd>
+<kwd>Life and medical sciences</kwd>
+<kwd>Computational biology</kwd>
+<kwd>Computational genomics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">Deep sequencing genomic datasets contain intricate details that can be mined to reveal intra-patient heterogeneity present in disease states. The classic example that has been explored is the heterogeneity present in cancer, whether it be within a single tumor, across a patient's metastatic sites, or a tumor's evolution in response to treatment over the course of a disease. Interestingly, these same principles of heterogeneity can be explored in other scenarios that have similar sequencing data demonstrating different variant frequencies, including SARS-CoV-2 virus causing the COVID-19 infection. Evidence in several studies have highlighted the intra-host genomic diversity of SARS-CoV-2 [<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R27">27</xref>]. As in cancer, the presence of different, heterogenic reads in a COVID-19 patient assumes the existence of multiple sublineages, or subclones, rather than the occurrence of recombination. Once these assumptions are established, the same tools and methodologies that are used to analyze tumor heterogeneity can be applied with a level of confidence to SARS-COV-2 datasets.</p>
+<sec id="S2">
+<title>Implications of viral heteroplasmy in COVID-19 patients</title>
+<p id="P3">The novel SARS-Cov-2 coronavirus that appeared in the city of Wuhan, China, in late 2019 has caused a large scale COVID-19 pandemic, spreading to more than 70 countries. Broad sequencing efforts have been made in an effort to understand the natural evolution of this virus. Several studies published with SARS-CoV-2 sequencing data reveal different viral allele frequencies in the same patient. The most likely explanation for the presence of intra-patient heterogenic viral reads is the existence of different viral strains rather than recombination since the probability of a fully functional single stranded virus emerging after entering a cell and its subsequent disassembly and reassembly into a virion with a different sequence is low. Multiple viral strains infecting the same host has enormous clinical implications in terms of treatment, epidemiology, and the potential to overcome the pandemic and thus needs to be considered and analyzed. Variations in viral strains can harbor different resistance mechanisms, levels of transmissibility, response to therapy, and explain the large variation of symptomology. Even more important, treatment and vaccine success would rely on targeting the collection of strains present and not simply targeting one. It is for these reasons it is imperative that the research community consider the likely scenario that patients are coinfected with multiple strains.</p>
+</sec>
+<sec id="S3">
+<title>Implications of heterogeneity in tumors of cancer patients</title>
+<p id="P4">The presence of multiple tumor clones in the same patient has significant treatment implications. Multiple mechanisms of resistance can exist in separate clones [<xref ref-type="bibr" rid="R22">22</xref>]. Drug targets can ‘disappear’ or develop over time [<xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R26">26</xref>]. Alternate pathways can be inhibited by the introduction of new alterations [<xref ref-type="bibr" rid="R29">29</xref>]. Even gross phenotypes can change due to underlying genomic changes [<xref ref-type="bibr" rid="R1">1</xref>]. Thus, it is imperative that we continue to monitor patient tumor evolution over the course of a disease in order to optimize treatment protocols. Parallels of tumor evolution have been drawn to that of human evolution and thus similar tools and algorithms are being applied and adjusted to analyze cancer [<xref ref-type="bibr" rid="R21">21</xref>]. Phylogenetic trees are being constructed to capture the change occurring during the disease while subclonal structure is identified and analyzed for clinically relevant changes. Several algorithms have been proposed to capture tumor evolution using single cells [<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R25">25</xref>] however these tools do not account for tumor heterogeneity and thus do not pick up on all clones present in a given tumor. Most algorithms consider bulk tumor samples which has the advantage of integrating genetic information from many tumor cells but are challenged by the need to deconvolve the mixture of clones present in any given biopsy [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R24">24</xref>]. Several of these methods have been adapted for multi-site sample integration but are not specific for longitudinal data [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R18">18</xref>]. More recently there have been several tools developed that do integrate longitudinal (multi-time) sampling [<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R20">20</xref>]. Although these models are more accurate, they still are limited by their inability to deal with samples with large mutational burdens and are not designed for multi-site samples.</p>
+</sec>
+<sec id="S4">
+<title>Concerti overview</title>
+<p id="P5">An informative analysis for SAR-CoV-2 would require a method to be able to perform fine-grain evaluations with the ability to differentiate between viral sequences. In addition, the method would need to be able to analyze longitudinal data to capture when co-occurrence transpires. In cancer, sequential liquid biopsies over the course of disease are becoming more common given the ease of collection, low cost, and greater ability to describe the complete disease profile vs. a subset of mutations present in distinct lesions. Therefore, it is imperative to establish tools that can manage/deconvolve mixed clonal samples, integrate multi-site and longitudinal sampling, and analyze large numbers of mutations with the same level of accuracy as low burden samples. We introduce Concerti a tool for inferring disease evolution phylogenies, at genomic scales, from multiple sites and multiple longitudinal DNA sequencing samples. One of the unique features of Concerti is that it generates <italic>time-scaled trees</italic>, i.e., it captures not only the birth and death of clones but also acquisition of alterations within the same clone over time. Concerti uses almost exclusively discrete optimization methods and has the flexibility to provide multiple possible solutions suggested by the patient data. To help with the interpretation of the results, the solutions are ordered by decreasing likelihood. Due to the absence of benchmark data, it is hard to perform a precise comparison of the different tools reported in literature. We provide a succinct summary of the capabilities of six classes of exemplar tools and highlight the elements of uniqueness in each approach. (<xref ref-type="table" rid="T1">Table 1</xref>).</p>
+<p id="P6">We demonstrate the accuracy of Concerti by reproducing and expanding on known results from literature. In particular, comparing with the results reported in [<xref ref-type="bibr" rid="R23">23</xref>] for the viral evolution model and expanding on them by discovering new homoplasies, while for the tumor evolution model using whole-exome sequencing data from patients [<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R22">22</xref>], Concerti constructs phylogenetic trees that accurately describe a tumor's evolution while simultaneously highlighting new post-treatment subclones that likely confer resistance and may serve as new potential drug targets.</p>
+</sec>
+</sec>
+<sec id="S5" sec-type="methods">
+<label>2</label>
+<title>Method</title>
+<sec id="S6">
+<title>Viral Evolution Model</title>
+<p id="P7">For computational purposes, we assume that all the virions of the same lineage have the same set of alterations (with respect to a reference). Since there is evidence of intra-patient variations with a wide range of allele frequencies [<xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R28">28</xref>], we postulate that there is heteroplasmy due to possibly multiple sublineages evolving in this micro-environment. Since the coronavirus is a non-segmented positive RNA virus, we further postulate that it is very unlikely that any recombination occurs during the virus's life cycle: attachment and entry, replicase protein expression, replication and transcription, assembly and release [<xref ref-type="bibr" rid="R6">6</xref>].</p>
+</sec>
+<sec id="S7">
+<title>Tumor Evolution Model</title>
+<p id="P8">We assume the following model: tumors arise from an altered cell, accumulating additional alterations over time. These changes give rise to populations of cells termed in literature as <italic>clones</italic>. For computational purposes, we assume that all the cells in a clone have the same set of alterations. Furthermore, these clones may alter further over time. Thus multiple clones co-exist in a tumor and some may have an evolutionary advantage over the others within the tumor environment, allowing for growth or shrinkage of a clone over time.</p>
+</sec>
+<sec id="S8">
+<title>Terminology</title>
+<p id="P9">The absence of recombination and the accumulation of variants over time are the two salient factors that facilitate a common methodology for both scenarios. We address the problem of inferring the evolution be it the coronavirus from multiple patients or tumor within a cancer patient. Furthermore for a cancer patient, the inferencing may be based on single or multiple DNA sequencing samples: the latter can be <italic>multi-time</italic>, i.e., at multiple timepoints, or can be <italic>multi-site</italic>, i.e., from different lesions possibly collected at the same time. We simply use the term <italic>data point</italic> for multi-patient (COVID-19) and multi-time, multi-site (cancer). The term <italic>alteration</italic> is applicable to any genetic event including, but not limited to, mutations, SNVs, etc. In this manuscript CCF (Cancer Cell Fraction) denotes the fraction of cancer cells bearing a mutation in a cancer sample [<xref ref-type="bibr" rid="R2">2</xref>]. For the purposes of our algorithm, CCF and VAF (Variant Allele Frequency) are indistinguishable and the precise method of determining alteration frequencies is outside the scope of this paper. For clarity of exposition we use VAF, in place of CCF or VAF, and SNV, in place of general alteration. Furthermore, in the context of cancer, it is important to note the distinction between <italic>clones</italic> and <italic>pseudoclones</italic>. Clone is a biological entity and can be described as a population of indistinguishable cells. For our purposes, the nuclear DNA is identical for the population and thus a clone can be defined by a set of SNV's (variant with respect to a reference or normal sequence). A pseudoclone on the other hand is a subset of these SNV's. In practice they are a maximal collection of SNVs with identical (or similar) VAF values [<xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R24">24</xref>]: this value is termed <italic>prevalence</italic> in this paper. This collection of SNVs is meaningful under the assumption that identical VAF values implies these SNVs co-occur in a cell. Note that the converse is not necessarily true, i.e., multiple SNVs within a cell may have varied VAF values. Thus pseudoclone is an algorithmic artefact while a clone is simply the union of some finite pseudoclones. For example in <xref ref-type="fig" rid="F4">Fig. 4</xref>, the distinct colors denote the different pseudoclones, but the biological clone is the union of all the subclones in the path to the root of the evolutionary tree. Hence the (biological) brown clone in the subcutaneous soft tissue, for instance, is actually the the union of the SNVs that define the brown pseudoclone, the orange pseudoclone, the cyan pseudoclone and the green pseudoclone. Hence, for mathematical preciseness, we use the term pseudoclones in the Method sections. To avoid clutter, we use the term clone, in place of pseudoclone, in the <xref ref-type="sec" rid="S16">Result Section</xref>.</p>
+<p id="P10">With a slight abuse of terminologies, a pseudoclone corresponds to a sublineage in the context of virions and a clone corresponds to a lineage. To avoid clutter, we use the terms sublineage and lineage interchangeably.</p>
+</sec>
+<sec id="S9">
+<label>2.1</label>
+<title>Method Assumptions</title>
+<p id="P11">We make the following assumptions.</p>
+<p id="P12">⊳ Assumption 1. <bold>[Infinite Sites Model]</bold> A majority of the alterations satisfy the following: <list list-type="order" id="L1">
+<list-item>
+<p id="P13">irreversible, i.e., once the alteration occurs the reverse of turning it back to its original state does not occur (no back mutation).</p>
+</list-item>
+<list-item>
+<p id="P14">unique, i.e., the same alteration does not occur elsewhere in the tumor (no parallel mutation).</p>
+</list-item>
+</list>
+</p>
+<p id="P15">The topology of the evolution is a tree. The Occam's Razor Principle suggests the perfect phylogeny assumptions used most commonly in literature [<xref ref-type="bibr" rid="R3">3</xref>]. However, it is important to note that some exceptions to this property of alterations may occur in practice. This is handled as an exception in our algorithm. These exceptions indicate parallel mutation. This is also referred to as <italic>homplasy</italic>.</p>
+<p id="P16">⊳ Assumption 2. <bold>[Alteration distribution]</bold> Most of the alterations follow i.i.d. (uniform) distribution.</p>
+<p id="P17">Again, for algorithmic purposes, it is reasonable to assume that tumor clones would follow the same principles as the individual alteration. But a clone, unlike an alteration, may die, i.e., may be selected against and overrun by other clones. So a clone may change in composition over time, i.e. more alterations can be added to the clone (but, not removed due to Assumption 1) for a majority of the alterations. Different selection pressures are in effect on the different clones, whose effect is manifested in the size of the clones: the clone can either grow or shrink in size reflected as an increasing or decreasing CCF value respectively. Thus the following:</p>
+<p id="P18">⊳ Assumption 3. <bold>[Tumor Clone dynamics]</bold> Over time, a clone may <list list-type="order" id="L2">
+<list-item>
+<p id="P19">change in composition / size (additional alterations but not lose alterations)</p>
+</list-item>
+<list-item>
+<p id="P20">change in prevalence values (increase or decrease)</p>
+</list-item>
+<list-item>
+<p id="P21">die or a new clone may be born.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S10">
+<label>2.2</label>
+<title>Method Overview</title>
+<p id="P22">Concerti takes as input the VAF or CCF distribution for each alterations in all <italic>n</italic> data points which can be multi-patient (COVID-19) or multi-time or multi-site data of a patint (cancer).</p>
+<p id="P23">See <xref ref-type="fig" rid="F1">Fig. 1</xref> for an overview of Concerti. Based on our assumptions, the method has two major phases. <list list-type="order" id="L3">
+<list-item>
+<p id="P24">
+<bold>Phase I</bold>. We first identify the pseudoclones/sublineages across all the data-points. However, the pseudoclones are not identical due to the clonal dynamics (Assumption 3). <list list-type="alpha-lower" id="L4">
+<list-item>
+<p id="P25">Due to Assumption 3(3), we gate the alterations that are present in all the samples. This results in some alteration being filtered out and the step is called Negative Selection in the outline. We cluster the filtered alterations separately for each sample.</p>
+</list-item>
+<list-item>
+<p id="P26">The pseudoclones are preserved in the samples, albeit with some dynamics (Assumption 3(2)). We carry out a multi-dimensional clustering, across all samples, based on the values or distributions of the alterations.</p>
+</list-item>
+<list-item>
+<p id="P27">We appropriately merge the clusters of the above two steps to obtain the pseudoclones/sublineages.</p>
+</list-item>
+</list>
+</p>
+</list-item>
+<list-item>
+<p id="P28">
+<bold>Phase II</bold>. This has two steps: in the first we deduce the phylogenies of each sample separately and in the second we relate them with each other. <list list-type="alpha-lower" id="L5">
+<list-item>
+<p id="P29">The sizes of the pseudoclones/sublineages in each data-point admits possibly multiple phylogenies. We enumerate the admissible phylogenies associating a probability with each based on Assumption 2.</p>
+</list-item>
+<list-item>
+<p id="P30">Next we consolidate the trees from the multiple data points. This captures the topology as well as the clonal dynamics. Concerti offers two types of visualizations: one that effectively captures the change-in-composition dynamics of the clones (as a tree) and the other that captures the change-in-size and birth/death of clones effectively (fishplots [<xref ref-type="bibr" rid="R17">17</xref>]). The multiple possible solutions suggested by the data is output in decreasing order of probabilities, making it easier for interpreting the results.</p>
+</list-item>
+</list>
+</p>
+</list-item>
+</list>
+</p>
+<sec id="S11">
+<title>Exception Handling</title>
+<p id="P31">Real data is sometimes notoriously perplexing, either due to errors in sample or CCF distribution estimation or simply the infraction of some of the assumptions enumerated in the last section. In practice, in refractory cases we handle the exceptions by relaxing the minimum of assumptions by consulting with the domain experts.</p>
+</sec>
+</sec>
+<sec id="S12">
+<label>2.3</label>
+<title>Phase I: Generate Pseudoclones/Sublineages</title>
+<p id="P32">We define the distance between a pair of CCF distribution <italic>g</italic>
+<sub>1</sub> and <italic>g</italic>
+<sub>2</sub> as <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mtext>dis</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:mrow>
+<mml:msubsup>
+<mml:mo>∫</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mi>∞</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>∞</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:mi>d</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P33">However, for algorithmic efficiency, we use the similarity measure defined as <disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mtext>sim</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mtext>dis</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P34">Thus identical distributions have a similarity of 1 while distinct distributions have similarity value zero. In practice, since the probability density function is specified as a discrete set of pairs of values and its probability, we compute the similarity as follows: <disp-formula id="FD3">
+<label>(1)</label>
+<mml:math id="M3">
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>r</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+<mml:mi>u</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mtext>min</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where [0 &lt;= <italic>l, u</italic> &lt;= 1.0] is the maximal interval where both <italic>g</italic>
+<sub>1</sub> and <italic>g</italic>
+<sub>2</sub> have non-zero values.</p>
+<p id="P35">We first perform a negative selection where alterations not present in all samples are removed. Let this set of filtered alterations be <italic>S<sub>a</sub>
+</italic>. Let the remaining set of alterations be <italic>S<sub>b</sub>
+</italic>. We carry out a hierarchical clustering [<xref ref-type="bibr" rid="R8">8</xref>] of the alteration set <italic>S<sub>b</sub>
+</italic> using the similarity function (1). We cluster <italic>S<sub>a</sub>
+</italic> for each sample separately and then merge the resulting multi-dimensional clustering of <italic>S<sub>b</sub>
+</italic> with the sample-by-sample clustering of <italic>S<sub>a</sub>
+</italic> to produce the pseudoclones. The <italic>prevalence</italic> of a pseudoclone is approximated by the mean of the mean value of each constituent alteration (CCF) distribution.</p>
+</sec>
+<sec id="S13">
+<label>2.4</label>
+<title>Phase II: Generate Evolution Tree(s) of Pseudoclones/Sublineages</title>
+<sec id="S14">
+<label>2.4.0.1</label>
+<title>Enumerate Admissible Trees</title>
+<p id="P36">The question of how multiple sets of alterations (pseudoclones/sublineages) at a data point stack up against each other is almost completely left to the computational methods.</p>
+<p id="P37">
+<xref ref-type="fig" rid="F2">Fig. 2</xref> shows a simple example. Assume without loss of generality (WLOG) u=1.0. Prevalence values 0 ≤ <italic>a, b</italic> ≤ 1 can be viewed as some sub-intervals (<italic>sticks</italic>) of [0, 1] of lengths <italic>a</italic> and <italic>b</italic> respectively. Then in a cell-population realization either sticks <italic>A</italic> (with prevalence value <italic>a</italic>) and <italic>B</italic> (with prevalence value <italic>b</italic>) are nested or disjoint but may not straddle. To remove possible computational artefacts, pseudoclones with prevalence <italic>v &lt;</italic> 0.05 and less than 3 SNVs for all samples are discarded. Finally, given a pseudoclone A with a prevalence value <italic>a</italic>, then for each <italic>x</italic> pseudoclone nested directly in A with prevalence <italic>v<sub>x</sub>
+</italic>, the sum of their prevalence is Σ<italic>
+<sub>x</sub> v<sub>x</sub> ≤ a</italic>. With bulk-sequencing (i.e. no viral isolates or single-cell), the multiple possible scenarios cannot really be teased apart. But using Assumption 2, the probability of each admissible tree can be estimated.</p>
+<p id="P38">We present a recursive algorithm, called Stick-Stack (<xref ref-type="boxed-text" rid="BX1">Algorithm 1</xref>), that enumerates all possible ways of stacking the sticks (or sub-intervals) corresponding to pseudoclones/sub-lineage. The algorithm computes the probabilities of the trees using Assumption 2. In the output of Stick-Stack (<italic>A, B</italic>) denotes nesting of <italic>B</italic> in <italic>A</italic>. Stick-Stack call is initiated as (1, <italic>ϕ, pr</italic> = 1.0, <italic>v</italic>
+<sub>1</sub> &gt;…&gt; <italic>v<sub>k</sub>
+</italic>) with the <italic>n</italic> prevalence values of the <italic>k</italic> pseudoclones/sublineages and the output is a set of trees where each tree <italic>tr</italic> is a collection of (parent,child) pairs, with probability <italic>pr</italic>. It is easy to verify from the algorithm description below that the probabilities of all the admissible trees sum up to 1.</p>
+</sec>
+<sec id="S15">
+<label>2.4.0.2</label>
+<title>Mutual Comparison</title>
+<p id="P39">While a single data point may suggest the relative relationship between pseudoclones, clonal dynamics can only be captured from multiple data points, be it multi-time or multi-site.</p>
+<boxed-text id="BX1" position="anchor">
+<caption>
+<title>Algorithm 1: Stick-Stack: Given the prevalences, the algorithm enumerates all possible admissible trees, each with an estimated probability of occurrence.</title>
+</caption>
+<p id="P40">
+<bold>Input:</bold> <italic>v</italic>
+<sub>0</sub> <italic>&gt; v</italic>
+<sub>1</sub> <italic>&gt; … &gt; v<sub>j</sub>
+</italic>, tr, <italic>pr</italic>, <italic>v<sub>j</sub>
+</italic>
+<sub>+1</sub> <italic>&gt; … &gt; v<sub>c</sub>
+</italic>
+</p>
+<p id="P41">
+<bold>Result:</bold> Compute all possible configurations for a given sample</p>
+<p id="P42">
+<bold>if</bold> <italic>c == 0</italic> <bold>then</bold>
+</p>
+<p id="P43">    <bold>return</bold> tr, <italic>pr</italic>
+</p>
+<p id="P44">
+<bold>else</bold>
+</p>
+<p id="P45">    <italic>tot</italic> = 0 <bold>for</bold> <italic>i</italic> = 0 <italic>… j</italic> <bold>do</bold>
+</p>
+<p id="P46">        <bold>if</bold> <italic>v<sub>i</sub> ≥ v</italic> <sub>
+<italic>j</italic>+1</sub> <bold>then</bold>
+</p>
+<p id="P47">          <italic>tot</italic> = <italic>tot</italic> + <italic>v<sub>i</sub>
+</italic>
+</p>
+<p id="P48">        <bold>end</bold>
+</p>
+<p id="P49">    <bold>end</bold>
+</p>
+<p id="P50">    <bold>for</bold> <italic>i</italic> = 0 <italic>… j</italic> <bold>do</bold>
+</p>
+<p id="P51">        <bold>if</bold> <italic>v<sub>i</sub> ≥ v<sub>j</sub>
+</italic>
+<sub>+1</sub> <bold>then</bold>
+</p>
+<p id="P52">          <italic>pr<sub>i</sub>
+</italic>=<italic>v<sub>i</sub>/tot</italic>
+</p>
+<p id="P53">        <bold>end</bold>
+</p>
+<p id="P54">    <bold>end</bold>
+</p>
+<p id="P55">    <bold>for</bold> <italic>i</italic> = 0 <italic>… j</italic> <bold>do</bold>
+</p>
+<p id="P56">        <bold>if</bold> <italic>v<sub>i</sub>
+</italic> ≥ <italic>v<sub>j</sub>
+</italic>
+<sub>+1</sub> <bold>then</bold>
+</p>
+<p id="P57">            <italic>v<sub>i</sub>
+</italic> = <italic>v<sub>i</sub>
+</italic> − <italic>v</italic>
+<sub>
+<italic>j</italic>+1</sub>
+</p>
+<p id="P58">            Stick-Stack(<italic>v</italic>
+<sub>0</sub> <italic>&gt; v</italic>
+<sub>1</sub> <italic>&gt; … &gt; v<sub>j</sub>
+</italic>, tr+(<italic>v<sub>i</sub>, v<sub>j</sub>
+</italic>
+<sub>+1</sub>)<italic>, pr * pr<sub>i</sub>
+</italic>, <italic>v<sub>j</sub>
+</italic>
+<sub>+1</sub> <italic>&gt; … &gt; v<sub>c</sub>
+</italic>)</p>
+<p id="P59">        <bold>end</bold>
+</p>
+<p id="P60">    <bold>end</bold>
+</p>
+<p id="P61">
+<bold>end</bold>
+</p>
+</boxed-text>
+<p id="P62">⊳ Observation 1. <bold>[Clone Dynamics]</bold> Based on Assumption 3 the clusters of filtered alterations of Step 1 of Phase I provide the clone dynamics. <list list-type="alpha-lower" id="L6">
+<list-item>
+<p id="P63">If such a cluster merges with the multidimensional cluster, then this indicates a change in composition of the pseudoclone and provides labels for the edges of the evolution phylogeny.</p>
+</list-item>
+<list-item>
+<p id="P64">If a new cluster is generated (i.e., it does not merge with clusters from the multi-dimensional clustering) then this indicates the birth of a new pseudoclone.</p>
+</list-item>
+</list>
+</p>
+<p id="P65">A clone acquiring new alterations (case a. above) is shown as asterisk in the tumor phylogeny in <xref ref-type="fig" rid="F5">Fig. 5</xref> and <xref ref-type="fig" rid="F6">6</xref>. The birth and death of clones (case b. above) is also illustrated in the same figure.</p>
+<p id="P66">The mutual comparisons reveal whether the different samples are related or independent. When related, it is possible to reconstruct <italic>consolidated</italic> tree(s) that capture the evolution across the the multiple data points. Stick-Stack algorithm produces each tree as a set of two-tuples corresponding to each edge as (parent,child), where the parent and child are both pseudoclones. Formally, if there exist <italic>k &gt;</italic> 0 parent-child pairs as (<italic>C</italic>
+<sub>0</sub>
+<italic>, C</italic>
+<sub>1</sub>), (<italic>C</italic>
+<sub>1</sub>
+<italic>, C</italic>
+<sub>2</sub>)<italic>, …,</italic> (<italic>C<sub>k−</sub>
+</italic>
+<sub>1</sub>
+<italic>, C<sub>k</sub>
+</italic>), then <italic>C</italic>
+<sub>0</sub> <italic>precedes C<sub>k</sub>
+</italic> or <italic>C</italic>
+<sub>0</sub> ≺ <italic>C<sub>k</sub>
+</italic>.</p>
+<p id="P67">⊳ Definition 1. <bold>[Incompatible]</bold> Let &#119983;<sub>1</sub> and &#119983;<sub>2</sub> be two trees with three sets of (possibly empty) pseudoclones: <italic>A<sub>i</sub>
+</italic> that occur in both &#119983;<sub>1</sub> and &#119983;<sub>2</sub>; <italic>D<sub>i</sub>
+</italic> that occur in &#119983;<sub>1</sub>, but not in &#119983;<sub>2</sub>, and, <italic>B<sub>i</sub>
+</italic> that occur in &#119983;<sub>2</sub> but not in &#119983;<sub>1</sub>.</p>
+<p id="P68">&#119983;<sub>1</sub> and &#119983;<sub>2</sub> are incompatible if at least one of the following conditions does not hold: <list list-type="order" id="L7">
+<list-item>
+<p id="P69">WLOG if <italic>A</italic>
+<sub>1</sub> ≺ <italic>A</italic>
+<sub>2</sub> in &#119983;<sub>1</sub> then <italic>A</italic>
+<sub>1</sub> ≺ <italic>A</italic>
+<sub>2</sub> &#119983;<sub>2</sub>.</p>
+</list-item>
+<list-item>
+<p id="P70">WLOG each <italic>D<sub>i</sub>
+</italic> is of the type (-, <italic>D<sub>i</sub>
+</italic>) and if <italic>D<sub>i</sub>
+</italic> has a child then it occurs as (<italic>D<sub>i</sub>, D<sub>j</sub>
+</italic>) in &#119983;<sub>1</sub>.</p>
+</list-item>
+<list-item>
+<p id="P71">WLOG each <italic>B<sub>i</sub>
+</italic> is of the type (-<italic>, B<sub>i</sub>
+</italic>) and if <italic>B<sub>i</sub>
+</italic> has a child then it occurs as (<italic>B<sub>i</sub>, B<sub>j</sub>
+</italic>) in &#119983;<sub>2</sub>. Once all possible configurations of t he pseudoclone for any g iven t ime p oint a re generated independently, the next step is to extract the possible compatible tree between all time points.</p>
+</list-item>
+</list>
+</p>
+<p id="P72">⊳ Definition 2. <bold>[Consolidated p hylogeny]</bold> Let <italic>E</italic>(<italic>&#119983;</italic>) be the set of the two tuples (parent,child) of &#119983;. If &#119983;<sub>1</sub>, &#119983;<sub>2</sub>, …, <italic>&#119983;<sub>K</sub>
+</italic> are mutually compatible, then <bold>T</bold>, the consolidated phylogeny of the <italic>K</italic> trees, is defined by the following set <disp-formula id="FD4">
+<mml:math id="M4">
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext mathvariant="bold">T</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mo>∪</mml:mo>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>K</mml:mi>
+</mml:msubsup>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>&#119983;</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P73">Notice that by conditions 2 and 3 of the incompatible definition above, <bold>T</bold> does not have any nodes with multiple parents and <bold>T</bold> is a tree.</p>
+<p id="P74">Let &#119983;<sub>
+<italic>i,j</italic>
+</sub> be the <italic>j</italic>th compatible tree at data point <italic>i</italic> with probability <italic>p<sub>i,j</sub>
+</italic> as estimated by Stick-Stack. Then the the relative probability of a compatible evolution tree <bold>T</bold>
+<sup>
+<italic>k</italic>
+</sup> = (&#119983;<sub>1,<italic>j</italic>
+<sub>1</sub>
+</sub>, &#119983;<sub>2,<italic>j</italic>
+<sub>1</sub>
+</sub>, …, &#119983;<sub>
+<italic>n,j</italic>
+<sub>1</sub>
+</sub>) over the <italic>n</italic> data points is given by <disp-formula id="FD5">
+<label>(2)</label>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mtext>ℙ</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msup>
+<mml:mtext mathvariant="bold">T</mml:mtext>
+<mml:mi>k</mml:mi>
+</mml:msup>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>×</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>×</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>×</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P75">Note that Σ<sub>k</sub>ℙ(<bold>T</bold>
+<sup>
+<italic>k</italic>
+</sup>) = 1 where <italic>k</italic> is over all possible compatible configurations. Thus the probability of a <bold>T</bold>
+<sup>
+<italic>k</italic>
+</sup> may be underestimated. However, it preserves the ordering of the possible multiple solutions which is used here.</p>
+<p id="P76">For a concrete example, consider <xref ref-type="fig" rid="F4">Fig. 4</xref>. The four sites are labeled as subcutaneous soft tissue (subcu), brain, liver1 and liver2. For each site, Concerti produces exactly one tree, with eight pseudoclones across all the four sites: green (G), cyan (C), orange (O), purple (P), ash (A), yellow (Y), red (R), brown (B). Then Stick-Stack produces the following four trees: <disp-formula id="FD6">
+<mml:math id="M6">
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:msub>
+<mml:mi mathvariant="bold">&#119983;</mml:mi>
+<mml:mrow>
+<mml:mtext>subcu</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>G</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>B</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>}</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:msub>
+<mml:mi mathvariant="bold">&#119983;</mml:mi>
+<mml:mrow>
+<mml:mtext>brain</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>G</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>A</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>}</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:msub>
+<mml:mi mathvariant="bold">&#119983;</mml:mi>
+<mml:mrow>
+<mml:mtext>liver1</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>G</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>Y</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>}</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:msub>
+<mml:mi mathvariant="bold">&#119983;</mml:mi>
+<mml:mrow>
+<mml:mtext>liver2</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>G</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>R</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>}</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P77">It can be verified that the four trees are mutually compatible. Then the unique consolidated phylogeny is given by <disp-formula id="FD7">
+<mml:math id="M7">
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:mtext mathvariant="bold">T</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mrow>
+<mml:mtext>subcu</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∪</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mrow>
+<mml:mtext>brain</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∪</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mrow>
+<mml:mtext>liver1</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∪</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mrow>
+<mml:mtext>liver2</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mspace width="1em"/>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>G</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>B</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>O</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>A</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>C</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>Y</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>P</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>R</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>}</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P78">
+<bold>T</bold> has only one connected component suggesting that all the data points are genetically related.</p>
+<p id="P79">In multi-time data, a consolidated tree <bold>T</bold> is stretched out with the given time points appropriately marking the tree (see <xref ref-type="fig" rid="F5">Figs.5</xref>, <xref ref-type="fig" rid="F6">6</xref> for example). Additionally, a fishplot i s output to visualize the dynamics of the pseudoclones (growth or shrinkage, including birth and death).</p>
+</sec>
+</sec>
+</sec>
+<sec id="S16" sec-type="results">
+<label>3</label>
+<title>Results</title>
+<p id="P80">We applied Concerti on publicly available COVID-19 sequencing data as well as multi-site and multi-time cancer sequencing data (see <xref ref-type="sec" rid="S21">Data Availability Section</xref>).</p>
+<sec id="S17">
+<label>3.1</label>
+<title>COVID-19 data</title>
+<p id="P81">For our study we sought COVID-19 patient samples with access to the raw reads in order to assess the alterations at varying allele frequencies. Using an established reference MN908947.3 obtained from the ‘first’ patient sequenced in Wuhan, we found forty one distinct variants in twenty one patient samples (see the <xref ref-type="sec" rid="S21">Data Availability Section</xref> for details on the patient samples and the variant calling pipeline). Eighteen of the patients were also analyzed in [<xref ref-type="bibr" rid="R23">23</xref>], albeit the variants therein were derived based on a different reference sequence and protocol. Hence, the set of variants do not exactly match the set we obtain. Our data set has three additional patients (who are sellers or deliverymen from the Wuhan seafood market) [<xref ref-type="bibr" rid="R30">30</xref>]. We applied Concerti to the data and the resulting phylogeny is shown in <xref ref-type="fig" rid="F3">Fig. 3</xref>. Note that all samples with dark blue sublineage in the figure were collected in the USA, the one with the dark-grey sublineage (SRR11278092) was collected in Nepal, while the remaining were collected in China. The figure shows the other lineages that were identified. The phylogeny is not fully resolved based on the variants of this set of patients; this is shown as clusters of patients in two internal and one leaf node in the tree. The phylogeny also uncovers three parallel mutation events (shown as transversal dashed lines with the corresponding color): 404:A&gt;T (raspberry), 29039:A&gt;T (grey) and 4229:A&gt;C (green). The first two were reported in [<xref ref-type="bibr" rid="R23">23</xref>] while the third is discovered in this study.</p>
+</sec>
+<sec id="S18">
+<label>3.2</label>
+<title>Cancer data</title>
+<p id="P82">Using Concerti, we analyzed three patients, one sampled across multiple sites (<xref ref-type="fig" rid="F4">Fig. 4</xref>) and two sampled over time (<xref ref-type="fig" rid="F5">Figs. 5</xref> and <xref ref-type="fig" rid="F6">6</xref>). We first applied Concerti to a multi-site case, GI1, a 53 year old male with metastatic colon cancer who was part of a rapid autopsy study where multiple metastatic samples were taken at the time of death. Additional clinical details and the description of the sequencing method can be found in [<xref ref-type="bibr" rid="R22">22</xref>]. Samples were taken from different anatomical sites including lesions in the liver, brain, and subcutaneous soft tissue. Time of lesion development was not documented radiologically and thus no longitudinal time-ordering of the samples could be performed. Concerti's generated tumor evolution tree gives a clinically plausible explanation as to the mutational development of this disease (<xref ref-type="fig" rid="F4">Fig. 4</xref>). The phylogenetic tree characterizes several truncal clones shared across all samples (green and cyan) and then identifies two sibling clones (orange and purple) that are tissue specific. One clone captures both liver samples and contains the KRAS p.G12S allele. The other clone, which contains the ELF3 p.S229R allele, goes on to develop two daughter clones each specific to the brain or subcutaneous soft tissue. Thus, Concerti's integration of multi-site samples enables the phylogenetic tree to capture a tumor's broad spatial heterogeneity and allows for a treatment course to be designed to be locally or broadly targeted.</p>
+<p id="P83">We also applied Concerti to longitudinal sequencing data from two relapsed chronic lymphocytic leukemia (CLL) patients. Patient CLL1 had five biopsies taken over the course of treatment with ibrutinib and rituximab and relapsed 12 months after treatment initiation (<xref ref-type="fig" rid="F5">Fig. 5</xref>). Before treatment, the dominant clone contained mutations in several known cancer genes including TP53, MED12, IK2F3, and NOTCH1. Two small clones (red asterisks) continued to evolve as evidenced by the acquisition of additional mutations after two months post-treatment. The fishplot highlights the correspondence between the emergence of a resistant clones and the increase in tumor size. Concerti's time-scaled phylogenetic tree and fishplot captures the birth of this clone, before relapse was clinically documented, that harbored three mutations in genes associated with resistance to ibrutinib, including BTK, PLCG2, and known cancer driver CCND2.</p>
+<p id="P84">The second CLL patient Concerti analyzed was similarly treated with and developed resistance to ibrutinib. (<xref ref-type="fig" rid="F6">Fig. 6</xref>). For patient CLL2, seven blood biopsies were taken over the treatment course including before-treatment, on-treatment, and at time of relapse. Several truncal mutations in known cancer genes were identified in the pre-treatment samples, including TP53 and FBXW7. After initiation with ibrutinib, a clone with a BIRC3 mutation (green) increased in prevalence. At the time of relapse, Concerti's phylogenetic tree identifies the emergence of a new clone harboring a mutation in PLCG2, a known mechanism of resistance to ibrutinib therapy, and which goes on to grow in prevalence. Clones with ATM and SF3B1 did not have noticeable clonal dynamics during the treatment or relapse intervals suggesting they are not selected for under ibrutinib therapy. In both CLL patients, the birth of these resistant clones in response to treatment was only able to be identified because of Concerti's unique integration of time-scaled trees.</p>
+</sec>
+</sec>
+<sec id="S19" sec-type="conclusions">
+<label>4</label>
+<title>Conclusion</title>
+<p id="P85">In this paper we introduce Concerti, an algorithm for inferring evolutionary phylogenies. Concerti's ability to extract and integrate information from multi-point, whether multi-site, multi-time, or combination thereof samples, enables the discovery of clinically plausible phylogenetic trees that capture the heterogeneity known to exist both spatially and temporally. These models can have direct therapeutic implications since they can highlight: “births” of clones that may harbor resistance mechanisms to treatment, “death” of subclones with drug targets, and acquisition on functionally pertinent mutations in clones that may have seemed clinically irrelevant. We demonstrate in this paper how Concerti can be applied to any genomic sequencing dataset with varying allele frequencies, whether it be cancer or the new SAR-Cov-2 virus causing the Covid-19 pandemic, and the results can have profound disease-specific clinical implication.</p>
+<p id="P86">Identifying the presence of multiple viral strain infecting a single host can have significant impact on how we approach treatment, vaccine development, and mitigation strategies. The results for Covid-19 patients demonstrate Concerti's ability to distinguish between viral strains based on difference allele frequencies and discover the presence of new homoplasies. Thus, Concerti's results addresses the overwhelming challenges researches face when developing therapeutics and may help facilitate the key to effective vaccine development. Accurately monitoring tumor evolution over the course of a disease can lead to the identification of new drug targets and therapeutic approaches that can stabilize this complex disease and manage the selective pressures introduced by treatment exposure and tumor-environment changes. These results for patients CLL1, CLL2 and GI1 demonstrate how Concerti's specific integration of multi-point data can facilitate better treatment plans that can both be more locally targeted and optimized for treatment responsivity.</p>
+</sec>
+</body>
+<back>
+<ack id="S20">
+<title>Acknowledgements</title>
+<p>We are very grateful to Ignaty Leshchiner, Gad Getz, and Catherine J. Wu for providing CLL patient data.</p>
+</ack>
+<sec id="S21" sec-type="data-availability">
+<title>Data and Tool Availability</title>
+<p id="P87">All data used in the paper are available with the original publications. In particular, patient CLL1 and CLL2 correspond to B06 and A43 of [<xref ref-type="bibr" rid="R13">13</xref>], respectively. While the GI1 colon cancer patient used for the multi-site analysis was previously published as TPS037 in [<xref ref-type="bibr" rid="R22">22</xref>]. The COVID-19 patient data come from 5 NCBI BioProjects: PRJNA601736, PRJNA603194, PRJNA610428, PRJNA605983 and PRJNA608651. The reads were trimmed with Trimmomatic (v. 0.39) and then mapped with bwa on MN908947.3 GenBank sequence. This sequence was taken in December from a 57 year old woman, who sold shrimp at the Wuhuan seafood market, appears to be the earliest case with COVID-19. Variant calling was performed generating mpileup files using SAMtools and then running VarScan (min-var-freq parameter set to 0.01). Finally to remove possibly sequencing artifacts, we retains SNV that: showing a VarScan significance p-value &gt; 0.05 (Fisher's Exact Test on the read counts supporting reference and variant alleles) and VAF&gt;10%, resulting in a list of 41 SNVs in 21 patients that are used in the paper. Concerti's binaries are available upon request.</p>
+</sec>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Allred</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Medina</surname>
+<given-names>DD</given-names>
+</name>
+</person-group>
+<article-title>The origins of estrogen receptor alpha-positive and estrogen receptor alpha-negative human breast cancer</article-title>
+<source>Breast Cancer Res</source>
+<year>2004</year>
+<volume>6</volume>
+<fpage>240</fpage>
+<lpage>245</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Carter</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Cibulskis</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Helman</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>McKenna</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zack</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Laird</surname>
+<given-names>PW</given-names>
+</name>
+<name>
+<surname>Onofrio</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Winckler</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Weir</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Beroukhim</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Absolute quantification of somatic DNA alterations in human cancer</article-title>
+<source>Nature Biotechnology</source>
+<year>2012</year>
+<volume>30</volume>
+<fpage>413</fpage>
+<lpage>421</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Fernàndez-Baca</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<chapter-title>The perfect phylogeny problem</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Cheng</surname>
+<given-names>XZ</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>DZ</given-names>
+</name>
+</person-group>
+<source>Steiner Trees in Industry</source>
+<year>2001</year>
+<publisher-loc>Boston, MA</publisher-loc>
+<publisher-name>Springer</publisher-name>
+<fpage>203</fpage>
+<lpage>234</lpage>
+<comment>In editors chapter 11</comment>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Deshwar</surname>
+<given-names>AG</given-names>
+</name>
+<name>
+<surname>Vembu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yung</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>GH</given-names>
+</name>
+<name>
+<surname>Stein</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Morris</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>PhyloWGS: reconstructing subclonal composition and evolution from whole-genome sequencing of tumors</article-title>
+<source>Genome Biology</source>
+<year>2015</year>
+<volume>16</volume>
+<fpage>35</fpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>El-Kebir</surname>
+<given-names>Mohammed</given-names>
+</name>
+<name>
+<surname>Oesper</surname>
+<given-names>Layla</given-names>
+</name>
+<name>
+<surname>Acheson-Field</surname>
+<given-names>Hannah</given-names>
+</name>
+<name>
+<surname>Raphael</surname>
+<given-names>Benjamin J</given-names>
+</name>
+</person-group>
+<article-title>Reconstruction of clonal trees and tumor composition from multi-sample sequencing data</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<fpage>i62</fpage>
+<lpage>i70</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Fehr</surname>
+<given-names>Anthony R</given-names>
+</name>
+<name>
+<surname>Perlman</surname>
+<given-names>Stanley</given-names>
+</name>
+</person-group>
+<source>Coronaviruses: An Overview of Their Replication and Pathogenesis</source>
+<year>2015</year>
+<publisher-name>Springer New York</publisher-name>
+<publisher-loc>New York, NY</publisher-loc>
+<fpage>1</fpage>
+<lpage>23</lpage>
+<pub-id pub-id-type="doi">10.1007/978-1-4939-2438-7_1</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hajirasouliha</surname>
+<given-names>Iman</given-names>
+</name>
+<name>
+<surname>Mahmoody</surname>
+<given-names>Ahmad</given-names>
+</name>
+<name>
+<surname>Raphael</surname>
+<given-names>Benjamin J</given-names>
+</name>
+</person-group>
+<article-title>A combinatorial approach for analyzing intra-tumor heterogeneity from high-throughput sequencing data</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>12</issue>
+<fpage>i78</fpage>
+<lpage>i86</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Dubes</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<source>Algorithms for Clustering Data</source>
+<year>1988</year>
+<publisher-name>Prentice-Hall</publisher-name>
+<publisher-loc>Englewood Cliffs</publisher-loc>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jiao</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Vembu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Deshwar</surname>
+<given-names>AG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inferring clonal evolution of tumors from single nucleotide somatic mutations</article-title>
+<source>BMC Bioinformatics</source>
+<year>2014</year>
+<volume>15</volume>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Karamitros</surname>
+<given-names>Timokratis</given-names>
+</name>
+<name>
+<surname>Papadopoulou</surname>
+<given-names>Gethsimani</given-names>
+</name>
+<name>
+<surname>Bousali</surname>
+<given-names>Maria</given-names>
+</name>
+<name>
+<surname>Mexias</surname>
+<given-names>Anastasios</given-names>
+</name>
+<name>
+<surname>Tsiodras</surname>
+<given-names>Sotiris</given-names>
+</name>
+<name>
+<surname>Mentis</surname>
+<given-names>Andreas</given-names>
+</name>
+</person-group>
+<article-title>Sars-cov-2 exhibits intra-host genomic plasticity and low-frequency polymorphic quasispecies</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<comment>URL: <ext-link ext-link-type="uri" xlink:href="https://www.biorxiv.org/content/early/2020/03/28/2020.03.27.009480">https://www.biorxiv.org/content/early/2020/03/28/2020.03.27.009480</ext-link> arXiv: <ext-link ext-link-type="uri" xlink:href="https://www.biorxiv.org/content/early/2020/03/28/2020.03.27.009480.full.pdf">https://www.biorxiv.org/content/early/2020/03/28/2020.03.27.009480.full.pdf</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1101/2020.03.27.009480</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Korber</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Gnanakaran</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Theiler</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Abfalterer</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Giorgi</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Parker</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Partridge</surname>
+<given-names>DG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Spike mutation pipeline reveals the emergence of a more transmissible form of sars-cov-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<comment>URL: <ext-link ext-link-type="uri" xlink:href="https://www.biorxiv.org/content/early/2020/04/30/2020.04.29.069054">https://www.biorxiv.org/content/early/2020/04/30/2020.04.29.069054</ext-link> arXiv:<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/https://www.biorxiv.org/content/early/2020/04/30/2020.04.29.069054.full.pdf">https://www.biorxiv.org/content/early/2020/04/30/2020.04.29.069054.full.pdf</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1101/2020.04.29.069054</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuipers</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Beerenwinkel</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Tree inference for single-cell data</article-title>
+<source>Genome Biology</source>
+<year>2016</year>
+<volume>17</volume>
+<fpage>86</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Landau</surname>
+<given-names>DA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The evolutionary landscape of chronic lymphocytic leukemia treated with ibrutinib targeted therapy</article-title>
+<source>Nature Communications</source>
+<year>2017</year>
+<fpage>8</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leshchiner</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Gainor</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Livitz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Rosebrock</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Spiro</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Martinez</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mroz</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Stewart</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Elagina</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive analysis of tumour initiation, spatial and temporal progression under multiple lines of treatment</article-title>
+<source>biorxiv</source>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>Jing</given-names>
+</name>
+<name>
+<surname>du Plessis</surname>
+<given-names>Louis</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Zhe</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>Verity</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Min</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>Huifang</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Jiufeng</given-names>
+</name>
+<name>
+<surname>Francois</surname>
+<given-names>Sarah</given-names>
+</name>
+<name>
+<surname>Kraemer</surname>
+<given-names>Moritz UG</given-names>
+</name>
+<name>
+<surname>Faria</surname>
+<given-names>Nuno R</given-names>
+</name>
+<name>
+<surname>McCrone</surname>
+<given-names>John T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology of sars-cov-2 in guangdong province, china</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+<comment>URL: <ext-link ext-link-type="uri" xlink:href="https://www.medrxiv.org/content/early/2020/04/04/2020.04.01.20047076">https://www.medrxiv.org/content/early/2020/04/04/2020.04.01.20047076</ext-link> arXiv:<ext-link ext-link-type="uri" xlink:href="https://www.medrxiv.org/content/early/2020/04/04/2020.04.01.20047076.full.pdf">https://www.medrxiv.org/content/early/2020/04/04/2020.04.01.20047076.full.pdf</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1101/2020.04.01.20047076</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malikicand</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>McPherson</surname>
+<given-names>AW</given-names>
+</name>
+<name>
+<surname>Donmez</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Cenk</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Clonality inference in multiple tumor samples using phylogeny</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<fpage>1349</fpage>
+<lpage>1356</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miller</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>McMichael</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Dang</surname>
+<given-names>HX</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Visualizing tumor evolution with the fishplot package for r</article-title>
+<source>BMC Genomics</source>
+<year>2016</year>
+<fpage>17</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miller</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>Dees</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Griffith</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Welch</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Griffith</surname>
+<given-names>OL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SciClone: Inferring clonal architecture and tracking the spatial and temporal patterns of tumor evolution</article-title>
+<source>PLoS Computational Biology</source>
+<year>2014</year>
+<volume>10</volume>
+<fpage>e1003665</fpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morgillo</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Della Corte</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Fasano</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ciardiello</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Mechanisms of resistance to EGFR-targeted drugs: lung cancer</article-title>
+<source>ESMO Open</source>
+<year>2016</year>
+<volume>1</volume>
+<fpage>e000060</fpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Myers</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Satas</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Raphael</surname>
+<given-names>BJ</given-names>
+</name>
+</person-group>
+<article-title>CALDER: Inferring phylogenetic trees from longitudinal tumor samples</article-title>
+<source>Cell Systems</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nowell</surname>
+<given-names>PC</given-names>
+</name>
+</person-group>
+<article-title>The clonal evolution of tumor cell populations</article-title>
+<source>Science</source>
+<year>1976</year>
+<volume>1984</volume>
+<fpage>23</fpage>
+<lpage>28</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Parikh</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Leshchiner</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Elagina</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Goyal</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Levovitz</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Siravegna</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Livitz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Rhrissorrakrai</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Van Seventer</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Hanna</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Liquid versus tissue biopsy for detecting acquired resistance and tumor heterogeneity in gastrointestinal cancers</article-title>
+<source>Nat Med</source>
+<year>2019</year>
+<volume>25</volume>
+<issue>9</issue>
+<fpage>1415</fpage>
+<lpage>1421</lpage>
+<pub-id pub-id-type="doi">10.1038/s41591-019-0561-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ramazzotti</surname>
+<given-names>Daniele</given-names>
+</name>
+<name>
+<surname>Angaroni</surname>
+<given-names>Fabrizio</given-names>
+</name>
+<name>
+<surname>Maspero</surname>
+<given-names>Davide</given-names>
+</name>
+<name>
+<surname>Gambacorti-Passerini</surname>
+<given-names>Carlo</given-names>
+</name>
+<name>
+<surname>Antoniotti</surname>
+<given-names>Marco</given-names>
+</name>
+<name>
+<surname>Graudenzi</surname>
+<given-names>Alex</given-names>
+</name>
+<name>
+<surname>Piazza</surname>
+<given-names>Rocco</given-names>
+</name>
+</person-group>
+<article-title>Characterization of intra-host sars-cov-2 variants improves phylogenomic reconstruction and may reveal functionally convergent mutations</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<comment>URL: <ext-link ext-link-type="uri" xlink:href="https://www.biorxiv.org/content/early/2020/04/26/2020.04.22.044404">https://www.biorxiv.org/content/early/2020/04/26/2020.04.22.044404</ext-link>, arXiv:<ext-link ext-link-type="uri" xlink:href="https://www.biorxiv.org/content/early/2020/04/26/2020.04.22.044404.full.pdf">https://www.biorxiv.org/content/early/2020/04/26/2020.04.22. 044404.full.pdf</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1101/2020.04.22.044404</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ross</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Markowetz</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>PyClone: statistical inference of clonal population structure in cancer</article-title>
+<source>Nat Methods</source>
+<year>2014</year>
+<volume>11</volume>
+<fpage>396</fpage>
+<lpage>398</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ross</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Markowetz</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>OncoNEM: inferring tumor evolution from single-cell sequencing data</article-title>
+<source>Genome Biology</source>
+<year>2016</year>
+<volume>17</volume>
+<fpage>69</fpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shaw</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Friboulet</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Leshchiner</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Gainor</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Bergqvist</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brooun</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Burke</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>YL</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Dardaei</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Frias</surname>
+<given-names>RL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Resensitization to crizotinib by the lorlatinib alk resistance mutation l1198f</article-title>
+<source>N Engl J Med</source>
+<year>2016</year>
+<volume>15</volume>
+<fpage>54</fpage>
+<lpage>61</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>Zijie</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>Yan</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Lu</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>Wentai</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Leisheng</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Li</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Zhuo</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Jing</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>Jiaxin</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Donghong</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Li</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic Diversity of Severe Acute Respiratory Syndrome–Coronavirus 2 in Patients With Coronavirus Disease 2019</article-title>
+<source>Clinical Infectious Diseases</source>
+<year>2020</year>
+<month>03</month>
+<comment>ciaa203. arXiv:<ext-link ext-link-type="uri" xlink:href="https://academic.oup.com/cid/advance-article-pdf/doi/10.1093/cid/ciaa203/33167020/ciaa203.pdf">https://academic.oup.com/cid/advance-article-pdf/doi/10.1093/cid/ciaa203/33167020/ciaa203.pdf</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1093/cid/ciaa203</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van Dorp</surname>
+<given-names>Lucy</given-names>
+</name>
+<name>
+<surname>Acman</surname>
+<given-names>Mislav</given-names>
+</name>
+<name>
+<surname>Richard</surname>
+<given-names>Damien</given-names>
+</name>
+<name>
+<surname>Shaw</surname>
+<given-names>Liam P</given-names>
+</name>
+<name>
+<surname>Ford</surname>
+<given-names>Charlotte E</given-names>
+</name>
+<name>
+<surname>Ormond</surname>
+<given-names>Louise</given-names>
+</name>
+<name>
+<surname>Owen</surname>
+<given-names>Christopher J</given-names>
+</name>
+<name>
+<surname>Pang</surname>
+<given-names>Juanita</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Cedric CS</given-names>
+</name>
+<name>
+<surname>Boshier</surname>
+<given-names>Florencia AT</given-names>
+</name>
+<name>
+<surname>Ortiz</surname>
+<given-names>Arturo Torres</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence of genomic diversity and recurrent mutations in sars-cov-2</article-title>
+<source>Infection, Genetics and Evolution</source>
+<year>2020</year>
+<fpage>104351</fpage>
+<comment>URL: <ext-link ext-link-type="uri" xlink:href="http://www.sciencedirect.com/science/article/pii/S1567134820301829">http://www.sciencedirect.com/science/article/pii/S1567134820301829</ext-link>
+</comment>
+<pub-id pub-id-type="doi">10.1016/j.meegid.2020.104351</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yates</surname>
+<given-names>LR</given-names>
+</name>
+<name>
+<surname>Knappskog</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wedge</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Farmery</surname>
+<given-names>JHR</given-names>
+</name>
+<name>
+<surname>Gonzalez</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Martincorena</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Alexandrov</surname>
+<given-names>LB</given-names>
+</name>
+<name>
+<surname>Van Loo</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Haugland</surname>
+<given-names>HK</given-names>
+</name>
+<name>
+<surname>Lilleng</surname>
+<given-names>PK</given-names>
+</name>
+<name>
+<surname>Gundem</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Genomic evolution of breast cancer metastasis and relapse</article-title>
+<source>Cancer Cell</source>
+<year>2017</year>
+<volume>32</volume>
+<fpage>169</fpage>
+<lpage>184</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>X-L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X-G</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Si</surname>
+<given-names>H-R</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>C-L</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>H-D</given-names>
+</name>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>270</fpage>
+<lpage>273</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Schematic of the Concerti Framework. Given a set of multi-patient (COVID-19) or multi-site, multi-time (cancer) genomic samples, the algorithm analyzes the underlying alteration frequency distribution as input and performs a (1) negative selection to filter <italic>appearing</italic> alterations. A (2) multidimensional clustering is done to identify pseudoclones/lineages that will then be enriched by a (3) single sample clustering that (4) merges alterations that were initially negatively selected. (5) All potential phylogenies are generated and assessed for compatibility. Finally the set of consolidated phylogenetic structures over time or site are output with likelihood scores.</p>
+</caption>
+<graphic xlink:href="EMS98592-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Let U (white), D (green), C (cyan), B (yellow), A (brown) be pseudoclones/sublineages with prevalence values: 1.0 <italic>u &gt; d &gt; c &gt; b &gt; a &gt;</italic> 0 respectively. The top row shows 4 possible evolution trees where the time axis is the <italic>molecular clock</italic>. The bottom row shows the single time-point "fishplot" as appropriately stacked disks. Notice that the leftmost phylogeny suggests that there exist some cells/virion with both A and B alterations while all the other three suggest that there exists no such cell/virion.</p>
+</caption>
+<graphic xlink:href="EMS98592-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>The 21 COVID-19 patients are shown at different internal and leaf nodes in the phylogeny as stacked disks of different colors. Each color corresponds to a distinct sublineage identified by a set of alterations and the size is roughly proportional to its observed prevalence value. Where possible, the edges of the phylogeny are colored by the emerging sublineage(s). When a node has multiple individuals, it indicates that there is not enough evidence to delineate the distinctions in the phylogeny. The three homoplasies (parallel mutations) are shown by dashed transversal lines. While in two (raspberry, green colors) the alteration event occurred at least twice, in the third (gray color) the alteration occurred at least three times. Furthermore, if the date of collection of a sample at a child node precedes the date at a parent node, it is within a window of a week.</p>
+</caption>
+<graphic xlink:href="EMS98592-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Concerti tumor evolution tree <bold>T</bold> for patient GI1. Tumor evolution tree <bold>T</bold> for colon cancer patient GI1 multi-site data. The edges of the <bold>T</bold> are labeled by the known cancer genes and the colors denote the distinct pseudoclones estimated by Concerti. Leaf nodes represent each of the distinct lesion sites. The single site trees &#119983; are shown at the bottom as stacked discs and the sizes are proportional to the prevalence values.</p>
+</caption>
+<graphic xlink:href="EMS98592-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Concerti fishplot and tumor evolution tree <bold>T</bold> for patient CLL1 multi-time data. The fishplot width corresponds to approximate tumor size using ALC (absolute lymphocyte count) values. Clones are colored and sized proportionally to their prevalence. The corresponding tumor tree is aligned by timepoint and highlights to the birth of brown clone, which occurred prior to the annotation of clinical relapse. Node sizes correspond to prevalence. The edges of the <bold>T</bold> are labeled by the known cancer genes and the colors denote the distinct pseudoclones estimated by Concerti. Red asterisks indicates acquisition of new alterations to clone.</p>
+</caption>
+<graphic xlink:href="EMS98592-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>Concerti fishplot and tumor evolution tree <bold>T</bold> for patient CLL2 multi-time data. The fishplot width corresponds to approximate tumor size using ALC values. Clones are colored and sized proportionally to their prevalence. The corresponding tumor tree is aligned by timepoint and highlights to the birth of brown clone, which occurred prior to the annotation of clinical relapse. Node sizes correspond to prevalence. The edges of the <bold>T</bold> are labeled by the known cancer genes and the colors denote the distinct pseudoclones estimated by Concerti. Red asterisk indicates acquisition of new alterations to clone.</p>
+</caption>
+<graphic xlink:href="EMS98592-f006"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Exemplar phylogenetic methods for cancer and distinguishing features.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Method</th>
+<th align="center" valign="top">Input data</th>
+<th align="center" valign="top">Data mode</th>
+<th align="center" valign="top">Specific for multi-time data</th>
+<th align="center" valign="top">Specific for multi-site data</th>
+<th align="center" valign="top">Genomic scale</th>
+<th align="center" valign="top">Time-scaled tree</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">SCITE [<xref ref-type="bibr" rid="R12">12</xref>]</td>
+<td align="center" valign="top">single cell</td>
+<td align="center" valign="top">single value</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">N/A</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Pyclone [<xref ref-type="bibr" rid="R24">24</xref>]</td>
+<td align="center" valign="top">bulk data</td>
+<td align="center" valign="top">single value</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">CITUP [<xref ref-type="bibr" rid="R16">16</xref>]</td>
+<td align="center" valign="top">bulk data</td>
+<td align="center" valign="top">single value</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Calder [<xref ref-type="bibr" rid="R20">20</xref>]</td>
+<td align="center" valign="top">bulk data</td>
+<td align="center" valign="top">single value</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">PhylogicNDT [<xref ref-type="bibr" rid="R14">14</xref>]</td>
+<td align="center" valign="top">bulk data</td>
+<td align="center" valign="top">distribution</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✗</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Concerti</td>
+<td align="center" valign="top">bulk data</td>
+<td align="center" valign="top">distribution</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+<td align="center" valign="top">
+<bold>✓</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

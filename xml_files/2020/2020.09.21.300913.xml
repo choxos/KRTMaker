@@ -1,0 +1,1206 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS96079</article-id>
+<article-id pub-id-type="doi">10.1101/2020.09.21.300913</article-id>
+<article-id pub-id-type="archive">PPR217092</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Rapid detection of inter-clade recombination in SARS-CoV-2 with Bolotie</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Varabyou</surname>
+<given-names>Ales</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Pockrandt</surname>
+<given-names>Christopher</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Salzberg</surname>
+<given-names>Steven L.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Pertea</surname>
+<given-names>Mihaela</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Center for Computational Biology, Johns Hopkins University, Baltimore, MD</aff>
+<aff id="A2">
+<label>2</label>Department of Computer Science, Johns Hopkins University, Baltimore, MD</aff>
+<aff id="A3">
+<label>3</label>Department of Biomedical Engineering, Johns Hopkins University, Baltimore, MD</aff>
+<aff id="A4">
+<label>4</label>Department of Biostatistics, Johns Hopkins University, Baltimore, MD</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author. <email>ales.varabyou@jhu.edu</email>, <email>pockrandt@jhu.edu</email>, <email>mpertea@jhu.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>24</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>21</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The ability to detect recombination in pathogen genomes is crucial to the accuracy of phylogenetic analysis and consequently to forecasting the spread of infectious diseases and to developing therapeutics and public health policies. However, previous methods for detecting recombination and reassortment events cannot handle the computational requirements of analyzing tens of thousands of genomes, a scenario that has now emerged in the effort to track the spread of the SARS-CoV-2 virus. Furthermore, the low divergence of near-identical genomes sequenced in short periods of time presents a statistical challenge not addressed by available methods. In this work we present Bolotie, an efficient method designed to detect recombination and reassortment events between clades of viral genomes. We applied our method to a large collection of SARS-CoV-2 genomes and discovered hundreds of isolates that are likely of a recombinant origin. In cases where raw sequencing data was available, we were able to rule out the possibility that these samples represented co-infections by analyzing the underlying sequence reads. Our findings further show that several recombinants appear to have persisted in the population.</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>COVID-19</kwd>
+<kwd>recombination</kwd>
+<kwd>coronavirus</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Since the beginning of 2020, the COVID-19 pandemic caused by a newly emerged strain of a betacoronavirus, SARS-CoV-2, has been responsible for over 950,000 deaths and over 30 million infections to date (<xref ref-type="bibr" rid="R4">Dong et al., 2020</xref>). The strain has been hypothesized to have emerged as a result of a recombination event between a bat and a pangolin (<xref ref-type="bibr" rid="R22">Zhang et al., 2020</xref>), although its precise origin is not yet known. To date, the genetic diversity of the SARS-CoV-2 has been increasing slowly compared to other RNA viruses, with 5 to 7 major circulating clades being identified based on multiple variants common to large numbers of isolates in the GISAID database (<xref ref-type="bibr" rid="R6">Hadfield et al., 2018</xref>; <xref ref-type="bibr" rid="R17">Shu &amp; McCauley, 2017</xref>). This relative stability of the genetic content of the circulating forms of the virus is promising for the development of vaccines and therapeutics, as well as general understanding of the biology and pathology of SARS-CoV-2.</p>
+<p id="P3">However, as with other RNA viruses, coronaviruses are known to undergo mutations at high rates (<xref ref-type="bibr" rid="R5">Drake &amp; Holland, 1999</xref>). Inter- and intra-host recombinations are also well-studied and occur frequently (<xref ref-type="bibr" rid="R18">Su et al., 2016</xref>). As more mutations and lineages of SARS-CoV-2 get fixed in the population, a recombination event caused by a co-infection of a single patient with particles of distinct clades may lead to emergence of novel lineages, posing risks to the efficacy of future vaccines. In fact, several accounts of recombination events in SARS-CoV-2 have been reported in recent months (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>; <xref ref-type="bibr" rid="R21">Yi, 2020</xref>). As such, rapid and consistent surveillance of the sequenced genomes of SARS-CoV-2 for both novel mutations and recombinations is critical to the development of effective treatments and vaccines (<xref ref-type="bibr" rid="R3">Demİr et al., 2020</xref>).</p>
+<p id="P4">Multiple computational methods have been developed to detect recombination in microbial genomes and have been used in studies of HIV-1 mutagenesis, bacterial evolution, and other applications (<xref ref-type="bibr" rid="R15">Posada, 2002</xref>). Some popular methods, such as 3seq, analyze every possible triplet of a set of genomes and statistically evaluate the similarity of a sliding window across the query genome to the other sequences of the triplet (<xref ref-type="bibr" rid="R9">Lam et al., 2018</xref>). Other methods, like PhiPack, are designed to work for low-divergence genomes but still require a significant number of variants (1-5%) to perform statistical analysis (<xref ref-type="bibr" rid="R2">Bruen et al., 2006</xref>). A limitation of these methods for large-scale surveillance is that the algorithms are computationally intensive and require significant resources and time to perform analysis, particularly for the amount of data (nearly 100,000 genomes to date) that has been generated for SARS-CoV-2. There exist 512 trillion unique triplets of sequences for the currently available SARS-CoV-2 genomes, and a similarity analysis for each triplet is computationally infeasible. A more efficient approach is necessary if we want to be able to detect recombinants in a realistic amount of time.</p>
+<p id="P5">In this work we present Bolotie, a new algorithm designed to conduct mutational analysis and to detect recombinant forms and other anomalies among a very large set of viral sequences. The methods presented are also designed such that novel sequences can be analyzed efficiently without the need to rerun the entire protocol.</p>
+<p id="P6">We applied Bolotie to search for recombination events in 87,695 complete genomes of SARS-CoV-2 currently available in the GISAID database. In our analysis we identified multiple unique cases of recombination between 4 prominent clades of the virus. Several of the identified recombination events, including some previously reported (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>), appear in multiple isolates, suggesting transmission in the population.</p>
+<p id="P7">Lastly, we propose a methodology for distinguishing true recombination events from cases of mis-assembly of isolates from a host co-infected with several distinct lineages of a pathogen. The proposed method can be applied by to verify future SARS-CoV-2 genomes prior to database submission.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P8">We first aligned all genomes to the Wuhan-Hu-1 reference genome (GenBank accession <ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/nuccore/MN908947">MN908947</ext-link>), from which we detected 84,322 single-nucleotide variants (SNVs) at 29,503 sites. After removing all variants that appear in fewer than 100 sequences, we retained a set of 659 SNVs at 411 unique sites. Alignments also revealed 1,349 unique structural variants (934 deletions and 415 insertions). While 2 deletions and 1 insertion were present in over 100 genomes, for the purpose of computational efficiency we did not consider them further.</p>
+<p id="P9">Using Bolotie on the set of well-supported variants to search for recombination events between sequences in the 4 major clades of SARS-CoV-2, we identified 225 possibly recombinant genomes. <xref ref-type="fig" rid="F1">Figure 1</xref> illustrates that many of the identified recombination events were represented by a single genome. However, several lineages with near-identical sequences and the same breakpoint sites were observed. In <xref ref-type="fig" rid="F1">Figure 1</xref> these lineages appear as broad red bands with a high density of outgoing arcs. Additionally, several smaller groups of near-identical recombinant signatures have been observed in which genomes differed by one or two variants. Those genomes were often found to be neighbors in the computed maximum likelihood (ML) trees and often had the same or neighboring inferred parental sequences.</p>
+<p id="P10">Of the 225 recombinant genomes, 109 were labeled in clade #0, 111 in clade #1 and 5 in clade #2 (<xref ref-type="fig" rid="F1">Figure 1</xref>). Recombination events happened between members of all 4 clades, with 171 parental genomes identified in clade #0, 41 parental genomes in clade #1, 148 in clade #2 and 90 in clade #3. Additionally, 15 out of 225 potential recombinants were found present in the set of 4,039 representative genomes used by NextStrain (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 2</xref>).</p>
+<p id="P11">Of the 225 identified recombinants, a majority of the recombinant signatures had 1 or 2 breakpoints like the ones shown in <xref ref-type="fig" rid="F2">Figure 2A, 2B and 2C</xref>. However, at least 6 genomes including the one depicted in <xref ref-type="fig" rid="F2">Figure 2D</xref> exhibited more complex patterns of mosaicism with 3 breakpoints.</p>
+<p id="P12">While in majority of cases the path-finding algorithm of Bolotie relied on clade-defining variants with high conditional probabilities &gt; 0.9, several positions exhibited an inverse pattern and were also useful in the analysis. For example, in <xref ref-type="fig" rid="F2">Figure 2B</xref> (further detailed in <xref ref-type="table" rid="T1">Table 1</xref>), mutations of cytosine (C) to thymine (T) at position 14,407 and adenine (A) to guanine (G) at position 23,402 are not characteristic of clade 1 (yellow) since they have the same conditional probability of ~0.33 of defining clades 2 and 3. However, these positions are informative in an inverse way, namely that observing a C and an A at those positions is very unlikely if the sequence originated in clade 0. This adds additional evidence to the recombinant origins of the genomes. Similar instances in other genomes aided Bolotie in the search. In fact, since all 4 of the plots in <xref ref-type="fig" rid="F2">Figure 2</xref> describe recombinants which involve clade 0, the same conditional probabilities at position 14,407 can be observed in each subfigure.</p>
+<p id="P13">Lastly, even though most anomalous sequences reported by Bolotie had clean separations between two parental clades, some mutational signatures contained admixtures in conditional probabilities from other clades. In one such example, illustrated in <xref ref-type="fig" rid="F2">Figure 2C</xref>, at position 240 the conditional probability has a higher affinity towards a blue clade than others. A signature like that could be indicative of a random mutation, sequencing or assembly artifacts, and Bolotie resolved the parental clades in a seemingly parsimonious way.</p>
+<sec id="S3">
+<title>Sequencing and assembly artifacts</title>
+<p id="P14">Although recombination has been extensively observed within and between members of the coronaviridae family, such observations were in the past characterized based on years of accumulated variants in a relatively small collection of genomes. The bulk of the SARS-CoV-2 sequences currently deposited in GISAID and GENBANK were collected and sequenced between the months of March and May of 2020 and show very high degree of similarity, which combined with the large number of available genomes, makes evolutionary analysis very challenging.</p>
+<p id="P15">Another complication is that an apparent recombinant strain might instead be the result of a co-infection. Suppose a sample was collected from a patient co-infected with two distinct lineages of the virus, where one lineage contains two SNVs while the other lineage contains two distinct SNVs at the same positions. Such a sample would be amplified and sequenced in a single batch. Reads representing both alleles would be provided to an assembler to produce the final genome. Depending on the software, protocols and coverage of each allele by the reads, it is possible that an assembler would produce a sequence with one allele from the first lineage and the other allele from the second lineage, creating an artifactual recombinant. Re-analysis of raw sequencing reads by mapping them against the assembled genome should reveal such artifacts, because reads from a patient co-infected by multiple clades would reveal different variants at the corresponding sites.</p>
+<p id="P16">To evaluate this hypothesis, we obtained sets of raw sequencing reads deposited at NCBI/SRA or ENA for some of the recombinant genomes identified with Bolotie. Unfortunately, GISAID does not require authors to submit raw data, and only a limited number of submitters have placed their data in public archives such as SRA and ENA. Thus, we were only able to recover a limited number of datasets for our analysis.</p>
+<p id="P17">One of the sequences for which we were able to identify raw reads was isolate EPI_ISL_439137 (<xref ref-type="fig" rid="F2">Figure 2B</xref>), for which reads were deposited in the European Bioinformatics Institute's ENA database. As summarized in <xref ref-type="table" rid="T1">Table 1</xref>, all positions with high conditional affinities for a clade had a homogenous composition, indicating that the data did not derive from two distinct isolates, but instead it was likely a single isolate containing variants from two parental lineages.</p>
+<p id="P18">Searching the list of recombinant genomes for similar signatures, we identified another isolate, EPI_ISL_489588 also from Scotland, dated one week earlier, which contained the same variants. Another isolate, EPI_ISL_510303 from Spain, had all but one variant (at position 28,143) matching the recombinant signature of the isolates from Scotland. Given the rapid mutation rate in RNA viruses, it is possible that an independent mutation occurred at that position, or that the reference allele is an assembly artifact, however we could not find raw data corresponding to the Spanish isolate and were unable to further investigate possible reasons for the missing variant.</p>
+</sec>
+<sec id="S4">
+<title>Performance</title>
+<p id="P19">Complete analysis of the 87,695 genomes using Bolotie including alignment and index construction took a total of ~5.5 hours using 36 threads on a two 10 core Intel Xeon E5-2680 v2 processors. Using the conditional probability table provided with the software, analyzing a single additional genome takes on average only ~30 seconds.</p>
+</sec>
+</sec>
+<sec id="S5" sec-type="discussion">
+<title>Discussion</title>
+<p id="P20">The method and experiments presented in this work demonstrate that recombination has occurred between the four existing major clades of SARS-CoV-2. While some of the inferred events are likely homoplasies, or could be attributed to technical artifacts, our analysis shows that at least some of the genomes likely represent true cases of recombination.</p>
+<p id="P21">Of the 225 recombination events identified in our analysis, the majority were represented by single isolates, suggesting that the event was not established in the population. However, because two-thirds of the available genomes were sequenced between late March and early May, it is possible that more data will reveal additional recombinant lineages.</p>
+<p id="P22">The 225 inferred recombinant genomes comprise less than 1% of all sequences analyzed. It is possible that many more anomalous genomes could be detected by lowering the variant frequency threshold. For example, if we require 50 sequences to confirm a variant rather than 100, the number of informative sites increases more than two-fold from 411 to 996, possibly allowing detection of events that are rarer, such as those which involve smaller emerging lineages within the 4 clades. However, due to decreased specificity such an approach might require stricter manual inspection as the false positive rate is expected to increase substantially.</p>
+<p id="P23">While overall all events detected by Bolotie passed manual verification, a possibility of mis-assembly in cases of co-infection by particles from different clades could also explain the presence of multiple clade-specific variants within a single genome. Although we were unable to obtain raw read data for all recombinants, our analysis of the EPI_ISL_439137 isolate (<xref ref-type="fig" rid="F2">Figure 2B</xref>, <xref ref-type="table" rid="T1">Table 1</xref>) shows that at least in one case the recombinant origins of the genome can be validated. Several other recombinants identified in our analysis (EPI_ISL_468407, EPI_ISL_452334, EPI_ISL_475584, EPI_ISL_464547) have also been previously identified by other groups (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>).</p>
+<p id="P24">Due to the differences in library preparation, sequencing technology and assembly protocols, the need for raw data and independent validation is very high. We urge researchers to submit raw sequencing data so that any future studies are able to verify their findings, not only when studying recombination events, but also individual rare variants, transmission patterns, clade prevalence in different populations, etc.</p>
+<p id="P25">Because our method relies heavily on the accuracy of variant calls, we sought to compare how well available phylogenetic trees agree with trees built using consensus sequences constructed from the alignment data we obtained. The trees shown in <xref ref-type="fig" rid="F3">figures 3A and 3B</xref> are very similar, confirming that consensus sequences constructed by Bolotie preserve essential information sufficient for accurate phylogenetic analysis. In our analysis, Bolotie identified 15 out of 4,039 sequences in the set of sequences used by NextStrain (<xref ref-type="bibr" rid="R6">Hadfield et al., 2018</xref>) as recombinants or as having mutational anomalies (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 2</xref>). Minor differences between the NextStrain tree and the tree computed from Bolotie consensus sequences are to be expected since consensus sequences have 200 bases replaced with the reference at both 3' and 5' ends and do not include any structural variations. Additionally, since NextStrain tree includes 455 isolates submitted to GISAID after we downloaded our latest set, those additional sequences are also expected to slightly alter the topology. Lastly, differences in software versions and randomized methods inherent in the tree-building software are expected to produce trees with minor differences on each iteration.</p>
+<p id="P26">On the other hand, the introduction of 225 recombinant or otherwise anomalous genomes produced a mildly distorted tree with multiple outliers, shown in <xref ref-type="fig" rid="F3">Figure 3C</xref> and <xref ref-type="fig" rid="F1">Figure 1</xref>. In both illustrations most of the recombinant genomes were assigned a clade different from the non-recombinant neighbors by GISAID. Furthermore, several groups of potential recombinant genomes with identical or highly similar mutational signatures were identified by Bolotie (<xref ref-type="fig" rid="F1">Figure 1</xref>). Such lineages are especially important for phylogenetic analysis, as they may affect the topology of the trees more significantly. Even minor perturbations to the topology of the tree in the presence of misclassified outliers may have adverse effects on the studies of dynamics and transmission of the pathogen lineages in the population (<xref ref-type="bibr" rid="R1">Awadalla, 2003</xref>). This once again illustrates the importance of properly handling anomalous sequences in phylogenetic analysis.</p>
+<p id="P27">It must also be noted that different clade assignments for the SARS-CoV-2 genomes currently exist (<xref ref-type="bibr" rid="R6">Hadfield et al., 2018</xref>; <xref ref-type="bibr" rid="R17">Shu &amp; McCauley, 2017</xref>), at least in part due to differences in tree-building strategies (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>). However, even though discrepancies in clade assignment may present a challenge to Bolotie, the results will still be of use for the refinement of phylogenetic trees and ultimately clade assignments of the genomes. Grouping together conflicting clades and smaller clades should increase the specificity of the results.</p>
+<p id="P28">To the best of our knowledge, there currently exists one other recent evaluation of recombination in SARS-CoV-2 genomes (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>). Several studies hinted at the possibility of recombination occurring, but the results were inconclusive due to very small sample size at the time (<xref ref-type="bibr" rid="R21">Yi, 2020</xref>). Bolotie adds 221 candidate recombinants to the 5 proposed by VanInsberghe et al. Upon comparison of our results we immediately noted the absence of isolate EPI_ISL_464547, one of the 5 genomes reported by VanInsberghe et al., in the output of Bolotie. Of the 5 genomes reported in that study, EPI_ISL_464547 had the shortest length of the second segment. Upon closer investigation of conditional probabilities computed by Bolotie for that genome, we found that none of the variants are clade-defining, nor does the dominant clade 0 ever drop in probability below the baseline of 0.25 at which all genomes are equally likely. The only exception was a variant at the tail end of the sequence, which was equally likely for clades 0, 1 and 3 at 0.33 probability (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1</xref>). Thus, we concluded that the assignment done by Bolotie was likely correct for that genome.</p>
+<p id="P29">However, it is possible that differences in partitioning of clades 0, 1 and 3 between our method and that used by VanInsberghe et al. would result in different conditional probabilities at that variant position. As shown in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>, one such discrepancy does exist between clades 1 and 3, where NextStrain classification adds 334 sequences from clade GH to clade G. However, clade 0 would still have a conditional probability at that position greater than the baseline. As a result, we find it difficult to provide a conclusive assessment of the EPI_ISL_464547 isolate given currently available data.</p>
+<p id="P30">It must also be stressed that our work focused primarily on the development of a highly efficient, scalable general-purpose method for detecting recombination events in viral genomes irrespective of the divergence rates in the pool of collected isolates. An additional purpose was to search for convincing evidence that recombination does indeed happen in SARS-CoV-2. Hence, we imposed multiple conservative criteria, such as assessment of only 4 clades. However, it is important to note that recombination likely happens within lineages of the same clade. While not targeted in our analysis, future studies may choose to evaluate these intra-clade events, possibly yielding much higher numbers of recombination events.</p>
+</sec>
+<sec id="S6" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P31">Given how recently this novel strain of coronavirus appeared, much remains to be learned about SARS-CoV-2 and how it may change over time. Recombination events, which may have been responsible for the initial emergence of SARS-CoV-2 (<xref ref-type="bibr" rid="R22">Zhang et al., 2020</xref>), may have significant impact on future transmission and virulence of the virus. As such, our ability to detect recombination events in a timely manner is crucial in the ongoing efforts to find a solution to the pandemic and prevent additional casualties.</p>
+<p id="P32">Utilizing an enormous collection of SARS-CoV-2 isolates sequenced by thousands of researchers around the globe (<xref ref-type="bibr" rid="R17">Shu &amp; McCauley, 2017</xref>), we were able to develop a method that can reliably detect sequences with anomalous mutation patterns which are indicative of recombination events. Using the proposed method, we identified 225 high likelihood recombinant sequences. Our findings suggest that recombination in SARS-CoV-2 is much more common than previously reported and that several recombinant lineages may have become established in the population.</p>
+<p id="P33">We hope that the software presented here along with provided pre-built indices will help to detect future recombination events quickly and reliably, and aid in efforts to track the spread of the SARS-CoV-2 virus.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<title>Methods</title>
+<p id="P34">In this work we present Bolotie, a collection of methods that enables rapid alignment, variant calling, inter-clade recombination detection, and parent sequence search for large sets of assembled viral genomes. Our method is robust even when the divergence of collected genomes is very small, and it is designed for ultra-fast detection of anomalies. Because Bolotie utilizes a probability index that can be used for a one-against-all analysis, alignments and indices do not have to be recomputed when evaluating novel sequences as recombinants, which greatly increases the efficiency of single-sequence analysis. Our method is designed specifically to facilitate analysis of large datasets of low-divergence sequences, borrowing ideas from recent developments in multiple sequence alignment, phylogenetic analysis and sequence clustering.</p>
+<sec id="S8">
+<title>Data</title>
+<p id="P35">87,695 complete high-coverage genomes were obtained from GISAID (<xref ref-type="bibr" rid="R17">Shu &amp; McCauley, 2017</xref>) using the provided interface. SARS-CoV-2 reference genome isolate Wuhan-Hu-1 (GenBank, accession no. <ext-link ext-link-type="uri" xlink:href="http:\\MN908947">MN908947</ext-link>) was obtained from NCBI and used to guide the alignment, variant calling and consensus sequence generation in the protocol.</p>
+<p id="P36">Clade assignments for the 87,695 available genomes were also obtained from GISAID (<xref ref-type="bibr" rid="R17">Shu &amp; McCauley, 2017</xref>). Lineages S, L, V and O were grouped together, similarly to NextStrain (<xref ref-type="bibr" rid="R6">Hadfield et al., 2018</xref>), and based on the close distances observed in our independent phylogenetic analyses (<xref ref-type="fig" rid="F3">Figure 3</xref>). Mappings between clade IDs in our analysis, those defined by GISAID, and those defined by NextStrain are provided in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>.</p>
+<p id="P37">To test genomes for the possibility that the putative recombinant isolates might represent a co-infection with two or more distinct SARS-CoV-2 isolates, we searched the SRA database of raw read data using all unique GISAID identifiers as well as lab-assigned identifiers extracted from sequence headers.</p>
+</sec>
+<sec id="S9">
+<title>Bolotie - Computing the Alignment</title>
+<p id="P38">A global alignment method to the reference using the implementation from the KSW2 library (<xref ref-type="bibr" rid="R11">Li, 2018</xref>; <xref ref-type="bibr" rid="R19">Suzuki &amp; Kasahara, 2018</xref>) was developed to facilitate efficient and parallelized alignment and variant calling for each query sequence. Because sequence divergence is very low in the collection of SARS-CoV-2 genomes, the reference-guided approach used instead of the conventional multiple sequence alignment is 1) significantly faster, 2) allows simple addition of new sequences, and 3) does not cause explosions in gaps at 3' and 5' ends of the viral genomes. Alignment was performed with a DNAFULL scoring matrix, a gap penalty of 12 and gap extension penalty of 4.</p>
+</sec>
+<sec id="S10">
+<title>Bolotie – Computing Consensus Sequences</title>
+<p id="P39">After the pairwise alignment step, we construct for every genome in the input set a consensus sequence by substituting reference genome alleles for the high-frequency variants called by the aligner. Not only does this approach allow us to filter variants used to search for recombinants, but also produces a set of genomes with a standardized set of coordinates which can be used as a multiple sequence alignment (MSA) for phylogenetic analysis.</p>
+<p id="P40">Because the 3' and 5' ends of viral genomes are notoriously difficult to assemble correctly, we chose to force the first and last 200 bases in the consensus sequence of each genome to be identical to the reference genome in accordance with previous studies (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>), regardless of whether SNVs were revealed by alignment in those regions or not.</p>
+<p id="P41">Next, since Bolotie is designed to work for genomes with very few variants it is particularly sensitive to ambiguous nucleotides. To avoid biases caused by uncalled bases, any such instances were treated as an unknown base (N). Furthermore, to avoid bias in our predictions for all sequences in the dataset we replace nucleotides at a position of low-frequency variants with the reference allele making such positions equally probable for any clade (clade neutral). We define a low-frequency SNV as one that has fewer than 100 genome sequences that differ from the reference sequence at that position.</p>
+<p id="P42">Because we did not use structural variants when constructing consensus sequences, the final collection of filtered genomes represents a multiple sequence alignment (MSA). This not only allows us to use it directly for phylogenetic analysis but also allow us in the next steps to easily count SNVs across sequences and clades or compute distances among sequences efficiently.</p>
+</sec>
+<sec id="S11">
+<title>Bolotie – Identifying Recombinants</title>
+<p id="P43">Based on the provided clade information for each sequence, a model is created to evaluate each sequence as a potential recombinant. From the MSA the conditional probability for each nucleotide position is computed; i.e., the probability of this position belonging to clade <italic>C<sub>i</sub>
+</italic> given the nucleotide b. However, to account for differences in clade sizes, we multiply the base counts at each position for each clade with the reciprocal of the number of sequences in that clade. The algorithm also ensures that any ambiguous character is assigned a neutral conditional probability of <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mi>C</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</inline-formula>. For every position in the MSA we now have the normalized conditional probabilities of that base position belonging to a certain clade given the base observed in the consensus sequence.</p>
+<p id="P44">Let C = {c<sub>1</sub>, c<sub>2</sub>, …, c<sub>k</sub>} be the clades (in this paper: k=4) with c<sub>i</sub> ∈ C. We define two sets of bases B<sub>4</sub>={A,C,G,T} and B<sub>16</sub> being all IUPAC characters. n<sub>ci,b</sub> denotes the number of sequences in clade ci that have base b ∈ B4 at the position of interest. Now the weighted conditional probability Pr(c<sub>i</sub> | b) of the sequence belonging to clade ci given the observed base b ∈ B<sub>16</sub> at a certain position is defined as: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>*</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:mi mathvariant="script">C</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>*</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>4</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mi mathvariant="script">C</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:mtext>otherwise</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>i</mml:mtext>
+<mml:mo>.</mml:mo>
+<mml:mtext>e</mml:mtext>
+<mml:mo>.</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mi>b</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mtext>is</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>ambiguous</mml:mtext>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M3">
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>4</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P45">Now we determine for each sequence whether it might be a recombinant. Therefore, we assign each base the most likely clade. To avoid frequent switching of clades or being prone to insignificant differences in probabilities in a single nucleotide, switching between clades from one nucleotide to another is strongly penalized (realized with a transition probability of 0.0001). By multiplying the probabilities along a path, the path with the highest probability can be determined. This can be modeled as an HMM and solved with the Viterbi algorithm in O(nc<sup>2</sup>) where n is the sequence length and c the number of clusters.</p>
+<p id="P46">At each position of the MSA, each state is representing one clade with the conditional probabilities for every four bases. The Viterbi algorithm then finds the path with the highest likelihood given the sequence of an isolate. The model is identical for every isolate and only depends on the MSA. <xref ref-type="fig" rid="F4">Figure 4</xref> shows the approach, but only illustrates the conditional probability of the observed base of the sequence in each state.</p>
+<p id="P47">This method cannot detect the exact breakpoint location for a recombinant, because it relies on discrete SNV differences between clades; thus, it can only narrow down the breakpoint to the region between two clade-specific SNVs.</p>
+</sec>
+<sec id="S12">
+<title>Bolotie – Searching for Closest Parental Genomes</title>
+<p id="P48">Previous methods for recombination detection examine triplets of sequences to detect a potential recombinant genome and its parents. Unlike such methods, our algorithm relies on conditional probabilities computed for clades – a strategy that provides additional statistical power and also reduces the complexity of the problem.</p>
+<p id="P49">To identify potential parents of recombinant sequences we have implemented a dedicated method. For each recombined segment of the sequence, as inferred by our algorithm, we compute a Kimura distance matrix (<xref ref-type="bibr" rid="R8">Kimura, 1980</xref>) to other sequences in the clade of the corresponding segment. Kimura distance is a distance metric that scores transitions (A &lt;-&gt; G and C &lt;-&gt; T) differently than transversions (interchange of purine for pyrimidine bases). To be more “accurate” we also include low-frequency SNVs that we neglected in the previous step in the consensus sequences. All sequences with the lowest distance score are reported as most likely parents that have contributed the segment in the recombination event.</p>
+</sec>
+<sec id="S13">
+<title>Bolotie – Source Code and Data Availability</title>
+<p id="P50">The core method is implemented in C++ and based on the SeqAn (<xref ref-type="bibr" rid="R16">Reinert et al., 2017</xref>) and KSW2 (<xref ref-type="bibr" rid="R11">Li, 2018</xref>) libraries, the tree building is performed by IQ-TREE (<xref ref-type="bibr" rid="R13">Minh et al., 2020</xref>). The code and test data are available for download on GitHub: <ext-link ext-link-type="uri" xlink:href="https://github.com/salzberg-lab/bolotie">https://github.com/salzberg-lab/bolotie</ext-link>. The SARS-CoV-2 index built using the genomes in our analyses is also available for download at <ext-link ext-link-type="ftp" xlink:href="ftp://ftp.ccb.jhu.edu/pub/data/bolotie_sars_cov_2/">ftp://ftp.ccb.jhu.edu/pub/data/bolotie_sars_cov_2/</ext-link>.</p>
+<p id="P51">A wrapper script is provided in the GitHub repository to run all steps of the protocol. This script, while convenient, is intended for replicability and testing and lacks some of the available features of Bolotie.</p>
+</sec>
+<sec id="S14">
+<title>Bolotie – Parameter Tuning</title>
+<p id="P52">Our algorithm for path finding is closely inspired by the Viterbi algorithm to search for the most likely path through a sequence of states in a Hidden Markov Model (HMM). Similarly, the algorithm requires setting a probability of transitioning between states, which are clades in our case. While typically estimating this transition probability would be done during training, the scarce accounts of recombination in SARS-CoV-2 were insufficient for such training (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>; <xref ref-type="bibr" rid="R21">Yi, 2020</xref>). To our knowledge only one study considered a sufficiently large set of genomes, reporting 5 potential recombination events (<xref ref-type="bibr" rid="R20">VanInsberghe et al., 2020</xref>). For that reason, instead of determining a transition probability by training a model, we chose to manually inspect the results of several thresholds and manually tune the parameters.</p>
+<p id="P53">Ideally, however, once enough data is accumulated and more events are verified, a sufficient training set may be available, and a threshold could be determined automatically. Our method is also applicable to the studies of other organisms, such as influenza, where data is more prevalent, and parameters can be tuned with more precision.</p>
+</sec>
+<sec id="S15">
+<title>Investigating sequencing data</title>
+<p id="P54">To test our recombination candidates for signs of co-infection, we aligned available reads with Bowtie2 (<xref ref-type="bibr" rid="R10">Langmead &amp; Salzberg, 2012</xref>) against the Wuhan-Hu-1 reference genome using the “-- very-sensitive-local" option and otherwise default parameters. The mappings were further sorted and indexed using samtools (<xref ref-type="bibr" rid="R12">Li et al., 2009</xref>). Counts for individual nucleotides were obtained using bam-readcount software (<ext-link ext-link-type="uri" xlink:href="https://github.com/genome/bam-readcount">https://github.com/genome/bam-readcount</ext-link>) and positions with high conditional probabilities were extracted and summarized.</p>
+</sec>
+<sec id="S16">
+<title>Phylogenetic analysis</title>
+<p id="P55">To test how well information is preserved in our consensus sequences, we obtained a pre-computed tree from NextStrain (<xref ref-type="bibr" rid="R6">Hadfield et al., 2018</xref>) which contained a total of 4,494 representative genomes chosen by NextStrain. Only 4,039 genomes from those in the NextStrain tree were available on GISAID at the time when we obtained genome assemblies for our analysis.</p>
+<p id="P56">First, we re-built the tree using the set of 4,039 genomes using the general time-reversible model as used by the NextStrain platform and allowing IQ-TREE (<xref ref-type="bibr" rid="R13">Minh et al., 2020</xref>) to automatically choose the precise model. The same approach was taken to build the phylogenetic tree which included all identified anomalous sequences.</p>
+</sec>
+<sec id="S17">
+<title>Visualizations</title>
+<p id="P57">Visualizations of phylogenetic trees were produced using custom scripts implemented in Python and R. Cladograms illustrated in <xref ref-type="fig" rid="F3">Figure 3</xref> were constructed in R using the “ape” package (<xref ref-type="bibr" rid="R14">Paradis et al., 2004</xref>). Topological circular tree in <xref ref-type="fig" rid="F1">Figure 1</xref> was produced in Python using the “ETE3” package (<xref ref-type="bibr" rid="R7">Huerta-Cepas et al., 2016</xref>) with a custom patch implemented for drawing arcs between leaf nodes.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplemental Materials</label>
+<media xlink:href="EMS96079-supplement-Supplemental_Materials.pdf" mimetype="application" mime-subtype="pdf" id="N66636" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S18">
+<title>Acknowledgements</title>
+<p>We would like to thank Dr. Martin Steinegger for the helpful discussions on algorithms for clustering large collection of viral genomes.</p>
+<sec id="S19">
+<title>Funding</title>
+<p>This work was supported in part by Fast Grants (part of Emergent Ventures at George Mason University) and by the US National Institutes of Health [grants R01-AI141009 and R35-GM130151].</p>
+</sec>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P58">
+<bold>Disclosure Declaration</bold>
+</p>
+<p id="P59">The authors have no conflicts of interest to declare.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Awadalla</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>The evolutionary genomics of pathogen recombination</article-title>
+<source>Nature Reviews Genetics</source>
+<year>2003</year>
+<volume>4</volume>
+<issue>1</issue>
+<fpage>50</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bruen</surname>
+<given-names>TC</given-names>
+</name>
+<name>
+<surname>Philippe</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Bryant</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>A simple and robust statistical test for detecting the presence of recombination</article-title>
+<source>Genetics</source>
+<year>2006</year>
+<volume>172</volume>
+<issue>4</issue>
+<fpage>2665</fpage>
+<lpage>2681</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Demİr</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Benvenuto</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>ABACIOĞLU</surname>
+<given-names>YH</given-names>
+</name>
+<name>
+<surname>Angeletti</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ciccozzi</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Identification of the nucleotide substitutions in 62 SARS-CoV-2 sequences from Turkey</article-title>
+<source>Turkish Journal of Biology</source>
+<year>2020</year>
+<volume>44</volume>
+<issue>SI–1</issue>
+<fpage>178</fpage>
+<lpage>184</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Gardner</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>An interactive web-based dashboard to track COVID-19 in real time</article-title>
+<source>The Lancet Infectious Diseases</source>
+<year>2020</year>
+<volume>20</volume>
+<issue>5</issue>
+<fpage>533</fpage>
+<lpage>534</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Drake</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Holland</surname>
+<given-names>JJ</given-names>
+</name>
+</person-group>
+<article-title>Mutation rates among RNA viruses</article-title>
+<conf-name>Proceedings of the National Academy of Sciences</conf-name>
+<year>1999</year>
+<volume>96</volume>
+<issue>24</issue>
+<fpage>13910</fpage>
+<lpage>13913</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Megill</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Huddleston</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Potter</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Callender</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Sagulenko</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bedford</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Neher</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>23</issue>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huerta-Cepas</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Serra</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Bork</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>ETE 3: reconstruction, analysis, and visualization of phylogenomic data</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2016</year>
+<volume>33</volume>
+<issue>6</issue>
+<fpage>1635</fpage>
+<lpage>1638</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kimura</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>A simple method for estimating evolutionary rates of base substitutions through comparative studies of nucleotide sequences</article-title>
+<source>Journal of Molecular Evolution</source>
+<year>1980</year>
+<volume>16</volume>
+<issue>2</issue>
+<fpage>111</fpage>
+<lpage>120</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>HM</given-names>
+</name>
+<name>
+<surname>Ratmann</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+</person-group>
+<article-title>Improved algorithmic complexity for the 3SEQ recombination detection algorithm</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2018</year>
+<volume>35</volume>
+<issue>1</issue>
+<fpage>247</fpage>
+<lpage>251</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Langmead</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Salzberg</surname>
+<given-names>SL</given-names>
+</name>
+</person-group>
+<article-title>Fast gapped-read alignment with Bowtie 2</article-title>
+<source>Nature Methods</source>
+<year>2012</year>
+<volume>9</volume>
+<issue>4</issue>
+<fpage>357</fpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Minimap2: pairwise alignment for nucleotide sequences</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>18</issue>
+<fpage>3094</fpage>
+<lpage>3100</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Handsaker</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wysoker</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Fennell</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ruan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Homer</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Marth</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Abecasis</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>The sequence alignment/map format and SAMtools</article-title>
+<source>Bioinformatics</source>
+<year>2009</year>
+<volume>25</volume>
+<issue>16</issue>
+<fpage>2078</fpage>
+<lpage>2079</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Minh</surname>
+<given-names>BQ</given-names>
+</name>
+<name>
+<surname>Schmidt</surname>
+<given-names>HA</given-names>
+</name>
+<name>
+<surname>Chernomor</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Schrempf</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Woodhams</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Von Haeseler</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lanfear</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>IQ-TREE 2: New models and efficient methods for phylogenetic inference in the genomic era</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2020</year>
+<volume>37</volume>
+<issue>5</issue>
+<fpage>1530</fpage>
+<lpage>1534</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Paradis</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Claude</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Strimmer</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>APE: analyses of phylogenetics and evolution in R language</article-title>
+<source>Bioinformatics</source>
+<year>2004</year>
+<volume>20</volume>
+<issue>2</issue>
+<fpage>289</fpage>
+<lpage>290</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Posada</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Evaluation of methods for detecting recombination from DNA sequences: empirical data</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2002</year>
+<volume>19</volume>
+<issue>5</issue>
+<fpage>708</fpage>
+<lpage>717</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reinert</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Dadi</surname>
+<given-names>TH</given-names>
+</name>
+<name>
+<surname>Ehrhardt</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hauswedell</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Mehringer</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rahn</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Pockrandt</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Winkler</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Siragusa</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>The SeqAn C++ template library for efficient sequence analysis: A resource for programmers</article-title>
+<source>Journal of Biotechnology</source>
+<year>2017</year>
+<volume>261</volume>
+<fpage>157</fpage>
+<lpage>168</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>McCauley</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>GISAID: Global initiative on sharing all influenza data–from vision to reality</article-title>
+<source>Eurosurveillance</source>
+<year>2017</year>
+<volume>22</volume>
+<issue>13</issue>
+<fpage>30494</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Su</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>ACK</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Bi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>GF</given-names>
+</name>
+</person-group>
+<article-title>Epidemiology, genetic recombination, and pathogenesis of coronaviruses</article-title>
+<source>Trends in Microbiology</source>
+<year>2016</year>
+<volume>24</volume>
+<issue>6</issue>
+<fpage>490</fpage>
+<lpage>502</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Suzuki</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kasahara</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Introducing difference recurrence relations for faster semi-global alignment of long sequences</article-title>
+<source>BMC Bioinformatics</source>
+<year>2018</year>
+<volume>19</volume>
+<issue>1</issue>
+<fpage>33</fpage>
+<lpage>47</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>VanInsberghe</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Neish</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Lowen</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Koelle</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Identification of SARS-CoV-2 recombinant genomes</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yi</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>2019 novel coronavirus is undergoing active recombination</article-title>
+<source>Clinical Infectious Diseases</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Probable pangolin origin of SARS-CoV-2 associated with the COVID-19 outbreak</article-title>
+<source>Current Biology</source>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>An unrooted topological cladogram of 4,249 SARS-CoV-2 genomes including 225 recombinants labeled as <styled-content style-type="color" style="color:#e81c0e">red</styled-content> bars. Arcs link each recombinant to both inferred parental genomes. The color of the arc corresponds to the color of the clade to which a recombinant was clustered within the tree. Clades correspond to the GISAID clades GR (<styled-content style-type="color" style="color:#0e94e8">0</styled-content>), GH (<styled-content style-type="color" style="color:#e8820e">1</styled-content>), G (<styled-content style-type="color" style="color:#18d631">2</styled-content>) and all minor lineages combined (<styled-content style-type="color" style="color:#e8820e">4</styled-content>).</p>
+</caption>
+<graphic xlink:href="EMS96079-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Four examples of inferred recombinant sequences: A. EPI_ISL_439137; B. EPI_ISL_468407; C. EPI_ISL_509874; D. EPI_ISL_417420. The top section of each plot shows conditional probabilities of a clade given a nucleotide at each position. Bars are plotted for the two parent clades and the other clades are shown as dots of the corresponding color. Each peak &gt;0.1 above the baseline (0.25) is labeled with the number of genomes it appears in. An average is reported whenever there are multiple variants in close proximity on the plot, listing the number of averaged variants in parentheses. The three lower panels of each plot show the frequency of variants at each position for parental clades (top and bottom rows) and variants observed on the recombinant genome (middle row).</p>
+</caption>
+<graphic xlink:href="EMS96079-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Effects of sequence composition on the topology of the phylogenetic tress for SARS-CoV-2. A tree obtained directly from NextStrain (<bold>A</bold>) is first compared to (<bold>B</bold>) the tree computed using Bolotie consensus sequences for the same set of isolates. <bold>(C)</bold> Shows a tree computed for the same set of isolates with 210 additional recombinant sequences as identified by Bolotie. Leaf nodes that correspond to recombinant genomes are labeled with <styled-content style-type="color" style="color:#e81c0e">red</styled-content> dots.</p>
+</caption>
+<graphic xlink:href="EMS96079-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>The maximum conditional probability for each nucleotide is highlighted in gray, while the path with the maximum likelihood is highlighted in bold. By penalizing switching of clades, insignificant differences in probabilities between clades as well as short windows representing a switch to a different clade are avoided. For clarity transitions between nodes on non-optimal paths are indicated in gray without labeled probabilities.</p>
+</caption>
+<graphic xlink:href="EMS96079-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Mutational signature of the EPI_ISL_439137 recombinant isolate (<xref ref-type="fig" rid="F2">Figure 2B</xref>). The table shows all positions with defining conditional probabilities for each of the parental clades. Read counts extracted from the data deposited in EBI are provided to illustrate the likely single-isolate origin of the genome. Positions are colored according to the respective clade colors used in the manuscript.</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Position</th>
+<th align="center" valign="top">Reference</th>
+<th align="center" valign="top">Observed</th>
+<th align="center" valign="top">P(0|Base)</th>
+<th align="center" valign="top">P(1|Base)</th>
+<th align="center" valign="top">A</th>
+<th align="center" valign="top">C</th>
+<th align="center" valign="top">G</th>
+<th align="center" valign="top">T</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#9BC2E6">240</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.3975</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.2358</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">4</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">
+<bold>6492</bold>
+</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">5</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">1</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#9BC2E6">3036</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.9998</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.0001</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">1</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">
+<bold>1422</bold>
+</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">1</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">9</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#9BC2E6">8781</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">T</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.9929</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.0012</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">
+<bold>140</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#FFE699">14407</td>
+<td align="center" valign="top" style="background-color:#FFE699">C</td>
+<td align="center" valign="top" style="background-color:#FFE699">T</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.0092</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.3297</td>
+<td align="center" valign="top" style="background-color:#FFE699">1</td>
+<td align="center" valign="top" style="background-color:#FFE699">3</td>
+<td align="center" valign="top" style="background-color:#FFE699">2</td>
+<td align="center" valign="top" style="background-color:#FFE699">
+<bold>7359</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#FFE699">17125</td>
+<td align="center" valign="top" style="background-color:#FFE699">T</td>
+<td align="center" valign="top" style="background-color:#FFE699">C</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.0217</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.9783</td>
+<td align="center" valign="top" style="background-color:#FFE699">1</td>
+<td align="center" valign="top" style="background-color:#FFE699">
+<bold>7991</bold>
+</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+<td align="center" valign="top" style="background-color:#FFE699">6</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#FFE699">20267</td>
+<td align="center" valign="top" style="background-color:#FFE699">A</td>
+<td align="center" valign="top" style="background-color:#FFE699">G</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.0061</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.9935</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+<td align="center" valign="top" style="background-color:#FFE699">
+<bold>13</bold>
+</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#FFE699">23402</td>
+<td align="center" valign="top" style="background-color:#FFE699">A</td>
+<td align="center" valign="top" style="background-color:#FFE699">G</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.0066</td>
+<td align="center" valign="top" style="background-color:#FFE699">0.3311</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+<td align="center" valign="top" style="background-color:#FFE699">
+<bold>196</bold>
+</td>
+<td align="center" valign="top" style="background-color:#FFE699">0</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#9BC2E6">28143</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">T</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">C</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.9988</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0.0005</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">2</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">
+<bold>8004</bold>
+</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">0</td>
+<td align="center" valign="top" style="background-color:#9BC2E6">4</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

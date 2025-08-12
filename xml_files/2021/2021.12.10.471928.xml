@@ -1,0 +1,2489 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141125</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.10.471928</article-id>
+<article-id pub-id-type="archive">PPR431739</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Language Models for the Prediction of SARS-CoV-2 Inhibitors</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Blanchard</surname>
+<given-names>Andrew E</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gounley</surname>
+<given-names>John</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Bhowmik</surname>
+<given-names>Debsindhu</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chandra Shekar</surname>
+<given-names>Mayanka</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Lyngaas</surname>
+<given-names>Isaac</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gao</surname>
+<given-names>Shang</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Yin</surname>
+<given-names>Junqi</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Tsaris</surname>
+<given-names>Aristeidis</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Feiyi</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Glaser</surname>
+<given-names>Jens</given-names>
+</name>
+</contrib>
+<aff id="A1">Oak Ridge National Laboratory, Oak Ridge, TN, USA</aff>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>14</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The COVID-19 pandemic highlights the need for computational tools to automate and accelerate drug design for novel protein targets. We leverage deep learning language models to generate and score drug candidates based on predicted protein binding affinity. We pre-trained a deep learning language model (BERT) on ~9.6 billion molecules and achieved peak performance of 603 petaflops in mixed precision. Our work reduces pre-training time from days to hours, compared to previous efforts with this architecture, while also increasing the dataset size by nearly an order of magnitude. For scoring, we fine-tuned the language model using an assembled set of thousands of protein targets with binding affinity data and searched for inhibitors of specific protein targets, SARS-CoV-2 Mpro and PLpro. We utilized a genetic algorithm approach for finding optimal candidates using the generation and scoring capabilities of the language model. Our generalizable models accelerate the identification of inhibitors for emerging therapeutic targets.</p>
+</abstract>
+<kwd-group>
+<kwd>COVID-19</kwd>
+<kwd>drug design</kwd>
+<kwd>machine learning</kwd>
+<kwd>language model</kwd>
+<kwd>pre-training</kwd>
+<kwd>fine-tuning</kwd>
+<kwd>genetic algorithm</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1">
+<label>1</label>
+<title>Justification for Prize</title>
+<p id="P2">We: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P3">pre-train a BERT model on a dataset of 9.6 billion molecules, nearly an order of magnitude larger than previous efforts (1.1-1.6 billion) [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>],</p>
+</list-item>
+<list-item>
+<p id="P4">achieve 603 petaflops in mixed precision on 4032 Summit nodes, reducing pre-training time-to-solution from days to hours, and</p>
+</list-item>
+<list-item>
+<p id="P5">train a general model for protein binding affinity, accelerating the search for drug candidates relevant to SARS-CoV-2.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Performance Attributes</title>
+<table-wrap id="T6" position="anchor" orientation="portrait">
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Performance attribute</th>
+<th align="left" valign="top">Our submission</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<bold>Category of achievement Type of method used Results reported for</bold>
+</td>
+<td align="left" valign="top">Time to solution, scalability<break/>Machine learning<break/>Whole application with and without I/O</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Precision reported</bold>
+</td>
+<td align="left" valign="top">Mixed precision (FP16 and FP32)</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>System scale</bold>
+</td>
+<td align="left" valign="top">Measured on full-scale system (Summit)</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Measurement mechanism</bold>
+</td>
+<td align="left" valign="top">Internal timers, DeepSpeed FLOPS profiler</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</sec>
+<sec id="S3">
+<label>3</label>
+<title>Overview of the Problem</title>
+<p id="P6">The COVID-19 pandemic has drastically altered living conditions in countries throughout the world over the past two years. To date, approximately 230 million people have been infected and 4.7 million have been killed by variants of the SARS-CoV-2 virus [<xref ref-type="bibr" rid="R3">3</xref>]. It is not unrealistic to assume that another event like this is possible; several infectious diseases with the potential for global impact have been documented in recent years, including SARS, MERS, Ebola, and Zika [<xref ref-type="bibr" rid="R4">4</xref>]. Within this broader context, the current pandemic highlights the need for the development of therapeutic agents to combat emerging infectious diseases. Unfortunately, the speed at which antivirals have been developed has not maintained pace with the frequency of outbreaks. For example, although vaccines have been developed as an effective means to prevent SARS-CoV-2 infection, no clinically tested therapeutics have been approved for widespread use except for antibody treatment [<xref ref-type="bibr" rid="R5">5</xref>–<xref ref-type="bibr" rid="R7">7</xref>]. Furthermore, recent clinical trials highlight the continued need for antivirals [<xref ref-type="bibr" rid="R8">8</xref>]. Therefore, the timely development of drugs to treat emerging viral threats, in combination with preventive vaccines, poses a key challenge with global implications.</p>
+<p id="P7">Although many previous efforts in drug discovery have been successful, the process can be prohibitively long (i.e., 10 to 15 years) for response to an emerging pandemic. The approval of a single compound for widespread use typically involves the screening of small molecules for potential candidates, hit-to-lead (H2L) testing followed by extensive multi-stage clinical trials [<xref ref-type="bibr" rid="R9">9</xref>]. The initial step of determining interesting molecules for further investigation is pivotal due to the vast size of chemical space, which prevents an exhaustive search using costly experiments and trials. To accelerate the screening process, tools from machine learning (ML) and high-performance computing (HPC) have been increasingly used to guide the selection of promising drug candidates [<xref ref-type="bibr" rid="R10">10</xref>–<xref ref-type="bibr" rid="R12">12</xref>]. Although computational methods can partially alleviate some of the associated experimental costs, typical approaches require the creation of a large compound library with measured properties for ML model training [<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R12">12</xref>]. Therefore, a timely response to an emerging pandemic also poses a challenge for computational methods, as custom models and datasets must be quickly generated for the new targets of interest.</p>
+<p id="P8">To overcome the challenges associated with accelerating the discovery of drug candidates for novel protein targets, a computational approach is needed that satisfies the following criteria: (i) leverages existing large compound libraries without the need for chemical property measurements; (ii) predicts affinities for novel protein targets with limited or no additional experimental data; (iii) explores chemical space to efficiently identify compounds for further investigation. To satisfy the three criteria, we leverage high performance computing (HPC) to train generalizable ML models for both candidate generation and affinity prediction.</p>
+<p id="P9">To take advantage of large existing compound libraries, we utilize a text representation for molecule data known as SMILES, Simplified Molecular Input Line Entry System [<xref ref-type="bibr" rid="R13">13</xref>]. Using Enamine REAL database [<xref ref-type="bibr" rid="R14">14</xref>] as a starting point, we generate a novel dataset of approximately 9.6 billion unique molecules. The dataset is used to pre-train a Transformer model (i.e. BERT), using the mask prediction task commonly found in natural language processing applications. During pre-training, sub-sequences of a given molecule are replaced by a mask, and the model must predict the appropriate sequence based on context. Therefore, the model learns a representation for chemical structure in a completely unsupervised manner that does not require additional property measurements.</p>
+<p id="P10">To predict affinities for protein targets, we fine-tune the pre-trained molecule model on a dataset with over a million known protein and ligand binding affinities. The fine-tuned model utilizes two pre-trained language models to generate embeddings for a given molecule and protein. For the protein embedding, we utilize a recently published Transformer model for protein sequences [<xref ref-type="bibr" rid="R15">15</xref>]. By using models for molecules and proteins trained in an unsupervised manner on large datasets, the fine-tuned model leverages the structural information in the respective embeddings. A final cross attention layer is added on top of the embeddings to generate an affinity score for any given protein and molecule combination. The fine-tuned model, therefore, can be used to predict affinities for novel proteins outside the training set and/or can be additionally fine-tuned given new experimental data.</p>
+<p id="P11">The pre-trained and fine-tuned models enable both the generation and scoring of new candidates. For a given input molecule, the pre-trained model can be used to predict viable sub-sequence rearrangements similar to the mask prediction task. The fine-tuned model can then be used to predict the binding affinity for a newly generated molecule with a provided protein sequence. We utilize a genetic algorithm to automate rounds of molecule generation, scoring, and the selection of high scoring candidates.</p>
+<p id="P12">The large scale of the pre-training and fine-tuning datasets necessitates the HPC resources of a leadership computing facility. Similar to natural language processing applications, the scale of the dataset (i.e., billions of molecules) enables the pre-trained model to learn generalizable features of molecule structure that are useful for affinity prediction. Fortunately, after pre-training and fine-tuning, the models can be used for inference or genetic algorithm optimization with modest resources (i.e., a single GPU). Therefore, our work provides models that can generalize to new protein targets, accelerate screening of potential candidates with limited or no additional fine-tuning, and be utilized throughout the research community for drug discovery efforts.</p>
+</sec>
+<sec id="S4">
+<label>4</label>
+<title>Current State of the Art</title>
+<sec id="S5">
+<label>4.1</label>
+<title>Drug Discovery Pipelines</title>
+<p id="P13">The complexity and challenges associated with the drug discovery process have motivated the development of pipelines to collect data and organize research efforts [<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R16">16</xref>]. The computational techniques in such pipelines are primarily organized around the generation and scoring of new molecules. For molecule generation, multiple different representations have been used (e.g., SMILES and graph) along with several ML model architectures (e.g., GAN, VAE, RNN) [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R17">17</xref>–<xref ref-type="bibr" rid="R20">20</xref>]. In addition, manually-defined rules (e.g., add an atom, change atom type) have been used to generate new candidates starting from an initial population of molecules [<xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R22">22</xref>]. For scoring candidates, both ML models and docking simulations have been used along with hybrid approaches [<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R23">23</xref>]. The features used in ML models for scoring range from learned embeddings to chemical descriptors and molecular fingerprints [<xref ref-type="bibr" rid="R12">12</xref>].</p>
+<p id="P14">Determining the correct metric for scoring and optimizing molecules is a key difficulty for the practical application of computational drug discovery pipelines. Cheminformatics packages, such as rd-kit [<xref ref-type="bibr" rid="R24">24</xref>], provide standard heuristic metrics for chemical properties, including solubility [<xref ref-type="bibr" rid="R25">25</xref>], synthesizability [<xref ref-type="bibr" rid="R26">26</xref>], and quantitative estimation of drug-likeness [<xref ref-type="bibr" rid="R27">27</xref>]. However, these metrics are not specific for a given therapeutic target. Alternatively, a supervised ML model for scoring can provide customized optimization metrics but requires a suitable experimentally measured dataset [<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. To overcome this difficulty, we here utilize a strategy from natural language processing, where a model is initially trained in an unsupervised manner before being fine-tuned to make specific predictions.</p>
+</sec>
+<sec id="S6">
+<label>4.2</label>
+<title>Transformers</title>
+<p id="P15">Over the past few years, the field of natural language processing (NLP) has undergone a paradigm shift powered by the use of Transformer-based models [<xref ref-type="bibr" rid="R30">30</xref>]. Previously, the application of ML models was largely task specific, with a single model being trained in a supervised manner for each task (e.g., classification, similarity, entity recognition). However, with the introduction of Transformer models (e.g., BERT), training was split into two distinct stages. In the first stage (i.e., pre-training) the model is typically trained on a large corpus of text in an unsupervised manner. Unsupervised training was accomplished by using a mask prediction task, in which the model was trained to predict a given word based on context. In the second stage (i.e., fine-tuning), the pre-trained model is trained in a supervised manner on a relatively small labeled dataset. In this way, a single pre-trained model can be fine-tuned for any number of specific tasks. Models developed according to this two stage approach have achieved state-of-the-art results for a number of NLP tasks [<xref ref-type="bibr" rid="R30">30</xref>–<xref ref-type="bibr" rid="R32">32</xref>].</p>
+<p id="P16">Advances in NLP can be directly applied to drug discovery efforts, as proteins and molecules can be represented as sequences of text. Recent efforts have indeed trained Transformer models using molecules in SMILES format for chemical property prediction tasks [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R33">33</xref>–<xref ref-type="bibr" rid="R35">35</xref>]. Most previous work, however, has focused on a language model vocabulary of individual characters or atoms within a sequence, limiting the ability of the model to concisely represent commonly occurring chemical structures. Furthermore, the largest dataset used for pre-training contained approximately one billion molecules [<xref ref-type="bibr" rid="R2">2</xref>], with most investigations using fewer than 100 million [<xref ref-type="bibr" rid="R33">33</xref>–<xref ref-type="bibr" rid="R35">35</xref>]. With the success of previous Transformer models using SMILES and text data, we were motivated to increase the number of pre-training samples by an order of magnitude and utilize different model vocabularies.</p>
+<p id="P17">Transformer models have also been trained using protein sequence data. A recent study investigated the performance of multiple model architectures on protein prediction tasks [<xref ref-type="bibr" rid="R15">15</xref>]. Furthermore, the outputs of pre-trained models for both molecule data and protein data can be used as embeddings for additional downstream tasks [<xref ref-type="bibr" rid="R36">36</xref>]. In the context of drug discovery, this enables the pre-trained models to be fine-tuned on a dataset consisting of many different protein and ligand combinations with experimentally determined binding affinity. Notably, Transformer-based approaches have shown significant performance improvements for affinity prediction over alternative architectures, such as convolutional neural networks [<xref ref-type="bibr" rid="R36">36</xref>, <xref ref-type="bibr" rid="R37">37</xref>]. In the current work, we leverage the Transformer architecture to develop a fine-tuned model capable of predicting binding affinity for novel protein targets.</p>
+</sec>
+<sec id="S7">
+<label>4.3</label>
+<title>Deep Learning at Scale</title>
+<p id="P18">Using increasingly large training datasets poses a substantial challenge in terms of time-to-solution. Data parallelism enables many deep learning models to be trained efficiently at the scale of current supercomputers [<xref ref-type="bibr" rid="R38">38</xref>, <xref ref-type="bibr" rid="R39">39</xref>]. Transformers are one such model; for example, large scale data parallelism has been used to dramatically reduce BERT pre-training times [<xref ref-type="bibr" rid="R40">40</xref>–<xref ref-type="bibr" rid="R42">42</xref>]. Larger Transformer models, such as Megatron-LM, have achieved performance of over 500 petaflops in mixed precision on Nvidia’s Selene supercomputer [<xref ref-type="bibr" rid="R43">43</xref>]. Inasmuch as a previous effort to train a BERT model using one billion molecules required approximately 4 days for pre-training [<xref ref-type="bibr" rid="R2">2</xref>], the potential advantage of using large scale data parallelism to enable pre-training on larger datasets with faster turnaround times is clear.</p>
+<p id="P19">However, extreme scale data parallelism necessarily leads to extremely large batch sizes and large batch sizes can lead to instability during training which degrades model evaluation performance. While this problem is general [<xref ref-type="bibr" rid="R44">44</xref>], it has also specifically been observed as a scaling bottleneck in the context of developing deep learning models for drug discovery: a recent study found that an overall batch size above 4096 (across 8 or 16 GPUs) was detrimental to model training on molecule data for a variational autoencoder [<xref ref-type="bibr" rid="R1">1</xref>]. The recently developed LAMB optimizer has been shown to address this problem for batch sizes of up to 96 thousand, maintaining similar evaluation performance as batch size increased [<xref ref-type="bibr" rid="R40">40</xref>, <xref ref-type="bibr" rid="R41">41</xref>].</p>
+</sec>
+<sec id="S8">
+<label>4.4</label>
+<title>Genetic Algorithms</title>
+<p id="P20">Inspired by the mutation and selection observed in natural systems, genetic algorithms provide a useful framework for solving optimization problems across scientific and engineering disciplines [<xref ref-type="bibr" rid="R45">45</xref>–<xref ref-type="bibr" rid="R48">48</xref>]. Specifically, for drug discovery, genetic algorithms have been used in several studies to search chemical space. For example, Virshup et al. proposed a set of hand-crafted rules for mutation and recombination (e.g., add an atom, modify an atom type) to generate new compounds. The generated compounds were then selected based on diversity criteria to expand to unexplored regions of chemical space [<xref ref-type="bibr" rid="R21">21</xref>]. Additional studies have used genetic algorithms to optimize for drug-specific metrics (e.g., solubility and quantitative estimation of drug-likeness) [<xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R46">46</xref>, <xref ref-type="bibr" rid="R49">49</xref>, <xref ref-type="bibr" rid="R50">50</xref>]. Typically, mutation operators are manually defined based on the application and not learned from the data. However, comparisons with alternative ML optimization techniques have shown that genetic algorithms perform well across a range of drug discovery tasks [<xref ref-type="bibr" rid="R50">50</xref>].</p>
+<p id="P21">As an alternative to the manually defined mutation and recombination operators, molecule rearrangements can be determined by a ML model. Generative models, such as generative adversarial networks (GANs) can be used to produce molecules with desired properties [<xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R18">18</xref>]. Furthermore, masked language models provide a useful modeling framework in which to learn viable rearrangements of molecular sequences. During pre-training the language model learns to predict missing sequences based on context. The predictions provide a ranked list of all possible substitutions for a given sub-sequence. Therefore, by sampling from the predictions, a set of mutations can be generated for a molecule without the need for manually defined rules. A similar procedure has been used to find adversarial examples for NLP applications [<xref ref-type="bibr" rid="R51">51</xref>, <xref ref-type="bibr" rid="R52">52</xref>]. In this work, we utilize a masked language model to generate candidate molecules and then apply selection based on scoring from the fine-tuned model for binding affinity.</p>
+</sec>
+</sec>
+<sec id="S9">
+<label>5</label>
+<title>Innovations Realized</title>
+<p id="P22">Our strategy for accelerating computational drug discovery is summarized in <xref ref-type="fig" rid="F1">Figure 1</xref>. We begin by constructing the largest molecule dataset to date for pre-training a masked language model. Pretraining is performed at scale using a batch size of over a million molecules for two different tokenization schemes. We then fine-tune the language model on a dataset with binding affinities for thousands of protein targets. After developing the general pre-trained and fine-tuned models, we search for drug candidates that optimize the predicted binding affinities for a given protein.</p>
+<sec id="S10">
+<label>5.1</label>
+<title>Pre-training Molecule Language Models</title>
+<sec id="S11">
+<label>5.1.1</label>
+<title>Dataset Generation</title>
+<p id="P23">Motivated by the success of Transformer models (i.e., BERT) for a range of natural language processing tasks, recent efforts have investigated using the SMILES text representation of molecules to train a masked language model [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R33">33</xref>–<xref ref-type="bibr" rid="R35">35</xref>]. Large compound libraries such as Enamine REAL database [<xref ref-type="bibr" rid="R14">14</xref>] can be used for the unsupervised pre-training stage, before the model is fine-tuned for a desired prediction task. Although compound libraries provide a valuable source of training data, the overwhelming size of chemical space ensures that many potentially useful compounds will be excluded from current collections. Current state-of-the-art generative and masked language models have reached a training data size of approximately 1.1-1.6 billion compounds, pushing the boundaries of currently available compound libraries and compute resources [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>]. As a step toward enabling larger explorations of chemical space, here we utilize the Enamine REAL database as a starting point to generate a training dataset with ~9.6 billion unique molecules.</p>
+<p id="P24">Our strategy for dataset augmentation is motivated by the pre-training stage for masked language models. During pre-training, random sequences of an input molecule SMILES are masked, and the model is trained to predict the identity of the masked sequences based on the surrounding context. We, therefore, use a pre-trained model, developed using Enamine as the training data, to predict possible structural rearrangements for a given molecule as shown in <xref ref-type="fig" rid="F1">Figure 1</xref>. We also use the pre-trained model to combine two molecules; initial sequences are chosen from each respective molecule, and a mask is placed in between. To be included in the training set, all produced molecules must be valid [<xref ref-type="bibr" rid="R24">24</xref>] and have a normalized synthesizability [<xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R26">26</xref>] score above 0.3. To arrive at the final dataset of 9.57 billion molecules, we applied random structural rearrangements to molecules in the Enamine dataset with a maximum of five masks per molecule. The top 5 predicted rearrangements from the pre-trained model were considered, resulting in the dataset growing from approximately 1.34 billion unique compounds to 4.14 billion unique compounds. Another round of rearrangements for the expanded dataset was accompanied by combinations of molecules to generate the final training set. All molecules were converted to canonical form using rdkit [<xref ref-type="bibr" rid="R24">24</xref>] and only unique molecules were retained in the final dataset. As shown in <xref ref-type="fig" rid="F2">Figure 2</xref>, the histograms for drug-likeness, normalized synthesizability, and solubility did not substantially change between the original data and the augmented data, although the total number of compounds substantially increased.</p>
+</sec>
+<sec id="S12">
+<label>5.1.2</label>
+<title>Tokenization</title>
+<p id="P25">The process of tokenization is used to convert any given sequence of text into a format that can be recognized by the model. This is accomplished by constructing a vocabulary for the model, which consists of a mapping between sub-sequences of text and unique integer ids. One common method, WordPiece tokenization [<xref ref-type="bibr" rid="R53">53</xref>, <xref ref-type="bibr" rid="R54">54</xref>], builds the model vocabulary by assembling all unique single characters and then including commonly occurring sequences of increasing length. Although a collection of different tokenization methods have been used for NLP tasks, for molecule language models a simple vocabulary based on single atoms and characters has predominantly been used [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R55">55</xref>, <xref ref-type="bibr" rid="R56">56</xref>].</p>
+<p id="P26">Here, we utilized two different tokenization methods, the standard single atom and character Regex [<xref ref-type="bibr" rid="R56">56</xref>] and WordPiece tokenization. As shown in <xref ref-type="fig" rid="F3">Figure 3</xref>, the vocabulary generated by WordPiece tok-enization enables large sub-sequences of a SMILES string (e.g., a benzene ring) to be represented as a single token. Notice that for the Regex tokenizer, the vocabulary will contain only individual characters and atoms, so commonly occurring chemical structures cannot be assigned to a single token. Also, the size of the vocabularies for the two tokenizers is drastically different, with the WordPiece tokenizer having 3 · 10<sup>4</sup> different tokens, while the Regex tokenizer has around 200. Given the substantially different representations of molecules produced by the two tokenizers, we utilized both methods for pre-training and fine-tuning tasks to determine the impact of tokenization on fine-tuning and molecule generation performance.</p>
+</sec>
+<sec id="S13">
+<label>5.1.3</label>
+<title>Pre-training with Large Batch Sizes</title>
+<p id="P27">We trained BERT models using the LAMB optimizer with both the Regex and WordPiece tokenizers utilizing different numbers of nodes on Summit. Each node contained 6 GPUs, each having a single partition of 3.95 · 10<sup>5</sup> unique molecules. The batch size per GPU was set to 240 (80 with 3 gradient accumulation steps); therefore, the total batch size is given by 1440 (i.e., 240·6) multiplied by the number of nodes [<xref ref-type="bibr" rid="R57">57</xref>]. At 1000 nodes, this results in over 1.4 million molecules per batch. As shown in <xref ref-type="table" rid="T1">Tables 1</xref>–<xref ref-type="table" rid="T2">2</xref>, even with large batch sizes, the model can be trained successfully, as evidenced by the validation accuracy for mask prediction. Validation accuracy was determined by evaluating the model on a hold-out set of 10<sup>5</sup> molecules; for each molecule a random number of masks (up to 5 for Regex and up to 3 for WordPiece) were sampled and used to replace tokens. Each pre-training run consisted of 7 epochs, with model checkpoints saved and validation accuracy determined after each epoch. The maximum accuracy across checkpoints is shown. Notice that a comparison of accuracy between <xref ref-type="table" rid="T1">Table 1</xref> and <xref ref-type="table" rid="T2">Table 2</xref> should not be made, as the mask prediction task is substantially easier for the Regex tokenizer (i.e., only single atoms or characters are predicted).</p>
+<p id="P28">For the full dataset, we used two different training configurations. First, we used 1008 nodes, with 4 partitions of 3.95 · 10<sup>5</sup> unique molecules per GPU. For comparison, we also performed pre-training on over 4000 nodes for the WordPiece tokenizer with a single partition per GPU (last row of <xref ref-type="table" rid="T1">Table 1</xref>). Both pre-training runs used a warmup of 1 epoch. As expected from previous studies [<xref ref-type="bibr" rid="R41">41</xref>], the increased batch size for the 4032 node run resulted in decreased validation accuracy; however, it is notable that a batch size of nearly 6 million incurred only a slight decrease in performance, suggesting that distributed training for even larger molecule datasets is possible. The 1008 node runs were completed in 8 hours each for 7 epochs; the 4032 node run was stopped after failing to increase validation accuracy (maximum was at 5 epochs), taking less than 2 hours. For downstream tasks, such as fine-tuning, we used the models trained on 1008 nodes for the WordPiece and Regex tokenizers.</p>
+</sec>
+</sec>
+<sec id="S14">
+<label>5.2</label>
+<title>Predicting Binding Affinities</title>
+<p id="P29">To determine whether a given drug molecule binds to a target molecule, i.e., a protein, both the candidate molecule and the amino acid sequence of the protein need to be embedded. Then, to predict the binding affinity, hidden layers are added that accept the concatentation of the two embeddings as inputs. The predictive power of such an ensemble model is chiefly determined by the expressive power of the individual embeddings. Therefore, we expect that using powerful pre-trained models to embed the molecules results in superior performance on the downstream task. Here, we focus on regression to predict the numerical value of the binding affinity, however, the model architecture lends itself equally well to classification. Pre-trained embeddings and extra layers are fine-tuned simultaneously, i.e., with all weights adjustable, on a labeled data set of 1.67 · 10<sup>6</sup> receptor amino acid sequences and ligand SMILES, with binding affinities. Note that this dataset used for fine-tuning is much smaller than the datasets used for pre-training (<xref ref-type="table" rid="T1">Tables 1</xref>&amp;<xref ref-type="table" rid="T2">2</xref>).</p>
+<sec id="S15">
+<label>5.2.1</label>
+<title>Binding Affinity Dataset</title>
+<p id="P30">We curated a dataset [<xref ref-type="bibr" rid="R58">58</xref>] of binding affinities by concatenating the entries of the BindingDB [<xref ref-type="bibr" rid="R59">59</xref>], PDBBind-cn [<xref ref-type="bibr" rid="R60">60</xref>], BindingMOAD [<xref ref-type="bibr" rid="R61">61</xref>], and BioLIP [<xref ref-type="bibr" rid="R62">62</xref>] databases, following the example of Ref. [<xref ref-type="bibr" rid="R63">63</xref>]. Records containing <italic>K<sub>i</sub>
+</italic>, 1/<italic>K<sub>a</sub>
+</italic>, <italic>K<sub>b</sub>
+</italic> and IC<sub>50</sub> values were retained and converted to pKd= − log<sub>10</sub> <italic>K<sub>d</sub>
+</italic> [M] units, and MACCS fingerprints were calculated on the molecules to remove duplicates, resulting in 1,670,637 protein sequences, SMILES strings and binding affinities.</p>
+</sec>
+<sec id="S16">
+<label>5.2.2</label>
+<title>Model Architecture</title>
+<p id="P31">
+<xref ref-type="fig" rid="F4">Figure 4</xref> shows the neural network architecture used to predict affinities. For embedding molecules, we use the tokenizers and pre-trained models discussed above. For embedding proteins, we make use of the readily available pre-trained ProtBERT model [<xref ref-type="bibr" rid="R64">64</xref>], where every token is a letter in the amino acid alphabet. The embeddings are fed to a cross-attention module [<xref ref-type="bibr" rid="R65">65</xref>]. The purpose of the cross-attention layer is that molecule subunits attend to amino-acids in the protein sequence, and <italic>vice versa</italic>. This architecture represents the physical situation in which the molecule makes well-defined atom-atom contacts with the protein. However, the model is not constrained to learn real physical contacts, and importantly, it is not given any information about which residues belong to the active site of the protein, which it has to learn by itself from the given correlation between structures and binding affinities. Despite the physical motivation behind its architecture, the model is still to be considered as a ‘black-box’. It cannot be expected that the cross-attention weights directly correspond to observable physical contacts, as sometimes suggested [<xref ref-type="bibr" rid="R63">63</xref>, <xref ref-type="bibr" rid="R65">65</xref>].</p>
+<p id="P32">The hidden layer outputs of the cross-attention module are concatenated, their mean is taken over the sequence length and they are connected to a linear layer to predict the binding affinity. The model is fine-tuned by minimizing the mean-squared error (MSE) between the predicted and the experimental affinity. We validated the model on a hold-out set from the training data as well as three additional datasets as shown in <xref ref-type="table" rid="T3">Tables 3</xref>–<xref ref-type="table" rid="T4">4</xref>. We characterize the ability of the model to correctly reproduce the order of the experimental affinity values by the Spearman-<italic>ρ</italic> rank correlation coefficient (higher is better) [<xref ref-type="bibr" rid="R69">69</xref>], as well as the mean-squared error for the predicted affinity (lower is better). We calculate the uncertainty in the reported values using the bootstrap method with <italic>n</italic> = 500 samples. Notably, the Regex tokenizer (and associated ensemble) outper-forms the WordPiece tokenizer for certain datasets (i.e., Hold-out and Kinases), but underperforms for others (i.e., PLpro), suggesting that different molecule representations may be suitable for different affinity prediction tasks.</p>
+<p id="P33">
+<xref ref-type="fig" rid="F5">Figure 5</xref> demonstrates the performance for the validated and transferable model on a binary classification task, using the metrics of precision and recall. Here, we impose a threshold of 5 <italic>μ</italic>M (Mpro) and 1<italic>μ</italic>M (PLpro) on the experimental IC50 value (lower is better) to label active molecules. These thresholds are typical of more potent non-covalent inhibitors for the Mpro and PLpro targets. We use sampling from the normal distribution of affinities implied by the mean and the variance of the ensemble model to estimate the confidence intervals, as well as the standard error from <italic>n</italic> = 500 bootstrap samples. Remarkably, the model achieves a maximum precision of 0.60 both for Mpro and PLpro, meaning that 60% of the highest scoring molecules are true actives, which suggests excellent virtual screening performance.</p>
+</sec>
+</sec>
+<sec id="S17">
+<label>5.3</label>
+<title>Searching for Drug Candidates</title>
+<p id="P34">Similar to the strategy we used for data augmentation, the pre-trained model can easily be adapted to generate rearrangements for a given population of molecules. Here we utilize three different types of rearrangements for a given tokenized molecule: insertion, deletion, and replacement. For insertion, a mask is randomly inserted in between existing tokens or at the beginning or end. For deletion, a mask randomly replaces two adjacent existing tokens. With replacement, a single existing token is randomly masked. To search for new drug candidates, we randomly sampled up to 5 masks and a rearrangement type for molecules in the population. In addition, we consider recombination by randomly sampling two molecules, selecting a sub-sequence from each and inserting a mask in between. A canonical and randomized SMILES were used to represent each molecule before masking, and the top 10 molecules predicted by the pre-trained model were used as candidates. As a starting population, we used molecules from the validation set for pre-training. Only unique molecules were retained in the population, as determined by canonical SMILES computed using rdkit [<xref ref-type="bibr" rid="R24">24</xref>].</p>
+<p id="P35">To score the molecules generated through rearrangements, we utilized three metrics: normalized synthesizability, quantitative estimation of drug-likeness, and the affinity predictions of the fine-tuned model. The predicted score for the affinity was divided by 10 and clipped between 0 and 1 to generate a normalized affinity metric. The harmonic mean of the three metrics was then used to define the fitness of a given candidate. To find optimized candidates, an initial population of 10<sup>4</sup> molecules was used from the validation set for pre-training. Then, masked rearrangements were applied to 5 · 10<sup>3</sup> samples and recombination was applied to 5 · 10<sup>3</sup> sampled pairs. The resulting molecules were added to the population and ranked according to fitness; the top 10<sup>4</sup> overall were retained as the starting population for the next generation. Based on the Hold-out fine-tuning results, we selected Model 3 with a Regex Tokenizer to predict scores. For molecule rearrangements, we used the pre-trained model with WordPiece Tokenizer as it generated higher fitness scores than the corresponding Regex Tokenizer.</p>
+<p id="P36">As shown in <xref ref-type="fig" rid="F6">Figure 6</xref> (top two rows), 50 generations of optimization to search for Mpro inhibitors resulted in a substantial shift in the distributions of the three optimized metrics. Notably, the mean for the affinity score increases, with the maximum generated molecule having a normalized affinity score greater than 0.9. By optimizing for synthesizability and drug-likeness in addition to affinity, the generated molecules are constrained by useful heuristic scoring functions for drug discovery [<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>]. We also show the top scoring molecule in the final population for each respective metric. The three examples show that optimization successfully found molecules with higher predicted affinities while maintaining high synthesizability and drug-likeness scores. The bottom two rows of <xref ref-type="fig" rid="F6">Figure 6</xref> show the corresponding results for PLpro. The only change to the genetic algorithm is the input protein sequence, highlighting the generality of our approach.</p>
+</sec>
+</sec>
+<sec id="S18">
+<label>6</label>
+<title>How Performance was Measured</title>
+<sec id="S19">
+<label>6.1</label>
+<title>Applications Used to Measure Performance</title>
+<p id="P37">In this study, we performed pre-training, fine-tuning, and a genetic algorithm on Transformer models. All models are written in PyTorch using the Hugging Face Transformers API [<xref ref-type="bibr" rid="R70">70</xref>]. Models are pre-trained and fine-tuned with DeepSpeed [<xref ref-type="bibr" rid="R42">42</xref>], a high performance wrapper for distributed Transformer training. Model training is performed with data parallelism using DeepSpeed’s fused-kernel LAMB optimizers. Sharded I/O is performed using the WebDataset library [<xref ref-type="bibr" rid="R71">71</xref>]. As pre-training of the molecule language model is by far the most computationally expensive stage of the study, it is the focus of the performance analysis.</p>
+<p id="P38">The architecture used for the molecule language model is BERT-base, which has approximately 109 million learnable parameters. Pre-training of the model is performed with data parallelism, in which each GPU trains the model on separate data. Communication takes the form of a global asynchronous AllReduce which is performed during backpropagation on each batch.</p>
+</sec>
+<sec id="S20">
+<label>6.2</label>
+<title>Measuring Performance</title>
+<p id="P39">Performance of molecule language model pre-training was measured in two respects. First, sustained performance was measured using built-in timers which report the total wall clock time elapsed during training and the time for I/O operations (specifically, saving checkpoints and trained models). Additionally, to measure peak application performance relative to theoretical machine peak, mixed precision floating point operations per second (FLOPs) are computed using the DeepSpeed FLOPS Profiler.</p>
+</sec>
+<sec id="S21">
+<label>6.3</label>
+<title>System</title>
+<sec id="S22">
+<label>6.3.1</label>
+<title>Hardware</title>
+<p id="P40">Performance was measured on the Summit supercomputer at the Oak Ridge Leadership Computing Facility at ORNL [<xref ref-type="bibr" rid="R72">72</xref>]. Summit is comprised of 4674 IBM Power System AC922 nodes which are arranged in a non-blocking Fat Tree topology with dual-rail EDR InfiniBand interconnect. Each node has two IBM Power9 CPUs, six Nvidia 16 GB V100 GPUs, and 512GB of main memory. The V100 device has an estimated peak performance of 14 teraflops for single precision (FP32) and 112 teraflops for mixed precision using the Tensor Cores, which are capable of performing matrix multiply in FP16 with FP32 accumulation for some kernels. Consequently, Summit’s peak performance for mixed precision is approximately 3.1 exaflops.</p>
+</sec>
+<sec id="S23">
+<label>6.3.2</label>
+<title>Software</title>
+<p id="P41">Summit runs the Red Hat Enterprise Linux 8 operating system and uses the IBM LSF job scheduler. Our Python-based software stack uses Open Cognitive Environment v1.2.0, PyTorch v1.7.1, Transformers v4.5.1, DeepSpeed v0.4.5, and WebDataset v0.1.62. The GPU libraries include CUDA 11.0.3, NCCL 2.7.8, and cuDNN 8.0.4.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S24">
+<label>7</label>
+<title>performance results</title>
+<sec id="S25">
+<label>7.1</label>
+<title>Node Level Optimization</title>
+<p id="P42">The results of node level optimization for molecule language model pre-training are shown in <xref ref-type="fig" rid="F7">Figure 7</xref>, in terms of runtime per epoch plotted versus a series of successive optimizations. In this setting, data parallelism is applied to train the molecule language model across the six GPUs of a Summit node. The baseline case uses the Adam optimizer, single precision arithmetic, and the largest batch size per device (96) for which the model fits in GPU memory. Enabling mixed precision with the V100 Tensor Cores decreases runtime by approximately 43%. In addition, mixed precision enables a larger per device batch size (128) to be used while keeping the model within GPU memory, further decreasing runtime per epoch by about 15%. While the decision to switch to the LAMB optimizer was motivated by large batch sizes, as discussed in <xref ref-type="sec" rid="S13">section 5.1.3</xref>, DeepSpeed’s fused LAMB optimizer implementation also improves performance by roughly 15%. Finally, leveraging LAMB’s stability for very large batches, we changed the batch size to 80 and added 3 gradient accumulation steps, for an effective batch size per device of 240. While the addition of gradient accumulation does not improve node level performance, this configuration enables better scaling at very high node counts due to reduced communication frequency and, after hyperparameter optimization, maintains comparable accuracy.</p>
+</sec>
+<sec id="S26">
+<label>7.2</label>
+<title>Scaling</title>
+<p id="P43">As this study incorporates the largest molecule dataset ever used for pre-training, the primary focus for scalability was weak scaling.</p>
+<p id="P44">In <xref ref-type="fig" rid="F8">Figure 8</xref>, we assess the weak scaling of pre-training the molecule language model on Summit. For weak scaling, the problem size per device is kept constant at 3.95 · 10<sup>5</sup> molecules. The training configuration is that identified in <xref ref-type="sec" rid="S25">section 7.1</xref>, extended to the multi-node setting, with data parallelism used to train a single model across the given number of nodes. These runs are the production runs in <xref ref-type="sec" rid="S13">section 5.1.3</xref> with the WordPiece tokenizer, and therefore include I/O operations to save checkpoints and the final trained model. Parallel efficiency for weak scaling from 1 to 4032 Summit nodes is measured at 68.0%. However, a significant amount of performance degradation at large node counts is due to I/O; when I/O time is subtracted out, parallel efficiency over the same interval improves to 83.3%. In combination with the validation accuracy results from <xref ref-type="table" rid="T1">Tables 1</xref> and <xref ref-type="table" rid="T2">2</xref>, this clearly indicates that pre-training can be extended to incorporate unprecedented molecule dataset and batch sizes without significantly compromising computational efficiency or accuracy.</p>
+<p id="P45">Strong scaling of the molecule language model pre-training is shown in <xref ref-type="fig" rid="F9">Figure 9</xref> from 25 to 1600 Summit nodes. The total problem size is kept constant at approximately 1.9 billion molecules, with the same training configuration as for weak scaling. However, as full runs could not be completed within facility wallclock limits for many node counts, the reported runtime per epoch is measured for the first 0.25 epochs for the 25 node job and for the first epoch for all other node counts. Strong scaling is near linear from 25 to 400 Summit nodes and maintains approximately 67.4% parallel efficiency at 1600 nodes versus the 25 node baseline.</p>
+</sec>
+<sec id="S27">
+<label>7.3</label>
+<title>Peak Performance</title>
+<p id="P46">
+<xref ref-type="table" rid="T5">Table 5</xref> shows the peak performance achieved for molecule language model pre-training on Summit during the largest weak scaling run from <xref ref-type="sec" rid="S26">section 7.2</xref>. On 4032 nodes, peak performance of approximately 603.4 petaflops in mixed precision is achieved. As Summit’s theoretical peak at this node count is projected at ~2.71 exaflops, our result represents about 22.3% of this mixed precision peak.</p>
+</sec>
+</sec>
+<sec id="S28">
+<label>8</label>
+<title>Implications</title>
+<sec id="S29">
+<label>8.1</label>
+<title>ML Models for Drug Discovery</title>
+<p id="P47">Supervised training of ML models for drug discovery poses a key difficulty in terms of both time andresources, as alabeled dataset must be created for each new therapeutic target. As demonstrated by language models for both text [<xref ref-type="bibr" rid="R30">30</xref>] and chemical sequence data [<xref ref-type="bibr" rid="R2">2</xref>], an alternative approach is to leverage large unlabeled datasets to train a general model. The general model is then fine-tuned on a relatively small dataset for a specific task of interest. Althoughfine-tuning still requires supervised training, unsupervised pre-training has enabled state-of-the-art results across a range of tasks with limited labeled data [<xref ref-type="bibr" rid="R30">30</xref>, <xref ref-type="bibr" rid="R32">32</xref>]. Here, we have taken the shift towards general models a step further by using pre-training and fine-tuning tasks that can generalize to any protein and molecule sequence.</p>
+<p id="P48">The ability to pre-train molecule language models with large batch sizes enables an unprecedented exploration of chemical space. Current chemical databases provide hundreds of billions of molecules, but contain only a small fraction of potentially synthesizable molecules [<xref ref-type="bibr" rid="R73">73</xref>]. Through the process of tokenization and mask prediction, language models can leverage large datasets to automatically learn commonly occurring subsequences (i.e., structural components) and possible rearrangements for effective searches of chemical space.</p>
+<p id="P49">By combining a pre-trained model for molecule and protein sequences, the fine-tuning task can leverage data from many previous experimental investigations. Furthermore, additional modeling techniques, such as docking simulations, could be used to augment the training data in novel regions of interest. Recent development in protein structure prediction [<xref ref-type="bibr" rid="R74">74</xref>] leverage both sequence and spatial information to increase predictive performance. Although there is still much work to be done to make a truly general model for drug discovery, the increase in unsupervised and semi-supervised approaches to training along with the increase in available experimental and simulation data for protein and ligand interactions makes possible the development of off-the-shelf models that generalize across therapeutic targets. Developing a generalizable model is key to reducing the time for discovering and screening new targets in an emerging pandemic, such as COVID-19.</p>
+<p id="P50">Using a genetic algorithm coupled with a pre-trained language model for optimization enables incremental exploration and refinement from known drugs as well as population searches. For example, a certain subsequence of a known compound can be masked, and the language model can predict the most likely rearrangements. Heuristic metrics and ML models can then be used to analyze the expected impact of structural changes. The intuitive process of making incremental changes during exploration can be used to complement and guide researcher intuition during the drug discovery process. Therefore, our suggested optimization strategy provides a natural framework for both fully-automated and user-guided exploration of chemical space.</p>
+</sec>
+<sec id="S30">
+<label>8.2</label>
+<title>HPC Resources for Model Development</title>
+<p id="P51">The pre-training phase of developing a language model requires substantial computational resources; here, we utilized thousands of GPUs and corresponding node hours to complete training. Similarly, as the labeled dataset and the compound library for screening grows, fine-tuning and inference can also necessitate the resources of a leadership computing facility. Although these resource requirements provide an excellent use case and motivation for the continued development of HPC systems, they generate challenges for the utilization and training of models throughout the research community. Fortunately, the pre-trained models can be leveraged for inference and to some extent fine-tuning applications with only a single GPU.</p>
+<p id="P52">For fine-tuning tasks with a specific protein target or chemical property, training can typically be done without the need for HPC resources. For inference, our results show that a genetic algorithm using the pre-trained model for mutations can be used to generate optimized candidates without the need for large scale model evaluations. Furthermore, the genetic algorithm approach provides an interpretable scheme for modifying a single molecule. The mask predictions and scores can be inspected to determine single mutations that lead to higher scores for a given metric. Also, the reported genetic algorithm runs from this work used only a single V100 GPU for less than 10 hours for optimization. Therefore, although the pre-trained models require substantial computational resources for training, the models can be used for exploration throughout the research community.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S31">
+<label>9</label>
+<title>Acknowledgments</title>
+<p>We thank Jerry Parks for help in preparing the test dataset of PLpro inhibitors. This research used resources of the Oak Ridge Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC05-00OR22725. This research was supported by the Exascale Computing Project (17-SC-20-SC), a collaborative effort of the U.S. Department of Energy Office of Science and the National Nuclear Security Administration. This work was supported by DOE CARES emergency funding to the National Center for Computational Sciences at ORNL through the Advanced Scientific Computing Research (ASCR) program.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jacobs</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Moon</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>McLoughlin</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Enabling rapid COVID-19 small molecule drug design through scalable deep learning of generative models</article-title>
+<source>International Journal of High Performance Computing Applications</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1177/10943420211010930</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xue</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>X-MOL: large-scale pre-training for molecular understanding and diverse molecular analysis</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.12.23.424259</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Gardner</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>An interactive web-based dashboard to track COVID-19 in real time</article-title>
+<source>The Lancet Infectious Diseases</source>
+<year>2020</year>
+<volume>20</volume>
+<issue>5</issue>
+<fpage>533</fpage>
+<lpage>534</lpage>
+<pub-id pub-id-type="doi">10.1016/S1473-3099(20)30120-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reperant</surname>
+<given-names>LA</given-names>
+</name>
+<name>
+<surname>Osterhaus</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<article-title>Aids, avian flu, sars, mers, ebola, zika… what next?</article-title>
+<source>Vaccine</source>
+<year>2017</year>
+<volume>35</volume>
+<issue>35</issue>
+<fpage>4470</fpage>
+<lpage>4474</lpage>
+<pub-id pub-id-type="doi">10.1016/j.vaccine.2017.04.082</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="book">
+<source>Therapeutics and COVID-19: living guideline</source>
+<publisher-name>World Health Organization</publisher-name>
+<year>2021</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://www.who.int/publications/i/item/WHO-2019-nCoV-therapeutics-2021.2">https://www.who.int/publications/i/item/WHO-2019-nCoV-therapeutics-2021.2</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="book">
+<source>COVID-19 treatment guidelines panel. coronavirus disease 2019 (covid-19) treatment guidelines</source>
+<publisher-name>National Institutes of Health</publisher-name>
+<date-in-citation>accessed on 09/23/2021</date-in-citation>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://www.covid19treatmentguidelines.nih.gov/">https://www.covid19treatmentguidelines.nih.gov/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="web">
+<collab>Therapeutics distribution</collab>
+<source>Health &amp; Human Services</source>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://protect-public.hhs.gov/pages/therapeutics-distribution">https://protect-public.hhs.gov/pages/therapeutics-distribution</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Fischer</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Eron</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Holman</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Molnupiravir, an oral antiviral treatment for COVID-19</source>
+<year>2021</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://www.medrxiv.org/content/early/2021/06/17/2021.06.17.21258639">https://www.medrxiv.org/content/early/2021/06/17/2021.06.17.21258639</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hughes</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Rees</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kalindjian</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Principles of early drug discovery</article-title>
+<source>British Journal of Pharmacology</source>
+<year>2011</year>
+<volume>162</volume>
+<issue>6</issue>
+<fpage>1239</fpage>
+<lpage>1249</lpage>
+<pub-id pub-id-type="doi">10.1111/j.1476-5381.2010.01127.x</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sanchez-Lengeling</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Aspuru-Guzik</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Inverse molecular design using machine learning: Generative modelsfor matter engineering</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>361</volume>
+<issue>6400</issue>
+<fpage>360</fpage>
+<lpage>365</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aat2663</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vanhaelen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>YC</given-names>
+</name>
+<name>
+<surname>Zhavoronkov</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>The Advent of Generative Chemistry</article-title>
+<source>ACS Medicinal Chemistry Letters</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>8</issue>
+<fpage>1496</fpage>
+<lpage>1505</lpage>
+<pub-id pub-id-type="doi">10.1021/acsmedchemlett.0c00088</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Minnich</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>McLoughlin</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Tse</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>AMPL: A Data-Driven Modeling Pipeline for Drug Discovery</article-title>
+<source>Journal of chemical information and modeling</source>
+<year>2020</year>
+<volume>60</volume>
+<issue>4</issue>
+<fpage>1955</fpage>
+<lpage>1968</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.9b01053</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weininger</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>SMILES, a chemical language and information system. 1. Introduction to methodology and encoding rules</article-title>
+<source>J Chem Inf Comput Sci</source>
+<year>1998</year>
+<volume>28</volume>
+<fpage>31</fpage>
+<lpage>36</lpage>
+<pub-id pub-id-type="doi">10.1021/ci00057a005</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="web">
+<collab>Enamine REAL Database</collab>
+<date-in-citation>Accessed: 2020-04-01</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://enamine.net/compound-collections/real-compounds/real-database">https://enamine.net/compound-collections/real-compounds/real-database</ext-link> through <ext-link ext-link-type="uri" xlink:href="https://virtual-flow.org/">https://virtual-flow.org/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Elnaggar</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Heinzinger</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dallago</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<source>ProtTrans: Towards cracking the language of lifes code through self-supervised deep learning and high performance computing</source>
+<conf-name>IEEE Transactions on Pattern Analysis and Machine Intelligence</conf-name>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1109/TPAMI.2021.3095381</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gentile</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Agrawal</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Hsing</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep Docking: A Deep Learning Platform for Augmentation of Structure Based Drug Discovery</article-title>
+<source>ACS Central Science</source>
+<year>2020</year>
+<volume>6</volume>
+<issue>6</issue>
+<fpage>939</fpage>
+<lpage>949</lpage>
+<pub-id pub-id-type="doi">10.1021/acscentsci.0c00229</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blanchard</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Stanley</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bhowmik</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Using GANs with adaptive training data to search for new molecules</article-title>
+<source>Journal of Cheminformatics</source>
+<year>2021</year>
+<volume>13</volume>
+<issue>1</issue>
+<fpage>4</fpage>
+<lpage>11</lpage>
+<pub-id pub-id-type="doi">10.1186/s13321-021-00494-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>De Cao</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Kipf</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>MolGAN: An implicit generative model for small molecular graphs</source>
+<conf-name>ICML 2018 workshop on Theoretical Foundations and Applications of Deep Generative Models</conf-name>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Arus-Pous</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Johansson</surname>
+<given-names>SV</given-names>
+</name>
+<name>
+<surname>Prykhodko</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Randomized SMILES strings improve the quality of molecular generative models</article-title>
+<source>Journal of Cheminformatics</source>
+<year>2019</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>13</lpage>
+<pub-id pub-id-type="doi">10.1186/s13321-019-0393-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Segler</surname>
+<given-names>MH</given-names>
+</name>
+<name>
+<surname>Kogej</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Tyrchan</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Generating focused molecule libraries for drug discovery with recurrent neural networks</article-title>
+<source>ACS Central Science</source>
+<year>2018</year>
+<volume>4</volume>
+<issue>1</issue>
+<fpage>120</fpage>
+<lpage>131</lpage>
+<pub-id pub-id-type="doi">10.1021/acscentsci.7b00512</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Virshup</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Contreras-Garda</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wipf</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Stochastic voyages into uncharted chemical space produce a representative library of all possible drug-like compounds</article-title>
+<source>Journal of the American Chemical Society</source>
+<year>2013</year>
+<volume>135</volume>
+<issue>19</issue>
+<fpage>7296</fpage>
+<lpage>7303</lpage>
+<pub-id pub-id-type="doi">10.1021/ja401184g</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jensen</surname>
+<given-names>JH</given-names>
+</name>
+</person-group>
+<article-title>A graph-based genetic algorithm and generative model/Monte Carlo tree search for the exploration of chemical space</article-title>
+<source>Chemical Science</source>
+<year>2019</year>
+<volume>10</volume>
+<issue>12</issue>
+<fpage>3567</fpage>
+<lpage>3572</lpage>
+<pub-id pub-id-type="doi">10.1039/c8sc05372c</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Acharya</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Agarwal</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>MB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Supercomputer-based ensemble docking drug discovery pipeline with application to covid-19</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2020</year>
+<volume>60</volume>
+<issue>12</issue>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.0c01010</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="web">
+<source>RDKit: Open-source cheminformatics</source>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http://www.rdkit.org">http://www.rdkit.org</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wildman</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Crippen</surname>
+<given-names>GM</given-names>
+</name>
+</person-group>
+<article-title>Prediction of physicochemical parameters by atomic contributions</article-title>
+<source>Journal of Chemical Information and Computer Sciences</source>
+<year>1999</year>
+<volume>39</volume>
+<issue>5</issue>
+<fpage>868</fpage>
+<lpage>873</lpage>
+<pub-id pub-id-type="doi">10.1021/ci990307l</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ertl</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Schuffenhauer</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Estimation of synthetic accessibility score of druglike molecules based on molecular complexity and fragment contributions</article-title>
+<source>Journal of Cheminformatics</source>
+<year>2009</year>
+<volume>1</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>11</lpage>
+<pub-id pub-id-type="doi">10.1186/1758-2946-1-8</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bickerton</surname>
+<given-names>GR</given-names>
+</name>
+<name>
+<surname>Paolini</surname>
+<given-names>GV</given-names>
+</name>
+<name>
+<surname>Besnard</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Quantifying the chemical beauty of drugs</article-title>
+<source>Nature Chemistry</source>
+<year>2012</year>
+<volume>4</volume>
+<issue>2</issue>
+<fpage>90</fpage>
+<lpage>98</lpage>
+<pub-id pub-id-type="doi">10.1038/nchem.1243</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martins</surname>
+<given-names>IF</given-names>
+</name>
+<name>
+<surname>Teixeira</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Pinheiro</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Bayesian approach to in Silico blood-brain barrier penetration modeling</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2012</year>
+<volume>52</volume>
+<issue>6</issue>
+<fpage>1686</fpage>
+<lpage>1697</lpage>
+<pub-id pub-id-type="doi">10.1021/ci300124c</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Subramanian</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Ramsundar</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Pande</surname>
+<given-names>V</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computational Modeling of <italic>β</italic>-Secretase 1 (BACE-1) Inhibitors Using Ligand Based Approaches</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2016</year>
+<volume>56</volume>
+<issue>10</issue>
+<fpage>1936</fpage>
+<lpage>1949</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.6b00290</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Devlin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>MW</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<source>BERT: Pre-training of deep bidirectional transformers for language understanding</source>
+<conf-name>Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers)</conf-name>
+<conf-sponsor>Association for Computational Linguistics</conf-sponsor>
+<conf-loc>Minneapolis, Minnesota</conf-loc>
+<fpage>4171</fpage>
+<lpage>4186</lpage>
+<pub-id pub-id-type="doi">10.18653/v1/N19-1423</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ott</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Goyal</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<source>RoBERTa: A Robustly Optimized BERT Pretraining Approach 2019</source>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/1907.11692">http://arxiv.org/abs/1907.11692</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tinn</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Domain-specific language model pretraining for biomedical natural language processing</article-title>
+<source>arXiv</source>
+<year>2020</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/2007.15779">https://arxiv.org/abs/2007.15779</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Smiles-Bert: Large scale unsupervised pre-training for molecular property prediction</source>
+<conf-name>ACM-BCB 2019 - Proceedings of the 10th ACM International Conference on Bioinformatics, Computational Biology and Health Informatics</conf-name>
+<year>2019</year>
+<pub-id pub-id-type="doi">10.1145/3307339.3342186</pub-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>[34]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Chithrananda</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Grand</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Ramsundar</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<source>ChemBERTa: Large-Scale Self-Supervised Pretraining for Molecular Property Prediction</source>
+<year>2020</year>
+<comment>NeurIPS; URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/2010.09885.2010.09885">http://arxiv.org/abs/2010.09885.2010.09885</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>[35]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Honda</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ueda</surname>
+<given-names>HR</given-names>
+</name>
+</person-group>
+<source>Smiles transformer: Pre-trained molecular fingerprint for low data drug discovery 2019</source>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/1911.04738">https://arxiv.org/abs/1911.04738</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>[36]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Gurbych</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Druchok</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yarish</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<source>High throughput screening with machine learning</source>
+<year>2020</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/2012.08275.2012.08275">http://arxiv.org/abs/2012.08275.2012.08275</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>[37]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Öztürk</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Özgür</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ozkirimli</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Deepdta: deep drug-target binding affinity prediction</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>17</issue>
+<fpage>i821</fpage>
+<lpage>i829</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>[38]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Kurth</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Treichler</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Romero</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Exascale deep learning for climate analytics</source>
+<conf-name>SC18: International Conference for High Performance Computing, Networking, Storage and Analysis</conf-name>
+<conf-sponsor>IEEE</conf-sponsor>
+<fpage>649</fpage>
+<lpage>660</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>[39]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Laanait</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Romero</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yin</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Exascale deep learning for scientific inverse problems</article-title>
+<source>arXiv preprint</source>
+<year>2019</year>
+<elocation-id>arXiv:190911150</elocation-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>[40]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Zheng</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zha</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Accelerated large batch optimization of BERT pretraining in 54 minutes</source>
+<year>2020</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/2006.13484">http://arxiv.org/abs/2006.13484</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>[41]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>You</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Reddi</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Large Batch Optimization for Deep Learning: Training BERT in 76 minutes</source>
+<year>2019</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/1904.00962.1904.00962">http://arxiv.org/abs/1904.00962.1904.00962</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>[42]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Rasley</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Rajbhandari</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ruwase</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Deepspeed: System optimizations enable training deep learning models withover 100 billion parameters</source>
+<conf-name>Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining</conf-name>
+<fpage>3505</fpage>
+<lpage>3506</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>[43]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Narayanan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Shoeybi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Casper</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Efficient large-scale language model training on GPU clusters</article-title>
+<source>arXiv preprint</source>
+<year>2021</year>
+<elocation-id>arXiv:210404473</elocation-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>[44]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goyal</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Dollar</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Girshick</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Accurate, large minibatch SGD: Training ImageNet in 1 hour</article-title>
+<source>arXiv preprint</source>
+<year>2017</year>
+<elocation-id>arXiv:170602677</elocation-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>[45]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Eiben</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>JE</given-names>
+</name>
+</person-group>
+<source>Introduction to Evolutionary Computing</source>
+<edition>2nd ed</edition>
+<publisher-name>Springer Publishing Company, Incorporated</publisher-name>
+<publisher-loc>Springer-Verlag GmbH Germany</publisher-loc>
+<year>2015</year>
+<comment>ISBN 3662448734</comment>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>[46]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Gilardoni</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A graph-based genetic algorithm and its application to the multiobjective evolution of median molecules</article-title>
+<source>Journal of Chemical Information and Computer Sciences</source>
+<year>2004</year>
+<volume>44</volume>
+<issue>3</issue>
+<fpage>1079</fpage>
+<lpage>1087</lpage>
+<pub-id pub-id-type="doi">10.1021/ci034290p</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>[47]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hornby</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Lohn</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Linden</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Computer-Automated Evolution of an X-Band Antenna for NASA’s Space Technology 5 Mission</article-title>
+<source>Evolutionary Computation</source>
+<year>2011</year>
+<volume>19</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>23</lpage>
+<pub-id pub-id-type="doi">10.1007/0-387-28111-8_5</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>[48]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Morse</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Stanley</surname>
+<given-names>KO</given-names>
+</name>
+</person-group>
+<source>Simple evolutionary optimization can rival stochastic gradient descent inneural networks</source>
+<conf-name>GECCO 2016 - Proceedings of the 2016 Genetic and Evolutionary Computation Conference</conf-name>
+<conf-sponsor>Gecco</conf-sponsor>
+<fpage>477</fpage>
+<lpage>484</lpage>
+<pub-id pub-id-type="doi">10.1145/2908812.2908916</pub-id>
+<comment>ISBN 9781450342063</comment>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>[49]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yoshikawa</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Terayama</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Sumita</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Population-based De Novo Molecule Generation, Using Grammatical Evolution</article-title>
+<source>Chemistry Letters</source>
+<year>2018</year>
+<volume>47</volume>
+<issue>11</issue>
+<fpage>1431</fpage>
+<lpage>1434</lpage>
+<pub-id pub-id-type="doi">10.1246/cl.180665</pub-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>[50]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Fiscato</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Segler</surname>
+<given-names>MH</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>GuacaMol: Benchmarking Models for de Novo Molecular Design</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2019</year>
+<volume>59</volume>
+<issue>3</issue>
+<fpage>1096</fpage>
+<lpage>1108</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.8b00839</pub-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>[51]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Contextualized perturbation for textual adversarial attack</source>
+<year>2020</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/2009.07502.2009.07502">https://arxiv.org/abs/2009.07502.2009.07502</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>[52]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Q</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Bert-attack: Adversarial attack against BERT using BERT</article-title>
+<source>arXiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.18653/v1/2020.emnlp-main.500</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>[53]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Schuster</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Nakajima</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Japanese and korean voice search</source>
+<conf-name>2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)</conf-name>
+<fpage>5149</fpage>
+<lpage>5152</lpage>
+<pub-id pub-id-type="doi">10.1109/ICASSP.2012.6289079</pub-id>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>[54]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Schuster</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Google’s Neural Machine Translation System: Bridging the Gap between Human and Machine Translation</source>
+<year>2016</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="http://arxiv.org/abs/1609.08144.1609.08144">http://arxiv.org/abs/1609.08144.1609.08144</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>[55]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grisoni</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Moret</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lingwood</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Bidirectional Molecule Generation with Recurrent Neural Networks</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2020</year>
+<volume>60</volume>
+<issue>3</issue>
+<fpage>1175</fpage>
+<lpage>1183</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.9b00943</pub-id>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>[56]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schwaller</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Gaudin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lanyi</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>“Found in Translation”: predicting outcomes of complex organic chemistry reactions using neural sequence-to-sequence models</article-title>
+<source>Chemical Science</source>
+<year>2018</year>
+<volume>9</volume>
+<issue>28</issue>
+<fpage>6091</fpage>
+<lpage>6098</lpage>
+<pub-id pub-id-type="doi">10.1039/c8sc02339e</pub-id>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>[57]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mao</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Deep gradient compression: Reducing the communication bandwidth for distributed training</source>
+<year>2017</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/1712.01887">https://arxiv.org/abs/1712.01887</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>[58]</label>
+<element-citation publication-type="web">
+<source>Binding affinity training data set</source>
+<year>2021</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://huggingface.co/datasets/jglaser/binding_affinity">https://huggingface.co/datasets/jglaser/binding_affinity</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>[59]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Bindingdb: a web-accessible database of experimentally determined protein-ligand binding affinities</article-title>
+<source>Nucleic acids research</source>
+<year>2007</year>
+<volume>35</volume>
+<issue>suppl_1</issue>
+<fpage>D198</fpage>
+<lpage>D201</lpage>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>[60]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>PDB-wide collection of binding data: current status of the PDBbinddatabase</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<issue>3</issue>
+<fpage>405</fpage>
+<lpage>412</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>[61]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Benson</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>RD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Binding moad (mother of all databases)</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2005</year>
+<volume>60</volume>
+<issue>3</issue>
+<fpage>333</fpage>
+<lpage>340</lpage>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>[62]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Roy</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Biolip: a semi-manually curated database for biologically relevantligand-protein interactions</article-title>
+<source>Nucleic acids research</source>
+<year>2012</year>
+<volume>41</volume>
+<issue>D1</issue>
+<fpage>D1096</fpage>
+<lpage>D1103</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>[63]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Oleksandr</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Maksym</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Dzvenymyra</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<source>High throughput screening with machine learning</source>
+<year>2020</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/2012.08275">https://arxiv.org/abs/2012.08275</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>[64]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wolf</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Debut</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sanh</surname>
+<given-names>V</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Transformers: State-of-the-art natural language processing</source>
+<conf-name>Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations</conf-name>
+<conf-sponsor>Online: Association for Computational Linguistics</conf-sponsor>
+<fpage>38</fpage>
+<lpage>45</lpage>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://www.aclweb.org/anthology/2020.emnlp-demos.6">https://www.aclweb.org/anthology/2020.emnlp-demos.6</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>[65]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Koyama</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kamiya</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Shimada</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Cross attention dti: Drug-target interaction prediction with crossa ention module in the blind evaluation setup</source>
+<conf-name>19th International Workshop on Data Mining in Bioinformatics</conf-name>
+<conf-sponsor>BIOKDD, San Diego ACM</conf-sponsor>
+<conf-loc>New York, NY</conf-loc>
+<year>2020</year>
+<month>Aug</month>
+<day>24</day>
+<comment>2020</comment>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>[66]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davis</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Hunt</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Herrgard</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive analysis of kinase inhibitor selectivity</article-title>
+<source>Nature biotechnology</source>
+<year>2011</year>
+<volume>29</volume>
+<issue>11</issue>
+<fpage>1046</fpage>
+<lpage>1051</lpage>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>[67]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Achdout</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Aimon</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bar-David</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID moonshot: open science discovery of SARS-CoV-2 main proteaseinhibitors by combining crowdsourcing, high-throughput experiments, computationa simulations, and machine learning</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>[68]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Ratia</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Cooper</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Potent, Novel SARS-CoV-2 PLpro Inhibitors Block Viral Replication in Monkey and Human Cell Cultures</article-title>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.02.13.431008</pub-id>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>[69]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Spearman</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>The proof and measurement of association between two things</article-title>
+<year>1961</year>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>[70]</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Wolf</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Debut</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sanh</surname>
+<given-names>V</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Huggingface’s transformers: State-of-the-art natural language processing</source>
+<year>2019</year>
+<comment>URL<ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/1910.03771">https://arxiv.org/abs/1910.03771</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>[71]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Aizman</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Maltby</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Breuel</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>High performance I/O for large scale deep learning</source>
+<conf-name>2019 IEEE International Conference on Big Data (Big Data)</conf-name>
+<conf-sponsor>IEEE</conf-sponsor>
+<fpage>5965</fpage>
+<lpage>5967</lpage>
+</element-citation>
+</ref>
+<ref id="R72">
+<label>[72]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Vazhkudai</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>De Supinski</surname>
+<given-names>BR</given-names>
+</name>
+<name>
+<surname>Bland</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<source>The design, deployment, and evaluation of the CORAL pre-exascale systems</source>
+<conf-name>In SC18: International Conference for High Performance Computing, Networking, Storage and Analysis</conf-name>
+<conf-sponsor>IEEE</conf-sponsor>
+<fpage>661</fpage>
+<lpage>672</lpage>
+</element-citation>
+</ref>
+<ref id="R73">
+<label>[73]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reymond</surname>
+<given-names>JL</given-names>
+</name>
+</person-group>
+<article-title>The Chemical Space Project</article-title>
+<source>Accounts of Chemical Research</source>
+<year>2015</year>
+<volume>48</volume>
+<issue>3</issue>
+<fpage>722</fpage>
+<lpage>730</lpage>
+<pub-id pub-id-type="doi">10.1021/ar500432k</pub-id>
+</element-citation>
+</ref>
+<ref id="R74">
+<label>[74]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jumper</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pritzel</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Highly accurate protein structure prediction withAlphaFold</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>596</volume>
+<issue>7873</issue>
+<fpage>583</fpage>
+<lpage>589</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-021-03819-2</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Our strategy for developing general models for drug discovery contains three components. The molecule language model is trained in an unsupervised manner; for pre-training, the model learns to reconstruct an original input molecule after masking. For data augmentation, the model predictions can be used to generate new molecules. To predict binding affinities, we use a dataset with measurements for protein and ligands to fine-tune the pre-trained model for predictions. To search for drug candidates, we use both the pre-trained language model and the fine-tuned model. The pre-trained model generates new molecules, which are scored by the fine-tuned model. Molecules are then selected based on the predicted score. The process is iterated in the search for optimized drug candidates.</p>
+</caption>
+<graphic xlink:href="EMS141125-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Although the augmented dataset contains roughly 7 times more molecules than the original dataset, the histograms show that the augmentation strategy largely preserves the distribution of multiple molecule metrics. For Synthesizability, generated molecules for data augmentation were required to have a score above 0.3, resulting in the observed sharp decline in the histogram. For drug-likeness, no constraints were placed on the augmented data, which resulted in a decrease in typical scores relative to Enamine.</p>
+</caption>
+<graphic xlink:href="EMS141125-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>The vocabulary generated by WordPiece tokenization represents commonly occurring sub-sequences from the training data as individual tokens. The histogram shows the distribution of number of characters for all tokens in the vocab along with the chemical structure for sample tokens of different length.</p>
+</caption>
+<graphic xlink:href="EMS141125-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Architecture of the affinity prediction model used for fine-tuning. It uses two independent models for protein sequences (Protein Language Model) and molecule SMILES (Molecule Language Model) connected to a cross-Attention module that predicts the logarithm of the binding affinity.</p>
+</caption>
+<graphic xlink:href="EMS141125-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Transferability and virtual-screening performance of the fine-tuned model on two experimental SARS CoV-2 protein affinity data sets, Mpro (top, from Ref. [<xref ref-type="bibr" rid="R67">67</xref>]) and PLpro (bottom, from Ref. [<xref ref-type="bibr" rid="R68">68</xref>]), showing precision [=<italic>tp</italic>/ (<italic>tp</italic> + <italic>fp</italic>)] as a function of recall [=<italic>tp</italic>/ (<italic>tp</italic> + <italic>fn</italic>)].</p>
+</caption>
+<graphic xlink:href="EMS141125-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>Results from optimizing molecules for the harmonic mean of synthesizability, drug-likeness, and affinity. The top two rows show results for Mpro; the bottom two rows show results for PLpro. The histograms show the changes in the probability distributions from the starting population to the optimized population after 50 generations. The three examples show the highest scoring molecules for each respective metric in the optimized population.</p>
+</caption>
+<graphic xlink:href="EMS141125-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<p>Single node algorithmic and performance optimization for pre-training the molecule language model: (1) baseline with Adam optimizer, (2) use of mixed precision arithmetic on V100 Tensor Cores, (3) larger per device batch size enabled by mixed precision, (4) fused LAMB optimizer, and (5) optimal balance of batch size per device and gradient accumulation steps for single node performance and scalability.</p>
+</caption>
+<graphic xlink:href="EMS141125-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<p>Weak scaling of molecule language model pretraining on Summit for a constant 395 thousand molecule problem size per GPU. I/O operations are saving checkpoints and trained models.</p>
+</caption>
+<graphic xlink:href="EMS141125-f008"/>
+</fig>
+<fig id="F9" position="float">
+<label>Figure 9</label>
+<caption>
+<title>Strong scaling of molecule language model pretraining on Summit for a constant total problem size of ~1.9 billion molecules.</title>
+</caption>
+<graphic xlink:href="EMS141125-f009"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Validation Accuracy for Pre-training Runs with WordPiece Tokenizer.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Nodes</th>
+<th align="center" valign="top">Molecules</th>
+<th align="center" valign="top">Batch Size</th>
+<th align="center" valign="top">Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">1</td>
+<td align="center" valign="top">2.4·10<sup>6</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>3</sup>
+</td>
+<td align="center" valign="top">0.760</td>
+</tr>
+<tr>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">2.4·10<sup>7</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>4</sup>
+</td>
+<td align="center" valign="top">0.783</td>
+</tr>
+<tr>
+<td align="center" valign="top">100</td>
+<td align="center" valign="top">2.4·10<sup>8</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>5</sup>
+</td>
+<td align="center" valign="top">0.797</td>
+</tr>
+<tr>
+<td align="center" valign="top">1000</td>
+<td align="center" valign="top">2.4·10<sup>9</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>6</sup>
+</td>
+<td align="center" valign="top">0.798</td>
+</tr>
+<tr>
+<td align="center" valign="top">1008</td>
+<td align="center" valign="top">9.6·10<sup>9</sup>
+</td>
+<td align="center" valign="top">1.5·10<sup>6</sup>
+</td>
+<td align="center" valign="top">
+<bold>0.808</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">4032</td>
+<td align="center" valign="top">9.6·10<sup>9</sup>
+</td>
+<td align="center" valign="top">5.8·10<sup>6</sup>
+</td>
+<td align="center" valign="top">0.801</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Validation Accuracy for Pre-training Runs with Regex Tokenizer.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Nodes</th>
+<th align="center" valign="top">Molecules</th>
+<th align="center" valign="top">Batch Size</th>
+<th align="center" valign="top">Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">1</td>
+<td align="center" valign="top">2.4·10<sup>6</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>3</sup>
+</td>
+<td align="center" valign="top">0.845</td>
+</tr>
+<tr>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">2.4·10<sup>7</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>4</sup>
+</td>
+<td align="center" valign="top">0.866</td>
+</tr>
+<tr>
+<td align="center" valign="top">100</td>
+<td align="center" valign="top">2.4·10<sup>8</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>5</sup>
+</td>
+<td align="center" valign="top">0.878</td>
+</tr>
+<tr>
+<td align="center" valign="top">1000</td>
+<td align="center" valign="top">2.4·10<sup>9</sup>
+</td>
+<td align="center" valign="top">1.4·10<sup>6</sup>
+</td>
+<td align="center" valign="top">0.882</td>
+</tr>
+<tr>
+<td align="center" valign="top">1008</td>
+<td align="center" valign="top">9.6·10<sup>9</sup>
+</td>
+<td align="center" valign="top">1.5·10<sup>6</sup>
+</td>
+<td align="center" valign="top">
+<bold>0.889</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<p>Validation of the affinity prediction on different test sets, with Regex tokenizer for SMILES. Shown are Spearman <italic>ρ</italic> rank correlation coefficient, and mean-squared error (MSE) for the ensemble and the individual models. Values in parentheses indicate the uncertainty of the last reported digit.</p>
+</caption>
+<table frame="box" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" rowspan="2" style="border-right: solid thin">Test set</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Ensemble</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 1</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 2</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 3</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Hold-out</td>
+<td align="center" valign="top">
+<bold>0.881</bold>(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.69</bold>(1)</td>
+<td align="center" valign="top">0.866(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.77(1)</td>
+<td align="center" valign="top">0.865(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.79(1)</td>
+<td align="center" valign="top">0.866(3)</td>
+<td align="center" valign="top">0.75(1)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Kinases [<xref ref-type="bibr" rid="R66">66</xref>]</td>
+<td align="center" valign="top">
+<bold>0.38</bold>(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>1.67</bold>(3)</td>
+<td align="center" valign="top">0.35(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.80(3)</td>
+<td align="center" valign="top">0.35(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.88(3)</td>
+<td align="center" valign="top">0.35(1)</td>
+<td align="center" valign="top">1.80(3)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Mpro [<xref ref-type="bibr" rid="R67">67</xref>]</td>
+<td align="center" valign="top">
+<bold>0.39</bold>(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.82(5)</td>
+<td align="center" valign="top">0.28(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>1.79</bold>(5)</td>
+<td align="center" valign="top">0.37(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">2.24(6)</td>
+<td align="center" valign="top">0.32(2)</td>
+<td align="center" valign="top">1.82(5)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">PLpro [<xref ref-type="bibr" rid="R68">68</xref>]</td>
+<td align="center" valign="top">0.54(8)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.8(1)</td>
+<td align="center" valign="top">
+<bold>0.55</bold>(8)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.9(1)</td>
+<td align="center" valign="top">0.25(10)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.67(11)</td>
+<td align="center" valign="top">0.45(8)</td>
+<td align="center" valign="top">1.3(2)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<p>Validation of the affinity prediction on different test sets, with WordPiece tokenizer for SMILES. Shown are Spearman <italic>ρ</italic> rank correlation coefficient, and mean-squared error (MSE) for the ensemble and the individual models. Values in parentheses indicate the uncertainty of the last reported digit.</p>
+</caption>
+<table frame="box" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" rowspan="2" style="border-right: solid thin">Test set</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Ensemble</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 1</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 2</th>
+<th align="center" valign="top" colspan="2" style="border-right: solid thin">Model 3</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top" style="border-right: solid thin">MSE</th>
+<th align="center" valign="top">
+<italic>ρ</italic>
+</th>
+<th align="center" valign="top">MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Hold-out</td>
+<td align="center" valign="top">
+<bold>0.864</bold>(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.72</bold>(1)</td>
+<td align="center" valign="top">0.830(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.94(2)</td>
+<td align="center" valign="top">0.846(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.84(1)</td>
+<td align="center" valign="top">0.854(3)</td>
+<td align="center" valign="top">0.77(1)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Kinases [<xref ref-type="bibr" rid="R66">66</xref>]</td>
+<td align="center" valign="top">
+<bold>0.30</bold>(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>2.03</bold>(3)</td>
+<td align="center" valign="top">0.23(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">2.90(4)</td>
+<td align="center" valign="top">0.26(1)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.95(3)</td>
+<td align="center" valign="top">0.30(1)</td>
+<td align="center" valign="top">1.94(3)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">Mpro [<xref ref-type="bibr" rid="R67">67</xref>]</td>
+<td align="center" valign="top">
+<bold>0.37</bold>(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.23(5)</td>
+<td align="center" valign="top">0.33(3)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>1.23</bold>(5)</td>
+<td align="center" valign="top">0.29(2)</td>
+<td align="center" valign="top" style="border-right: solid thin">1.49(5)</td>
+<td align="center" valign="top">0.31(3)</td>
+<td align="center" valign="top">1.44(5)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-right: solid thin">PLpro [<xref ref-type="bibr" rid="R68">68</xref>]</td>
+<td align="center" valign="top">0.57(8)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.71(10)</td>
+<td align="center" valign="top">0.51(8)</td>
+<td align="center" valign="top" style="border-right: solid thin">
+<bold>0.45</bold>(7)</td>
+<td align="center" valign="top">
+<bold>0.61</bold>(7)</td>
+<td align="center" valign="top" style="border-right: solid thin">0.76(10)</td>
+<td align="center" valign="top">0.30(10)</td>
+<td align="center" valign="top">1.7(2)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<title>Peak performance for molecule language model pre-training on Summit in mixed precision floating point operations per second (FLOPs).</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Nodes</th>
+<th align="center" valign="top">Molecules</th>
+<th align="center" valign="top">Batch Size</th>
+<th align="center" valign="top">FLOPs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">4032</td>
+<td align="center" valign="top">9.6·10<sup>9</sup>
+</td>
+<td align="center" valign="top">5.8·10<sup>6</sup>
+</td>
+<td align="center" valign="top">603.4 petaflops</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

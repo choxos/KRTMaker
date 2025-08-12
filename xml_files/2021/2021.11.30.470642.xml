@@ -1,0 +1,3304 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141057</article-id>
+<article-id pub-id-type="doi">10.1101/2021.11.30.470642</article-id>
+<article-id pub-id-type="archive">PPR427628</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Variance in Variants: Propagating Genome Sequence Uncertainty into Phylogenetic Lineage Assignment</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Champredon</surname>
+<given-names>David</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Becker</surname>
+<given-names>Devan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chato</surname>
+<given-names>Connor</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gugan</surname>
+<given-names>Gopi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Poon</surname>
+<given-names>Art</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<aff id="A1">
+<label>1</label>Department of Pathology and Laboratory Medicine, Schulich School of Medicine and Dentistry, Western University. London, Ontario, Canada</aff>
+<aff id="A2">
+<label>2</label>Public Health Agency of Canada - National Microbiology Laboratory - Public Health Risk Sciences Division. Guelph, Ontario, Canada</aff>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>02</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Genetic sequencing is subject to many different types of errors, but most analyses treat the resultant sequences as if they are known without error. Next generation sequencing methods rely on significantly larger numbers of reads than previous sequencing methods in exchange for a loss of accuracy in each individual read. Still, the coverage of such machines is imperfect and leaves uncertainty in many of the base calls. On top of this machine-level uncertainty, there is uncertainty induced by human error, such as errors in data entry or incorrect parameter settings. In this work, we demonstrate that the uncertainty in sequencing techniques will affect downstream analysis and propose a straightforward method to propagate the uncertainty.</p>
+<p id="P2">Our method uses a probabilistic matrix representation of individual sequences which incorporates base quality scores as a measure of uncertainty that naturally lead to resampling and replication as a framework for uncertainty propagation. With the matrix representation, resampling possible base calls according to quality scores provides a bootstrap- or prior distribution-like first step towards genetic analysis. Analyses based on these re-sampled sequences will include a more complete evaluation of the error involved in such analyses.</p>
+<p id="P3">We demonstrate our resampling method on SARS-CoV-2 data. The resampling procedures adds a linear computational cost to the analyses, but the large impact on the variance in downstream estimates makes it clear that ignoring this uncertainty may lead to overly confident conclusions. We show that SARS-CoV-2 lineage designations via Pangolin are much less certain than the bootstrap support reported by Pangolin would imply and the clock rate estimates for SARS-CoV-2 are much more variable than reported.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P4">Generating a genetic sequence from a biological sample is a complex process. Nucleic acids must be extracted from the sample while avoiding contamination by foreign material. If working with RNA, then we must use a reverse transcriptase reaction (which has a high base misincorporation rate) to convert the RNA into DNA.</p>
+<p id="P5">Polymerase chain reaction (PCR) amplification is often employed to enrich the sample for the target of interest. For next-generation sequencing (NGS) protocols, we have to generate a sequencing library for instance by random shearing of nucleic acids into fragments that are ligated onto special “adaptors”. NGS procedures such as sequencing by synthesis suffer from greater error rate relative to conventional Sanger dye-terminator sequencing, although these rates have continued to improve with new technologies (<xref ref-type="bibr" rid="R12">Fuller et al., 2009</xref>; <xref ref-type="bibr" rid="R16">Goodwin et al., 2016</xref>; <xref ref-type="bibr" rid="R34">Salk et al., 2018</xref>). In addition, the short reads produced by NGS platforms need to be aligned — either by alignment against a reference genome, <italic>de novo</italic> assembly, or a combination of the two — to reconstruct a consensus sequence using one or more bioinformatic programs. Errors can be introduced in any one of these steps (<xref ref-type="bibr" rid="R1">Beerenwinkel and Zagordi, 2011</xref>; <xref ref-type="bibr" rid="R28">O’Rawe et al., 2015</xref>).</p>
+<p id="P6">In some cases, naturally occurring variation, <italic>i.e.,</italic> genetic polymorphisms, or variation induced by experimental error is directly quantified and encoded into the output. For example, mixed peaks in sequence chromatograms produced from dye terminator sequencing by capillary electrophoresis are assigned standard IUPAC codes (<italic>e.g</italic>., Y for C or T) when the base calling program cannot determine which base is dominant (<xref ref-type="bibr" rid="R26">NC-IUB, 1986</xref>). <xref ref-type="bibr" rid="R11">Ewing and Green (1998)</xref> and <xref ref-type="bibr" rid="R30">Richterich (1998)</xref> both argued that estimates of the base call quality, typically quantified as Phred quality scores (<italic>Q</italic> = –10 log<sub>10</sub> <italic>P</italic>, where <italic>P</italic> is the estimated error probability), can be an accurate estimate of the number of errors that the machines at the time would make. Due to advances in the technology as well as our understanding of the sources and patterns in the sequencing errors, new error quantification methods and adjustments of existing error probabilities have been proposed (<xref ref-type="bibr" rid="R24">Li et al., 2004</xref>, <xref ref-type="bibr" rid="R25">2009b</xref>; <xref ref-type="bibr" rid="R6">DePristo et al., 2011</xref>). Nevertheless, Phred scores remain the standard means of reporting the estimated error probabilities for current sequencing platforms. Generally, these scores are used to censor the base calls (<italic>i.e</italic>., label them “N” rather than A, T, C or G) if the estimated probability of error exceeds a predefined threshold. It is also common practice to remove the sequence from further analysis if the total number of censored bases exceeds a maximum tolerance; <italic>e.g</italic>., <xref ref-type="bibr" rid="R7">Doronina (2005)</xref>; <xref ref-type="bibr" rid="R31">Robasky et al. (2014)</xref>; <xref ref-type="bibr" rid="R28">O’Rawe et al. (2015)</xref>. Some authors/tools use more sophisticated models, such as <xref ref-type="bibr" rid="R40">Wu et al. (2017)</xref> who use statistical models that incorporate read depth to determine a probability of a sequencing error, but still use the resultant reads to form a consensus sequence with no measure of uncertainty. Furthermore, some studies have extended the concept of per-base error probabilities to calculate the joint likelihoods of partial or full sequences. For example, <xref ref-type="bibr" rid="R6">DePristo et al. (2011)</xref> and <xref ref-type="bibr" rid="R15">Gompert and Buerkle (2011)</xref> incorporate adjusted Phred scores into a likelihood framework to generate more accurate estimates of genetic diversity within a population; this approach has subsequently been used to develop new estimators of genetic diversity (<xref ref-type="bibr" rid="R13">Fumagalli et al., 2013</xref>). <xref ref-type="bibr" rid="R21">Kuo et al. (2018)</xref> recently used a similar approach to develop a statistical test of whether a given genome sequence is consistent with a specified alternative sequence. In general, the reported error probabilities from NGS technologies are primarily used for filtering low quality sequences and improving alignment algorithms (which both result in a consensus sequence that is assumed to be error-free) or for hypothesis tests concerning small collections (usually pairs) of sequences.</p>
+<p id="P7">The uncertainty present in the sequences are seldom propagated to downstream analyses. For example, methods for sequence alignment and homology searches generally employ heuristic algorithms that utilize similarity scores that do not explicitly incorporate the probabilities of sequencing errors. Moreover, methods to reconstruct the evolutionary relationships among sequences as a phylogenetic tree tend to interpret ambiguous base calls as completely missing data, although some exceptions are found in the literature, <italic>e.g</italic>., <xref ref-type="bibr" rid="R6">DePristo et al. (2011)</xref>. This problem is exacerbated when each sequence represents the consensus of diverse copies of a genome, such as rapidly evolving virus populations where genuine polymorphisms are confounded with sequencing error. See <xref ref-type="bibr" rid="R35">Schneider (2002)</xref> for more criticisms of the use of consensus sequences, along with visualizations (<xref ref-type="bibr" rid="R36">Schneider and Stephens, 1990</xref>, called <italic>sequence logos</italic>) to display the deviations from a consensus.</p>
+<p id="P8">Though rare, some studies have proposed methods for propagation of uncertainty from one step to later steps of an analysis. <xref ref-type="bibr" rid="R28">O’Rawe et al. (2015)</xref> suggest methods for propagation of sequence-level uncertainty into determining whether two subjects have the same alleles, as well as estimating confidence intervals for allele frequencies. Another exception can be found in <xref ref-type="bibr" rid="R20">Kuhner and McGill (2014)</xref>, who incorporate an assumed or estimated error rate for the entire sequence into the calculation of a phylogenetic tree and found that incorporation of errors makes the inferred branch lengths much closer to the true (simulated) branch lengths. Though they did not use nucleotide-level uncertainty, <xref ref-type="bibr" rid="R15">Gompert and Buerkle (2011)</xref> incorporate the coverage of NGS technologies as part of the uncertainty of estimates for the frequency of alleles in a population. <xref ref-type="bibr" rid="R4">Clement et al. (2010)</xref> present an alignment algorithm (called GNUMAP) that takes nucleotide-level uncertainty into account. Their method incorporates Position Weight Matrices into a method of scoring multiple possible matches against a reference genome in order to choose the best alignment. These studies are the exceptions, rather than the rules, and their methods have not yet attained widespread use.</p>
+<p id="P9">We present a simple general-purpose framework that can be incorporated into any analysis of genetic sequence data. This framework involves converting the uncertainty scores into a matrix of probabilities, and repeatedly sampling from this matrix and using the resultant samples in downstream analysis. Unlike likelihood-based approaches, we do not make assumptions about the underlying patterns or distributions in the data. In so doing, we can gain more accurate estimation of the errors at the expense of computation time. Our technique is amenable to quality score adjustments prior to applying our methods. We demonstrate the impact of propagating sequence uncertainty by applying our methods to the problem of classifying SARS-CoV-2 genomes into predefined clusters known as “lineages” (<xref ref-type="bibr" rid="R29">Rambaut et al., 2020</xref>), several of which correspond to variants carrying mutations that are known to confer an advantage to virus transmission or infectivity. We also analyse a collection of SARS-CoV-2 sequences to demonstrate that the estimated rate of new mutations is much more variable than studies relying on deterministic sequences would conclude.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<label>2</label>
+<title>Methods</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Probabilistic representation of sequences</title>
+<p id="P10">Here, we describe two theoretical frameworks to model sequence uncertainty at the <italic>nucleotide level</italic> or at the <italic>sequence level</italic>. In both frameworks, the sequence of nucleotides from a biological sample is not treated as a single unambiguous observation (known without error), but rather as a collection of possible sequences weighted by their probability.</p>
+<sec id="S4">
+<label>2.1.1</label>
+<title>Nucleotide-level uncertainty</title>
+<p id="P11">To represent the uncertainty at each position along the genome we introduce the following matrix, which we will refer to as a probabilistic sequence and denote <inline-formula>
+<mml:math id="M1">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula>: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>A</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>C</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>G</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>T</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>−</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>2</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>C</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>C</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>C</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>G</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>G</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>G</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mo>⋯</mml:mo>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P12">Each column represents a position in a nucleotide sequence of length <inline-formula>
+<mml:math id="M3">
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:math>
+</inline-formula>. Each row represents one of the four nucleotides <monospace>
+<styled-content style-type="color" style="#bf8040">A,C,G,T</styled-content>
+</monospace>, as well as an empty position “<monospace>
+<styled-content style-type="color" style="#bf8040">-</styled-content>
+</monospace>” that symbolizes a recorded deletion rather than missing data. Hence, <inline-formula>
+<mml:math id="M4">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula> is a <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mn>5</mml:mn>
+<mml:mspace width=".2em"/>
+<mml:mo>×</mml:mo>
+<mml:mspace width=".2em"/>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula> matrix.</p>
+<p id="P13">The elements of the probability sequence represent the probability that a nucleotide exists at a given position: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi mathvariant="normal">n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>ℙ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>nucloetide</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mi mathvariant="normal">n</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mtext>is</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>at</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext>position</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> with the special case for a deletion: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>ℙ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext>empty position</mml:mtext>
+<mml:mi/>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P14">Note that we have for all <inline-formula>
+<mml:math id="M8">
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>≤</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>≤</mml:mo>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula>: <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M9">
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P15">Also, the sequence length is stochastic if <inline-formula>
+<mml:math id="M10">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>&lt;</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&lt;</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:math>
+</inline-formula> for at least one <italic>i</italic>. The probability that the sequence has the maximum length <inline-formula>
+<mml:math id="M11">
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:math>
+</inline-formula> is <inline-formula>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi mathvariant="script">l</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The nucleotide (or deletion) drawn at each position is independent from all the others, so there are up to 5<sup>
+<italic>ℓ</italic>
+</sup> possible different sequences for a given probabilistic nucleotide sequence, but these sequences are <italic>not</italic> equally probable.</p>
+<p id="P16">A major limitation of this probabilistic representation of a sequence is that we lose all information on linkage disequilibrium. This is especially problematic for recording insertions because insertions with <italic>L</italic> ≥ 2 nucleotides are treated as <italic>L</italic> independent single nucleotide insertions. Instead, we assume that every nucleotide is an independent observation. For example, a probability sequence populated from short read data from a diverse population would not store the information that two polymorphisms were always observed in the same reads, <italic>i.e</italic>., in complete linkage disequilibrium. We also lose information about autocorrelation in sequencing error, such as clusters of miscalled bases associated with later cycles of sequencing-by-synthesis platforms. Sequence chromatograms and base quality scores are affected by the same loss of information.</p>
+<p id="P17">We note that this representation is similar to the “CATG” file type as described in <xref ref-type="bibr" rid="R19">Kozlov (2018)</xref>, which indicates the likelihoods of each nucleotide in an aligned mapping for multiple taxa. This file type is able to be used by RAxML-NG to estimate an overall error rate which is then used to estimate phylogenetic trees. Our probability sequence is also similar in concept to Position Weight Matrices (PWMs, <xref ref-type="bibr" rid="R38">Stormo et al., 1982</xref>) which are built according to the frequency of each base at each position of a multiple alignment. Our construction differs in that we are creating one matrix per sequence where the entries are weighted according to error probability within that sequence, rather than one matrix for a collection of sequences. However, methods that accept PWMs will be applicable to our probability sequences (and <italic>vice-versa</italic>).</p>
+</sec>
+<sec id="S5">
+<label>2.1.2</label>
+<title>Sequence-level uncertainty</title>
+<p id="P18">A significant problem of storing probabilities at the level of individual nucleotides is that generating a sequence from this matrix requires drawing <italic>ℓ</italic> independent outcomes. For example, the reference SARS-CoV-2 genome is 29,903 nucleotides, and a substantial number of naturally-occurring sequence insertions have been described. Thus it would not be surprising if <italic>ℓ</italic> exceeded 30,000 nucleotides (nt). The majority of these technically possible 5<sup>
+<italic>ℓ</italic>
+</sup> sequences are not biologically plausible. Therefore, we formulate an ordered subset <inline-formula>
+<mml:math id="M13">
+<mml:mrow>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>…</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> of the first <italic>m</italic> most likely sequences, which are ranked in descending order by the joint probability of nucleotide composition. Note that the sequences in <inline-formula>
+<mml:math id="M14">
+<mml:mi mathvariant="script">B</mml:mi>
+</mml:math>
+</inline-formula>, <inline-formula>
+<mml:math id="M15">
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:math>
+</inline-formula>, do not necessarily have the same length. The observed genetic sequence, <italic>s</italic>*, is a sample from a specified discrete probability distribution <italic>a</italic>: <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M16">
+<mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>s</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>|</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>…</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P19">This compact and approximate representation drastically reduces the number of operations to one sample, after some pre-processing to calculate <italic>a</italic>. The observed plurality sequence <italic>s</italic>* (the sequence consisting of the most likely base at each position) is guaranteed to be a member of <inline-formula>
+<mml:math id="M17">
+<mml:mi mathvariant="script">B</mml:mi>
+</mml:math>
+</inline-formula> if <inline-formula>
+<mml:math id="M18">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&gt;</mml:mo>
+<mml:mn>0.5</mml:mn>
+<mml:mspace width=".2em"/>
+<mml:mo>∀</mml:mo>
+<mml:mspace width=".2em"/>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula> where <italic>s</italic>(<italic>j</italic>) is the <italic>j</italic>-th nucleotide of <italic>s</italic>*; indeed, it is guaranteed to be the highest ranked member <italic>i</italic> = 0. We refer to any member of the set <inline-formula>
+<mml:math id="M19">
+<mml:mi mathvariant="script">B</mml:mi>
+</mml:math>
+</inline-formula> as a <italic>sequence-level probabilistic sequence</italic>. Note that because <italic>a</italic> is a probability distribution, we must have <inline-formula>
+<mml:math id="M20">
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>m</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:math>
+</inline-formula>. In other words, this probability is conditional on the sequence being in <inline-formula>
+<mml:math id="M21">
+<mml:mi mathvariant="script">B</mml:mi>
+</mml:math>
+</inline-formula>.</p>
+<p id="P20">For example, suppose that we have the following nucleotide-level probabilistic sequence: <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M22">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">A</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">C</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">G</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">T</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>−</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>2</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>3</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>4</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>5</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>6</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.9</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.05</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.99</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.6</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.8</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.1</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.1</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.1</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.15</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.9</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.01</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.7</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>such that there are 2 × 3 × 2<sup>3</sup> × 3 = 144 possible sequences. The most likely sequence has the highest joint nucleotide probability: <monospace>
+<styled-content style-type="color" style="#bf8040">ACATGA</styled-content>
+</monospace> with probability 0.2694 (0.9 × 0.8 × 0.99 × 0.7 × 0.9 × 0.6). If there is a positive probability of deletion for at least one position, then the sequence has a variable length. Large genomes or sequencing targets will result in vanishingly small probabilities for all sequences, and thus calculations on the log scale may be necessary to reduce the chance of numerical underflow.</p>
+<p id="P21">
+<xref ref-type="table" rid="T1">Table 1</xref> demonstrates the calculation of sequence-level uncertainties using the values in (6). The probability column is the product of the matrix entries for each nucleotide. If the four sequences shown are the only biologically plausible sequences, then the normalized probabilities can be expressed as <italic>a</italic>(<italic>i</italic>).</p>
+</sec>
+<sec id="S6">
+<label>2.1.3</label>
+<title>Deletions and insertions</title>
+<p id="P22">By construction, the nucleotide-level probabilistic sequence must be defined with its longest possible length. Deletions are naturally modelled with our representation but insertions have to be modelled using deletion probabilities. <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M23">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">A</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">C</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">G</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">T</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>−</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>2</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>3</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>4</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>5</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>6</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.99</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.01</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.01</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>0.99</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P23">The low deletion probability for position 2 is straightforward to interpret: about 1% of the time, nucleotide <monospace>
+<styled-content style-type="color" style="#bf8040">G</styled-content>
+</monospace> at position 2 is deleted. The high deletion probability for position 4 means there is a 1% chance of a <monospace>
+<styled-content style-type="color" style="#bf8040">T</styled-content>
+</monospace> insertion at this position (<xref ref-type="table" rid="T2">Table 2</xref>).</p>
+</sec>
+</sec>
+<sec id="S7">
+<label>2.2</label>
+<title>Constructing the probability sequence</title>
+<sec id="S8">
+<label>2.2.1</label>
+<title>SAM files</title>
+<p id="P24">In most next-generation sequencing applications, the estimated probability of sequencing error is quantified with the quality (or “Phred”) score attributed to each base call produced by sequencing instrument. The quality score <italic>Q</italic> is directly related to this estimated error probability: ϵ = 10<sup>-<italic>Q</italic>/10</sup> (<xref ref-type="bibr" rid="R11">Ewing and Green, 1998</xref>), where <italic>Q</italic> typically ranges between 1 and 60 (with 60 being the lowest probability of error), depending on the sequencing platform and version of base-calling software. It is important to note that this quality score only measures the probability of error from the machine; 1 – ϵ is an estimate of the probability of no sequencing errors and does not account for any other source of error.</p>
+<p id="P25">More formally, the probability that the base call is correct is expressed as: <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M24">
+<mml:mrow>
+<mml:mi>ℙ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext> nucleotide </mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mi>X</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mtext> observed nucleotide </mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mi>X</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>ϵ</mml:mi>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P26">Unfortunately, quality scores have no information on the probabilities of the three other possible nucleotides if the base call is incorrect. In the absence of information about the other bases, we assume that these other probabilities are uniformly distributed.</p>
+<p id="P27">Raw short read data are typically recorded in a FASTQ format that stores both the sequences (base calls) and base-specific quality scores. Since the reads often correspond to different positions of the target nucleic acid, <italic>e.g</italic>., randomly sheared genomic DNA, it is necessary to align the reads to identify base calls on different reads that represent the same genome position. This alignment step can be accomplished by mapping reads to a reference genome, by the <italic>de novo</italic> assembly of reads, or a hybrid approach that incorporates both methods. The aligned outputs are frequently recorded in the tabular Sequence Alignment/Map (SAM) format (<xref ref-type="bibr" rid="R22">Li et al., 2009a</xref>). Each row represents a short read, including the raw nucleotide sequence and quality strings; the optimal placement of the read with respect to the reference sequence (as an integer offset); and the compact idiosyncratic gapped alignment report (CIGAR) string, an application-specific serialization of the edit operations required to align the read to the reference. The SAM format contains much more information (<ext-link ext-link-type="uri" xlink:href="https://samtools.github.io/hts-specs/SAMv1.pdf">https://samtools.github.io/hts-specs/SAMv1.pdf</ext-link>), but for our purposes we only need the placement, sequence, quality, and CIGAR string.</p>
+<p id="P28">We employed the following procedure to construct the nucleotide-level probabilistic sequence from the contents of a SAM file. We initialize aligned sequence and quality strings with ’-’ in all positions before the first read and after the last read, and ‘!’, which corresponds to a quality score of 0 (<italic>Q</italic> = 0), to all other positions. Next, we tokenize the CIGAR string into length-operation tuples, which determine how bases and quality scores from the raw strings are appended to the aligned versions. Deleted bases (‘D’ operations) are not assigned Phred scores, so we assume them to have 0 error probability.</p>
+<p id="P29">Insertions (‘I’ operations) are non-trivial to include in the probabilistic sequence. Consider a short read with two bases inserted at position <italic>j</italic> (say, an <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> at position <italic>j</italic> + 1 and a <monospace>
+<styled-content style-type="color" style="#bf8040">T</styled-content>
+</monospace> at position <italic>j</italic> + 2) and a short read with one insertion at position <italic>j</italic> (say, a <monospace>
+<styled-content style-type="color" style="#bf8040">C</styled-content>
+</monospace>). It is entirely ambiguous whether the single insertion (<monospace>
+<styled-content style-type="color" style="#bf8040">C</styled-content>
+</monospace>) aligns with the first insertion (<monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace>) or the second insertion (<monospace>
+<styled-content style-type="color" style="#bf8040">T</styled-content>
+</monospace>) of the first short read. This is problematic for building up the matrix from reads aligned to the reference sequence. It is conceptually and computationally simpler to start from a populated matrix and sampling insertions. For our purposes, we only consider the alignment of these sequences with a reference sequence and thus do not consider insertions.</p>
+<p id="P30">Some NGS platforms (<italic>e.g</italic>., Illumina) use paired-end reads where the same nucleic acid template is read in both directions. In these situations, we simply adjust all values by a factor of one half. For bases where the paired-end reads overlap, this has the effect of averaging the base probability 1 – ϵ. For example, if 1 – ϵ is 90% for <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> in one read and 95% <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> in its mate, then 0.925 is added to the <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> row in <inline-formula>
+<mml:math id="M25">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> (with the remaining 0.075 uniformly distributed across the other nucleotides). If the two reads were 60% <monospace>
+<styled-content style-type="color" style="#">A</styled-content>
+</monospace> and 55% <monospace>
+<styled-content style-type="color" style="#">C</styled-content>
+</monospace> at the same position, then we would increment the corresponding column vector (<monospace>
+<styled-content style-type="color" style="#bf8040">A, T, C, G</styled-content>
+</monospace>) by (0.6/2,0.1/2,0.1/2,0.1/2) for the first read and (0.15/2, 0.15/2, 0.55/2,0.15/2) for the second, resulting in an addition of (0.375, 0.125, 0.325, 0.125) for this pair. Bases outside of the overlapping region contribute a maximum of 0.5 to <inline-formula>
+<mml:math id="M26">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>ʹ</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>, because the base call on the other read is missing data. This approach has the advantage of making the parsing of SAM files trivially parallelizable since we do not need to know how reads are paired. In addition, the coverage calculated from <inline-formula>
+<mml:math id="M27">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>ʹ</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> is scaled to the number of templates rather than the number of reads.</p>
+</sec>
+<sec id="S9">
+<label>2.2.2</label>
+<title>Consensus sequence FASTQ files</title>
+<p id="P31">Full length or partial genome sequences are now frequently the product of next-generation sequencing, by taking the consensus of the aligned or assembled read data. However, the original read data are often not published alongside the consensus sequence. Some consensus sequences are released in a format where the bases are annotated with quality scores, <italic>e.g</italic>., FASTQ. There are several programs that provide methods to convert a SAM file into a consensus FASTQ file (<xref ref-type="bibr" rid="R24">Li et al., 2004</xref>; <xref ref-type="bibr" rid="R18">Keith et al., 2002</xref>; <xref ref-type="bibr" rid="R23">Li et al., 2008</xref>). These programs use slightly different methods for generating consensus quality scores, but filter quality scores for the majority base. For example, suppose there are three reads with the following base calls at position <italic>j</italic>: <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> with <italic>Q</italic> = 30, <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> with <italic>Q</italic> = 31, and <monospace>
+<styled-content style-type="color" style="#bf8040">C</styled-content>
+</monospace> with <italic>Q</italic> = 15. Calculation of the consensus quality score will thereby exclude the <italic>Q</italic> = 15 value and report a quality score calculated from <italic>Q</italic> = 30 and <italic>Q</italic> = 31, with the details of the calculation differing by software.</p>
+<p id="P32">This omission makes it challenging for us to generate an <inline-formula>
+<mml:math id="M28">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula> matrix from a consensus FASTQ file. Given the consensus base and its associated quality score at position <italic>j</italic>, we must assume that the other bases are all equally likely with probability <italic>ϵ<sub>j</sub>
+</italic>/3 (similar to <xref ref-type="bibr" rid="R21">Kuo et al. (2018)</xref> and Chapter 5 of <xref ref-type="bibr" rid="R19">Kozlov (2018)</xref>). For example, let’s assume the output sequence after fragment sequencing and alignment is <monospace>
+<styled-content style-type="color" style="#bf8040">ACATG</styled-content>
+</monospace> and its associated quality scores are respectively <italic>Q</italic> = (60, 30, 50,10, 40). The probabilistic sequence is: <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M29">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">A</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">C</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">G</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi mathvariant="normal">T</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>−</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>2</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>3</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>4</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>5</mml:mn>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>6</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>5</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>4</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>6</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>5</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>4</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>6</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>5</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>4</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>6</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>5</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mn>10</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>4</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P33">Usually, the genetic sequence <monospace>
+<styled-content style-type="color" style="#bf8040">ACATG</styled-content>
+</monospace> would be considered as certain and quality scores discarded. In contrast, the probability of the sequence <monospace>
+<styled-content style-type="color" style="#bf8040">ACATG</styled-content>
+</monospace> is only 0.899 within the probabilistic sequence framework.</p>
+<p id="P34">Incorporating deletions in the absence of raw data is also challenging. If one is willing to assume a global deletion rate, then it is possible to extend the parameterization of <inline-formula>
+<mml:math id="M30">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula>. For example, if the probability of a single nucleotide deletion is d, then the probability of the called base is (1 – <italic>d<sub>j</sub>
+</italic>) (1 – <italic>ε<sub>j</sub>
+</italic>) and the other three nucleotides have probability (1 – <italic>d</italic>)<italic>ϵ<sub>j</sub>
+</italic>/3. Hence, if we assume the base call is <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace>, the column of the nucleotide-level probabilistic sequence for that position is <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M31">
+<mml:mrow>
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>A</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>C</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>G</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mi>T</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mo>−</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left" equalrows="true" equalcolumns="true">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mi>j</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>d</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>ε</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>d</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>d</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>d</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mi>d</mml:mi>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="center">
+<mml:mrow/>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P35">Since the FASTQ file only has a single sequence, we do have the same issues with alignment of differing lengths of insertions. In fact, insertions are only insertions relative to the reference sequence; they can simply be treated as observed nucleotides with an associated quality score. It would be possible to give insertions special treatment, however, by defining a global insertion rate. This insertion rate can be expressed as a deletion rate relative to the observed sequence, and thus one minus the insertion rate can be treated as the deletion rate in the probabilistic sequence. As with the deletion rate, this requires an assumption about a global rate which may be arbitrary.</p>
+</sec>
+<sec id="S10">
+<label>2.2.3</label>
+<title>Consensus sequence FASTA files</title>
+<p id="P36">If we do not have access to any base quality information, <italic>e.g</italic>., the consensus sequence is published as a FASTA file, then our ability to populate <inline-formula>
+<mml:math id="M32">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula> is severely limited. Any uncertainty that we impose upon the data will be a principled assumption. The error probability at the <italic>j</italic> position of the consensus sequence can be simulated as a beta distribution, <italic>i.e</italic>., <disp-formula id="FD11">
+<mml:math id="M33">
+<mml:mrow>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>∼</mml:mo>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>α</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>β</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P37">The called base at position <italic>j</italic> has probability 1 – <italic>ϵ<sub>j</sub>
+</italic>, and the remaining bases are assigned <italic>ε<sub>j</sub>
+</italic>/3. To incorporate deletions, another probability d can be generated as the <italic>gap probability</italic>. With these defined, the nucleotide-level probabilistic sequence at the <italic>j</italic>th column (assuming the base call at position <italic>j</italic> was <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace>) can be written as above. This probabilistic sequence is completely fabricated, <italic>i.e</italic>., not based on any empirical data. However, the sensitivity of an analysis can be evaluated by choosing different values of <italic>α</italic>, <italic>β</italic>, and <italic>d</italic> (<italic>e.g</italic>., based on previous studies) and propagating these uncertainties into downstream analyses. The results from such an analysis would not indicate anything about the sequence itself but could be used to determine how robust the methods are to increased sequence uncertainty.</p>
+</sec>
+</sec>
+<sec id="S11">
+<label>2.3</label>
+<title>Propagation of uncertainty via resampling</title>
+<p id="P38">The most general way to propagate uncertainty is through resampling. Given <inline-formula>
+<mml:math id="M34">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula> and assuming that individual nucleotides are independent outcomes — or pre-computing a reduced set of <italic>m</italic> sequences and calculating the distribution <italic>a</italic> of their joint probabilities, <italic>i.e</italic>., the sequence-level approach — we can propagate uncertainty by running downstream analyses on each set of sampled sequences.</p>
+<p id="P39">At a nucleotide level, we are sampling from a multinomial distribution. If the <italic>j</italic>th column of <inline-formula>
+<mml:math id="M35">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula> is (0.5, 0.2, 0.2, 0.09, 0.01), then we could sample <monospace>
+<styled-content style-type="color" style="#bf8040">A</styled-content>
+</monospace> with 50% probability, <monospace>
+<styled-content style-type="color" style="#bf8040">C</styled-content>
+</monospace> with 20%, etc. As with other sequence analyses, we can censor the positions that do not have enough coverage. We arbitrarily chose to censor any position that had fewer than 10 reads, which can be determined by summing the column of the probabilistic sequence.</p>
+<p id="P40">In a maximum likelihood framework, this procedure is similar to bootstrapping. In fact, the ultimate effect of this is to decrease the bootstrap confidence to a level that is more in line with the measured uncertainty in the base calls.</p>
+<p id="P41">In a Bayesian framework, the multinomial sampling could be incorporated as prior distribution on each nucleotide. For large collections of large sequences in an Markov Chain Monte Carlo algorithm, this increases the dimensionality dramatically.</p>
+</sec>
+<sec id="S12">
+<label>2.4</label>
+<title>Implementation</title>
+<p id="P42">A C program has been written to convert SAM files into our matrix representation. The program assumes that the reads are aligned to a reference, then uses that reference to initiate the matrix. Because of our methods for handling paired reads, the program is able to stream the file line-by-line in a parallel computing environment.</p>
+<p id="P43">The resampling algorithm defined above has been implemented in the R programming language. A shell script is used to repeatedly call the necessary R functions and apply the resampling algorithm to all outputs of the C program until the desired number of samples is obtained. All of the code for this project is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/Poonlab/SUP">https://github.com/Poonlab/SUP</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S13">
+<label>3</label>
+<title>Applications</title>
+<sec id="S14">
+<label>3.1</label>
+<title>SARS-CoV-2 lineage assignment</title>
+<p id="P44">In this section, we apply the re-sampling method to evaluate the impact of sequencing error on the lineage assignments of SARS-CoV-2. Sequences are sampled from <inline-formula>
+<mml:math id="M36">
+<mml:mi mathvariant="script">S</mml:mi>
+</mml:math>
+</inline-formula> and then assigned a lineage based on the current state-of-the-art in phylogenetic analysis.</p>
+<p id="P45">We use the lineage designation algorithm described in <xref ref-type="bibr" rid="R29">Rambaut et al. (2020)</xref> and assign our sequences to lineages using the pangoLEARN tool (Pangolin version 2.3.2, pangoLEARN version 2021-02-21) that the authors have made available (<ext-link ext-link-type="uri" xlink:href="https://github.com/cov-lineages/Pangolin">github.com/cov-lineages/Pangolin</ext-link>). This tool uses a decision tree model to determine which lineage a given sequence is most likely to belong to. We demonstrate that even the best available tools are underestimating the variance and therefore producing overconfident conclusions.</p>
+<sec id="S15">
+<label>3.1.1</label>
+<title>Data</title>
+<p id="P46">The data for this application were downloaded from NCBI’s SRA web interface (<ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/sra/?term=txid2697049">https://www.ncbi.nlm.nih.gov/sra/?term=txid2697049</ext-link>) on July 17th, 2021. Search results were filtered to only include records that had SAM files so that our alignments were consistent with the originating work. To select which runs to download, an arbitrary selection of 5-10 records from each of 20 non-sequential results pages were chosen. Once collecting the run accession numbers from the search results, an R script was run to download the relevant files and check that all information was complete. 23 out of 275 files were incomplete due to technical errors during the download process and a further 4 were rejected due to lack of CIGAR strings. The SRA accession numbers for the sequences we used are provided in the Appendix.</p>
+</sec>
+<sec id="S16">
+<label>3.1.2</label>
+<title>Re-sampling the probabilistic sequence</title>
+<p id="P47">Since pangoLEARN is a pre-trained model, assigning lineage designations to a large number of resampled genome sequences is not computationally burdensome. Sampling 5,000 different sequences from a probabilistic sequence can be done in a reasonable amount of time, even on a mid-range consumer laptop.</p>
+<p id="P48">For this analysis we use the most basic resampling strategy described above. We sample base calls from the multinomial distribution then use pangoLEARN to determine the lineage assignment.</p>
+<p id="P49">
+<xref ref-type="fig" rid="F1">Figure 1</xref> shows that the consensus sequence is almost always assigned to the same lineage as the majority of the resamples; the full results are in the <xref ref-type="supplementary-material" rid="SD1">Appendix</xref>. The proportion of resamples with the same lineage as the consensus sequence is very rarely 100% and can be as low as 32.86% (accession number ERR4440425). There were 52 cases where the proportion agreeing with the consensus sequence was either exactly 0 or less than 1%, and these cases occurred when the most common lineage sampled was labelled or ”None” (sequences are labelled ”None” when pangolin’s classification does not reach a confidence threshold). It is noteworthy that the only times where 100% of resampled sequences agreed are when the lineage call was “None” (13 cases) or for the lineage labelled B.1.1.7 (16 cases). This lineage represents 6% of our data and is a significantly more infectious lineage that is of special concern to health authorities (<xref ref-type="bibr" rid="R39">Wise, 2020</xref>; <xref ref-type="bibr" rid="R10">European Centre for Disease Prevention and Control, 2021</xref>).</p>
+</sec>
+</sec>
+<sec id="S17">
+<label>3.2</label>
+<title>Clock rate estimation for SARS-CoV-2</title>
+<p id="P50">The molecular clock rate (the number of mutations per site per unit of time) of a phylogenetic tree is found by considering both the number of mutations for each observed sequence relative to the root of the tree and the sample dates of those sequences. Assuming heterochronous sampling dates, the rate of mutations can be estimated by regressing the number of mutations against the sampling date. In the simplest case the clock rate is the slope estimate from a linear regression, which assumes a fixed clock rate. Polynomial and non-linear clock rates can be estimated (<xref ref-type="bibr" rid="R33">Sagulenko et al., 2018</xref>), as well as Bayesian non-parametric estimates (<xref ref-type="bibr" rid="R8">Drummond and Bouckaert, 2015</xref>).</p>
+<p id="P51">The clock rate (slope of a root-to-tip regression) for SARS-CoV-2 is commonly estimated as a fixed rate near 0.001 mutations per site per year (<xref ref-type="bibr" rid="R9">Duchene et al., 2020</xref>; <xref ref-type="bibr" rid="R3">Choudhary et al., 2021</xref>; <xref ref-type="bibr" rid="R37">Song et al., 2021</xref>; <xref ref-type="bibr" rid="R27">Nie et al., 2020</xref>; <xref ref-type="bibr" rid="R14">Geidelberg et al., 2021</xref>). Using the same resampling methods as above, we estimate a clock rate for trees estimated from each of 50 resamples and for the tree estimated based on the reported consensus sequences.</p>
+<p id="P52">To obtain the data, we sampled genomes uniformly from each month of recorded data in GenBank, using filters to ensure that the genomes were complete and had an associated SAM file. We further had to filter out SAM files that were incomplete or did not contain the CIGAR strings necessary for alignment, leaving us with 244 sequences. The associated SRA accession numbers are provided in the <xref ref-type="supplementary-material" rid="SD1">Appendix</xref>.</p>
+<p id="P53">Our re-sampling method will, by definition, introduce other possible mutations beyond what the consensus sequence suggests. Because of this, the apparent number of mutations between a re-sampled genome and the estimated root is a function of the coverage, with more positions read or more uncertainty in the sequence leading to artificially inflated terminal branch lengths. Furthermore, we are sampling nucleotides at each position independently of other positions as well as independently of ancestral sequences. This implies that the estimates of the time for the most recent common ancestor are not reliable. However, assuming that the sequences have comparable levels of uncertainty, each branch increases by a similar amount and the clock rate should not be affected, only the intercept.</p>
+<p id="P54">The sequences that we acquired did not have comparable levels of uncertainty; the viruses sampled early in the pandemic had considerably higher uncertainty, most likely due to a lack of consistent laboratory guidelines for sequencing this new virus. To account for this, we calculated the sum of <inline-formula>
+<mml:math id="M37">
+<mml:mi mathvariant="script">S</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:math>
+</inline-formula> for each sequence and applied Statistical Process Control techniques to ensure that all of the sequences had a similar level of coverage. In particular, we calculated the mean coverage of the sequences in our data set, <inline-formula>
+<mml:math id="M38">
+<mml:mover accent="true">
+<mml:mi>c</mml:mi>
+<mml:mo stretchy="false">¯</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>, and the standard deviation of the coverage, <italic>s</italic>. We removed any sequences outside of <inline-formula>
+<mml:math id="M39">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>c</mml:mi>
+<mml:mo stretchy="false">¯</mml:mo>
+</mml:mover>
+<mml:mo>±</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mi>s</mml:mi>
+</mml:mrow>
+</mml:math>
+</inline-formula>, recalculated <inline-formula>
+<mml:math id="M40">
+<mml:mover accent="true">
+<mml:mi>c</mml:mi>
+<mml:mo stretchy="false">¯</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> and <italic>s</italic>, and iterated the removal process until all sequence coverages were within the bounds, amounting to 20 removed sequences.</p>
+<p id="P55">The clock rate was estimated using TreeTime (<xref ref-type="bibr" rid="R33">Sagulenko et al., 2018</xref>). We recorded the clock rate and standard error from the time tree constructed using the consensus sequences and compared this to the clock rate and standard deviations of the estimated clock rates in the resampled sequences. The tree built from consensus sequences had a clock rate of 6.5 × 10<sup>-4</sup> with a standard error of 8.01 × 10<sup>-5</sup>. The mean of the clockClock rate estimates from collections of re-sampled genomes Compared to conseqs (red) and published estimates (purple) rates for all of the sets of resampled sequences was 8.6 × 10<sup>-4</sup> with standard deviation of 5.3 × 10<sup>-4</sup>, which is approximately 1.6 times as large as the standard error for the consensus sequences.</p>
+<p id="P56">The estimates of the clock rate are shown in <xref ref-type="fig" rid="F3">Figure 3</xref>. The red line and shaded region are the clock rate for the tree built from consensus sequences along with ±1.96 standard errors. Rate estimates from <xref ref-type="bibr" rid="R9">Duchene et al. (2020)</xref> (n=122), <xref ref-type="bibr" rid="R3">Choudhary et al. (2021)</xref> (n=261), <xref ref-type="bibr" rid="R37">Song et al. (2021)</xref> (n=29), <xref ref-type="bibr" rid="R27">Nie et al. (2020)</xref> (n=112), and <xref ref-type="bibr" rid="R14">Geidelberg et al. (2021)</xref> (n=77) are also labelled on the plot with purple error bars for 95% Bayesian Credible Intervals (BCI) or 95% Highest Posterior Density (HPD), indicating that the rates and errors from each root-to-tip regression are in line with other published results. <xref ref-type="fig" rid="F3">Figure 3</xref> demonstrates that the estimated evolutionary rates have an average close to the rate estimated from our tree estimated from consensus sequences as well as the rates from other studies, but each of the individual error bars (from the five studies identified above) miss the excess variation due to sequence uncertainty.</p>
+</sec>
+</sec>
+<sec id="S18" sec-type="conclusions">
+<label>4</label>
+<title>Conclusions</title>
+<p id="P57">The files produced by NGS platforms include valuable information about the quality of base calls which should be propagated into analyses. In this study, we have demonstrated that these errors in base calling can lead to different conclusions when determining a lineage via Pangolin and that the variance in clock rate estimates is larger than previously shown due to these errors. Both of these situations could lead to incorrect conclusions, such as missing a variant of interest or making overconfident conclusions about the date of the first case of COVID-19. The potential for errors in base calls should always be taken into account when making decisions based on genetic sequencing data.</p>
+<p id="P58">Our analysis of Pangolin lineage classification demonstrates that the uncertainty in the base calls has a non-trivial effect on the potential lineage calls. The reported lineage classifications are based on a sophisticated classification algorithm which has high confidence in the predicted category, but this assumes that the input sequence is known without error. We are not aware of any classification system that incorporates per-base error, so we suggest that interpretations of the output of any classification system be interpreted with reference to the uncertainty in their sequence.</p>
+<p id="P59">Our clock rate estimation suggest that the confidence/credible intervals for the published clock rates are underestimated. As with lineage classification, we are not aware of any clock rate estimation procedures that incorporate the uncertainty in the base calls of the sequences. Researchers should be conscious of this potential source of currently unacknowledged error when reporting any results from sequenced genomes.</p>
+</sec>
+<sec id="S19" sec-type="discussion">
+<label>5</label>
+<title>Discussion</title>
+<p id="P60">The primary contribution of this research is the construction of the probability sequence, which allows for a wide variety of future research directions. The direction we described here is focused on re-sampling, which allows a more complete appraisal of the variance in the estimates (or provides a reasonable prior distribution in a Bayesian setting), while comparing results for the most likely sequences provide a measure of robustness to sequence uncertainty.</p>
+<p id="P61">In the absence of SAM files, FASTQ files for the consensus sequence also offer quantification of the potential sequence read errors. We have already shown that probability sequences can be trivially constructed by spreading the remaining error probability uniformly across the remaining bases. Another use of FASTQ files would be to construct a probability sequence as a reference genome for a given category. This would entail collecting all available FASTQ files for a given lineage designation and using them in the construction of a probability sequence as if they were short reads in a SAM file. From here, lineage designation for a newly acquired sequence (and its probability sequence) could be performed via a hypothesis test for whether the probability sequences are sufficiently similar.</p>
+<p id="P62">Our proposed methods can result in a linear increase in computational expense. Even the method based on ordering the sequences by likelihood inevitably requires re-running the analysis numerous times. However, we have demonstrated that the uncertainty in the sequences themselves can lead to major changes to the interpretations of the results. The so-called ”consensus sequence” is simply the most likely sequence, and the reported uncertainty is not merely an academic curiosity. Ideally individual analyses would be constructed to take nucleotide-level uncertainty into account. For instance, phylogenies have been estimated based on uncertain sequence information in <xref ref-type="bibr" rid="R32">Ross and Markowetz (2016)</xref>; <xref ref-type="bibr" rid="R17">Jahn et al. (2016)</xref>; <xref ref-type="bibr" rid="R41">Zafar et al. (2017)</xref> but the uncertainty is not derived from base quality scores. An extension of these methods to incorporate the base quality scores may be a worthwhile research direction.</p>
+<p id="P63">Computational burden can also be reduced by sorting the sequences in decreasing uncertainty. By doing so, we can analyse how the increases in uncertainty affect our analysis. It is possible to devise an algorithm that puts the sequences in order of their uncertainty without calculating the uncertainty for every sequence. The consensus sequence is clearly the least uncertain sequence, and by the construction of the probability sequence, it is computationally easy to calculate sequence uncertainty relative to this sequence. Because of this, it should be reasonable to calculate all sequence uncertainties for a single mutation, then all pairs of mutations, and so on (we note that it is possible for some pairs of mutations to be more likely than single mutations, thus this algorithm cannot readily calculate the <italic>n</italic> most likely sequences). This allows for easy sorting of the most likely sequences, assuming enough sequence uncertainties have been calculated. With this sorted list, we can examine each sequence in increasing uncertainty in order to approximate the distribution of sequence uncertainties. Any model that uses sequence data could be re-fit with each sequence to investigate the robustness of that model to sequence uncertainty.</p>
+<p id="P64">Our analysis focused on lineage classification according to the Pangolin model as well as estimation of the clock rate. The importance of incorporating sequence uncertainty is not confined to these applications; any analysis involving sequenced genomes would benefit from some method of incorporating the uncertainty or including some measure of robustness. For example, the estimated frequency of alleles in the population could be used as the probability sequence, then propagated into further analysis.</p>
+<p id="P65">Our method does not preclude tertiary analyses to test for systematic errors. For instance, <xref ref-type="bibr" rid="R5">De Maio et al. (2020)</xref> suggest that some errors arise due to issues in the sequencing protocol in particular laboratories. Our method allows for adjustments of the base call quality score, such as in <xref ref-type="bibr" rid="R2">Brockman et al. (2008)</xref>, correcting for laboratory-specific errors, as well as more sophisticated definitions of genome likelihoods (<italic>e.g</italic>., <xref ref-type="bibr" rid="R24">Li et al., 2004</xref>; <xref ref-type="bibr" rid="R6">DePristo et al., 2011</xref>; <xref ref-type="bibr" rid="R25">Li et al., 2009b</xref>).</p>
+<p id="P66">We have evaluated an algorithm to include insertion events in a re-sampling scheme, but many of the resultant sequences were not mappable to known sequences. The Pangolin lineage assignment system appears to treat insertions differently from single nucleotide polymorphisms, and our method of sampling insertions is incompatible with their treatment of insertions in lineage assignment operations. This is potentially because the sampled base pair at any given position is independent of each other position, and the insertions observed in real-world data are possibly always associated with particular mutations else-where. However, insertions in the SARS-CoV-2 genome have been relatively rare.</p>
+<p id="P67">This study should not be taken in any way as a criticism of the Pangolin lineage assignment procedure. Rather, Pangolin was chosen as it is the state-of-the art tool for lineage classification. The phylogeny created by this team has been a vital resource for researchers and for public health professionals. In particular, the PANGO label for the current Variants of Concern (VOCs), especially B.1.1.7, are the labels being used worldwide by news organizations. The output from Pangolin and many other bioinformatics tools are usually interpreted as <italic>deterministic</italic> results. This study is an argument that inherent uncertainty in sequencing warrants propagation into downstream analyses.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Appendix</label>
+<media xlink:href="EMS141057-supplement-Appendix.pdf" mimetype="application" mime-subtype="pdf" id="N68697" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Beerenwinkel</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zagordi</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<article-title>Ultra-deep sequencing for the analysis of viral populations</article-title>
+<source>Current Opinion in Virology</source>
+<year>2011</year>
+<volume>1</volume>
+<issue>5</issue>
+<fpage>413</fpage>
+<lpage>418</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brockman</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Alvarez</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Young</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Garber</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Giannoukos</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>WL</given-names>
+</name>
+<name>
+<surname>Russ</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lander</surname>
+<given-names>ES</given-names>
+</name>
+<name>
+<surname>Nusbaum</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jaffe</surname>
+<given-names>DB</given-names>
+</name>
+</person-group>
+<article-title>Quality scores and SNP detection in sequencing-by-synthesis systems</article-title>
+<source>Genome Research</source>
+<year>2008</year>
+<volume>18</volume>
+<issue>5</issue>
+<fpage>763</fpage>
+<lpage>770</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choudhary</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Crain</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Qiu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hanage</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>JZ</given-names>
+</name>
+</person-group>
+<article-title>Severe Acute Respiratory Syndrome Coronavirus 2 (SARS-CoV-2) Sequence Characteristics of Coronavirus Disease 2019 (COVID-19) Persistence and Reinfection</article-title>
+<source>Clinical Infectious Diseases</source>
+<year>2021</year>
+<elocation-id>ciab380</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clement</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Snell</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Clement</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Hollenhorst</surname>
+<given-names>PC</given-names>
+</name>
+<name>
+<surname>Purwar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Graves</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Cairns</surname>
+<given-names>BR</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>WE</given-names>
+</name>
+</person-group>
+<article-title>The GNUMAP algorithm: Unbiased prob-abilistic mapping of oligonucleotides from next-generation sequencing</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<issue>1</issue>
+<fpage>38</fpage>
+<lpage>45</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>De Maio</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Borges</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Weilguny</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Slodkowicz</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Goldman</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>Issues with SARS-CoV-2 sequencing data</source>
+<year>2020</year>
+<date-in-citation>Accessed 2021-11-24</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://virological.org/t/issues-with-sars-cov-2-sequencing-data/473">https://virological.org/t/issues-with-sars-cov-2-sequencing-data/473</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DePristo</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Banks</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Poplin</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Garimella</surname>
+<given-names>KV</given-names>
+</name>
+<name>
+<surname>Maguire</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Hartl</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Philippakis</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>del Angel</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Rivas</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Hanna</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>McKenna</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A framework for variation discovery and genotyping using next-generation DNA sequencing data</article-title>
+<source>Nature Genetics</source>
+<year>2011</year>
+<volume>43</volume>
+<issue>5</issue>
+<fpage>491</fpage>
+<lpage>498</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Doronina</surname>
+<given-names>NV</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic position and emended description of the genus Methylovorus</article-title>
+<source>INTERNATIONAL JOURNAL OF SYSTEMATIC AND EVOLU-TIONARY MICROBIOLOGY</source>
+<year>2005</year>
+<volume>55</volume>
+<issue>2</issue>
+<fpage>903</fpage>
+<lpage>906</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Bouckaert</surname>
+<given-names>RR</given-names>
+</name>
+</person-group>
+<source>Bayesian Evolutionary Analysis with BEAST</source>
+<publisher-name>Cambridge University Press</publisher-name>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Duchene</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Featherstone</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Haritopoulou-Sinanidou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Baele</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Temporal signal and the phylodynamic threshold of SARS-CoV-2</article-title>
+<source>Virus Evolution</source>
+<year>2020</year>
+<volume>6</volume>
+<issue>2</issue>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="web">
+<collab>European Centre for Disease Prevention and Control</collab>
+<source>SARS-CoV-2 variants of concern as of 26 November 2021</source>
+<year>2021</year>
+<date-in-citation>Accessed 2021-11-26</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://www.ecdc.europa.eu/en/covid-19/variants-concern">https://www.ecdc.europa.eu/en/covid-19/variants-concern</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ewing</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Green</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Base-Calling of Automated Sequencer Traces Using Phred. II. Error Probabilities</article-title>
+<source>Genome Research</source>
+<year>1998</year>
+<volume>8</volume>
+<issue>3</issue>
+<fpage>186</fpage>
+<lpage>194</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fuller</surname>
+<given-names>CW</given-names>
+</name>
+<name>
+<surname>Middendorf</surname>
+<given-names>LR</given-names>
+</name>
+<name>
+<surname>Benner</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Church</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Harris</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Jovanovich</surname>
+<given-names>SB</given-names>
+</name>
+<name>
+<surname>Nelson</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Schloss</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Schwartz</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Vezenov</surname>
+<given-names>DV</given-names>
+</name>
+</person-group>
+<article-title>The challenges of sequencing by synthesis</article-title>
+<source>Nature Biotechnology</source>
+<year>2009</year>
+<volume>27</volume>
+<issue>11</issue>
+<fpage>1013</fpage>
+<lpage>1023</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fumagalli</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vieira</surname>
+<given-names>FG</given-names>
+</name>
+<name>
+<surname>Korneliussen</surname>
+<given-names>TS</given-names>
+</name>
+<name>
+<surname>Linderoth</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Huerta-Sánchez</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Albrechtsen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Quantifying Population Genetic Differentiation from Next-Generation Sequencing Data</article-title>
+<source>Genetics</source>
+<year>2013</year>
+<volume>195</volume>
+<issue>3</issue>
+<fpage>979</fpage>
+<lpage>992</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Geidelberg</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Boyd</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Jorgensen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Siveroni</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Nascimento</surname>
+<given-names>FF</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ragonnet-Cronin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Fu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Xi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology of a densely sampled COVID-19 outbreak in China</article-title>
+<source>Virus Evolution</source>
+<year>2021</year>
+<volume>7</volume>
+<issue>1</issue>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gompert</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Buerkle</surname>
+<given-names>CA</given-names>
+</name>
+</person-group>
+<article-title>A Hierarchical Bayesian Model for Next-Generation Population Genomics</article-title>
+<source>Genetics</source>
+<year>2011</year>
+<volume>187</volume>
+<issue>3</issue>
+<fpage>903</fpage>
+<lpage>917</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goodwin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>McPherson</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>McCombie</surname>
+<given-names>WR</given-names>
+</name>
+</person-group>
+<article-title>Coming of age: Ten years of next-generation sequencing technologies</article-title>
+<source>Nature Reviews Genetics</source>
+<year>2016</year>
+<volume>17</volume>
+<issue>6</issue>
+<fpage>333</fpage>
+<lpage>351</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jahn</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kuipers</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Beerenwinkel</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Tree inference for single-cell data</article-title>
+<source>Genome Biology</source>
+<year>2016</year>
+<volume>17</volume>
+<issue>1</issue>
+<fpage>86</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Keith</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bryant</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kroese</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Mitchelson</surname>
+<given-names>KR</given-names>
+</name>
+<name>
+<surname>Coachran</surname>
+<given-names>DAE</given-names>
+</name>
+<name>
+<surname>Lala</surname>
+<given-names>GH</given-names>
+</name>
+</person-group>
+<article-title>A simulated annealing algorithm for finding consensus sequences</article-title>
+<source>Bioinformatics</source>
+<year>2002</year>
+<volume>18</volume>
+<issue>11</issue>
+<fpage>1494</fpage>
+<lpage>1499</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kozlov</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<article-title>Models, Optimizations, and Tools for Large-Scale Phylogenetic Infer-ence, Handling Sequence Uncertainty, and Taxonomic Validation</article-title>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuhner</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>McGill</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Correcting for Sequencing Error in Maximum Likelihood Phylogeny Inference</article-title>
+<source>G3 Genes—Genomes—Genetics</source>
+<year>2014</year>
+<volume>4</volume>
+<issue>12</issue>
+<fpage>2545</fpage>
+<lpage>2552</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuo</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Frith</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Sese</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Horton</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>EAGLE: Explicit AlternativeGenome Likelihood Evaluator</article-title>
+<source>BMC Medical Genomics</source>
+<year>2018</year>
+<volume>11</volume>
+<issue>2</issue>
+<fpage>28</fpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Handsaker</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wysoker</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Fennell</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ruan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Homer</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Marth</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Abeca-sis</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>The Sequence Alignment/Map format and SAMtools</article-title>
+<source>Bioinformatics</source>
+<year>2009a</year>
+<volume>25</volume>
+<issue>16</issue>
+<fpage>2078</fpage>
+<lpage>2079</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ruan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Mapping short DNA sequencing reads and calling variants using mapping quality scores</article-title>
+<source>Genome Research</source>
+<year>2008</year>
+<volume>18</volume>
+<issue>11</issue>
+<fpage>1851</fpage>
+<lpage>1858</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Nordborg</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>LM</given-names>
+</name>
+</person-group>
+<article-title>Adjust quality scores from alignment and improve sequencing accuracy</article-title>
+<source>Nucleic Acids Research</source>
+<year>2004</year>
+<volume>32</volume>
+<issue>17</issue>
+<fpage>5183</fpage>
+<lpage>5191</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kristiansen</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>SNP detection for massively parallel whole-genome resequencing</article-title>
+<source>Genome Research</source>
+<year>2009b</year>
+<volume>19</volume>
+<issue>6</issue>
+<fpage>1124</fpage>
+<lpage>1132</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<collab>NC-IUB</collab>
+<article-title>Nomenclature for incompletely specified bases in nucleic acid sequences. Recommendations 1984. Nomenclature Committee of the International Union of Bio-chemistry (NC-IUB)</article-title>
+<source>Proceedings of the National Academy of Sciences of the United States of America</source>
+<year>1986</year>
+<volume>83</volume>
+<issue>1</issue>
+<fpage>4</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nie</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Tian</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zai</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic and phylodynamic analyses of SARS-CoV-2</article-title>
+<source>Virus Research</source>
+<year>2020</year>
+<volume>287</volume>
+<elocation-id>198098</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O’Rawe</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Ferson</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lyon</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>Accounting for uncertainty in DNA sequencing data</article-title>
+<source>Trends in Genetics</source>
+<year>2015</year>
+<volume>31</volume>
+<issue>2</issue>
+<fpage>61</fpage>
+<lpage>66</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McCrone</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Ruis</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>du Plessis</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Pybus</surname>
+<given-names>OG</given-names>
+</name>
+</person-group>
+<article-title>A dynamic nomenclature proposal for SARS-CoV-2 lineages to assist genomic epidemiology</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Richterich</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Estimation of Errors in “Raw” DNA Sequences: A Validation Study</article-title>
+<source>Genome Research</source>
+<year>1998</year>
+<volume>8</volume>
+<issue>3</issue>
+<fpage>251</fpage>
+<lpage>259</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robasky</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Lewis</surname>
+<given-names>NE</given-names>
+</name>
+<name>
+<surname>Church</surname>
+<given-names>GM</given-names>
+</name>
+</person-group>
+<article-title>The role of replicates for error mitigation in next-generation sequencing</article-title>
+<source>Nature Reviews Genetics</source>
+<year>2014</year>
+<volume>15</volume>
+<issue>1</issue>
+<fpage>56</fpage>
+<lpage>62</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ross</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Markowetz</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>OncoNEM: Inferring tumor evolution from single-cell sequencing data</article-title>
+<source>Genome Biology</source>
+<year>2016</year>
+<volume>17</volume>
+<issue>1</issue>
+<fpage>69</fpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sagulenko</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Puller</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Neher</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>TreeTime: Maximum-likelihood phylodynamic analysis</article-title>
+<source>Virus Evolution</source>
+<year>2018</year>
+<volume>4</volume>
+<issue>1</issue>
+<elocation-id>vex042</elocation-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Salk</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Schmitt</surname>
+<given-names>MW</given-names>
+</name>
+<name>
+<surname>Loeb</surname>
+<given-names>LA</given-names>
+</name>
+</person-group>
+<article-title>Enhancing the accuracy of next-generation sequencing for detecting rare and subclonal mutations</article-title>
+<source>Nature reviews Genetics</source>
+<year>2018</year>
+<volume>19</volume>
+<issue>5</issue>
+<fpage>269</fpage>
+<lpage>285</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schneider</surname>
+<given-names>TD</given-names>
+</name>
+</person-group>
+<article-title>Consensus Sequence Zen</article-title>
+<source>Applied bioinformatics</source>
+<year>2002</year>
+<volume>1</volume>
+<issue>3</issue>
+<fpage>111</fpage>
+<lpage>119</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schneider</surname>
+<given-names>TD</given-names>
+</name>
+<name>
+<surname>Stephens</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Sequence logos: A new way to display consensus sequences</article-title>
+<source>Nucleic Acids Research</source>
+<year>1990</year>
+<volume>18</volume>
+<issue>20</issue>
+<fpage>6097</fpage>
+<lpage>6100</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>G-L</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>Q-L</given-names>
+</name>
+</person-group>
+<article-title>Genomic Epidemiology of SARS-CoV-2 From Mainland China With Newly Obtained Genomes From Henan Province</article-title>
+<source>Frontiers in Microbiology</source>
+<year>2021</year>
+<volume>12</volume>
+<elocation-id>673855</elocation-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stormo</surname>
+<given-names>GD</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>TD</given-names>
+</name>
+<name>
+<surname>Gold</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Ehrenfeucht</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Use of the ‘perceptron’ algorithm to distinguish translational initiation sites in E. coli</article-title>
+<source>Nucleic Acids Research</source>
+<year>1982</year>
+<volume>10</volume>
+<issue>9</issue>
+<fpage>16</fpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wise</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: New coronavirus variant is identified in uk</article-title>
+<source>BMJ</source>
+<year>2020</year>
+<fpage>371</fpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Schwartz</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Winter</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Conrad</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Cartwright</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Estimating error models for whole genome sequencing using mixtures of Dirichlet-multinomial distributions</article-title>
+<source>Bioinformatics</source>
+<year>2017</year>
+<volume>33</volume>
+<issue>15</issue>
+<fpage>2322</fpage>
+<lpage>2329</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zafar</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tzen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Navin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Nakhleh</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>SiFit: Inferring tumor trees from single-cell sequencing data under finite-sites models</article-title>
+<source>Genome Biology</source>
+<year>2017</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>178</fpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Visualization of called lineages from Pangolin. Red bars indicate the lineage of the most probable sequence and grey bars represent other sequences called from the same SAM file. Any lineage with fewer than 100 observations in the simulated sequences was grouped into the ”Other” category. There were 95 sequences total, but we only the plotted ones where the second most common lineage designation had more than 250 observations.</p>
+</caption>
+<graphic xlink:href="EMS141057-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>
+<bold>Main plot:</bold> Proportion of resampled sequences that are assigned to the same lineage as the consensus sequence. One proportion is calculated for each SAM file. The sets of resampled sequences where the proportion was less than 1% or exactly 100% are explained in <xref ref-type="sec" rid="S16">Section 3.1.2</xref>. <bold>Inset:</bold> The number of distinct lineage assignments within each set of resampled sequences.</p>
+</caption>
+<graphic xlink:href="EMS141057-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Clock rates (slope) and 95% Confidence Intervals for the collections of re-sampled sequences. The red line and red shaded region are the clock rate and 95% CI for the consensus sequences. The purple points and error bars are the clock rates and error intervals (either Bayesian Credible Interval or Highest Posterior Probability) from published studies, as labelled. The re-sampled sequences are in line with the consensus sequences as well as the published sequences, but represent a much larger variation due to the uncertainty in the original genome sequences.</p>
+</caption>
+<graphic xlink:href="EMS141057-f003"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Biologically plausible sequences with probabilities defined by <xref ref-type="disp-formula" rid="FD1">Equation (6)</xref>
+</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">sequence</th>
+<th align="left" valign="top">probability</th>
+<th align="left" valign="top">
+<italic>a</italic>(<italic>i</italic>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M41">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ACATGA</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">0.299</td>
+<td align="left" valign="top">
+<italic>a</italic>(1) = 0.467</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M42">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ACATGT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">0.150</td>
+<td align="left" valign="top">
+<italic>a</italic>(2) = 0.233</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M43">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>3</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ACAGGA</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">0.128</td>
+<td align="left" valign="top">
+<italic>a</italic>(3) = 0.200</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M44">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>4</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ACAGGT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">0.064</td>
+<td align="left" valign="top">
+<italic>a</italic>(4) = 0.100</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Sequence-level probabilistic sequence defined by Equation (7)</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">sequence</th>
+<th align="left" valign="top">probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M45">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>CGAAT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">
+<italic>a</italic>(1) = 0:9799</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M46">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>CAAT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">
+<italic>a</italic>(2) = 0.01</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M47">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>3</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>CGATAT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">
+<italic>a</italic>(3) = 0.01</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<inline-formula>
+<mml:math id="M48">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="script">B</mml:mi>
+<mml:mn>4</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>CATAT</mml:mtext>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top">
+<italic>a</italic>(4) = 0.0001</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

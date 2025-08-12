@@ -44,27 +44,65 @@
         background-color: #e3f2fd;
     }
     
-    .mode-selection .form-check {
-        background: white;
+    /* Clickable Method Cards */
+    .method-card {
+        position: relative;
+    }
+    
+    .method-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .method-selector {
+        cursor: pointer;
         border: 2px solid #e9ecef;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 10px;
         transition: all 0.3s ease;
+        background: white;
     }
     
-    .mode-selection .form-check:hover {
-        border-color: #007bff;
+    .method-selector:hover {
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.1);
+        transform: translateY(-2px);
     }
     
-    .mode-selection .form-check-input:checked ~ .form-check-label {
-        color: #007bff;
+    .method-selector.selected {
+        border-color: var(--primary-blue);
+        background: rgba(37, 99, 235, 0.05);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .method-selector.selected .method-icon i {
+        transform: scale(1.1);
+    }
+    
+    .method-selector.selected .card-title {
+        color: var(--primary-blue);
         font-weight: 600;
     }
     
-    .mode-selection .form-check-input:checked {
-        background-color: #007bff;
-        border-color: #007bff;
+    /* Ensure equal height for method selection cards */
+    .method-card {
+        height: 100%;
+    }
+    
+    .method-card .card {
+        min-height: 180px;
+    }
+    
+    .method-card .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .method-card .card-text {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        min-height: 3rem;
     }
     
     .btn-process {
@@ -92,6 +130,53 @@
     .spinner-border {
         width: 3rem;
         height: 3rem;
+    }
+
+    /* Year Tab Styles for DOI Suggestions */
+    .nav-tabs-sm .nav-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 0.375rem 0.375rem 0 0;
+    }
+
+    .nav-tabs-sm .nav-link .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .nav-tabs-sm .nav-link.active {
+        background-color: #e3f2fd;
+        border-color: #2196F3 #2196F3 #e3f2fd;
+        color: #1976D2;
+        font-weight: 600;
+    }
+
+    .nav-tabs-sm .nav-link:hover:not(.active) {
+        border-color: #e3f2fd #e3f2fd #dee2e6;
+        background-color: #f8f9fa;
+    }
+
+    .tabs-container .tab-content {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        background-color: white;
+    }
+
+    .year-suggestions .suggestion-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    #doi-suggestions {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        background-color: white;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    #doi-suggestions .nav-tabs {
+        margin-bottom: 0;
+        border-bottom: 1px solid #dee2e6;
     }
 </style>
 {% endblock %}
@@ -124,21 +209,31 @@
                                 <i class="fas fa-folder-open me-2 text-primary"></i>Input Method
                             </h5>
                             
-                            <div class="mode-selection">
+                            <div class="row g-3">
                                 {% for choice in form.input_method %}
-                                    <div class="form-check">
-                                        {{ choice.tag }}
-                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}">
-                                            <strong>{{ choice.choice_label }}</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {% if choice.choice_value == "upload" %}
-                                                    Upload a bioRxiv XML file from your computer
-                                                {% else %}
-                                                    Enter a bioRxiv URL or DOI to fetch automatically
-                                                {% endif %}
-                                            </small>
-                                        </label>
+                                    <div class="col-md-6">
+                                        <div class="method-card" data-method="{{ choice.choice_value }}">
+                                            {{ choice.tag }}
+                                            <div class="card h-100 method-selector" data-target="{{ choice.id_for_label }}">
+                                                <div class="card-body text-center p-4">
+                                                    <div class="method-icon mb-3">
+                                                        {% if choice.choice_value == "upload" %}
+                                                            <i class="fas fa-upload fa-2x text-primary"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-link fa-2x text-primary"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <h6 class="card-title">{{ choice.choice_label }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        {% if choice.choice_value == "upload" %}
+                                                            Upload a bioRxiv XML file from your computer
+                                                        {% else %}
+                                                            Enter a bioRxiv URL or DOI to fetch automatically
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -155,7 +250,7 @@
                         </div>
 
                         <!-- File Upload Section -->
-                        <div class="mb-4" id="upload-section">
+                        <div class="mb-4" id="upload-section" style="display: none;">
                             <h5 class="card-title mb-3">
                                 <i class="fas fa-upload me-2 text-primary"></i>Upload Your Manuscript
                             </h5>
@@ -179,7 +274,7 @@
                         </div>
 
                         <!-- bioRxiv URL Section -->
-                        <div class="mb-4" id="url-section">
+                        <div class="mb-4" id="url-section" style="display: none;">
                             <h5 class="card-title mb-3">
                                 <i class="fas fa-link me-2 text-primary"></i>bioRxiv URL or DOI
                             </h5>
@@ -239,15 +334,43 @@
                                 <i class="fas fa-cogs me-2 text-primary"></i>Extraction Method
                             </h5>
                             
-                            <div class="mode-selection">
+                            <div class="row g-3">
                                 {% for choice in form.mode %}
-                                    <div class="form-check">
-                                        {{ choice.tag }}
-                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}">
-                                            <strong>{{ choice.choice_label|slice:":1" }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ choice.choice_label|slice:"1:" }}</small>
-                                        </label>
+                                    <div class="col-md-6">
+                                        <div class="method-card" data-method="{{ choice.choice_value }}">
+                                            {{ choice.tag }}
+                                            <div class="card h-100 method-selector" data-target="{{ choice.id_for_label }}">
+                                                <div class="card-body text-center p-4">
+                                                    <div class="method-icon mb-3">
+                                                        {% if choice.choice_value == "regex" %}
+                                                            <i class="fas fa-code fa-2x text-warning"></i>
+                                                        {% elif choice.choice_value == "llm" %}
+                                                            <i class="fas fa-robot fa-2x text-success"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-cogs fa-2x text-secondary"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <h6 class="card-title">
+                                                        {% if choice.choice_value == "regex" %}
+                                                            Pattern (Regex)
+                                                        {% elif choice.choice_value == "llm" %}
+                                                            AI-Powered
+                                                        {% else %}
+                                                            {{ choice.choice_label }}
+                                                        {% endif %}
+                                                    </h6>
+                                                    <p class="card-text text-muted small">
+                                                        {% if choice.choice_value == "regex" %}
+                                                            Fast pattern-based extraction using keywords and heuristics
+                                                        {% elif choice.choice_value == "llm" %}
+                                                            Advanced AI analysis with contextual understanding
+                                                        {% else %}
+                                                            {{ choice.choice_label }}
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -410,6 +533,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadSection = document.getElementById('upload-section');
     const urlSection = document.getElementById('url-section');
     const uploadArea = document.getElementById('upload-area');
+    
+    // Method Card Selection Logic
+    const methodCards = document.querySelectorAll('.method-selector');
+    
+    methodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const radioButton = document.getElementById(targetId);
+            
+            if (radioButton) {
+                // Clear selection from sibling cards
+                const parentRow = this.closest('.row');
+                const siblingCards = parentRow.querySelectorAll('.method-selector');
+                siblingCards.forEach(siblingCard => {
+                    siblingCard.classList.remove('selected');
+                });
+                
+                // Select this card and radio button
+                this.classList.add('selected');
+                radioButton.checked = true;
+                
+                // Trigger change event for existing logic
+                radioButton.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
+    
+    // Initialize selected state for pre-checked radios
+    inputMethodRadios.forEach(radio => {
+        if (radio.checked) {
+            const targetCard = document.querySelector(`[data-target="${radio.id}"]`);
+            if (targetCard) {
+                targetCard.classList.add('selected');
+            }
+        }
+    });
+    
+    modeRadios.forEach(radio => {
+        if (radio.checked) {
+            const targetCard = document.querySelector(`[data-target="${radio.id}"]`);
+            if (targetCard) {
+                targetCard.classList.add('selected');
+            }
+        }
+    });
     const fileInput = document.getElementById('id_xml_file');
     const urlInput = document.getElementById('id_biorxiv_url');
     const submitBtn = document.getElementById('submit-btn');
@@ -553,8 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
         processing.style.display = 'block';
     });
 
-    // DOI Input Management
-    const urlInput = document.getElementById('id_biorxiv_url');
+    // DOI Input Management (reuse urlInput from above)
     const doiSuggestions = document.getElementById('doi-suggestions');
     const statusDiv = document.getElementById('doi-status');
     
@@ -604,6 +771,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    let loadCounts = {}; // Track load count for each year
+    
     function loadDOISuggestions(query) {
         const url = '{% url "web:get_doi_suggestions" %}' + (query ? `?q=${encodeURIComponent(query)}` : '');
         
@@ -611,12 +780,200 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                displaySuggestions(data.suggestions, data.total_available, query);
+                if (data.by_year) {
+                    displaySuggestionsByYear(data.suggestions_by_year, data.total_available);
+                } else {
+                    displaySuggestions(data.suggestions, data.total_available, query);
+                }
             }
         })
         .catch(error => {
             console.error('Error loading suggestions:', error);
         });
+    }
+    
+    function loadMoreForYear(year) {
+        const currentLoadCount = loadCounts[year] || 0;
+        const url = '{% url "web:get_doi_suggestions" %}' + 
+                   `?load_more=true&load_count=${currentLoadCount}&year=${encodeURIComponent(year)}`;
+        
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                appendSuggestionsToYear(year, data.suggestions, data.can_load_more, data.next_batch_size);
+                loadCounts[year] = (loadCounts[year] || 0) + 1;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading more suggestions:', error);
+        });
+    }
+    
+    function displaySuggestionsByYear(suggestionsByYear, totalAvailable) {
+        if (Object.keys(suggestionsByYear).length === 0) {
+            hideSuggestions();
+            return;
+        }
+        
+        // Group suggestions by year
+        const years = Object.keys(suggestionsByYear).sort((a, b) => {
+            if (a === 'unknown') return 1;
+            if (b === 'unknown') return -1;
+            return parseInt(b) - parseInt(a);
+        });
+        
+        let html = '';
+        
+        // Header with total count
+        html += `
+            <div class="p-2 bg-primary text-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar-alt"></i> 
+                        <strong>Browse by Year</strong>
+                    </div>
+                    <small>${totalAvailable.toLocaleString()} papers available</small>
+                </div>
+            </div>
+        `;
+        
+        // Create tabs navigation
+        html += `
+            <div class="tabs-container">
+                <ul class="nav nav-tabs nav-tabs-sm" id="yearTabs" role="tablist">
+        `;
+        
+        years.forEach((year, index) => {
+            const yearData = suggestionsByYear[year];
+            const isActive = index === 0;
+            const tabId = `year-tab-${year}`;
+            const contentId = `year-content-${year}`;
+            
+            html += `
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link ${isActive ? 'active' : ''} nav-link-sm" 
+                            id="${tabId}" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#${contentId}" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="${contentId}" 
+                            aria-selected="${isActive}">
+                        ${yearData.year}
+                        <span class="badge bg-light text-dark ms-1">${yearData.total_count}</span>
+                    </button>
+                </li>
+            `;
+        });
+        
+        html += `
+                </ul>
+                <div class="tab-content" id="yearTabContent">
+        `;
+        
+        // Create tab content for each year
+        years.forEach((year, index) => {
+            const yearData = suggestionsByYear[year];
+            const isActive = index === 0;
+            const contentId = `year-content-${year}`;
+            
+            html += `
+                <div class="tab-pane fade ${isActive ? 'show active' : ''}" 
+                     id="${contentId}" 
+                     role="tabpanel" 
+                     aria-labelledby="year-tab-${year}">
+                    <div class="year-info p-2 bg-light border-bottom">
+                        <small class="text-muted">
+                            Showing ${yearData.showing_count} of ${yearData.total_count} papers
+                        </small>
+                    </div>
+                    <div class="year-suggestions" id="suggestions-${year}" style="max-height: 300px; overflow-y: auto;">
+                        ${renderSuggestionsForYear(yearData.suggestions)}
+                    </div>
+                    ${yearData.can_load_more ? `
+                        <div class="load-more-section p-2 border-top">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="loadMoreForYear('${year}')">
+                                <i class="fas fa-plus"></i> Load More (25 more papers)
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        doiSuggestions.innerHTML = html;
+        doiSuggestions.style.display = 'block';
+        doiSuggestions.style.maxHeight = '500px';
+        doiSuggestions.style.overflowY = 'visible'; // Let individual tab content handle scrolling
+        
+        // Add click handlers to all suggestions
+        addSuggestionClickHandlers();
+    }
+    
+    function renderSuggestionsForYear(suggestions) {
+        return suggestions.map(suggestion => `
+            <div class="suggestion-item p-2 border-bottom" style="cursor: pointer;" data-doi="${suggestion.doi}">
+                <div class="d-flex align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-primary mb-1" style="font-size: 0.85rem;">
+                            ${suggestion.doi}
+                        </div>
+                        <div class="text-dark mb-1" style="font-size: 0.8rem;">
+                            ${suggestion.title}
+                        </div>
+                        <div class="text-muted" style="font-size: 0.7rem;">
+                            <i class="fas fa-users"></i> ${suggestion.authors}<br>
+                            <i class="fas fa-calendar"></i> ${suggestion.publication_date}
+                            <i class="fas fa-file-alt ms-2"></i> ${(suggestion.file_size / 1024).toFixed(1)} KB
+                        </div>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function appendSuggestionsToYear(year, newSuggestions, canLoadMore, nextBatchSize) {
+        const suggestionsContainer = document.getElementById(`suggestions-${year}`);
+        const tabContent = document.getElementById(`year-content-${year}`);
+        
+        if (suggestionsContainer) {
+            // Append new suggestions
+            suggestionsContainer.innerHTML += renderSuggestionsForYear(newSuggestions);
+            
+            // Update load more button
+            const loadMoreSection = tabContent ? tabContent.querySelector('.load-more-section') : null;
+            if (loadMoreSection) {
+                if (canLoadMore && nextBatchSize) {
+                    loadMoreSection.innerHTML = `
+                        <button class="btn btn-outline-primary btn-sm w-100" onclick="loadMoreForYear('${year}')">
+                            <i class="fas fa-plus"></i> Load More (${nextBatchSize} more papers)
+                        </button>
+                    `;
+                } else {
+                    loadMoreSection.remove();
+                }
+            }
+            
+            // Update year info showing count
+            const yearInfo = tabContent ? tabContent.querySelector('.year-info small') : null;
+            if (yearInfo) {
+                const currentCount = suggestionsContainer.children.length;
+                const totalCount = yearInfo.textContent.match(/of (\d+) papers/)?.[1] || '?';
+                yearInfo.textContent = `Showing ${currentCount} of ${totalCount} papers`;
+            }
+            
+            // Add click handlers to new suggestions
+            addSuggestionClickHandlers();
+        }
     }
     
     function displaySuggestions(suggestions, totalAvailable, query) {
@@ -631,45 +988,32 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `
             <div class="p-2 bg-light border-bottom">
                 <small class="text-muted">
-                    <i class="fas fa-database"></i> 
-                    ${query ? `${suggestions.length} matches` : `${suggestions.length} random samples`} 
+                    <i class="fas fa-search"></i> 
+                    ${suggestions.length} matches for "${query}" 
                     from ${totalAvailable.toLocaleString()} available papers
                 </small>
             </div>
         `;
         
         // Suggestions list
-        suggestions.forEach(suggestion => {
-            html += `
-                <div class="suggestion-item p-3 border-bottom" style="cursor: pointer;" data-doi="${suggestion.doi}">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="fw-bold text-primary mb-1" style="font-size: 0.9rem;">
-                                ${suggestion.doi}
-                            </div>
-                            <div class="text-dark mb-1" style="font-size: 0.85rem;">
-                                ${suggestion.title}
-                            </div>
-                            <div class="text-muted" style="font-size: 0.75rem;">
-                                <i class="fas fa-users"></i> ${suggestion.authors}<br>
-                                <i class="fas fa-calendar"></i> ${suggestion.publication_date}
-                                <i class="fas fa-file-alt ms-2"></i> ${(suggestion.file_size / 1024).toFixed(1)} KB
-                            </div>
-                        </div>
-                        <div class="text-success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
+        html += renderSuggestionsForYear(suggestions);
         
         doiSuggestions.innerHTML = html;
         doiSuggestions.style.display = 'block';
+        doiSuggestions.style.maxHeight = '400px';
+        doiSuggestions.style.overflowY = 'auto';
         
         // Add click handlers
+        addSuggestionClickHandlers();
+    }
+    
+    function addSuggestionClickHandlers() {
         doiSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
-            item.addEventListener('click', function() {
+            // Remove existing listeners to avoid duplicates
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            
+            newItem.addEventListener('click', function() {
                 const doi = this.dataset.doi;
                 urlInput.value = doi;
                 hideSuggestions();
@@ -677,11 +1021,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Hover effects
-            item.addEventListener('mouseenter', function() {
+            newItem.addEventListener('mouseenter', function() {
                 this.style.backgroundColor = '#f8f9fa';
             });
             
-            item.addEventListener('mouseleave', function() {
+            newItem.addEventListener('mouseleave', function() {
                 this.style.backgroundColor = '';
             });
         });

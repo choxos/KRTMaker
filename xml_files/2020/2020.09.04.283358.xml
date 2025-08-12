@@ -1,0 +1,1660 @@
+<!DOCTYPE article
+ PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:ali="http://www.niso.org/schemas/ali/1.0/" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" article-type="preprint"><?all-math-mml yes?><?use-mml?><?origin ukpmcpa?><front>
+      <journal-meta>
+         <journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+         <journal-title-group>
+            <journal-title>bioRxiv : the preprint server for biology</journal-title>
+         </journal-title-group>
+         <issn pub-type="ppub"/>
+      </journal-meta>
+      <article-meta>
+         <article-id pub-id-type="manuscript">EMS94720</article-id>
+         <article-id pub-id-type="doi">10.1101/2020.09.04.283358</article-id>
+         <article-id pub-id-type="archive">PPR210783</article-id>
+         <article-version article-version-type="publisher-id">4</article-version>
+         <article-categories>
+            <subj-group subj-group-type="heading">
+               <subject>Article</subject>
+            </subj-group>
+         </article-categories>
+         <title-group>
+            <article-title>Unsupervised clustering analysis of SARS-Cov-2 population structure reveals six major subtypes at early stage across the world</article-title>
+         </title-group>
+         <contrib-group>
+            <contrib contrib-type="author">
+               <name>
+                  <surname>Li</surname>
+                  <given-names>Yawei</given-names>
+               </name>
+               <aff id="A1">Department of Preventive Medicine, Northwestern, University, Feinberg School of Medicine, Chicago, IL 60611, USA</aff>
+               <email>yawei.li@northwestern.edu</email>
+            </contrib>
+            <contrib contrib-type="author">
+               <name>
+                  <surname>Liu</surname>
+                  <given-names>Qingyun</given-names>
+               </name>
+               <aff id="A2">Department of Immunology and Infectious Diseases, Harvard T. H. Chan School of Public Health, Boston, MA 02115, USA</aff>
+               <email>qingyunliu@hsph.harvard.edu</email>
+            </contrib>
+            <contrib contrib-type="author">
+               <name>
+                  <surname>Zeng</surname>
+                  <given-names>Zexian</given-names>
+               </name>
+               <aff id="A3">Department of Data Science, Dana Farber Cancer Institute, Harvard T. H. Chan School of Public Health, Boston, MA 02115, USA</aff>
+               <email>zexian_zeng@dfci.harvard.edu</email>
+            </contrib>
+            <contrib contrib-type="author">
+               <name>
+                  <surname>Luo</surname>
+                  <given-names>Yuan</given-names>
+               </name>
+               <xref ref-type="corresp" rid="CR1">*</xref>
+               <aff id="A4">Department of Preventive Medicine, Northwestern University, Feinberg School of Medicine Chicago, IL 60611, USA</aff>
+            </contrib>
+         </contrib-group>
+         <author-notes>
+            <corresp id="CR1">
+               <email>yuan.luo@northwestern.edu</email>
+            </corresp>
+         </author-notes>
+         <pub-date pub-type="nihms-submitted">
+            <day>06</day>
+            <month>09</month>
+            <year>2020</year>
+         </pub-date>
+         <pub-date pub-type="preprint">
+            <day>04</day>
+            <month>09</month>
+            <year>2020</year>
+         </pub-date>
+         <permissions>
+            <ali:free_to_read/>
+            <license>
+               <ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+               <license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+            </license>
+         </permissions>
+         <abstract>
+            <p id="P1">Identifying the population structure of the newly emerged coronavirus SARS-CoV-2 has significant potential to inform public health management and diagnosis. As SARS-CoV-2 sequencing data accrued, grouping them into clusters is important for organizing the landscape of the population structure of the virus. Due to the limited prior information on the newly emerged coronavirus, we utilized four different clustering algorithms to group 16,873 SARS-CoV-2 strains, which automatically enables the identification of spatial structure for SARS-CoV-2. A total of six distinct genomic clusters were identified using mutation profiles as input features. Comparison of the clustering results reveals that the four algorithms produced highly consistent results, but the state-of-the-art unsupervised deep learning clustering algorithm performed best and produced the smallest intra-cluster pairwise genetic distances. The varied proportions of the six clusters within different continents revealed specific geographical distributions. In particular, our analysis found that Oceania was the only continent on which the strains were dispersively distributed into six clusters. In summary, this study provides a concrete framework for the use of clustering methods to study the global population structure of SARS-CoV-2. In addition, clustering methods can be used for future studies of variant population structures in specific regions of these fast-growing viruses.</p>
+         </abstract>
+         <kwd-group>
+            <kwd>Deep learning clustering</kwd>
+            <kwd>population structure</kwd>
+            <kwd>evolution</kwd>
+            <kwd>SNP</kwd>
+            <kwd>SARS-CoV-2</kwd>
+         </kwd-group>
+      </article-meta>
+   </front>
+   <body>
+      <sec id="S1" sec-type="intro">
+         <label>I</label>
+         <title>Introduction</title>
+         <p id="P2">The COVID-19 pandemic was caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>], and has spread throughout the world. In an effort to understand the molecular characteristics of the virus, viral genomes have been abundantly sequenced and presented at the Global Initiative on Sharing All Influenza Data (GISAID). As an emerging virus, it is important to understand the genetic diversity, evolutionary trajectory and possible routes of transmission of SARS-CoV-2 from its natural reservoir to humans. Most studies have looked into the aspects of real-world SARS-CoV-2 evolution and strain diversification through phylogenetic tree [<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R7">7</xref>]. Phylogenetic tree is a graph that shows the evolutionary relationships among various biological entities based on their genetic closeness [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>]. The distances from one entity to the other entities indicate the degree of relationships. However, as population genomic datasets grow in size, simply using pairwise genetic distances cannot present an explicit structure of the total population in phylogenetic analysis. Grouping similar entities into the same cluster and identifying the number of main subtypes (clusters) makes it easier to understand the main characteristics of the population. Traditionally, using the distance matrix and the bifurcations between branches of leaves on the phylogenetic tree, entities can be grouped into clusters. However, when the number of entities becomes large, it is not easy to directly and accurately partition the clades in the phylogenetic tree.</p>
+         <p id="P3">To identify a better way to effectively group entities, clustering methods emerge as more productive and robust solutions. The objective of clustering is automatically minimizing intra-cluster distances and maximizing inter-cluster distances [<xref ref-type="bibr" rid="R10">10</xref>]. Accurate clustering helps to better understand the inner relationships between data and inform downstream analysis. Clustering methods have been widely used as a good supplemental tool in phylogenetic analysis, including phylogenetic tree construction [<xref ref-type="bibr" rid="R11">11</xref>–<xref ref-type="bibr" rid="R13">13</xref>], ancestral relationship identification [<xref ref-type="bibr" rid="R14">14</xref>], evolutionary rate estimation [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>], gene evolutionary mechanisms research [<xref ref-type="bibr" rid="R17">17</xref>] and population structure analysis [<xref ref-type="bibr" rid="R18">18</xref>].</p>
+         <p id="P4">Herein, to identify the population structure of the newly emerged coronavirus SARS-CoV-2, we took inspiration from recent state-of-the-art deep embedding clustering method [<xref ref-type="bibr" rid="R19">19</xref>] to group a total of 16,873 strains. Compared with traditional methods, this deep learning clustering algorithm showed significant improvements in terms of both Silhouette score, sum of squared errors (SSE) and Bayesian information criterion (BIC) [<xref ref-type="bibr" rid="R20">20</xref>]. The clustering results showed that there were six major clusters of SARS-CoV-2. In particular, we found that the proportions of six clusters in each continent showed a specific geographical distribution. In summary, this study provides a perspective of the SARS-CoV-2 population structural analysis, helping to investigate the evolution and spread of the virus across the human populations worldwide.</p>
+      </sec>
+      <sec sec-type="methods" id="S2">
+         <label>II</label>
+         <title>Methodology</title>
+         <sec id="S3">
+            <label>A</label>
+            <title>SARS-CoV-2 sample collection</title>
+            <p id="P5">A set of African, Asian, European, North American, Oceanian and South American SARS-CoV-2 strains marked as “high coverage” were downloaded from GISAID. The “high coverage” was defined as strains with &lt;1% Ns and &lt;0.05% unique amino acid mutations (not seen in other sequences in databases) and no insertion/deletion unless verified by the submitter. In addition, all strains with a non-human host and all assemblies of total genome length less than 29,000 bps were removed from our analysis. Ultimately, our dataset consisted of 16,873 strains.</p>
+         </sec>
+         <sec id="S4">
+            <label>B</label>
+            <title>Mutation calls and phylogenetic reconstruction</title>
+            <p id="P6">All downloaded genomes were mapped to the reference genome of SARS-CoV-2 (GenBank Accession Number: NC_045512.2) following Nextstrain pipeline [<xref ref-type="bibr" rid="R21">21</xref>]. Multiple sequence alignments and pairwise alignments were constructed using CLUSTALW 2.1 [<xref ref-type="bibr" rid="R22">22</xref>]. Considering many putatively artefactual mutations and the gaps in sequences are located at the beginning and end of the alignment, we masked the first 130 bps and last 50 bps in mutation calling following Nextstrain pipeline. We used substitutions as features to reconstruct the phylogenetic tree using FastTree 2 [<xref ref-type="bibr" rid="R23">23</xref>]. The phylogeny is rooted following Nextstrain pipeline using FigTree v1.4.4. The phylogenetic trees were visualized using the online tool Interactive Tree Of Life (iTOL v5) [<xref ref-type="bibr" rid="R24">24</xref>].</p>
+         </sec>
+         <sec id="S5">
+            <label>C</label>
+            <title>Data analysis and visualization</title>
+            <p id="P7">All Figures and statistical analyses were generated by the ggplot2 library in R 3.6.1, the seaborn package in Python 3.7.6 and GraphPad Prism 8.0.2.</p>
+         </sec>
+         <sec id="S6">
+            <label>D</label>
+            <title>Data clustering</title>
+            <p id="P8">Herein, we employed a published state-of-the-art deep learning unsupervised clustering algorithm to iteratively cluster the SARS-CoV-2 strains [<xref ref-type="bibr" rid="R19">19</xref>]. Each identified cluster was a subtype of SARS-CoV-2. We first used K-means clustering to initialize centroids for the clusters. To determine the number of clusters, we plotted the curves of the sum of squared errors (SSE) and Bayesian information criterion (BIC) [<xref ref-type="bibr" rid="R20">20</xref>] under different cluster numbers ranging from 2 to 20.</p>
+            <p id="P9">To update the cluster assignments, we implemented the Student’s t-distribution as a kernel to measure the distance from a strain (<italic>h</italic>
+               <sub>
+                  <italic>i</italic>
+               </sub>) to a cluster centroid (<italic>u</italic>
+               <sub>
+                  <italic>j</italic>
+               </sub>):<disp-formula id="FD1">
+                  <label>(1)</label>
+                  <mml:math id="M1">
+                     <mml:mrow>
+                        <mml:msub>
+                           <mml:mi>q</mml:mi>
+                           <mml:mrow>
+                              <mml:mi>i</mml:mi>
+                              <mml:mi>j</mml:mi>
+                           </mml:mrow>
+                        </mml:msub>
+                        <mml:mo>=</mml:mo>
+                        <mml:mfrac>
+                           <mml:mrow>
+                              <mml:msup>
+                                 <mml:mrow>
+                                    <mml:mrow>
+                                       <mml:mo>(</mml:mo>
+                                       <mml:mrow>
+                                          <mml:mn>1</mml:mn>
+                                          <mml:mo>+</mml:mo>
+                                          <mml:mo>∥</mml:mo>
+                                          <mml:msub>
+                                             <mml:mi>h</mml:mi>
+                                             <mml:mi>j</mml:mi>
+                                          </mml:msub>
+                                          <mml:mo>−</mml:mo>
+                                          <mml:msub>
+                                             <mml:mi>u</mml:mi>
+                                             <mml:mi>j</mml:mi>
+                                          </mml:msub>
+                                          <mml:msup>
+                                             <mml:mo>∥</mml:mo>
+                                             <mml:mn>2</mml:mn>
+                                          </mml:msup>
+                                          <mml:mo>/</mml:mo>
+                                          <mml:mi>a</mml:mi>
+                                       </mml:mrow>
+                                       <mml:mo>)</mml:mo>
+                                    </mml:mrow>
+                                 </mml:mrow>
+                                 <mml:mrow>
+                                    <mml:mo>−</mml:mo>
+                                    <mml:mfrac>
+                                       <mml:mrow>
+                                          <mml:mi>a</mml:mi>
+                                          <mml:mo>+</mml:mo>
+                                          <mml:mn>1</mml:mn>
+                                       </mml:mrow>
+                                       <mml:mn>2</mml:mn>
+                                    </mml:mfrac>
+                                 </mml:mrow>
+                              </mml:msup>
+                           </mml:mrow>
+                           <mml:mrow>
+                              <mml:mstyle displaystyle="true">
+                                 <mml:msubsup>
+                                    <mml:mo>∑</mml:mo>
+                                    <mml:mrow>
+                                       <mml:msup>
+                                          <mml:mi>j</mml:mi>
+                                          <mml:mo>′</mml:mo>
+                                       </mml:msup>
+                                       <mml:mo>=</mml:mo>
+                                       <mml:mn>1</mml:mn>
+                                    </mml:mrow>
+                                    <mml:mi>K</mml:mi>
+                                 </mml:msubsup>
+                                 <mml:mrow>
+                                    <mml:msup>
+                                       <mml:mrow>
+                                          <mml:mrow>
+                                             <mml:mo>(</mml:mo>
+                                             <mml:mrow>
+                                                <mml:mn>1</mml:mn>
+                                                <mml:mo>+</mml:mo>
+                                                <mml:mo>∥</mml:mo>
+                                                <mml:msub>
+                                                   <mml:mi>h</mml:mi>
+                                                   <mml:mi>i</mml:mi>
+                                                </mml:msub>
+                                                <mml:mo>−</mml:mo>
+                                                <mml:msub>
+                                                   <mml:mi>u</mml:mi>
+                                                   <mml:msup>
+                                                      <mml:mi>j</mml:mi>
+                                                      <mml:mo>′</mml:mo>
+                                                   </mml:msup>
+                                                </mml:msub>
+                                                <mml:msup>
+                                                   <mml:mo>∥</mml:mo>
+                                                   <mml:mn>2</mml:mn>
+                                                </mml:msup>
+                                                <mml:mo>/</mml:mo>
+                                                <mml:mi>a</mml:mi>
+                                             </mml:mrow>
+                                             <mml:mo>)</mml:mo>
+                                          </mml:mrow>
+                                       </mml:mrow>
+                                       <mml:mrow>
+                                          <mml:mo>−</mml:mo>
+                                          <mml:mfrac>
+                                             <mml:mrow>
+                                                <mml:mi>a</mml:mi>
+                                                <mml:mo>+</mml:mo>
+                                                <mml:mn>1</mml:mn>
+                                             </mml:mrow>
+                                             <mml:mn>2</mml:mn>
+                                          </mml:mfrac>
+                                       </mml:mrow>
+                                    </mml:msup>
+                                 </mml:mrow>
+                              </mml:mstyle>
+                           </mml:mrow>
+                        </mml:mfrac>
+                     </mml:mrow>
+                  </mml:math>
+               </disp-formula>
+            </p>
+            <p id="P10">where the distance <italic>q</italic>
+               <sub>
+                  <italic>ij</italic>
+               </sub> can be interpreted as the probability of assigning strain i to cluster j. The <italic>α</italic> is the degree of freedom of the Student’s t-distribution, and we let <italic>α</italic> = 1 in this study. Next, we defined an auxiliary target distribution P by raising each <italic>q</italic>
+               <sub>
+                  <italic>ij</italic>
+               </sub> to the second power which upweights strains assigned with high confidence:<disp-formula id="FD2">
+                  <label>(2)</label>
+                  <mml:math id="M2">
+                     <mml:mrow>
+                        <mml:msub>
+                           <mml:mi>p</mml:mi>
+                           <mml:mrow>
+                              <mml:mi>i</mml:mi>
+                              <mml:mi>j</mml:mi>
+                           </mml:mrow>
+                        </mml:msub>
+                        <mml:mo>=</mml:mo>
+                        <mml:mfrac>
+                           <mml:mrow>
+                              <mml:msubsup>
+                                 <mml:mi>q</mml:mi>
+                                 <mml:mrow>
+                                    <mml:mi>i</mml:mi>
+                                    <mml:mi>j</mml:mi>
+                                 </mml:mrow>
+                                 <mml:mn>2</mml:mn>
+                              </mml:msubsup>
+                              <mml:mo>/</mml:mo>
+                              <mml:mstyle displaystyle="true">
+                                 <mml:msubsup>
+                                    <mml:mo>∑</mml:mo>
+                                    <mml:mrow>
+                                       <mml:mi>i</mml:mi>
+                                       <mml:mo>=</mml:mo>
+                                       <mml:mn>1</mml:mn>
+                                    </mml:mrow>
+                                    <mml:mi>N</mml:mi>
+                                 </mml:msubsup>
+                                 <mml:mrow>
+                                    <mml:msub>
+                                       <mml:mi>q</mml:mi>
+                                       <mml:mrow>
+                                          <mml:mi>i</mml:mi>
+                                          <mml:mi>j</mml:mi>
+                                       </mml:mrow>
+                                    </mml:msub>
+                                 </mml:mrow>
+                              </mml:mstyle>
+                           </mml:mrow>
+                           <mml:mrow>
+                              <mml:mstyle displaystyle="true">
+                                 <mml:msubsup>
+                                    <mml:mo>∑</mml:mo>
+                                    <mml:mrow>
+                                       <mml:msup>
+                                          <mml:mi>j</mml:mi>
+                                          <mml:mo>′</mml:mo>
+                                       </mml:msup>
+                                       <mml:mo>=</mml:mo>
+                                       <mml:mn>1</mml:mn>
+                                    </mml:mrow>
+                                    <mml:mi>K</mml:mi>
+                                 </mml:msubsup>
+                                 <mml:mrow/>
+                              </mml:mstyle>
+                              <mml:msubsup>
+                                 <mml:mi>q</mml:mi>
+                                 <mml:mrow>
+                                    <mml:mi>i</mml:mi>
+                                    <mml:msup>
+                                       <mml:mi>j</mml:mi>
+                                       <mml:mo>′</mml:mo>
+                                    </mml:msup>
+                                 </mml:mrow>
+                                 <mml:mn>2</mml:mn>
+                              </mml:msubsup>
+                              <mml:mo>/</mml:mo>
+                              <mml:mstyle displaystyle="true">
+                                 <mml:msubsup>
+                                    <mml:mo>∑</mml:mo>
+                                    <mml:mrow>
+                                       <mml:mi>i</mml:mi>
+                                       <mml:mo>=</mml:mo>
+                                       <mml:mn>1</mml:mn>
+                                    </mml:mrow>
+                                    <mml:mi>N</mml:mi>
+                                 </mml:msubsup>
+                                 <mml:mrow>
+                                    <mml:msub>
+                                       <mml:mi>q</mml:mi>
+                                       <mml:mrow>
+                                          <mml:mi>i</mml:mi>
+                                          <mml:msup>
+                                             <mml:mi>j</mml:mi>
+                                             <mml:mo>′</mml:mo>
+                                          </mml:msup>
+                                       </mml:mrow>
+                                    </mml:msub>
+                                 </mml:mrow>
+                              </mml:mstyle>
+                           </mml:mrow>
+                        </mml:mfrac>
+                     </mml:mrow>
+                  </mml:math>
+               </disp-formula>
+            </p>
+            <p id="P11">where the denominator is to normalize the loss contribution of each centroid to prevent large clusters from distorting the feature space. Finally, we defined the objective function using a Kullback-Leibler (KL) divergence loss:<disp-formula id="FD3">
+                  <label>(3)</label>
+                  <mml:math id="M3">
+                     <mml:mrow>
+                        <mml:mtext>L</mml:mtext>
+                        <mml:mo>=</mml:mo>
+                        <mml:mtext>KL</mml:mtext>
+                        <mml:mo stretchy="false">(</mml:mo>
+                        <mml:mtext>P</mml:mtext>
+                        <mml:mo>∥</mml:mo>
+                        <mml:mtext>Q</mml:mtext>
+                        <mml:mo stretchy="false">)</mml:mo>
+                        <mml:mo>=</mml:mo>
+                        <mml:mstyle displaystyle="true">
+                           <mml:msubsup>
+                              <mml:mo>∑</mml:mo>
+                              <mml:mrow>
+                                 <mml:mi>i</mml:mi>
+                                 <mml:mo>=</mml:mo>
+                                 <mml:mn>1</mml:mn>
+                              </mml:mrow>
+                              <mml:mi>N</mml:mi>
+                           </mml:msubsup>
+                           <mml:mrow>
+                              <mml:mstyle displaystyle="true">
+                                 <mml:msubsup>
+                                    <mml:mo>∑</mml:mo>
+                                    <mml:mrow>
+                                       <mml:mi>j</mml:mi>
+                                       <mml:mo>=</mml:mo>
+                                       <mml:mn>1</mml:mn>
+                                    </mml:mrow>
+                                    <mml:mi>K</mml:mi>
+                                 </mml:msubsup>
+                                 <mml:mrow>
+                                    <mml:msub>
+                                       <mml:mi>p</mml:mi>
+                                       <mml:mrow>
+                                          <mml:mi>i</mml:mi>
+                                          <mml:mi>j</mml:mi>
+                                       </mml:mrow>
+                                    </mml:msub>
+                                    <mml:mi>l</mml:mi>
+                                    <mml:mi>o</mml:mi>
+                                    <mml:mi>g</mml:mi>
+                                    <mml:mfrac>
+                                       <mml:mrow>
+                                          <mml:msub>
+                                             <mml:mi>p</mml:mi>
+                                             <mml:mrow>
+                                                <mml:mi>i</mml:mi>
+                                                <mml:mi>j</mml:mi>
+                                             </mml:mrow>
+                                          </mml:msub>
+                                       </mml:mrow>
+                                       <mml:mrow>
+                                          <mml:msub>
+                                             <mml:mi>q</mml:mi>
+                                             <mml:mrow>
+                                                <mml:mi>i</mml:mi>
+                                                <mml:mi>j</mml:mi>
+                                             </mml:mrow>
+                                          </mml:msub>
+                                       </mml:mrow>
+                                    </mml:mfrac>
+                                 </mml:mrow>
+                              </mml:mstyle>
+                           </mml:mrow>
+                        </mml:mstyle>
+                     </mml:mrow>
+                  </mml:math>
+               </disp-formula>
+            </p>
+            <p id="P12">The parameters and cluster centroids were jointly optimized by minimizing L using Stochastic Gradient Descent (SGD) with momentum.</p>
+            <p id="P13">Besides the deep learning clustering algorithm, we also employed K-means clustering, hierarchical clustering and BIRCH (Balanced Iterative Reducing and Clustering using Hierarchies) for SARS-CoV-2 strain clustering. The three other models were implemented using the Python package sklearn with the KMeans function (K-means), AgglomerativeClustering function (hierarchical clustering) and Birch function (BIRCH), respectively.</p>
+         </sec>
+      </sec>
+      <sec id="S7">
+         <label>III</label>
+         <title>Experimental Results</title>
+         <sec id="S8">
+            <label>A</label>
+            <title>Genetic analysis indicates high diversity and rapidly proliferating of SARS-CoV-2</title>
+            <p id="P14">We obtained a total of 16,873 (98 from Africa, 1324 from Asia, 9527 from Europe, 4765 from North America, 1040 from Oceania and 119 from South America) earliest SARS-CoV-2 whole-genome sequencing data from GISAID, aligned the sequences, and identified the genetic variants. A total of 7,970 substitutions were identified, including 4,908 non-synonymous mutations, 2,748 synonymous mutations and 314 intronic mutations. The average mutation count per genome was 6.99 (<xref ref-type="fig" rid="F1">Fig. 1A</xref>). The frequency spectrum of substitutions illustrated that more than half (54.05%) of the mutations were singletons and 15.35% were doubletons. The proportion of the mutations below 0.01 was 99.28% (<xref ref-type="fig" rid="F1">Fig. 1B</xref>). The high percentage of these low-frequency mutations suggested that SARS-CoV-2 occurred recently and displayed a rapidly proliferating pattern [<xref ref-type="bibr" rid="R25">25</xref>]. In addition, there were 8,706 unique strains across the 16,873 strains (<xref ref-type="fig" rid="F1">Fig. 1C</xref>), and most unique strains (7,078) were singletons, yielding high diversity of the virus. In particular, Simpson’s diversity index of the strains was 0.8222, indicating that two random strains would have a high probability of being genetically different. The frequency spectrum of substitutions and Simpson’s diversity index indicated high genetic diversity of SARS-CoV-2.</p>
+         </sec>
+         <sec id="S9">
+            <label>B</label>
+            <title>Clustering of SARS-CoV-2 reveals six major clusters</title>
+            <p id="P15">To clarify the main population structure of the virus, grouping these strains into clusters is necessary, as these clusters displayed the major types of the virus. However, the genetic analysis of SARS-CoV-2 showed that there were 8,706 unique strains across the 16,873 strains (<xref ref-type="fig" rid="F1">Fig. 1C</xref>), it is not easy to directly and accurately partition the strains. For this reason, we applied clustering techniques to measure similarities between these strains and effectively group them.</p>
+            <p id="P16">Because SARS-CoV-2 exhibits a limited number of SNPs per virus strain and little ongoing horizontal gene exchange, making SNPs ideal clustering input features. We first used the aggregated SNP matrix to cluster samples using an unsupervised deep learning clustering algorithm published by Xie et al [<xref ref-type="bibr" rid="R19">19</xref>] (see methodology). The unsupervised deep learning clustering algorithm requires one to pre-specify the number of clusters (<italic>K</italic>), but we have little prior knowledge about the number of subtypes formed by the heterogeneous SARS-CoV-2 genome. To determine the number of clusters, we plotted the curves of the SSE and BIC under different cluster numbers ranging from 2 to 20 (<xref ref-type="fig" rid="F2">Fig. 2</xref>). We used the elbow method and chose the elbow of the curve as the number of clusters [<xref ref-type="bibr" rid="R26">26</xref>]. This approach resulted in <italic>K</italic>=6 for both the SSE and BIC curves.</p>
+            <p id="P17">To evaluate the performance of the algorithm, we also employed K-means clustering [<xref ref-type="bibr" rid="R27">27</xref>], hierarchical clustering and BIRCH clustering [<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R29">29</xref>] for comparison. The objective of clustering is minimizing intra-cluster distances and maximizing inter-cluster distances. To this end, we did five repetitions for each of the four clustering algorithms and selected the one that achieved the best performance (lowest average intra-cluster pairwise genetic distances). The average intra-cluster pairwise genetic distances in the deep learning clustering algorithm (4.892) was significantly lower than that in K-means (4.896, P-value &lt; 0.001, Wilcoxon rank-sum test), hierarchical clustering (5.062, P-value &lt; 0.001, Wilcoxon rank-sum test) and BIRCH (4.985, P-value &lt; 0.001, Wilcoxon rank-sum test). We compared the Silhouette score (<xref ref-type="fig" rid="F3">Fig. 3A</xref>), SSE (<xref ref-type="fig" rid="F3">Fig. 3B</xref>) and BIC (<xref ref-type="fig" rid="F3">Fig. 3C</xref>) of the four algorithms. The deep learning clustering obtained the highest Silhouette score and BIC, and the lowest SSE, indicating that the clustering results of deep learning clustering are better than the other algorithms. In contrast, BIRCH performed the worst of the four algorithms. We aligned the partitions of the six clusters against the phylogenetic tree for the three best methods (<xref ref-type="fig" rid="F3">Fig. 3D</xref>). The clustering results indicated that the partitions from the three algorithms were similar. The differences between the hierarchical clustering results and the two other clustering results were mainly at the boundary of the clusters. Of the three methods, strains grouped by deep learning clustering and K-means were more compact in the phylogenetic tree than those by hierarchical clustering. For example, the strains in both deep learning clustering cluster D and K-means cluster D were split into two clusters using hierarchical clustering. However, such a split was not supported by the phylogenetic tree (<xref ref-type="fig" rid="F3">Fig. 3D</xref>).</p>
+            <p id="P18">In the meantime, we used complementary approaches to validate the deep learning clustering results. First, we compared the pairwise genetic distances between intra-cluster and inter-cluster. In all six clusters, the average number of intra-cluster genetic distances was significantly lower (P-value &lt; 0.001, Wilcoxon rank-sum test, <xref ref-type="fig" rid="F3">Fig. 3E</xref>) than inter-cluster genetic distances. Next, we applied T-distributed Stochastic Neighbor Embedding (t-SNE) to visualize the deep learning clustering results. In the t-SNE plot, the strains were adequately isolated between clusters (<xref ref-type="fig" rid="F3">Fig. 3F</xref>).</p>
+         </sec>
+         <sec id="S10">
+            <label>C</label>
+            <title>The varied proportions of the clusters in different continents</title>
+            <p id="P19">Mapping the proportions of strains from each continent showed that the clusters differed in their geographical distributions (<xref rid="T1" ref-type="table">Table 1</xref>). Of the six clusters, cluster C spread globally. By contrast, cluster A and cluster F occurred at high frequencies in specific regions. 81.92% of the strains in cluster A and 85.73% of the strains in cluster F were from Europe. The geographical spread of each of the three remaining clusters was intermediate. Cluster E occurred at higher frequencies in North America and Europe, lower frequencies in Asia and Oceania. Cluster D occurred at higher frequencies in North America, and lower frequencies in Asia, Europe and Oceania. The strains in cluster B were mainly in Asia and Europe and partially in North America and Oceania.</p>
+            <p id="P20">However, due to the sampling bias of the SARS-CoV-2, 85% of the strains were collected from Europe and North America, making the proportion of the continents in each cluster not informative. Therefore, we evaluated the proportion of the clusters on each continent. In most continents, the distributions of the strains were concentrated in one or two clusters, including Asia (49% in cluster B), Africa (66% in cluster C), South America (78% in cluster C and F), North America (74% in cluster D and E) and Europe (64% in cluster C and F). Among the six continents, Oceania was the only continent that was uniformly separated into the six clusters, indicating strains in Oceania were more diverse than in the other continents.</p>
+         </sec>
+      </sec>
+      <sec id="S11" sec-type="conclusions">
+         <label>IV</label>
+         <title>Conclusion</title>
+         <p id="P21">Understanding the population structure of SARS-CoV-2 is important in evaluating future risks of novel infections. To precisely analyze their population structure, we used clustering methods in phylogenetic analysis to group a total of 16,873 publicly available SARS-CoV-2 strains. To improve the accuracy, we use a state-of-the-art deep learning clustering algorithm, which has been demonstrated to exhibit better performance than three traditional clustering algorithms: K-means clustering, hierarchical clustering and BIRCH.</p>
+         <p id="P22">Our clustering results indicated six major clusters of SARS-CoV-2. The mutation profile characterizing clusters of the viral sequences displayed specific geographical distributions. Most continents were mainly concentrated in one or two clusters, but we also found that in Oceania, the strains were dispersively distributed into six clusters.</p>
+         <p id="P23">It is noteworthy that our study is limited due to the sampling bias of SARS-CoV-2, with more than 60% of the strains being from the United Kingdom and the USA. In contrast, the overall proportion of strains from Africa and South America is less than 2%. Sampling biases can lead to biased parameter estimation and affect the clustering results we observed. To address this issue, another clustering can be used for more further analyses.</p>
+         <p id="P24">Despite the limited number of SARS-CoV-2 genome sequences, our analysis of population genetics is informative. Our discovery of high genetic diversity in SARS-CoV-2 is consistent with an earlier study [<xref ref-type="bibr" rid="R30">30</xref>]. The topology and the divergence of the clusters in the phylogenetic tree illustrate a relatively recent common ancestor, similar to the fact that the emergence and the spread of the virus was highly concentrated in a short time [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R33">33</xref>]. Our work, as well as previous studies [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R34">34</xref>, <xref ref-type="bibr" rid="R35">35</xref>] that use clustering techniques to study the population structure of the SARS-CoV-2 virus, has proved to be a valuable supplemental tool in phylogenetic analyses. For future work, we plan to further apply soft clustering techniques to better account mixtures in clusters, the efficacy of which has been showcased by previous studies in multiple fields [<xref ref-type="bibr" rid="R36">36</xref>–<xref ref-type="bibr" rid="R42">42</xref>]. In addition, clustering ideas can be used for further study of variant population structures in specific regions of these fast-growing viruses.</p>
+      </sec>
+   </body>
+   <back>
+      <ack id="S12">
+         <title>Acknowledgment</title>
+         <p>We thank Xin Wu for the comments and suggestions during the preparation of the manuscript. This study is supported in part by NIH grant 1R01LM013337 and 5UL1TR001422.</p>
+      </ack>
+      <sec sec-type="data-availability" id="S13">
+         <label>E</label>
+         <title>Data Availability</title>
+         <p id="P25">The publicly available SARS-CoV-2 datasets in this study are available at GISAID (<ext-link ext-link-type="uri" xlink:href="https://www.gisaid.org">https://www.gisaid.org</ext-link>). The reference SARS-CoV-2 is available at the NCBI GenBank (GenBank Ac cession Number: NC_045512.2, <ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2">https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2</ext-link>).</p>
+      </sec>
+      <ref-list>
+         <ref id="R1">
+            <label>[1]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Zhu</surname>
+                     <given-names>N</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>A Novel Coronavirus from Patients with Pneumonia in China, 2019</article-title>
+               <source>N Engl J Med</source>
+               <year>2020</year>
+               <month>Feb</month>
+               <day>20</day>
+               <volume>382</volume>
+               <issue>8</issue>
+               <fpage>727</fpage>
+               <lpage>733</lpage>
+               <pub-id pub-id-type="doi">10.1056/NEJMoa2001017</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R2">
+            <label>[2]</label>
+            <element-citation publication-type="journal">
+               <collab>V. Coronaviridae Study Group of the International Committee on Taxonomy of</collab>
+               <article-title>The species Severe acute respiratory syndrome-related coronavirus: classifying 2019-nCoV and naming it SARS-CoV-2</article-title>
+               <source>Nat Microbiol</source>
+               <year>2020</year>
+               <month>Apr</month>
+               <volume>5</volume>
+               <issue>4</issue>
+               <fpage>536</fpage>
+               <lpage>544</lpage>
+               <pub-id pub-id-type="doi">10.1038/s41564-020-0695-z</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R3">
+            <label>[3]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Ladner</surname>
+                     <given-names>JT</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>An Early Pandemic Analysis of SARS-CoV-2 Population Structure and Dynamics in Arizona</article-title>
+               <source>mBio</source>
+               <year>2020</year>
+               <month>Sep</month>
+               <day>4</day>
+               <volume>11</volume>
+               <issue>5</issue>
+               <pub-id pub-id-type="doi">10.1128/mBio.02107-20</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R4">
+            <label>[4]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Rehman</surname>
+                     <given-names>SU</given-names>
+                  </name>
+                  <name>
+                     <surname>Shafique</surname>
+                     <given-names>L</given-names>
+                  </name>
+                  <name>
+                     <surname>Ihsan</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <name>
+                     <surname>Liu</surname>
+                     <given-names>Q</given-names>
+                  </name>
+               </person-group>
+               <article-title>Evolutionary Trajectory for the Emergence of Novel Coronavirus SARS-CoV-2</article-title>
+               <source>Pathogens</source>
+               <year>2020</year>
+               <month>Mar</month>
+               <day>23</day>
+               <volume>9</volume>
+               <issue>3</issue>
+               <pub-id pub-id-type="doi">10.3390/pathogens9030240</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R5">
+            <label>[5]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Morais</surname>
+                     <given-names>IJ</given-names>
+                  </name>
+                  <name>
+                     <surname>Polveiro</surname>
+                     <given-names>RC</given-names>
+                  </name>
+                  <name>
+                     <surname>Souza</surname>
+                     <given-names>GM</given-names>
+                  </name>
+                  <name>
+                     <surname>Bortolin</surname>
+                     <given-names>DI</given-names>
+                  </name>
+                  <name>
+                     <surname>Sassaki</surname>
+                     <given-names>FT</given-names>
+                  </name>
+                  <name>
+                     <surname>Lima</surname>
+                     <given-names>ATM</given-names>
+                  </name>
+               </person-group>
+               <article-title>The global population of SARS-CoV-2 is composed of six major subtypes</article-title>
+               <source>Sci Rep-Uk</source>
+               <year>2020</year>
+               <month>Oct</month>
+               <day>26</day>
+               <volume>10</volume>
+               <issue>1</issue>
+               <comment>(in English)</comment>
+               <pub-id pub-id-type="doi">10.1038/s41598-020-74050-8</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R6">
+            <label>[6]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Forster</surname>
+                     <given-names>P</given-names>
+                  </name>
+                  <name>
+                     <surname>Forster</surname>
+                     <given-names>L</given-names>
+                  </name>
+                  <name>
+                     <surname>Renfrew</surname>
+                     <given-names>C</given-names>
+                  </name>
+                  <name>
+                     <surname>Forster</surname>
+                     <given-names>M</given-names>
+                  </name>
+               </person-group>
+               <article-title>Phylogenetic network analysis of SARS-CoV-2 genomes</article-title>
+               <source>Proc Natl Acad Sci U S A</source>
+               <year>2020</year>
+               <month>Apr</month>
+               <day>28</day>
+               <volume>117</volume>
+               <issue>17</issue>
+               <fpage>9241</fpage>
+               <lpage>9243</lpage>
+               <pub-id pub-id-type="doi">10.1073/pnas.2004999117</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R7">
+            <label>[7]</label>
+            <element-citation publication-type="other">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Koyama</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <name>
+                     <surname>Platt</surname>
+                     <given-names>D</given-names>
+                  </name>
+                  <name>
+                     <surname>Parida</surname>
+                     <given-names>L</given-names>
+                  </name>
+               </person-group>
+               <source>Variant analysis of COVID-19 genomes</source>
+               <year>2020</year>
+            </element-citation>
+         </ref>
+         <ref id="R8">
+            <label>[8]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Mahapatro</surname>
+                     <given-names>G</given-names>
+                  </name>
+                  <name>
+                     <surname>Mishra</surname>
+                     <given-names>D</given-names>
+                  </name>
+                  <name>
+                     <surname>Shaw</surname>
+                     <given-names>K</given-names>
+                  </name>
+                  <name>
+                     <surname>Mishra</surname>
+                     <given-names>S</given-names>
+                  </name>
+                  <name>
+                     <surname>Jena</surname>
+                     <given-names>T</given-names>
+                  </name>
+               </person-group>
+               <article-title>Phylogenetic Tree Construction for DNA Sequences using Clustering Methods</article-title>
+               <source>Procedia Engineer</source>
+               <year>2012</year>
+               <volume>38</volume>
+               <fpage>1362</fpage>
+               <lpage>1366</lpage>
+               <comment>(in English)</comment>
+               <pub-id pub-id-type="doi">10.1016/j.proeng.2012.06.169</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R9">
+            <label>[9]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Sharma</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <name>
+                     <surname>Jaloree</surname>
+                     <given-names>S</given-names>
+                  </name>
+                  <name>
+                     <surname>Thakur</surname>
+                     <given-names>R</given-names>
+                  </name>
+               </person-group>
+               <article-title>Review of Clustering Methods: Toward Phylogenetic Tree Constructions</article-title>
+               <year>2018</year>
+               <fpage>475</fpage>
+               <lpage>480</lpage>
+               <pub-id pub-id-type="doi">10.1007/978-981-10-8198-9_50</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R10">
+            <label>[10]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Gonzalez</surname>
+                     <given-names>TF</given-names>
+                  </name>
+               </person-group>
+               <article-title>Clustering to minimize the maximum intercluster distance</article-title>
+               <source>Theoretical Computer Science</source>
+               <year>1985</year>
+               <month>01</month>
+               <day>01</day>
+               <volume>38</volume>
+               <fpage>293</fpage>
+               <lpage>306</lpage>
+               <pub-id pub-id-type="doi">10.1016/0304-3975(85)90224-5</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R11">
+            <label>[11]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Ning</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>Beiko</surname>
+                     <given-names>RG</given-names>
+                  </name>
+               </person-group>
+               <article-title>Phylogenetic approaches to microbial community classification</article-title>
+               <source>Microbiome</source>
+               <year>2015</year>
+               <month>Oct</month>
+               <day>5</day>
+               <volume>3</volume>
+               <fpage>47</fpage>
+               <pub-id pub-id-type="doi">10.1186/s40168-015-0114-5</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R12">
+            <label>[12]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Wang</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>Soininen</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>He</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>Shen</surname>
+                     <given-names>J</given-names>
+                  </name>
+               </person-group>
+               <article-title>Phylogenetic clustering increases with elevation for microbes</article-title>
+               <source>Environ Microbiol Rep</source>
+               <year>2012</year>
+               <month>Apr</month>
+               <volume>4</volume>
+               <issue>2</issue>
+               <fpage>217</fpage>
+               <lpage>26</lpage>
+               <pub-id pub-id-type="doi">10.1111/j.1758-2229.2011.00324.x</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R13">
+            <label>[13]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Fioravanti</surname>
+                     <given-names>D</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Phylogenetic convolutional neural networks in metagenomics</article-title>
+               <source>BMC Bioinformatics</source>
+               <year>2018</year>
+               <month>Mar</month>
+               <day>8</day>
+               <volume>19</volume>
+               <issue>Suppl 2</issue>
+               <fpage>49</fpage>
+               <pub-id pub-id-type="doi">10.1186/s12859-018-2033-5</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R14">
+            <label>[14]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Qin</surname>
+                     <given-names>L</given-names>
+                  </name>
+                  <name>
+                     <surname>Chen</surname>
+                     <given-names>YX</given-names>
+                  </name>
+                  <name>
+                     <surname>Pan</surname>
+                     <given-names>Y</given-names>
+                  </name>
+                  <name>
+                     <surname>Chen</surname>
+                     <given-names>L</given-names>
+                  </name>
+               </person-group>
+               <article-title>A novel approach to phylogenetic tree construction using stochastic optimization and clustering</article-title>
+               <source>Bmc Bioinformatics</source>
+               <year>2006</year>
+               <volume>7</volume>
+               <comment>(in English)</comment>
+               <pub-id pub-id-type="doi">10.1186/1471-2105-7-S4-S24</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R15">
+            <label>[15]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Siepel</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Evolutionarily conserved elements in vertebrate, insect, worm, and yeast genomes</article-title>
+               <source>Genome Res</source>
+               <year>2005</year>
+               <month>Aug</month>
+               <volume>15</volume>
+               <issue>8</issue>
+               <fpage>1034</fpage>
+               <lpage>50</lpage>
+               <pub-id pub-id-type="doi">10.1101/gr.3715005</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R16">
+            <label>[16]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Felsenstein</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>Churchill</surname>
+                     <given-names>GA</given-names>
+                  </name>
+               </person-group>
+               <article-title>A hidden Markov Model approach to variation among sites in rate of evolution</article-title>
+               <source>Mol Biol Evol</source>
+               <year>1996</year>
+               <month>Jan</month>
+               <volume>13</volume>
+               <issue>1</issue>
+               <fpage>93</fpage>
+               <lpage>104</lpage>
+               <comment>(in English)</comment>
+               <pub-id pub-id-type="doi">10.1093/oxfordjournals.molbev.a025575</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R17">
+            <label>[17]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Medema</surname>
+                     <given-names>MH</given-names>
+                  </name>
+                  <name>
+                     <surname>Cimermancic</surname>
+                     <given-names>P</given-names>
+                  </name>
+                  <name>
+                     <surname>Sali</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <name>
+                     <surname>Takano</surname>
+                     <given-names>E</given-names>
+                  </name>
+                  <name>
+                     <surname>Fischbach</surname>
+                     <given-names>MA</given-names>
+                  </name>
+               </person-group>
+               <article-title>A systematic computational analysis of biosynthetic gene cluster evolution: lessons for engineering biosynthesis</article-title>
+               <source>PLoS Comput Biol</source>
+               <year>2014</year>
+               <month>Dec</month>
+               <volume>10</volume>
+               <issue>12</issue>
+               <elocation-id>e1004016</elocation-id>
+               <pub-id pub-id-type="doi">10.1371/journal.pcbi.1004016</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R18">
+            <label>[18]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Han</surname>
+                     <given-names>E</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Clustering of 770,000 genomes reveals post-colonial population structure of North America</article-title>
+               <source>Nat Commun</source>
+               <year>2017</year>
+               <month>Feb</month>
+               <day>7</day>
+               <volume>8</volume>
+               <elocation-id>14238</elocation-id>
+               <comment>2017</comment>
+               <pub-id pub-id-type="doi">10.1038/ncomms14238</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R19">
+            <label>[19]</label>
+            <element-citation publication-type="confproc">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Xie</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <name>
+                     <surname>Girshick</surname>
+                     <given-names>R</given-names>
+                  </name>
+                  <name>
+                     <surname>Farhadi</surname>
+                     <given-names>A</given-names>
+                  </name>
+               </person-group>
+               <source>Unsupervised deep embedding for clustering analysis</source>
+               <conf-name>presented at the Proceedings of the 33rd International Conference on International Conference on Machine Learning</conf-name>
+               <year>2016</year>
+               <volume>48</volume>
+               <conf-loc>New York, NY, USA</conf-loc>
+            </element-citation>
+         </ref>
+         <ref id="R20">
+            <label>[20]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Schwarz</surname>
+                     <given-names>G</given-names>
+                  </name>
+               </person-group>
+               <article-title>Estimating the Dimension of a Model</article-title>
+               <source>Ann Statist</source>
+               <year>1978</year>
+               <month>03</month>
+               <volume>6</volume>
+               <issue>2</issue>
+               <fpage>461</fpage>
+               <lpage>464</lpage>
+               <pub-id pub-id-type="doi">10.1214/aos/1176344136</pub-id>
+               <comment>(in en). 1978</comment>
+            </element-citation>
+         </ref>
+         <ref id="R21">
+            <label>[21]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Hadfield</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+               <source>Bioinformatics</source>
+               <year>2018</year>
+               <month>Dec</month>
+               <day>1</day>
+               <volume>34</volume>
+               <issue>23</issue>
+               <fpage>4121</fpage>
+               <lpage>4123</lpage>
+               <comment>2018</comment>
+               <pub-id pub-id-type="doi">10.1093/bioinformatics/bty407</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R22">
+            <label>[22]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Larkin</surname>
+                     <given-names>MA</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Clustal W and Clustal X version 2.0</article-title>
+               <source>Bioinformatics</source>
+               <year>2007</year>
+               <month>Nov</month>
+               <day>1</day>
+               <volume>23</volume>
+               <issue>21</issue>
+               <fpage>2947</fpage>
+               <lpage>8</lpage>
+               <pub-id pub-id-type="doi">10.1093/bioinformatics/btm404</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R23">
+            <label>[23]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Price</surname>
+                     <given-names>MN</given-names>
+                  </name>
+                  <name>
+                     <surname>Dehal</surname>
+                     <given-names>PS</given-names>
+                  </name>
+                  <name>
+                     <surname>Arkin</surname>
+                     <given-names>AP</given-names>
+                  </name>
+               </person-group>
+               <article-title>FastTree 2--approximately maximum-likelihood trees for large alignments</article-title>
+               <source>PLoS One</source>
+               <year>2010</year>
+               <month>Mar</month>
+               <day>10</day>
+               <volume>5</volume>
+               <issue>3</issue>
+               <elocation-id>e9490</elocation-id>
+               <pub-id pub-id-type="doi">10.1371/journal.pone.0009490</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R24">
+            <label>[24]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Letunic</surname>
+                     <given-names>I</given-names>
+                  </name>
+                  <name>
+                     <surname>Bork</surname>
+                     <given-names>P</given-names>
+                  </name>
+               </person-group>
+               <article-title>Interactive Tree Of Life (iTOL): an online tool for phylogenetic tree display and annotation</article-title>
+               <source>Bioinformatics</source>
+               <year>2007</year>
+               <month>Jan</month>
+               <day>1</day>
+               <volume>23</volume>
+               <issue>1</issue>
+               <fpage>127</fpage>
+               <lpage>8</lpage>
+               <pub-id pub-id-type="doi">10.1093/bioinformatics/btl529</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R25">
+            <label>[25]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Yu</surname>
+                     <given-names>WB</given-names>
+                  </name>
+                  <name>
+                     <surname>Tang</surname>
+                     <given-names>GD</given-names>
+                  </name>
+                  <name>
+                     <surname>Zhang</surname>
+                     <given-names>L</given-names>
+                  </name>
+                  <name>
+                     <surname>Corlett</surname>
+                     <given-names>RT</given-names>
+                  </name>
+               </person-group>
+               <article-title>Decoding the evolution and transmissions of the novel pneumonia coronavirus (SARS-CoV-2 / HCoV-19) using whole genomic data</article-title>
+               <source>Zool Res</source>
+               <year>2020</year>
+               <month>May</month>
+               <day>18</day>
+               <volume>41</volume>
+               <issue>3</issue>
+               <fpage>247</fpage>
+               <lpage>257</lpage>
+               <pub-id pub-id-type="doi">10.24272/j.issn.2095-8137.2020.022</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R26">
+            <label>[26]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Thorndike</surname>
+                     <given-names>RL</given-names>
+                  </name>
+               </person-group>
+               <article-title>Who belongs in the family?</article-title>
+               <source>Psychometrika</source>
+               <year>1953</year>
+               <month>12</month>
+               <day>01</day>
+               <volume>18</volume>
+               <issue>4</issue>
+               <fpage>267</fpage>
+               <lpage>276</lpage>
+               <comment>1953</comment>
+               <pub-id pub-id-type="doi">10.1007/BF02289263</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R27">
+            <label>[27]</label>
+            <element-citation publication-type="confproc">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>MacQueen</surname>
+                     <given-names>J</given-names>
+                  </name>
+               </person-group>
+               <source>Some methods for classification and analysis of multivariate observations</source>
+               <conf-name>Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability, Volume 1: Statistics</conf-name>
+               <conf-loc>Berkeley, Calif.</conf-loc>
+               <conf-sponsor>University of California Press</conf-sponsor>
+               <year>1967</year>
+               <fpage>281</fpage>
+               <lpage>297</lpage>
+               <comment>Fifth Berkeley Symposium on Mathematical Statistics and Probability. [Online]. Available:<ext-link ext-link-type="uri" xlink:href="https://projecteuclid.org/euclid.bsmsp/1200512992">https://projecteuclid.org/euclid.bsmsp/1200512992</ext-link>
+               </comment>
+            </element-citation>
+         </ref>
+         <ref id="R28">
+            <label>[28]</label>
+            <element-citation publication-type="confproc">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Zhang</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <name>
+                     <surname>Ramakrishnan</surname>
+                     <given-names>R</given-names>
+                  </name>
+                  <name>
+                     <surname>Livny</surname>
+                     <given-names>M</given-names>
+                  </name>
+               </person-group>
+               <source>BIRCH: an efficient data clustering method for very large databases</source>
+               <conf-name>presented at the Proceedings of the 1996 ACM SIGMOD international conference on Management of data</conf-name>
+               <conf-loc>Montreal, Quebec, Canada</conf-loc>
+               <year>1996</year>
+               <comment>[Online]</comment>
+               <pub-id pub-id-type="doi">10.1145/233269.233324</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R29">
+            <label>[29]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Zhang</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <name>
+                     <surname>Ramakrishnan</surname>
+                     <given-names>R</given-names>
+                  </name>
+                  <name>
+                     <surname>Livny</surname>
+                     <given-names>M</given-names>
+                  </name>
+               </person-group>
+               <article-title>BIRCH: A New Data Clustering Algorithm and Its Applications</article-title>
+               <source>Data Mining and Knowledge Discovery</source>
+               <year>1997</year>
+               <month>06</month>
+               <day>01</day>
+               <volume>1</volume>
+               <issue>2</issue>
+               <fpage>141</fpage>
+               <lpage>182</lpage>
+               <comment>1997</comment>
+               <pub-id pub-id-type="doi">10.1023/A:1009783824328</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R30">
+            <label>[30]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Li</surname>
+                     <given-names>X</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Transmission dynamics and evolutionary history of 2019-nCoV</article-title>
+               <source>J Med Virol</source>
+               <volume>92</volume>
+               <issue>5</issue>
+               <fpage>501</fpage>
+               <lpage>511</lpage>
+               <month>May</month>
+               <year>2020</year>
+               <pub-id pub-id-type="doi">10.1002/jmv.25701</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R31">
+            <label>[31]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Sun</surname>
+                     <given-names>J</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>COVID-19: Epidemiology, Evolution, and Cross-Disciplinary Perspectives</article-title>
+               <source>Trends Mol Med</source>
+               <year>2020</year>
+               <month>May</month>
+               <volume>26</volume>
+               <issue>5</issue>
+               <fpage>483</fpage>
+               <lpage>495</lpage>
+               <pub-id pub-id-type="doi">10.1016/j.molmed.2020.02.008</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R32">
+            <label>[32]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Chan</surname>
+                     <given-names>JFW</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>A familial cluster of pneumonia associated with the 2019 novel coronavirus indicating person-to-person transmission: a study of a family cluster</article-title>
+               <source>Lancet</source>
+               <year>2020</year>
+               <month>Feb</month>
+               <day>15</day>
+               <volume>395</volume>
+               <issue>10223</issue>
+               <fpage>514</fpage>
+               <lpage>523</lpage>
+               <comment>2020. (in English)</comment>
+               <pub-id pub-id-type="doi">10.1016/S0140-6736(20)30154-9</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R33">
+            <label>[33]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Zhou</surname>
+                     <given-names>P</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+               <source>Nature</source>
+               <year>2020</year>
+               <month>Mar</month>
+               <volume>579</volume>
+               <issue>7798</issue>
+               <fpage>270</fpage>
+               <lpage>273</lpage>
+               <pub-id pub-id-type="doi">10.1038/s41586-020-2012-7</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R34">
+            <label>[34]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Mishra</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Mutation landscape of SARS-CoV-2 reveals three mutually exclusive clusters of leading and trailing single nucleotide substitutions</article-title>
+               <source>bioRxiv</source>
+               <year>2020</year>
+               <elocation-id>2020.05.07.082768</elocation-id>
+               <pub-id pub-id-type="doi">10.1101/2020.05.07.082768</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R35">
+            <label>[35]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Seemann</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Tracking the COVID-19 pandemic in Australia using genomics</article-title>
+               <source>Nature Communications</source>
+               <year>2020</year>
+               <month>09</month>
+               <day>01</day>
+               <volume>11</volume>
+               <issue>1</issue>
+               <fpage>4376</fpage>
+               <comment>2020</comment>
+               <pub-id pub-id-type="doi">10.1038/s41467-020-18314-x</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R36">
+            <label>[36]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Zeng</surname>
+                     <given-names>ZX</given-names>
+                  </name>
+                  <name>
+                     <surname>Vo</surname>
+                     <given-names>A</given-names>
+                  </name>
+                  <name>
+                     <surname>Mao</surname>
+                     <given-names>CS</given-names>
+                  </name>
+                  <name>
+                     <surname>Clare</surname>
+                     <given-names>SE</given-names>
+                  </name>
+                  <name>
+                     <surname>Khan</surname>
+                     <given-names>SA</given-names>
+                  </name>
+                  <name>
+                     <surname>Luo</surname>
+                     <given-names>Y</given-names>
+                  </name>
+               </person-group>
+               <article-title>Cancer classification and pathway discovery using non-negative matrix factorization</article-title>
+               <source>J Biomed Inform</source>
+               <year>2019</year>
+               <month>Aug</month>
+               <volume>96</volume>
+               <comment>2019. (in English)</comment>
+               <pub-id pub-id-type="doi">10.1016/j.jbi.2019.103247</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R37">
+            <label>[37]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Xu</surname>
+                     <given-names>D</given-names>
+                  </name>
+                  <name>
+                     <surname>Tian</surname>
+                     <given-names>Y</given-names>
+                  </name>
+               </person-group>
+               <article-title>A Comprehensive Survey of Clustering Algorithms</article-title>
+               <source>Annals of Data Science</source>
+               <year>2015</year>
+               <month>06</month>
+               <day>01</day>
+               <volume>2</volume>
+               <issue>2</issue>
+               <fpage>165</fpage>
+               <lpage>193</lpage>
+               <comment>2015</comment>
+               <pub-id pub-id-type="doi">10.1007/s40745-015-0040-1</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R38">
+            <label>[38]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Sanchez-Pinto</surname>
+                     <given-names>LN</given-names>
+                  </name>
+                  <name>
+                     <surname>Stroup</surname>
+                     <given-names>EK</given-names>
+                  </name>
+                  <name>
+                     <surname>Pendergrast</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <name>
+                     <surname>Pinto</surname>
+                     <given-names>N</given-names>
+                  </name>
+                  <name>
+                     <surname>Luo</surname>
+                     <given-names>Y</given-names>
+                  </name>
+               </person-group>
+               <article-title>Derivation and Validation of Novel Phenotypes of Multiple Organ Dysfunction Syndrome in Critically Ill Children</article-title>
+               <source>Jama Netw Open</source>
+               <year>2020</year>
+               <month>Aug</month>
+               <day>11</day>
+               <volume>3</volume>
+               <issue>8</issue>
+               <comment>(in English)</comment>
+               <pub-id pub-id-type="doi">10.1001/jamanetworkopen.2020.9271</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R39">
+            <label>[39]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Ma</surname>
+                     <given-names>YJ</given-names>
+                  </name>
+                  <name>
+                     <surname>Jiang</surname>
+                     <given-names>HM</given-names>
+                  </name>
+                  <name>
+                     <surname>Shah</surname>
+                     <given-names>SJ</given-names>
+                  </name>
+                  <name>
+                     <surname>Arnett</surname>
+                     <given-names>D</given-names>
+                  </name>
+                  <name>
+                     <surname>Irvin</surname>
+                     <given-names>MR</given-names>
+                  </name>
+                  <name>
+                     <surname>Luo</surname>
+                     <given-names>Y</given-names>
+                  </name>
+               </person-group>
+               <article-title>Genetic-Based Hypertension Subtype Identification Using Informative SNPs</article-title>
+               <source>Genes-Basel</source>
+               <year>2020</year>
+               <month>Nov</month>
+               <volume>11</volume>
+               <issue>11</issue>
+               <comment>2020. (in English)</comment>
+               <pub-id pub-id-type="doi">10.3390/genes11111265</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R40">
+            <label>[40]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Luo</surname>
+                     <given-names>Y</given-names>
+                  </name>
+                  <etal/>
+               </person-group>
+               <article-title>Integrating hypertension phenotype and genotype with hybrid non-negative matrix factorization</article-title>
+               <source>Bioinformatics</source>
+               <year>2019</year>
+               <month>Aug</month>
+               <day>15</day>
+               <volume>35</volume>
+               <issue>16</issue>
+               <fpage>2885</fpage>
+               <pub-id pub-id-type="doi">10.1093/bioinformatics/btz049</pub-id>
+            </element-citation>
+         </ref>
+         <ref id="R41">
+            <label>[41]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Li</surname>
+                     <given-names>T</given-names>
+                  </name>
+                  <name>
+                     <surname>Ding</surname>
+                     <given-names>C-c</given-names>
+                  </name>
+               </person-group>
+               <article-title>Nonnegative Matrix Factorizations for Clustering: A Survey</article-title>
+               <year>2018</year>
+               <fpage>149</fpage>
+               <lpage>176</lpage>
+            </element-citation>
+         </ref>
+         <ref id="R42">
+            <label>[42]</label>
+            <element-citation publication-type="journal">
+               <person-group person-group-type="author">
+                  <name>
+                     <surname>Luo</surname>
+                     <given-names>Y</given-names>
+                  </name>
+                  <name>
+                     <surname>Mao</surname>
+                     <given-names>CS</given-names>
+                  </name>
+               </person-group>
+               <article-title>PANTHER: Pathway Augmented Nonnegative Tensor Factorization for HighER-order Feature Learning</article-title>
+               <source>Aaai Conf Artif Inte</source>
+               <year>2021</year>
+               <volume>35</volume>
+               <fpage>371</fpage>
+               <lpage>380</lpage>
+               <comment>(in English). [Online]. Available: &lt;Go to ISI&gt;://WOS:000680423500043.</comment>
+            </element-citation>
+         </ref>
+      </ref-list>
+   </back>
+   <floats-group>
+      <fig id="F1" position="float">
+         <label>Fig. 1</label>
+         <caption>
+            <title>The genetic information of the 16,873 SARS-CoV-2 strains.</title>
+            <p>(A) The distribution of the mutation counts of SARS-CoV-2. (B) Frequency spectra of SARS-CoV-2. The mutation frequency of derived mutations of 16,873 SARS-CoV-2 stains is depicted on the X axis, and the number of mutations in corresponding strains occurred is displayed on the Y axis. A log-10 scale is used for the Y axis of the graph, and the Y axis ranges from 1 to 10,000. (C) Normalized allele frequency of SARS-CoV-2. There are 8,706 unique genomes across the 16,873 strains. The X axis is the number of strains for each unique genome and the Y axis is the proportion of the unique genomes. A log-10 scale is used for the Y axis of the graph, and the Y axis ranges from 0.0001 to 1</p>
+         </caption>
+         <graphic xlink:href="EMS94720-f001"/>
+      </fig>
+      <fig id="F2" position="float">
+         <label>Fig. 2</label>
+         <caption>
+            <p>Evaluation of the number of clusters. The evolution of the sum of squared errors (SSE; left) and Bayesian information criterion (BIC; right) for the number of clusters in the deep learning clustering runs. We used the elbow method and chose the elbow of the curve as the number of clusters. The elbow method indicated that the number of clusters is six.</p>
+         </caption>
+         <graphic xlink:href="EMS94720-f002"/>
+      </fig>
+      <fig id="F3" position="float">
+         <label>Fig. 3</label>
+         <caption>
+            <title>Clustering of SARS-CoV-2.</title>
+            <p>(A, B and C) The Silhouette score (A), Sum of Squared Errors (SSE; B) and Bayesian Information Criterion (BIC; C) for the four selected algorithms (X axis). (D) Phylogenetic tree of 16,873 SARS-CoV-2 strains. Four colored panels outside the phylogenetic tree are used to identify auxiliary information for each virus strain. The inner panel represents the distribution of the continents. The outer three panels represent the partitions of the six clusters across the three best performance clustering algorithms (deep learning, K-means and Hierarchical) in the tree. (E) Mean pairwise genetic distances for intra-clustered and inter-clustered genetic distances. The blue bars represent mean pairwise genetic distances between pairs of isolates within the clusters, and the red bars represent mean pairwise genetic distances between pairs of isolates outside the clusters. The error bar represents the standard deviation. The mean distance between pairs of strains for intra-clusters was significantly lower (P-value &lt; 0.001, Wilcoxon rank-sum test) than that of inter-clusters. (F) The t-SNE plot of the deep learning clustering results. Each dot represents one strain and each color represents the corresponding cluster.</p>
+         </caption>
+         <graphic xlink:href="EMS94720-f003"/>
+      </fig>
+      <table-wrap position="float" orientation="portrait" id="T1">
+         <label>Table 1</label>
+         <caption>
+            <title>Geographic distribution of six continents for each cluster.</title>
+         </caption>
+         <table frame="hsides" rules="groups">
+            <thead>
+               <tr>
+                  <th align="center" valign="top">Cluster</th>
+                  <th align="center" valign="top">A</th>
+                  <th align="center" valign="top">B</th>
+                  <th align="center" valign="top">C</th>
+                  <th align="center" valign="top">D</th>
+                  <th align="center" valign="top">E</th>
+                  <th align="center" valign="top">F</th>
+                  <th align="center" valign="top">Total</th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr>
+                  <td align="center" valign="top">Africa</td>
+                  <td align="center" valign="top">3</td>
+                  <td align="center" valign="top">4</td>
+                  <td align="center" valign="top">65</td>
+                  <td align="center" valign="top">7</td>
+                  <td align="center" valign="top">10</td>
+                  <td align="center" valign="top">9</td>
+                  <td align="center" valign="top">98</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">Asia</td>
+                  <td align="center" valign="top">38</td>
+                  <td align="center" valign="top">648</td>
+                  <td align="center" valign="top">248</td>
+                  <td align="center" valign="top">217</td>
+                  <td align="center" valign="top">57</td>
+                  <td align="center" valign="top">116</td>
+                  <td align="center" valign="top">1,324</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">Europe</td>
+                  <td align="center" valign="top">1,137</td>
+                  <td align="center" valign="top">990</td>
+                  <td align="center" valign="top">3,119</td>
+                  <td align="center" valign="top">212</td>
+                  <td align="center" valign="top">1,108</td>
+                  <td align="center" valign="top">2,961</td>
+                  <td align="center" valign="top">9,527</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">North America</td>
+                  <td align="center" valign="top">94</td>
+                  <td align="center" valign="top">334</td>
+                  <td align="center" valign="top">625</td>
+                  <td align="center" valign="top">1,268</td>
+                  <td align="center" valign="top">2,274</td>
+                  <td align="center" valign="top">170</td>
+                  <td align="center" valign="top">4,765</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">Oceania</td>
+                  <td align="center" valign="top">110</td>
+                  <td align="center" valign="top">161</td>
+                  <td align="center" valign="top">233</td>
+                  <td align="center" valign="top">196</td>
+                  <td align="center" valign="top">191</td>
+                  <td align="center" valign="top">149</td>
+                  <td align="center" valign="top">1,040</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">South America</td>
+                  <td align="center" valign="top">6</td>
+                  <td align="center" valign="top">5</td>
+                  <td align="center" valign="top">44</td>
+                  <td align="center" valign="top">10</td>
+                  <td align="center" valign="top">5</td>
+                  <td align="center" valign="top">49</td>
+                  <td align="center" valign="top">119</td>
+               </tr>
+               <tr>
+                  <td align="center" valign="top">Total</td>
+                  <td align="center" valign="top">1,388</td>
+                  <td align="center" valign="top">2,142</td>
+                  <td align="center" valign="top">4,334</td>
+                  <td align="center" valign="top">1,910</td>
+                  <td align="center" valign="top">3,645</td>
+                  <td align="center" valign="top">3,454</td>
+                  <td align="center" valign="top">16,873</td>
+               </tr>
+            </tbody>
+         </table>
+      </table-wrap>
+   </floats-group>
+</article>

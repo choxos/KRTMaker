@@ -1,0 +1,2044 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS132842</article-id>
+<article-id pub-id-type="doi">10.1101/2021.08.12.456131</article-id>
+<article-id pub-id-type="archive">PPR382500</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Phylogenetic reconciliation reveals extensive ancestral recombination in Sarbecoviruses and the SARS-CoV-2 lineage</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Zaman</surname>
+<given-names>Sumaira</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Sledzieski</surname>
+<given-names>Samuel</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Berger</surname>
+<given-names>Bonnie</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>Yi-Chieh</given-names>
+</name>
+<xref ref-type="aff" rid="A4">4</xref>
+<xref ref-type="corresp" rid="CR1">**</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Bansal</surname>
+<given-names>Mukul S.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A5">5</xref>
+<xref ref-type="corresp" rid="CR1">**</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Computer Science &amp; Engineering, University of Connecticut, Storrs, CT 06269, USA</aff>
+<aff id="A2">
+<label>2</label>Computer Science and Artificial Intelligence Lab, Massachusetts Institute of Technology, Cambridge, MA 02139, USA</aff>
+<aff id="A3">
+<label>3</label>Department of Mathematics, Massachusetts Institute of Technology, Cambridge, MA 02139, USA</aff>
+<aff id="A4">
+<label>4</label>Department of Computer Science, Harvey Mudd College, Claremont, CA 91711, USA</aff>
+<aff id="A5">
+<label>5</label>Institute for Systems Genomics, University of Connecticut, Storrs, CT 06269, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>**</label>Co-corresponding authors: <email>yjw@cs.hmc.edu</email>, <email>mukul.bansal@uconn.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>14</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>13</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">An accurate understanding of the evolutionary history of rapidly-evolving viruses like SARS-CoV-2, responsible for the COVID-19 pandemic, is crucial to tracking and preventing the spread of emerging pathogens. However, viruses undergo frequent recombination, which makes it difficult to trace their evolutionary history using traditional phylogenetic methods. Here, we present a phylogenetic workflow, virDTL, for analyzing viral evolution in the presence of recombination. Our approach leverages reconciliation methods developed for inferring horizontal gene transfer in prokaryotes, and, compared to existing tools, is uniquely able to identify ancestral recombinations while accounting for several sources of inference uncertainty, including in the construction of a strain tree, estimation and rooting of gene family trees, and reconciliation itself. We apply this workflow to the <italic>Sarbecovirus</italic> subgenus and demonstrate how a principled analysis of predicted recombination gives insight into the evolution of SARS-CoV-2. In addition to providing confirming evidence for the horseshoe bat as its zoonotic origin, we identify several ancestral recombination events that merit further study.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Phylogenetic analysis of the first available sequence from Wuhan, China placed SARS-CoV-2 in the <italic>Sarbecovirus</italic> subgenus of <italic>Betacoronavirus</italic> [<xref ref-type="bibr" rid="R49">49</xref>], and several subsequent studies have investigated its evolutionary origins [<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R7">7</xref>]. SARS-CoV-2 shares 96% sequence similarity to bat <italic>Sarbecovirus</italic> RaTG13, and the two viruses form a clade distinct from other SARS-related coronaviruses, suggesting that the SARS-CoV-2 lineage may have its zoonotic origins in bats [<xref ref-type="bibr" rid="R51">51</xref>]. Pangolins have also been suggested as possible hosts [<xref ref-type="bibr" rid="R25">25</xref>], though later studies have shown that, while pangolins are natural reservoirs of <italic>Betacoronaviruses</italic>, SARS-CoV-2 likely did not evolve directly from pangolin coronavirus [<xref ref-type="bibr" rid="R27">27</xref>]. Language models have also shown that SARS-CoV-2 is “semantically” closest to bat and next to pangolin [<xref ref-type="bibr" rid="R19">19</xref>]. Such analyses are of biological and societal interest, as identifying the source of the virus may help inform future outbreaks of viruses with zoonotic origins.</p>
+<p id="P3">Many viruses, including coronaviruses, undergo frequent recombination [<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R31">31</xref>], which complicates phylogenetic analysis [<xref ref-type="bibr" rid="R33">33</xref>]. Moreover, phylogenetic inference is susceptible to several sources of uncertainty, many of which are exacerbated by recombination between viral genomes. Thus, a common step in the study of viral evolution is to infer recombination, which is commonly done by enumerating triplets of strains and analyzing their sequence similarity [<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R30">30</xref>]. This approach works well when recombination occurs infrequently (relative to the rate of evolution) and mostly between extant strains (<xref ref-type="fig" rid="F1">Figure 1a</xref>). However, as the number of strains grows and recombination occurs multiple times within a lineage, recombination becomes difficult to infer from sequence similarity alone (<xref ref-type="fig" rid="F1">Figure 1b</xref>).</p>
+<p id="P4">Recombination in viruses is similar to gene conversion in that it generally results in the one-sided transfer of genetic material from a donor genome to a recipient genome, rather than an “exchange” of genetic material between the two recombining genomes [<xref ref-type="bibr" rid="R34">34</xref>]. Thus, we reasoned that methods for studying horizontal gene transfer (HGT) in prokaryotes could potentially be useful for inferring recombination in viruses. Despite advances in horizontal gene transfer (HGT) detection (<xref ref-type="sec" rid="S13">Discussion</xref>), these methods have rarely been used to study viral genome evolution or recombination.</p>
+<p id="P5">In this work, we describe a step-by-step computational protocol, virDTL, for analyzing viral evolution in the presence of recombination. virDTL newly leverages Duplication-Transfer-Loss (DTL) reconciliation, a powerful computational technique used to study horizontal gene transfer in prokaryotes [<xref ref-type="bibr" rid="R2">2</xref>–<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R20">20</xref>,<xref ref-type="bibr" rid="R24">24</xref>,<xref ref-type="bibr" rid="R26">26</xref>,<xref ref-type="bibr" rid="R37">37</xref>–<xref ref-type="bibr" rid="R39">39</xref>,<xref ref-type="bibr" rid="R41">41</xref>,<xref ref-type="bibr" rid="R43">43</xref>–<xref ref-type="bibr" rid="R46">46</xref>], to gain insights into viral evolution and recombination (<xref ref-type="fig" rid="F1">Figure 1c</xref>). In addition, virDTL addresses common sources of HGT inference error and uncertainty under recombination by carefully constructing the strain tree and by using resampling and error-correction methods. virDTL addresses some of the key difficulties traditionally associated with viral evolutionary analysis, such as systematic, large-scale identification of ancestral recombination events and precise phylogenetic identification of the recombining strains, and can help virologists and epidemiologists better understand viral evolution and easily infer recombination events.</p>
+<p id="P6">We demonstrate the utility of virDTL by using it to investigate viral recombination in the <italic>Sarbecovirus</italic> subgenus. Specifically, we ran virDTL on 54 <italic>Sarbecovirus</italic> genomes from 4 host species, including the novel coronavirus SARS-CoV-2, and assessed its ability to recover recombinations between leaf strains and discover new ancestral recombinations (<xref ref-type="sec" rid="S2">Results</xref>). We identify 226 plausible leaf-to-leaf (i.e., between sampled strains) and 362 plausible ancestral HGTs across all gene families, and identify 8 well-supported HGTs of potential relevance to SARS-CoV-2 evolution, including 3 in the well-studied Spike and Nucleocapsid proteins. We use the popular sequence similarity tool SimPlot [<xref ref-type="bibr" rid="R28">28</xref>] to validate our protocol on a subset of leaf-to-leaf HGTs and explore several case studies where our DTL-reconciliation-based approach enables inference of viral recombination. Among other results, our analysis supports the previously-proposed hypothesis that similarity between the SARS-CoV-2 and pangolin strains arose due to a recombination between the ancestor of SARS-CoV-2 and RaTG13 and an ancestral pangolin viral strain [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P7">Lastly, we identify and discuss the strengths and limitations of the proposed reconciliation-based approach, contrast virDTL with widely-used sequence-similarity based approaches such as SimPlot [<xref ref-type="bibr" rid="R28">28</xref>] and RDP [<xref ref-type="bibr" rid="R30">30</xref>], and compare our protocol against two recent approaches used to investigate recombination in coronaviruses using phylogenetic reconciliation, developed in parallel and independently from this work [<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R29">29</xref>] (<xref ref-type="sec" rid="S13">Discussion</xref>).</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>Overview of virDTL</title>
+<p id="P8">The virDTL protocol is designed to infer recombination in viruses while minimizing the impact of key sources of error (<xref ref-type="fig" rid="F1">Figure 1c</xref>). We briefly describe the key steps below. <list list-type="order" id="L1">
+<list-item>
+<p id="P9">
+<italic>Strain tree reconstruction and selection.</italic> Since viruses are frequently impacted by substantial recombination, virDTL first identifies non-recombinant or minimally-recombinant genomic regions that could be used to reconstruct credible strain trees. It then further analyzes candidate strain trees to identify a single, minimally recombinant strain tree. virDTL uses BEAST [<xref ref-type="bibr" rid="R42">42</xref>] for candidate strain tree reconstruction.</p>
+</list-item>
+<list-item>
+<p id="P10">
+<italic>Gene tree reconstruction and error-correction.</italic> Gene trees are often impacted by phylogenetic reconstruction error and uncertainty due to lack of sufficient phylogenetic signal. virDTL minimizes the downstream impact of such error and uncertainty by error-correcting the gene tree topologies to match the strain tree unless the sequence data confidently supports incongruence. virDTL uses RAxML [<xref ref-type="bibr" rid="R40">40</xref>] for initial gene tree construction and TreeFix-DTL [<xref ref-type="bibr" rid="R5">5</xref>] for error-correction. virDTL further accounts for topological uncertainty by sampling multiple error-corrected gene trees per gene family for reconciliation analysis.</p>
+</list-item>
+<list-item>
+<p id="P11">
+<italic>Gene tree rooting.</italic> Gene trees reconstructed using standard phylogenetic approaches are unrooted and must be rooted prior to reconciliation analysis. Since there is often uncertainty in rooting gene trees, virDTL uses multiple gene tree rooting approaches and assess how the resulting differently rooted gene trees affect support for final evolutionary inferences. virDTL uses OptRoot [<xref ref-type="bibr" rid="R4">4</xref>] and Minimum Ancestor Deviation (MAD) rooting [<xref ref-type="bibr" rid="R47">47</xref>], with OptRoot as the primary rooting method.</p>
+</list-item>
+<list-item>
+<p id="P12">
+<italic>Phylogenetic reconciliation analysis.</italic> To account for ambiguity or uncertainty in phylogenetic reconciliation, virDTL randomly samples many optimal reconciliations per gene tree and aggregates inferences across both reconciliation samples and gene tree samples to identify only well-supported HGTs for each gene family. virDTL uses RANGER-DTL [<xref ref-type="bibr" rid="R4">4</xref>] to sample optimal reconciliations.</p>
+</list-item>
+<list-item>
+<p id="P13">
+<italic>Strain tree dating and evaluation of HGTs.</italic> virDTL dates the strain tree so that any HGTs inferred can be evaluated for time-consistency among the participating strains, and performs additional analysis to determine if the detected HGTs support the inference of larger recombination events. virDTL uses BEAST [<xref ref-type="bibr" rid="R42">42</xref>] to perform strain tree dating.</p>
+</list-item>
+</list>
+</p>
+<p id="P14">Full details of the virDTL protocol as well as its specific application to our <italic>Sarbecovirus</italic> dataset appear in <xref ref-type="sec" rid="S15">Methods</xref>. Scripts implementing several aspects of the virDTL protocol, along with step-by-step instructions, are freely available at <ext-link ext-link-type="uri" xlink:href="https://github.com/suz11001/virDTL">https://github.com/suz11001/virDTL</ext-link>.</p>
+</sec>
+<sec id="S4">
+<title>Recombination occurs frequently in Sarbecoviruses</title>
+<p id="P15">The <italic>Sarbecovirus</italic> genome comprises 4 well-characterized structural proteins which construct the viral Spike (S), Envelope (E), Membrane (M), and Nucleocapsid (N), and 7 open reading frames which act as accessory factors (<xref ref-type="fig" rid="F2">Figure 2b</xref>). The largest open reading frame, ORF1ab, comprises the replicase-transcriptase complex displayed as two polyproteins (ORF1a and ORF1b), which synthesize 16 non-structural proteins by three viral proteases [<xref ref-type="bibr" rid="R17">17</xref>,<xref ref-type="bibr" rid="R22">22</xref>,<xref ref-type="bibr" rid="R23">23</xref>]. The smaller open reading frames, near the 3' end of the genomes, encode proteins hypothesized to interact with a diverse array of host biological pathways [<xref ref-type="bibr" rid="R16">16</xref>].</p>
+<p id="P16">We construct 3 candidate strain trees using the whole genome and two putative non-recombinant regions A and B (<xref ref-type="fig" rid="F2">Figure 2a</xref>; <xref ref-type="sec" rid="S15">Methods</xref>). Due to potential recombination in non-recombinant region A (<xref ref-type="fig" rid="F2">Figure 2c,d</xref>; <xref ref-type="sec" rid="S15">Methods</xref>), we select the non-recombinant region B tree against which to reconcile our gene trees.</p>
+<p id="P17">We account for topological uncertainty and reconciliation uncertainty by reconstructing 10 error-corrected gene trees per gene family and, for each rooting, sampling 100 optimal DTL reconciliations for each gene tree. Thus, an inferred HGT can have a maximum support of 1000. In this analysis, we consider an HGT to be <italic>supported</italic> if it is found in at least 100 samples, which corresponds to HGTs whose support values are in the 95<sup>th</sup> percentile. Note that support quantile thresholds were computed by aggregating results across undirected donor-recipient pairs, and so are more stringent than for single directed HGT events. Using OptRoot-rooted gene trees, we identified 588 supported HGT events across all gene families (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S3</xref>), which includes 78 with at least 500 support (99<sup>th</sup> percentile), and 25 with at least 808 support (99.5<sup>th</sup> percentile). Of the supported HGTs, 226 are leaf-to-leaf, 115 are ancestor-to-ancestor, and 247 involve an ancestral node and a leaf. As a different rooting of the gene tree may affect the inferred events, we verified that, of the 588 HGTs, 441 are also supported using MAD rooting. Of the 78 HGTs with support in the 99<sup>th</sup> percentile, 71 were also supported using MAD rooting, including all 25 HGTs with support in the 99.5<sup>th</sup> percentile.</p>
+<p id="P18">We verified that most HGTs in the 99<sup>th</sup> percentile are consistent with temporal constraints implied by the divergence times estimated on our strain tree. Note that HGTs that go forward in time can be temporally consistent due to the existence of unsampled strains [<xref ref-type="bibr" rid="R10">10</xref>], but HGTs cannot go backward in time. Specifically, we found that of the 78 HGTs with support in the 99<sup>th</sup> percentile, 66 are consistent with the dating implied by the strain tree, including 24 out of 25 HGTs with support in the 99.5<sup>th</sup> percentile. Seven additional HGTs would be time-consistent if the donor or recipient were shifted by one branch, leaving only 5 of the 78 events as fully inconsistent. We note that both estimating divergence time and identifying donors and recipients of HGT events can be error-prone, and some inconsistency is therefore expected.</p>
+<p id="P19">While a detailed analysis of all putative HGT events is beyond the scope of this work, we highlight 8 HGTs involving the SARS-CoV-2 lineage, including a recombination in the Spike protein between an ancestor of Pangolin viral strains and an ancestor of SARS-CoV-2 and Bat CoV RaTG13. We also validate a subset of inferred leaf-to-leaf HGTs using the sequence-based recombination detection tool SimPlot [<xref ref-type="bibr" rid="R28">28</xref>] and highlight additional case studies for ancestral HGTs and HGTs with ambiguous direction. In addition, we assess the feasibility of using inferred HGTs to detect larger recombination events spanning multiple genes.</p>
+<p id="P20">Time-consistent HGTs with ancestral recipients and greater than 500 support are shown in <xref ref-type="supplementary-material" rid="SD2">Figure S2</xref>. We provide a full list of all inferred HGTs (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table S2</xref>) as well as the full strain tree with all internal nodes labeled (<xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S1</xref>).</p>
+</sec>
+<sec id="S5">
+<title>Recombination affects the SARS-CoV-2 lineage</title>
+<p id="P21">Given the interest in understanding SARS-CoV-2 evolution, we used virDTL to search for recombinations involving the SARS-CoV-2 lineage. We inferred six highly-supported HGTs using the default OptRoot-rooted gene trees, and two additional highly-supported HGTs using MAD-rooted gene trees (<xref ref-type="fig" rid="F3">Figure 3a</xref>). Among these events, at least two are transfers into the SARS-CoV-2 lineage and at least one is a transfer from the SARS-CoV-2 lineage; a clear direction of transfer could not be inferred for the remaining five HGTs. All HGTs involved ancestors of SARS-CoV-2 rather than SARS-CoV-2 itself.</p>
+<p id="P22">Most prominently, we found evidence for recent recombination in the Spike gene family, between the ancestor of Wuhan-Hu-1 (i.e., SARS-CoV-2) and RaTG13 and the ancestor of the pangolin strains. Ignoring directionality, this time-consistent transfer has a support of 1000 using both OptRoot- and MAD-rooted gene trees; that is, it is supported by every gene tree and reconciliation. However, support was roughly evenly split between the two directions, with OptRoot showing support of 640 (360) and MAD showing support of 616 (384) for a transfer from (to) the ancestor of Wuhan-Hu-1 and RaTG13. We discuss a possible cause of this directional uncertainty later in the manuscript (<xref ref-type="sec" rid="S9">Case Study: Spike and Nucleocapsid HGTs</xref>). Despite directional uncertainty, this HGT supports the previously-proposed hypothesis that similarity between SARS-CoV-2 and pangolin strains arose due to recombination rather than pangolins being a possible host [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P23">We also found evidence for three recombinations in the Nucleocapsid gene family. One of these HGTs is similar to the Spike gene HGT discussed above. When using OptRoot (MAD), this HGT has a support of 813 (456) from the ancestor of Wuhan-Hu-1 and RaTG13 to the ancestor of the pangolin strains and a support of &lt;100 (444) in the reverse direction. Thus, we view the direction of this HGT as uncertain even though our default results using OptRoot suggest that it occurred from the SARS-CoV-2 lineage to the ancestor of the pangolin strains. The second Nucleocapsid HGT is a transfer from the ancestor of South Korean, Hebei, Henan, and Hubei bat strains to the ancestor ofWuhan-Hu-1 and Zhejiang strains. This HGT is time-consistent within one branch and is highly supported using OptRoot (715) but not MAD (&lt; 100). The third Nucleocapsid HGT is a transfer from the ancestor of Wuhan-Hu-1 and Zhejiang strains to the ancestor of SARS-CoV, several Hong Kong and other Asian bat strains, and civet strains. While this HGT is time-consistent, it is again only supported by OptRoot (500) and not MAD (&lt; 100).</p>
+<p id="P24">We also found evidence for recombination in several other gene families. One of these is a time-consistent HGT affecting the ORF1ab gene and is similar to the previously observed HGTs in the Spike and Nucleocapsid genes, between between the ancestor of Wuhan-Hu-1 and RaTG13 and the ancestor of the pangolin strains. While it is not supported by OptRoot-rooted gene trees, it has an undirected support of 1000 using MAD-rooted gene trees. However, this HGT also shows directional uncertainty, with a roughly evenly split support of 535 and 465 in the two directions. Additionally, we found two time-consistent transfers between the outgroup of Bulgaria and Kenyan bat strains and the ancestor ofWuhan-Hu-1 and pangolin strains. One of these HGTs occurs in the ORF10 gene and also shows directional uncertainty, with Opt-Root showing support of 539 (261) and MAD showing support of 378 (122) for a transfer to (from) the SARS-CoV-2 lineage. A similar HGT occurs in the Envelope gene, with OptRoot showing support of 147 (243) and MAD showing support of 500 (&lt;100) for a transfer from (to) the SARS-CoV-2 lineage. Lastly, we found a time-inconsistent HGT in ORF1ab from the ancestor of the four pangolin strains to the ancestor of Wuhan-Hu-1 and the Zhejiang strains. We note that we also find several other transfers with lower but still substantial support (≥ 100) that might warrant further investigation (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table S2</xref>).</p>
+<p id="P25">Interestingly, by analyzing the donors and recipients of our full list of 588 HGTs supported using OptRoot-rooted gene trees, we found that the ancestors and nearby relatives of the SARS-CoV-2 [Wuhan-Hu-1] genome uniformly undergo recombination less often than the rest of the <italic>Sarbecovirus</italic> subgenus (<xref ref-type="fig" rid="F3">Figure 3b</xref>). However, this observation may be an artifact of sampling effects caused by the relatively small number of strains in this clade, and because of the low overall diversity among these strains.</p>
+</sec>
+<sec id="S6">
+<title>Reconciliation recovers HGTs between leaf strains</title>
+<p id="P26">After finding evidence for recombination involving the SARS-CoV-2 lineage, we expanded our analysis to the entire <italic>Sarbecovirus</italic> subgenus. Our analysis identified 226 supported leaf-to-leaf HGTs (≥ 100 support) and 35 highly supported leaf-to-leaf HGTs (≥ 500 support). Among the 35 highly supported HGTs, 34 were intra-host HGTs between strains from the same host type (e.g. bat to bat, pangolin to pangolin, etc.), and one was an inter-host HGTs between strains from different host types (human SARS-CoV to civet C010 in ORF7a). Such leaf-to-leaf HGTs can be orthogonally verified through a SimPlot analysis by choosing the recipient, donor, and sister strains of both recipient and donor, as demonstrated through the following case study.</p>
+<sec id="S7">
+<title>Case Study: Spike gene HGT between strains from bats</title>
+<p id="P27">We identified an HGT in the Spike gene between the strains Guangxi 2004 [Rp3, donor] and Hubei 2004 [Rm1, recipient] with a support of 1000 (<xref ref-type="fig" rid="F4">Figure 4a</xref>). For the SimPlot analysis, we selected GX2013 as the sister of Rp3 and HuB2013 as the sister of Rm1. When querying the genome of Rp3, we see high similarity with its sister GX2013 throughout the entire length of its genome with the exception of the Spike gene region, where Rp3 is most similar to the recipient Rm1 (<xref ref-type="fig" rid="F4">Figure 4b</xref>). Reciprocally, when querying the genome of Rm1, we see that sequence similarity with HuB2013 decreases in the region encompassing the Spike gene while sequence similarity with Rp3 increases (<xref ref-type="fig" rid="F4">Figure 4c</xref>). These findings are consistent with a hypothesis in which Rm1 received Rp3's copy of the Spike gene. Additionally, we observe that Rm1 continues to remain highly similar to Rp3 even beyond the boundary of the Spike gene. This observation could indicate a larger multi-gene recombination event, which was not detected in our reconciliation-based analysis.</p>
+<p id="P28">To further assess the accuracy of recombination events inferred through virDTL, we performed similar SimPlot analyses using the donor, recipient, and recipient-sister strains to orthogonally verify each of the five other highly supported HGTs identified by virDTL in the Spike gene. The Spike gene is a good candidate for such a SimPlot analysis since it is sufficiently long for recombinations to be easily visible and interpretable. We find a clear signal for recombination in the Spike gene for each of the five cases (<xref ref-type="supplementary-material" rid="SD2">Figure S3</xref>). In three of the cases (F46 to Rf4092, Rs4081 to YN2018D, and Anlong-103 to YN2013), the recombination affects predominantly the Spike gene region. In the other two cases (Jiyuan_84 to HeB2013 and Rs9401 to Rs7327), the donor sequence is more similar to the recipient sequence along the majority of the genome. Possible explanations include that the Spike gene HGT may be part of a larger recombination event, that the Spike gene HGT may be an artifact of incorrect placement of the affected strains in the strain tree, or that the recipient sister sequence has undergone rapid evolution. Analysis of the sequences and dated species tree suggest the latter is more likely for the transfer from Jiyuan_84 to HeB2013, while the transfer from Rs9401 to Rs7327 is more likely due to a multi-gene recombination.</p>
+</sec>
+</sec>
+<sec id="S8">
+<title>Reconciliation reveals new ancestral HGTs</title>
+<p id="P29">While we validate our approach on leaf-to-leaf transfers, the virDTL protocol also enables the inference of ancestral recombination. Our analysis identified 115 supported and 11 highly supported ancestor-to-ancestor HGTs, 113 supported and 14 highly supported ancestor-to-leaf HGTs, and 134 supported and 18 highly supported leaf-to-ancestor HGTs. While ancestor-to-ancestor and leaf-to-ancestor HGTs must correspond to an ancestral HGT, ancestor-to-leaf HGTs may in fact be an HGT from an unsampled leaf to a sampled leaf. Among the 11 highly supported ancestor-to-ancestor HGTs, 5 involve the SARS-CoV-2 lineage, 2 were intra-host HGTs between clades that contain the same host type, and 9 were inter-host HGTs between clades that contain different host types. Since SimPlot compares sequences of extant strains, it is more difficult to verify ancestral recombination events through the kind of external analysis demonstrated above for leaf-to-leaf HGTs. Despite this limitation, in the following case study, by using appropriately chosen descendants of the ancestral donor and recipient, we demonstrate that observed genomic sequence similarity is consistent with the inferred ancestral recombination. However, we note that <italic>post facto</italic> investigation of inferred ancestral HGTs using sequence similarity is more feasible than discovery of such HGTs from similarity alone.</p>
+<sec id="S9">
+<title>Case Study: Spike and Nucleocapsid HGTs</title>
+<p id="P30">As previously reported, we identified highly supported HGTs in the Spike and Nucleocapsid genes between the common ancestor of Wuhan-Hu-1 (i.e., SARS-CoV-2) and RaTG13 (hence <italic>SC2-RaTG</italic>) and the common ancestor of the pangolin strains (<italic>Pangolin</italic>). The Spike gene HGT shows a support value of 640 from <italic>SC2-RaTG</italic> to <italic>Pangolin</italic> and 360 in the reverse direction when using OptRoot for gene tree rooting, and 616 and 384, respectively, when using MAD rooting. Likewise, the Nucleocapsid HGT has a support of 813 from <italic>SC2-RaTG</italic> to <italic>Pangolin</italic> using OptRoot rooting but 444 in the reverse direction when using MAD rooting. Thus, while the analysis clearly shows that recombination occurred between <italic>SC2-RaTG</italic> and <italic>Pangolin</italic> in both the Spike and Nucleocapsid genes, the direction of these HGTs cannot be unambiguously inferred through our analysis. This ambiguity in direction inference is the result of a lack of resolution in the species tree, such that an HGT in either direction between <italic>SC2-RaTG</italic> and <italic>Pangolin</italic> may be able to explain the corresponding gene tree topologies. Nonetheless, in this case study we demonstrate how it may sometimes be possible to use sequence similarity to additionally support inferred ancestral HGTs. The SimPlot analysis below also suggests that both the Spike and Nucleosapsid genes may have been transferred in a single recombination event.</p>
+<p id="P31">Using <italic>SC2-RaTG</italic> as the query, we found that the most closely related strain, the ancestor of CoVZC45 and CoVZXC21 (<italic>Zhejiang</italic>) is more similar for much of the genome (<xref ref-type="fig" rid="F5">Figure 5a</xref>), but that <italic>Pangolin</italic> becomes more similar for both the Spike and regions of the Nucleocapsid gene (<xref ref-type="fig" rid="F5">Figure 5c</xref>). This finding is consistent with prior literature indicating similarity between the pangolin strains and the SARS-CoV-2 [Wuhan-Hu-1] genome in the Spike protein [<xref ref-type="bibr" rid="R25">25</xref>, <xref ref-type="bibr" rid="R50">50</xref>]. However, our analysis suggests that this similarity can be accounted for by a recombination between the ancestor of Wuhan-Hu-1 and RaTG13 and the ancestor of the pangolin strains, which is consistent with the findings of Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>]. The elevated similarity in parts of the Nucleocapsid sequence is likely a result of the same recombination event.</p>
+</sec>
+</sec>
+<sec id="S10">
+<title>Bi-directional support may suggest a third-party donor</title>
+<p id="P32">HGT events usually have high support for a single donor-recipient direction, but we found several HGTs that are “bi-directionally supported”, with neither strain appearing as the donor more than 60% of the time. Of the 588 inferred HGTs, 96 are bi-directionally supported, resulting in 48 pairs of strains with roughly equal support for an HGT in either direction in a given gene family. Note that the bi-directionally supported Spike HGT between <italic>SC2-RaTG</italic> and <italic>Pangolin</italic>, identified above, shows a 640-360 split and would therefore not be counted as bi-directionally supported using the conservative threshold used above.</p>
+<p id="P33">Bi-directional HGTs may arise due to a lack of resolution in the species tree where an HGT in either direction can explain the gene tree topology equally well, as discussed in the previous case study with the Spike and Nucleocapsid HGTs between <italic>SC2-RaTG</italic> and <italic>Pangolin</italic>, or due to complex HGT scenarios where multiple HGT events occur in quick succession. The case study below demonstrates a case where support for both directions arises when the candidate HGT occurs in quick succession following another HGT from a third party. This case study also highlights a shortcoming of using primarily sequence-based approaches such as SimPlot and RDP for inferring such complex HGT scenarios. For instance, even the sophisticated RDP tool requires that the user accept or reject proposed recombinations, which inform subsequent proposals. Thus, it lacks the ability to automatically model inference uncertainty and report ambiguous cases. In contrast, our approach explicitly accounts for and reports uncertainty, which can highlight ambiguous cases for further investigation.</p>
+<sec id="S11">
+<title>Case study: Bi-directional HGTs</title>
+<p id="P34">We identified an HGT in the Spike gene between the strains Yunnan 2013 [YN2013] and Guizhou 2013 [Anlong-103] (<xref ref-type="fig" rid="F6">Figure 6a,b</xref>). If we do not consider donor-recipient directionality, this HGT is supported in all 1000 samples. However, support is almost evenly split between each strain as the donor (503 Anlong-103, 497 YN2013). By comparing the sequence similarity of each strain to both each other and its nearest neighbor on the strain tree using SimPlot, we hypothesize that this directional ambiguity can be explained by the presence of a third strain that recombined with one of YN2013 or Anlong-103, which then recombined with the other strain.</p>
+<p id="P35">Using Anlong-103 as the query (<xref ref-type="fig" rid="F6">Figure 6c</xref>), we found that its sibling Yunnan 2014 [Rs7327] is highly similar along the length of the genome, except in the Spike region, where there is a significant drop off in similarity. In contrast, YN2013 stays highly similar except in the variable-loop region, where there is a slight drop off in similarity. We observe the same similarity profile using YN2013 as the query with its sibling Yunnan 2012 [Rs4084] (<xref ref-type="fig" rid="F6">Figure 6d</xref>). In the case of a simple unidirectional HGT event, we would expect only one of these queries to be dissimilar to its sibling.</p>
+<p id="P36">Indeed, our HGT analysis finds third party HGTs consistent with this interpretation, with Yunnan 2012 [F46] as the third strain. We found unidirectional HGTs between Yunnan 2012 [F46] and both Anlong-103 (407 support, <xref ref-type="fig" rid="F6">Figure 6a</xref>) and YN2013 (393 support, <xref ref-type="fig" rid="F6">Figure 6b</xref>). SimPlot analysis supports this interpretation, with both YN2013 and Anlong-103 showing the same similarity drop-off profile to F46 through the Spike region (<xref ref-type="fig" rid="F6">Figure 6e</xref>). The question of which strains recombined first is less clear, but geography and sampling times suggest that F46 and YN2013, both sampled in Yunnan province, could have recombined first followed by the recombination between YN2013 and Anlong-103 (<xref ref-type="fig" rid="F6">Figure 6b</xref>).</p>
+</sec>
+</sec>
+<sec id="S12">
+<title>Recombination occurs across gene boundaries</title>
+<p id="P37">Our reconciliation-based approach infers HGT events independently for each gene family. However, multiple such “HGTs” may result from a single recombination event across gene boundaries. To investigate this possibility, we assumed a null hypothesis that HGTs are not correlated across genes and assessed the frequency of HGT in adjacent gene families. Specifically, we assessed the <italic>p</italic>-value of seeing at least <italic>t</italic> HGTs in a window of <italic>w</italic> adjacent genes among the inferred donor-recipient pairs (<xref ref-type="supplementary-material" rid="SD2">Table S4</xref>). Here, we treat HGTs as undirected edges, with the HGT support values aggregated across both directions to account for areas of directional uncertainty. For our null distribution, we assumed a binomial distribution, where the number of trials <italic>n</italic> is the number of strain pairs in our data set with at least <italic>t</italic> HGTs. To obtain the probability of success <italic>π</italic>, we randomly sampled 500,000 strain pairs from our data set and independently randomly permuted the gene family ordering of each pair of strains. Out of all pairs of strains with at least <italic>t</italic> HGTs, we calculated <italic>π</italic> as the fraction of those that fit the window condition. We then computed the probability of seeing at least <italic>k</italic> successes, where a success corresponds to a strain pair with at least <italic>t</italic> HGTs in at least one window of size We investigated several combinations of (<italic>w, t</italic>) and rejected the null hypothesis at a significance level of <italic>α</italic> = 0.007 (after Bonferonni correction for 7 tests) for (<italic>w, t</italic>) = (2, 2), but failed to do so for larger window sizes or more HGTs. This result suggests that HGTs in adjacent pairs of gene families between two strains are likely due to a single recombination event. Thus, it should be possible to combine inferred individual HGTs with gene adjacency information to identify larger recombination regions.</p>
+</sec>
+</sec>
+<sec id="S13" sec-type="discussion">
+<title>Discussion</title>
+<p id="P38">The emergence of SARS-CoV-2 demonstrates the need to understand how novel pathogens originate by crossing species boundaries and how they adapt through recombination. In this work, we introduce virDTL, a new computational protocol for viral recombination analysis, and use it to provide a more complete picture of the evolutionary history of SARS-CoV-2 in particular and <italic>Sarbecoviruses</italic> in general. A key feature of virDTL is its ability to identify ancestral recombinations and provide support values for each event. virDTL leverages the Duplication-Transfer-Loss (DTL) model and accounts for multiple sources of inference uncertainty, making it a principled, model-based approach and well-suited to analyzing rapidly-evolving RNA viruses.</p>
+<p id="P39">Many existing analyses of viral recombination often rely on comparing sequence similarity alone, using tools such as SimPlot [<xref ref-type="bibr" rid="R28">28</xref>] and RDP [<xref ref-type="bibr" rid="R30">30</xref>]. While such tools can identify recombinant strains and recombinant regions within those strains, they typically require a combinatorial exploration of query and reference sequences against which to compare the proposed recombinant and are not well suited for detecting ancestral recombinations. Their results are also hard to interpret when the strain lineages being analyzed have been affected by multiple successive recombination events. Additionally, they are unable to capture the uncertainty that arises from HGTs occurring in rapid succession in a single lineage. These tools thus work well for investigating recent recombination events in specific strains of interest, but they are difficult to use when one wants to systematically detect ancestral recombination events and precisely identify the recombining ancestral strains.</p>
+<p id="P40">There have been two recent investigations of HGT and recombination in coronaviruses using phylogenetic reconciliation approaches [<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R29">29</xref>] (performed independently in parallel to the current work). Fu et al. [<xref ref-type="bibr" rid="R14">14</xref>] used DTL reconciliation to infer inter-host HGT events using approximately 400 coronavirus genomes, including alpha, beta, delta, and gamma coronaviruses from a variety of host species. The authors identified 5 gene clusters that were generally well-conserved among the considered genomes, used their concatenated alignments to reconstruct a coronavirus phylogeny, and reconciled it with gene trees from 20 protein families found in at least 30% of the genomes using the DTL reconciliation software RANGER-DTL [<xref ref-type="bibr" rid="R4">4</xref>]. The resulting reconciliations were used to identify the host species that were most likely to engage in cross-host-species recombination of coronaviruses. Makarenkov et al. [<xref ref-type="bibr" rid="R29">29</xref>] used phylogenetic techniques to investigate patterns of HGT and recombination in 11 gene families from <italic>Sarbecoviruses</italic>. In particular, the authors use the HGT detection program T-Rex [<xref ref-type="bibr" rid="R6">6</xref>], based on bipartition dissimilarity between a strain tree and gene trees, to identify partial- and full-gene HGTs. While these investigations illustrate the potential of using phylogenetic reconciliation for studying viral evolution, neither adequately addresses key sources of HGT inference error and uncertainty, likely leading to decreased accuracy and spurious events. For instance, the analysis of Fu et al. [<xref ref-type="bibr" rid="R14">14</xref>] does not account for gene tree error and inference uncertainty, rooting uncertainty, and reconciliation uncertainty.</p>
+<p id="P41">Our approach also differs significantly from that of Makarenkov et al. [<xref ref-type="bibr" rid="R29">29</xref>], where key differences in methodology lead to several differences in inferred events. For example, Makarenkov et al. use a single whole-genome phylogeny as their betacoronavirus strain tree, which, as our analysis suggests, has likely been affected by substantial recombination (<xref ref-type="sec" rid="S15">Methods</xref>). While we infer transfers of the Spike and Nucleo-capsid genes between the SC2-RaTG clade and the Guangxi pangolin clade, Makarenkov et al. instead infer transfers between RaTG13 to Guangxi pangolin. While our analyses differ by one branch, Makarenkov et al. only infer a transfer because they include Guangdong pangolins. That is, their analysis might not have identified a transfer using our set of species, which highlights the potential increased sensitivity of our approach. Makarenkov et al. also do not infer transfers of the Nucleocapsid gene between SC2-Zhejiang and more distant relatives. This discrepancy is likely due to the differences in species tree topology, where Makarenkov et al. place the Zhiejiang clade as the outgroup of the SC2-RaTG-pangolin lineage. However, based on sequence similarity, it is likely that the Zhiejiang clade is a sister clade to SC2-RaTG clade as suggested by the NRR-B species tree. At the same time, Makarenkov et al. infer several gene transfers that we do not find in our analysis. For example, they postulate partial gene transfers of ORF1ab and Membrane genes between the Zhejiang clade and SC2-RaTG clade and complete gene transfers of ORF3a, ORF8, and ORF10 between the ancestor of Guangdong pangolins and Wuhan-Hu-1 and the Zhejiang clade. These events would likely not occur using a non-recombinant strain tree such as our NRR-B tree, which places the Zhejiang clade as a sister clade to SC2-RaTG. In addition, while Makarenkov et al. do implicitly consider gene tree inference uncertainty, by considering bootstrap values along gene tree edges to assign support values for inferred HGT events, they do not perform gene tree error-correction, which has been shown to result in significant improvements in downstream HGT inference accuracy [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R39">39</xref>]. Lastly, Makarenkov et al. also use an older HGT detection tool, T-Rex [<xref ref-type="bibr" rid="R6">6</xref>], which is not based on DTL reconciliation and does not explicitly address HGT inference uncertainty due to multiple optima.</p>
+<p id="P42">Our analysis of <italic>Sarbecovirus</italic> evolutionary history lends additional support to the growing body of work that suggests horseshoe bats as the most recent zoonotic origin of the SARS-CoV-2 lineage. Similarity of the ribosome binding domain (RBD) of the Spike protein between SARS-CoV-2 and several pangolin strains has led to the hypothesis of an intermediate pangolin reservoir for the virus [<xref ref-type="bibr" rid="R25">25</xref>, <xref ref-type="bibr" rid="R50">50</xref>]. However, our analysis suggests that this similarity is due to a recombination event between the ancestor of SARS-CoV-2 [Wuhan-Hu-1] and RaTG13 and the ancestor of the Guangxi pangolins. Sequence evolution through mutations or recombination with an unsampled strain would account for the divergence of RaTG13 in this region, consistent with the observations of Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P43">Our approach has several limitations that are worth noting. Most importantly, we analyze each gene family separately and thus cannot infer recombination events that affect only parts of genes. Moreover, uncertainly and error in HGT inference and in assigning donors and recipients can make it difficult to infer larger recombination events that affect multiple genes. This limitation can be partially addressed by using a window-based analysis, rather than a gene-based analysis, but small windows risk having too little meaningful phylogenetic signal while large windows risk averaging over several different overlapping recombination events. Another limitation of our approach and analysis is that it ignores low-support HGTs. Low-support HGTs cannot be disregarded altogether, especially when the strains being analyzed contain short genes. Short genes, such as the E, ORF7b, and ORF10 gene families in our <italic>Sarbecovirus</italic> analysis, often have less phylogenetic signal and thus more uncertain gene tree topologies and inferred events. A closer analysis of low-support HGTs, especially those affecting short genes, may thus lead to additional evolutionary insights.</p>
+</sec>
+<sec id="S14" sec-type="methods" specific-use="web-only">
+<title>Methods</title>
+<sec id="S15">
+<title>
+<italic>Sarbecovirus</italic> strain selection</title>
+<p id="P44">For our analysis we selected 54 strains from the <italic>Sarbecovirus</italic> subgenus of the <italic>Betacoronavirus</italic> genus, with 42 strains from bats, 5 from pangolins, 5 from civet cats, and 2 from humans.We limited our strain selection to only the <italic>Sarbecovirus</italic> subgenus since genomes outside this subgenus, such as MERS-CoV, are generally too divergent from SARS-CoV-2 [<xref ref-type="bibr" rid="R21">21</xref>], and analyses including such distant strains can fail to cleanly identify gene families or can result in phylogenetic artifacts such as long branch attraction. For example, even the closest relative outside the <italic>Sarbecovirus</italic> subgenus, Hibecovirus Bat Hp-betacoronavirus/Zhejiang2013, shows no detectable homology across ORFs 6, 7a, 7b, and 8 [<xref ref-type="bibr" rid="R21">21</xref>].</p>
+<p id="P45">Our choice of the 54 <italic>Sarbecovirus</italic> strains was driven by two considerations. First, we wanted to sample broadly from available <italic>Sarbecovirus</italic> whole genomes in order to adequately capture strain diversity, and second, we wanted to include strains with potential relevance for SARS-CoV-2 evolution. Accordingly, we started with the collection of 44 broadly sampled <italic>Sarbecovirus</italic> strains (one SARS-CoV-2 strain, one SARS-CoV strain, and 42 strains from bats) used in Jungreis et al. [<xref ref-type="bibr" rid="R21">21</xref>], and augmented that collection with strains hosted in civet cats and pangolins due to their proposed role as zoonotic origins for the SARS (2003) [<xref ref-type="bibr" rid="R18">18</xref>] and SARS-CoV-2 (2019) [<xref ref-type="bibr" rid="R50">50</xref>] pandemics. A complete list of the chosen strains is available in <xref ref-type="supplementary-material" rid="SD2">Supplementary Table S1</xref>. For each strain, the complete genome sequence was obtained from the NCBI sequence database [<xref ref-type="bibr" rid="R32">32</xref>].</p>
+<p id="P46">Throughout this study, we reference results of Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>] and Makarenkov et al. [<xref ref-type="bibr" rid="R29">29</xref>]. Boni et al. include 19 strains in their analysis that we leave out, including 279_2005, JL2012, JTMC15, SX2013, Rs4874, RsSHC014, Rs3367, Longquan_140, HKU3-[<xref ref-type="bibr" rid="R2">2</xref>–<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R11">11</xref>,<xref ref-type="bibr" rid="R13">13</xref>], and Pangolin-CoV. As these strains have a close relative HKU-3-[<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R12">12</xref>] that is included in our analysis, and the strains do not represent new hosts, their exclusion should not alter results substantially. We include two additional strains, 16BO133 and 273_2005. Makarenkov et al. includes 6 strains that we leave out, including Guangdong_Pangolin_1_2019, Guangdong_Pangolin_P2S_2019, HKU3-6, and three SARS-CoV-2 strains (Australia VIC231 2020, USA UT 00346 2020, Hu Italy TE4836 2020). As mentioned in Makarenkov et al., the SARS-CoV-2 strains are very similar and therefore do not add further information to the analysis.</p>
+</sec>
+<sec id="S16">
+<title>Strain tree reconstruction and dating</title>
+<p id="P47">Given the importance of strain tree accuracy on the accuracy of HGT inference through phylogenetic reconciliation, we investigated three candidate genomic regions to reconstruct a dated strain tree. As a baseline, we constructed a whole genome (<italic>WG</italic>) strain tree based on a whole genome alignment of the 54 genomes. However, coronaviruses are highly recombinant, so it is preferable to use a generally non-recombining, or minimally recombining, genomic region to accurately capture the divergence of viral lineages.We therefore selected two putative non-recombinant regions (<italic>NRR-B</italic> [4,000-9,000 base pairs] and <italic>NRR-A</italic> [13,000-18,000 base pairs]) previously identified by Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P48">For each region/whole genome, we aligned the 54 sequences using Muscle v.3.8.31 [<xref ref-type="bibr" rid="R12">12</xref>] and estimated a dated strain tree using BEAST v.1.10.4 [<xref ref-type="bibr" rid="R42">42</xref>]. Following Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>], we used a GTR+<italic>Γ</italic> substitution model and an uncorrelated relaxed clock model with a log-normal distribution. We used a normal distribution with mean 0.00078 and standard deviation 0.0003 as an informative rate prior, based on estimated rates for MERS-CoV [<xref ref-type="bibr" rid="R7">7</xref>], and ran BEAST until chains were sufficiently mixed, generally for more than 10 million iterations, with effective sample sizes greater than 100 for branch lengths and root ages. We rooted each strain tree using the outgroup containing the strains from Bulgaria 2008 [BM48-31] and Kenya 2007 [BtKY72], which were identified in Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>] as the most evolutionarily distant strains. Given the rooted strain trees, we again ran BEAST until chains were sufficiently mixed, using topology-preserving operations only to estimate divergence times for each ancestral strain.</p>
+<p id="P49">The three <italic>Sarbecovirus</italic> strain trees, corresponding to NRR-A, NRR-B, and whole genome, each had distinct topologies (<xref ref-type="fig" rid="F2">Figure 2</xref>). To assess the magnitude of topological divergence between these trees, we computed the normalized unrooted Robinson-Foulds distance between them [<xref ref-type="bibr" rid="R36">36</xref>] (<xref ref-type="table" rid="T1">Table 1</xref>, top rows). Though several important clades appear largely conserved across the three trees (<xref ref-type="fig" rid="F2">Figure 2a</xref>), the three trees are highly divergent (RF: 0.62–0.80), suggesting that the <italic>Sarbecovirus</italic> subgenus is influenced by substantial recombination. This result in turn implies that the WG tree should not be directly used as the strain tree, and motivates the need for constructing a reliable strain tree using a non-recombinant (or minimally recombinant) region.</p>
+<p id="P50">We found a specific instance of recombination that occurred ancestral to SARS-CoV-2 [Wuhan-Hu-1] to be of particular interest, as it explains a key difference in topology between the trees inferred using NRR-A and NRR-B. Specifically, viral strains CoVZC45 and CoVZXC21 (<italic>Zhejiang clade</italic>) are placed in a different location in each of the three strain trees (<xref ref-type="fig" rid="F2">Figure 2a</xref>). In the WG strain tree, the clade containing Wuhan-Hu-1 and RaTG13 (<italic>SC2-RaTG clade</italic>) and the clade containing the <italic>Pangolin</italic> viral strains (<italic>Pangolin clade</italic>) are most closely related, with the Zhejiang clade as the next closest relative. In the NRR-B strain tree, the Zhejiang and SC2-RaTG clades are sisters, with the Pangolin clade as the next closest relative, suggesting a recombination somewhere outside of NRR-B. Finally, in the NRR-A strain tree, the Zhejiang clade does not group with either the SC2-RaTG or Pangolin clades, and the two strains instead group with 3 viral strains from Hong Kong (<italic>HKU clade</italic>).</p>
+<sec id="S17">
+<title>Recombination within NRR-A and NRR-B</title>
+<p id="P51">To assess whether recombination might affect the NRR-A and NRR-B trees, we constructed phylogenies for 1000-base pair windows with a 500-base pair offset along the entire length of the genome. We then computed the average pairwise Robinson-Foulds distance between all trees in a 5000-base pair window, and similarly computed the average internal pairwise distance between trees in each non-recombinant region (<xref ref-type="table" rid="T1">Table 1</xref>, bottom rows). We find that average RF distance within NRR-B (0.496) is smaller than NRR-A (0.607) and also smaller than other 5000-base pair windows along the length of the genome (0.519–0.586). A higher average internal RF distance indicates increased phylogenetic incongruency between windows within each region, which suggests recombination may have occurred within the region.</p>
+</sec>
+<sec id="S18">
+<title>Recombination across NRR-A</title>
+<p id="P52">We performed further analysis to determine if the discrepancy in NRR-A and NRR-B strain tree topologies is a result of recombination in the putative NRR-A. Specifically, using the NRR-B tree as our viral strain tree, we found evidence for an ancestral HGT between the ancestors of the Zhejiang and HKU clades (<xref ref-type="fig" rid="F2">Figure 2d</xref>). This HGT is further supported by sequence similarity. Using SimPlot [<xref ref-type="bibr" rid="R28">28</xref>], we compared a query of Zhejiang 2017 [CoVZC45] against SARS-CoV-2 [Wuhan-Hu-1], Yunnan 2013 [RaTG13] and the three Hong Kong strains HKU3_1, HKU3_7, and HKU3_12. While Zhejiang 2017 is most similar to the SC2-RaTG clade for most of the genome, it is more similar to the HKU clade between 11,857 and 20,677 base pairs, which contains NRR-A (<xref ref-type="fig" rid="F2">Figure 2c</xref>). We note that this HGT was not inferred using the MAD-rooted gene tree. Nonetheless, the similarity between the Zhejiang and HKU clades in this region indicates that recombination has in fact occurred in NRR-A, making it unsuitable to construct a strain tree using this part of the genome. This finding is consistent with the conclusions of Boni et al. [<xref ref-type="bibr" rid="R7">7</xref>], where they note that the Zhejiang clade needed to be removed to maintain a clean non-recombinant signal in this region.</p>
+<p id="P53">Given that (i) the whole genome tree is generally unreliable as a strain tree for reconciliation analysis due to widespread recombination across the genome, (ii) NRR-A is far less internally consistent than NRR-B and, (iii) a major topological discrepancy in the NRR-A tree is likely the result of an ancestral recombination, we used the NRR-B tree as our viral strain tree for the remainder of our analyses.</p>
+</sec>
+</sec>
+<sec id="S19">
+<title>Gene tree reconstruction, error-correction, and rooting</title>
+<p id="P54">We constructed gene trees for each of 11 gene families (<xref ref-type="fig" rid="F2">Figure 2b</xref>). Most strains in our dataset were already annotated with genes from all 11 gene families. For each annotated gene, we extracted and used the longest protein sequence for that gene. For strains that did not have all 11 genes annotated, we aligned their full genome to the longest annotated gene sequence among other strains and extracted the overlapping alignment. Almost all gene families, with the exception of ORF1ab, Spike, and Nucleocapsid, were unannotated in at least one strain. Using this approach, we were able to confidently identify the missing genes for an additional 5 gene families, resulting in a total of 8 complete gene families (with one gene from each of these gene families present in each strain). Two of the gene families, ORF10 and ORF6, could not be detected in strains KJ473815.1 and KJ473816.1. Finally, ORF8, which was initially annotated in only 31 of the 54 strains, could not be detected in 10 strains. For each gene family, we aligned nucleotide gene sequences using Muscle v.3.8.31 [<xref ref-type="bibr" rid="R12">12</xref>] and then reconstructed gene trees using RAxML v.8.2.11 [<xref ref-type="bibr" rid="R40">40</xref>] using 100 fast bootstrap replicates under a GTR+<italic>Γ</italic> substitution model.</p>
+<p id="P55">Since there is often considerable uncertainty and error in reconstructed gene trees, generally due to insufficient phylogenetic signal, we error-corrected each RAxML gene tree using TreeFix-DTL [<xref ref-type="bibr" rid="R5">5</xref>] with default parameters. TreeFix-DTL aims to find a “statistically equivalent” gene tree topology that minimizes the DTL reconciliation cost against a given species/strain tree, and has been shown to be highly effective in error-correcting gene trees, leading to a substantial reduction in the number of false positive HGTs inferred through DTL reconciliation [<xref ref-type="bibr" rid="R5">5</xref>]. To further account for uncertainty in inferring gene tree topologies, we applied TreeFix-DTL 10 times to each RAxML gene tree and used all 10 error-corrected gene trees for each gene family in our analysis.</p>
+<p id="P56">Most phylogenetic reconstruction methods, including RAxML and TreeFix-DTL, yield unrooted trees that can often be difficult to root accurately. For example, even the root of the SARS-CoV-2 phylogeny remains uncertain, with different rooting methods yielding different root positions [<xref ref-type="bibr" rid="R35">35</xref>]. Thus, to account for uncertainty in gene tree rooting, we rooted each error-corrected gene tree using two different methods, OptRoot [<xref ref-type="bibr" rid="R4">4</xref>], which seeks a rooting that minimizes the DTL reconciliation cost between the gene tree and species/strain tree, and Minimum Ancestor Deviation (MAD) rooting [<xref ref-type="bibr" rid="R47">47</xref>], which roots the gene tree at the edge that minimizes the mean relative deviation from the molecular clock. These two rooting methods have been shown to be among the most accurate for prokaryotic gene families [<xref ref-type="bibr" rid="R48">48</xref>]. By default, we report results based on OptRoot-rooted gene trees, but all HGTs are supported by MAD-rooted gene trees unless otherwise stated.</p>
+</sec>
+<sec id="S20">
+<title>Reconciliation analysis and accounting for HGT inference uncertainty</title>
+<p id="P57">We reconciled each of the rooted, error-corrected gene trees (10 per gene family) to the NRR-B strain tree using RANGER-DTL 2.0 [<xref ref-type="bibr" rid="R4">4</xref>] with default parameters. Since there often exist multiple equally optimal DTL reconciliations of a given gene tree and strain tree [<xref ref-type="bibr" rid="R3">3</xref>], we uniformly random sampled 100 optimal reconciliations (per rooting) for each pair of gene and strain trees. Such uniform random sampling makes it possible to assign a support value to each inferred HGT event based on how frequently that event is inferred among all optimal DTL reconciliations. These support values can then be used to distinguish between HGTs that are well-supported by DTL reconciliation, despite multiple optima, and those that are not.</p>
+<p id="P58">As expected, we observed that the computed reconciliations invoked a negligible number of gene duplication events. Specifically, for 8 of the 11 gene families, no gene duplications were invoked in any of the 1000 reconciliation samples for each gene family. For the ORF1ab, Envelope, and Nucleocapsid gene families, we observed 0.21, 0.1, and 0.02 gene duplications, respectively, on average, in the 1000 reconciliation samples. This result implies that almost all topological inconsistencies between the gene trees and the strain tree can be explained using HGT events, which is consistent with the assumption that, in viruses, any topological discordance between the gene trees and strain tree is likely a result of recombination.</p>
+</sec>
+<sec id="S21">
+<title>Recombination across gene boundaries</title>
+<p id="P59">Though we primarily focused our analysis at the level of individual gene families, we performed statistical tests to investigate whether our results can be used to detect recombination of larger genomic fragments (e.g., multiple genes) in the <italic>Sarbecovirus</italic> subgenus. In particular, we investigated how often two or more contiguous genes are likely to be transferred between the same donor-recipient pair. We also used statistical analysis to assess if such “multi-gene” transfers were observed at a higher rate than would be expected by chance if recombination events affected only one gene at a time (<xref ref-type="sec" rid="S2">Results</xref>).</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Table S2</label>
+<media xlink:href="EMS132842-supplement-Supplementary_Table_S2.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66991" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Material</label>
+<media xlink:href="EMS132842-supplement-Supplementary_Material.pdf" mimetype="application" mime-subtype="pdf" id="N67000" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S22">
+<title>Acknowledgements</title>
+<p>The authors would like to thank Irwin Jungreis and Rachel Sealfon for help with dataset assembly, and Dong-Hun Lee for helpful discussions on coronavirus evolution.</p>
+<sec id="S23">
+<title>Funding</title>
+<p>SZ and MSB were supported in part by NSF grant IIS-1553421. SS and BB were supported in part by NIH grants R01-GM081871 and R35-GM141861. YW was supported by NSF grant IIS-1751399.</p>
+</sec>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lipkin</surname>
+<given-names>WI</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Garry</surname>
+<given-names>RF</given-names>
+</name>
+</person-group>
+<article-title>The proximal origin of sars-cov-2</article-title>
+<source>Nature Medicine</source>
+<year>2020</year>
+<month>Apr</month>
+<volume>26</volume>
+<issue>4</issue>
+<fpage>450</fpage>
+<lpage>452</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Alm</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Efficient algorithms for the reconciliation problem with gene duplication, horizontal transfer and loss</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<issue>12</issue>
+<fpage>283</fpage>
+<lpage>291</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Alm</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Reconciliation revisited: Handling multiple optima when reconciling with duplication, transfer, and loss</article-title>
+<source>Journal of Computational Biology</source>
+<year>2013</year>
+<volume>20</volume>
+<issue>10</issue>
+<fpage>738</fpage>
+<lpage>754</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kordi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kundu</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>RANGER-DTL 2.0: rigorous reconstruction of gene-family evolution by duplication, transfer and loss</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>18</issue>
+<fpage>3214</fpage>
+<lpage>3216</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Y-C</given-names>
+</name>
+<name>
+<surname>Alm</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Improved gene tree error correction in the presence of horizontal gene transfer</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<issue>8</issue>
+<fpage>1211</fpage>
+<lpage>1218</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Boc</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Diallo</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Makarenkov</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>T-REX: a web server for inferring, validating and visualizing phylogenetic trees and networks</article-title>
+<source>Nucleic Acids Research</source>
+<year>2012</year>
+<month>06</month>
+<volume>40</volume>
+<issue>W1</issue>
+<fpage>W573</fpage>
+<lpage>W579</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>TT-Y</given-names>
+</name>
+<name>
+<surname>Perry</surname>
+<given-names>BW</given-names>
+</name>
+<name>
+<surname>Castoe</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary origins of the sars-cov-2 sarbecovirus lineage responsible for the covid-19 pandemic</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<month>Nov</month>
+<volume>5</volume>
+<issue>11</issue>
+<fpage>1408</fpage>
+<lpage>1417</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Z-Z</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Simultaneous identification of duplications, losses, and lateral gene transfers</article-title>
+<source>IEEE/ACM Trans Comput Biology Bioinform</source>
+<year>2012</year>
+<volume>9</volume>
+<issue>5</issue>
+<fpage>1515</fpage>
+<lpage>1528</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>David</surname>
+<given-names>LA</given-names>
+</name>
+<name>
+<surname>Alm</surname>
+<given-names>EJ</given-names>
+</name>
+</person-group>
+<article-title>Rapid evolutionary innovation during an archaean genetic expansion</article-title>
+<source>Nature</source>
+<year>2011</year>
+<volume>469</volume>
+<fpage>93</fpage>
+<lpage>96</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davin</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tannier</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Gene transfers can date the tree of life</article-title>
+<source>Nature Ecology and Evolution</source>
+<year>2018</year>
+<volume>2</volume>
+<fpage>904</fpage>
+<lpage>909</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Doyon</surname>
+<given-names>J-P</given-names>
+</name>
+<name>
+<surname>Scornavacca</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gorbunov</surname>
+<given-names>KY</given-names>
+</name>
+<name>
+<surname>Szöllosi</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Ranwez</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Berry</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<chapter-title>An efficient algorithm for gene/species trees parsimonious reconciliation with losses, duplications and transfers</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Tannier</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<source>RECOMB-CG, Lecture Notes in Computer Science</source>
+<publisher-name>Springer</publisher-name>
+<year>2010</year>
+<volume>6398</volume>
+<fpage>93</fpage>
+<lpage>108</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Edgar</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>MUSCLE: multiple sequence alignment with high accuracy and high throughput</article-title>
+<source>Nucleic Acids Research</source>
+<year>2004</year>
+<month>Mar</month>
+<volume>32</volume>
+<issue>5</issue>
+<fpage>1792</fpage>
+<lpage>1797</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Forni</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cagliani</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Clerici</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sironi</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Molecular evolution of human coronavirus genomes</article-title>
+<source>Trends in Microbiology</source>
+<year>2017</year>
+<month>Jan</month>
+<volume>25</volume>
+<issue>1</issue>
+<fpage>35</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Pistolozzi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>A comprehensive classification of coronaviruses and inferred cross-host transmissions</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gorbunov</surname>
+<given-names>KY</given-names>
+</name>
+<name>
+<surname>Liubetskii</surname>
+<given-names>VA</given-names>
+</name>
+</person-group>
+<article-title>Reconstructing genes evolution along a species tree</article-title>
+<source>Molekuliarnaia Biologiia</source>
+<year>2009</year>
+<month>Oct</month>
+<volume>43</volume>
+<issue>5</issue>
+<fpage>946</fpage>
+<lpage>958</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>O'Meara</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Swaney</surname>
+<given-names>DL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A sars-cov-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<issue>7816</issue>
+<fpage>459</fpage>
+<lpage>468</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Graham</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Sparks</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Eckerle</surname>
+<given-names>LD</given-names>
+</name>
+<name>
+<surname>Sims</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Denison</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<chapter-title>Sars coronavirus replicase proteins in pathogenesis</chapter-title>
+<source>Virus Research</source>
+<publisher-name>SARS-CoV Pathogenesis and Replication</publisher-name>
+<year>2008</year>
+<volume>133</volume>
+<issue>1</issue>
+<fpage>88</fpage>
+<lpage>100</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhuang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Cheung</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Isolation and characterization of viruses related to the sars coronavirus from animals in southern china</article-title>
+<source>Science</source>
+<year>2003</year>
+<volume>302</volume>
+<issue>5643</issue>
+<fpage>276</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hie</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>ED</given-names>
+</name>
+<name>
+<surname>Berger</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bryson</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Learning the language of viral evolution and escape</article-title>
+<source>Science</source>
+<year>2021</year>
+<volume>371</volume>
+<issue>6526</issue>
+<fpage>284</fpage>
+<lpage>288</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jacox</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chauve</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Szollosi</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Ponty</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Scornavacca</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>eccetera: comprehensive gene tree-species tree reconciliation using parsimony</article-title>
+<source>Bioinformatics</source>
+<year>2016</year>
+<volume>32</volume>
+<issue>13</issue>
+<elocation-id>2056</elocation-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jungreis</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Sealfon</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Sars-cov-2 gene content and covid-19 mutation impact by comparing 44 sarbecovirus genomes</article-title>
+<source>Nature Communications</source>
+<year>2021</year>
+<volume>12</volume>
+<issue>2642</issue>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Khailany</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Safdar</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ozaslan</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Genomic characterization of a novel sars-cov-2</article-title>
+<source>Gene Reports</source>
+<year>2020</year>
+<volume>19</volume>
+<elocation-id>100682</elocation-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>J-Y</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J-S</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>VN</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>The architecture of sars-cov-2 transcriptome</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<issue>4</issue>
+<fpage>914</fpage>
+<lpage>921</lpage>
+<elocation-id>e10</elocation-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kordi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+</person-group>
+<article-title>Exact algorithms for duplication-transfer-loss reconciliation with non-binary gene trees</article-title>
+<source>IEEE/ACM Transactions on Computational Biology and Bioinformatics</source>
+<year>2019</year>
+<volume>16</volume>
+<issue>4</issue>
+<fpage>1077</fpage>
+<lpage>1090</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>TT-Y</given-names>
+</name>
+<name>
+<surname>Jia</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y-W</given-names>
+</name>
+<name>
+<surname>Shum</surname>
+<given-names>MH-H</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>J-F</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>H-C</given-names>
+</name>
+<name>
+<surname>Tong</surname>
+<given-names>Y-G</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Y-X</given-names>
+</name>
+<name>
+<surname>Ni</surname>
+<given-names>X-B</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>Y-S</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W-J</given-names>
+</name>
+</person-group>
+<article-title>Identifying sars-cov-2-related coronaviruses in malayan pangolins</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>July</month>
+<volume>583</volume>
+<issue>7815</issue>
+<fpage>282</fpage>
+<lpage>285</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Libeskind-Hadas</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Y-C</given-names>
+</name>
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Kellis</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Pareto-optimal phylogenetic tree reconciliation</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>12</issue>
+<fpage>i87</fpage>
+<lpage>i95</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>J-Z</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>X-F</given-names>
+</name>
+<name>
+<surname>Hua</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Are pangolins the intermediate host of the 2019 novel coronavirus (sars-cov-2)?</article-title>
+<source>PLOS Pathogens</source>
+<year>2020</year>
+<month>May</month>
+<volume>16</volume>
+<issue>5</issue>
+<elocation-id>e1008421</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lole</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Bollinger</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Paranjape</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Gadkari</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kulkarni</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Novak</surname>
+<given-names>NG</given-names>
+</name>
+<name>
+<surname>Ingersoll</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Sheppard</surname>
+<given-names>HW</given-names>
+</name>
+<name>
+<surname>Ray</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>Full-length human immunodeficiency virus type 1 genomes from subtype c-infected seroconverters in india, with evidence of intersubtype recombination</article-title>
+<source>Journal of Virology</source>
+<year>1999</year>
+<month>Jan</month>
+<volume>73</volume>
+<fpage>152</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Makarenkov</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Mazoure</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Rabusseau</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Legendre</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Horizontal gene transfer and recombination analysis of SARS-CoV-2 genes helps discover its close relatives and shed light on its origin</article-title>
+<source>BMC Ecol Evo</source>
+<year>2021</year>
+<volume>21</volume>
+<issue>5</issue>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Murrell</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Golden</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Khoosal</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Muhire</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>RDP4: Detection and analysis of recombination patterns in virus genomes</article-title>
+<source>Virus Evolution</source>
+<year>2015</year>
+<month>05</month>
+<volume>1</volume>
+<issue>1</issue>
+<elocation-id>vev003</elocation-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Masters</surname>
+<given-names>PS</given-names>
+</name>
+<name>
+<surname>Perlman</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Coronaviridae</source>
+<publisher-name>Lippincott Williams &amp; Wilkins</publisher-name>
+<publisher-loc>Philadelphia, PA</publisher-loc>
+<year>2013</year>
+<fpage>825</fpage>
+<lpage>858</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<collab>NCBI Resource Coordinators</collab>
+<article-title>Database resources of the National Center for Biotechnology Information</article-title>
+<source>Nucleic Acids Research</source>
+<year>2018</year>
+<month>Jan</month>
+<fpage>46</fpage>
+<issue>D1</issue>
+<fpage>D8</fpage>
+<lpage>D13</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Patiño-Galindo</surname>
+<given-names>JÁ</given-names>
+</name>
+<name>
+<surname>Filip</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>AlQuraishi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rabadan</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Recombination and lineage-specific mutations led to the emergence of sars-cov-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pérez-Losada</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Arenas</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Galán</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Palero</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>González-Candelas</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Recombination in viruses: Mechanisms, methods of study, and evolutionary consequences</article-title>
+<source>Infection, Genetics and Evolution</source>
+<year>2015</year>
+<month>Mar</month>
+<volume>30</volume>
+<fpage>296</fpage>
+<lpage>307</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pipes</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Huelsenbeck</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Assessing Uncertainty in the Rooting of the SARS-CoV-2 Phylogeny</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2020</year>
+<month>12</month>
+<volume>38</volume>
+<issue>4</issue>
+<fpage>1537</fpage>
+<lpage>1543</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robinson</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Foulds</surname>
+<given-names>LR</given-names>
+</name>
+</person-group>
+<article-title>Comparison of phylogenetic trees</article-title>
+<source>Mathematical Biosciences</source>
+<year>1981</year>
+<volume>53</volume>
+<issue>1-2</issue>
+<fpage>131</fpage>
+<lpage>147</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Scornavacca</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jacox</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Szöllosi</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>Joint amalgamation of most parsimonious reconciled gene trees</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<issue>6</issue>
+<fpage>841</fpage>
+<lpage>848</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Scornavacca</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Paprotny</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Berry</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Ranwez</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Representing a set of reconciliations in a compact way</article-title>
+<source>Journal of Bioinformatics and Computational Biology</source>
+<year>2013</year>
+<volume>11</volume>
+<issue>02</issue>
+<elocation-id>1250025</elocation-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sjostrand</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tofigh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Daubin</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Arvestad</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sennblad</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Lagergren</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>A bayesian method for analyzing lateral gene transfer</article-title>
+<source>Systematic Biology</source>
+<year>2014</year>
+<volume>63</volume>
+<issue>3</issue>
+<fpage>409</fpage>
+<lpage>420</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stamatakis</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<month>May</month>
+<volume>30</volume>
+<issue>24451623</issue>
+<fpage>1312</fpage>
+<lpage>1313</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stolzer</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sathaye</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Vernot</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Durand</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Inferring duplications, losses, transfers and incomplete lineage sorting with nonbinary species trees</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<issue>18</issue>
+<fpage>409</fpage>
+<lpage>415</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Suchard</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Baele</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Ayres</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Drummond</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Bayesian phylogenetic and phylodynamic data integration using beast 1.10</article-title>
+<source>Virus evolution</source>
+<year>2018</year>
+<volume>4</volume>
+<issue>29942656</issue>
+<elocation-id>vey016</elocation-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szollosi</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Boussau</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Abby</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Tannier</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Daubin</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic modeling of lateral gene transfer reconstructs the pattern and relative timing of speciations</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2012</year>
+<volume>109</volume>
+<issue>43</issue>
+<fpage>17513</fpage>
+<lpage>17518</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szollosi</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Tannier</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Lartillot</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Daubin</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Lateral gene transfer from the dead</article-title>
+<source>Systematic Biology</source>
+<year>2013</year>
+<volume>62</volume>
+<issue>3</issue>
+<fpage>386</fpage>
+<lpage>397</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Tofigh</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Using Trees to Capture Reticulate Evolution : Lateral Gene Transfers and Cancer Progression</source>
+<publisher-name>PhD thesis, KTH Royal Institute of Technology</publisher-name>
+<year>2009</year>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tofigh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hallett</surname>
+<given-names>MT</given-names>
+</name>
+<name>
+<surname>Lagergren</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Simultaneous identification of duplications and lateral gene transfers</article-title>
+<source>IEEE/ACM Trans Comput Biology Bioinform</source>
+<year>2011</year>
+<volume>8</volume>
+<issue>2</issue>
+<fpage>517</fpage>
+<lpage>535</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tria</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Landan</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Dagan</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic rooting using minimal ancestor deviation</article-title>
+<source>Nature Ecology and Evolution</source>
+<year>2017</year>
+<volume>1</volume>
+<elocation-id>0193</elocation-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wade</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Rangel</surname>
+<given-names>LT</given-names>
+</name>
+<name>
+<surname>Kundu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Fournier</surname>
+<given-names>GP</given-names>
+</name>
+<name>
+<surname>Bansal</surname>
+<given-names>MS</given-names>
+</name>
+</person-group>
+<article-title>Assessing the accuracy of phylogenetic rooting methods on prokaryotic gene families</article-title>
+<source>PLOS ONE</source>
+<year>2020</year>
+<month>05</month>
+<volume>15</volume>
+<issue>5</issue>
+<fpage>1</fpage>
+<lpage>22</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y-M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Z-G</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tao</surname>
+<given-names>Z-W</given-names>
+</name>
+<name>
+<surname>Tian</surname>
+<given-names>J-H</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>Y-Y</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>M-L</given-names>
+</name>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in china</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>Mar</month>
+<volume>579</volume>
+<issue>7798</issue>
+<fpage>265</fpage>
+<lpage>269</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Probable pangolin origin of sars-cov-2 associated with the covid-19 outbreak</article-title>
+<source>Current Biology</source>
+<year>2020</year>
+<volume>30</volume>
+<issue>7</issue>
+<fpage>1346</fpage>
+<lpage>1351</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>X-L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X-G</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Si</surname>
+<given-names>H-R</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>C-L</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>H-D</given-names>
+</name>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>Mar</month>
+<volume>579</volume>
+<issue>7798</issue>
+<fpage>270</fpage>
+<lpage>273</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>virDTL enables inference of ancestral recombination.</title>
+<p>
+<bold>(a)</bold> Commonly-used tools such as Simplot and RDP are well-suited to inferring recent recombinations between strains of interest, where the recombination signal is clear in the sequence similarity profile. <bold>(b)</bold> However, in cases where recombination has occurred between ancestral strains, and multiple recombinations have occurred in a single lineage, if becomes significantly more difficult to disentangle the sequence similarity signal to infer all recombinations. <bold>(c)</bold> Our model-based computational protocol, virDTL, takes into account the entire evolutionary history of a gene family, including several sources of inference uncertainty. A credible strain tree is estimated using non-recombinant regions of the genome, and multiple gene tree candidates are inferred and error-corrected and reconciled against the strain tree to infer HGTs. In addition to accounting for gene tree topological and rooting uncertainty, we reconcile the same gene tree and species tree multiple times to capture the full landscape of uncertainty in inferring recombination.</p>
+</caption>
+<graphic xlink:href="EMS132842-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>Overview of <italic>Sarbecovirus</italic> genome evolution.</title>
+<p>
+<bold>(a)</bold> We reconstructed three candidate strain trees from the whole genome and two putative non-recombinant regions A (13,000 - 18,000 base pairs) and B (4,000 - 9,000 base pairs). Their topologies differ substantially, especially in the SARS-CoV-2 lineage, which suggests that the evolution of SARS-CoV-2 was impacted by recombination. We define 4 clades, <italic>Zhejiang</italic> (green), <italic>SC2-RaTG</italic> (orange), <italic>Pangolin</italic> (purple) and <italic>HKU</italic> (blue) and show the tree inferred using each region of the genome. <bold>(b)</bold> The <italic>Sarbecovirus</italic> genome comprises 4 well-characterized structural proteins which construct the viral Spike (S), Envelope (E), Membrane (M), and Nucleocapsid (N), as well as several open reading frames which encode accessory factors. The Spike and Nucleocapsid genes are highlighted in red and pink, respectively, as they appear in several ancestral recombinations (<xref ref-type="fig" rid="F5">Figure 5</xref>). <bold>(c)</bold> Sequence similarity along the genome using SimPlot. Using <italic>Zhejiang</italic> clade sequences as query, we compare with the <italic>SC2-RaTG</italic> and <italic>HKU</italic> clades. For the majority of the genome, <italic>SC2-RaTG</italic> is more similar to <italic>Zhejiang</italic>. Between 11,857 and 20,677 base pairs, <italic>HKU</italic> is more similar. <bold>(d)</bold> We find evidence of an HGT from the ancestor of the <italic>Zhejiang</italic> clade to an ancestor of the <italic>HKU</italic> clade in ORF-1ab. This recombination (light gray) explains the signal shown in the NRR-A tree <bold>(a)</bold> and SimPlot <bold>(c)</bold> and is not consistent with the dating of the phylogeny (<xref ref-type="supplementary-material" rid="SD2">Figure S2</xref>). However, it is not uncommon for inferred HGTs to be off by a single branch due to gene tree estimation uncertainty. A time-consistent HGT to the ancestor of the three <italic>HKU</italic> strains (darker gray) similarly explains the signal.</p>
+</caption>
+<graphic xlink:href="EMS132842-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>HGTs involving the SARS-CoV-2 lineage.</title>
+<p>
+<bold>(a)</bold> We inferred eight highly supported (with a support of at least 500) HGTs which involve an ancestor of SARS-CoV-2 [Wuhan-Hu-1]. Support values are shown for the OptRoot-rooted gene trees (solid lines) or MAD-rooted gene trees (dashed lines), with one transfer (Spike) inferred using both rootings. Smaller arrow heads indicate there exists an HGT with at least 100 support in the reverse direction using gene trees rooted with either method, suggesting directional uncertainty. <bold>(b)</bold> We found a strong correlation between the size of a clade and the number of HGTs in that clade (Pearson's <italic>R</italic>
+<sup>2</sup> = 0.99). However, for every ancestral strain in the SARS-CoV-2 lineage and related clades, the number of HGTs in that clade is much lower than would be expected for their size. This paucity of HGTs is likely due to sampling effects, as these strains are more distantly related to the rest of the <italic>Sarbecovirus</italic> strains in the analysis.</p>
+</caption>
+<graphic xlink:href="EMS132842-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<title>Highly supported leaf-to-leaf HGTs are consistent with sequence similarity.</title>
+<p>We present a case study of a leaf-to-leaf HGT between the donor Rp3 (orange) and recipient Rm1 (green). <bold>(a)</bold> The inferred HGT from Rp3 to Rm1 in the Spike gene has a support of 1000. <bold>(b)</bold> Sequence similarity of the donor Rp3 to its sibling GX2013 (purple) and the recipient Rm1. Rp3 and GX2013 are highly similar throughout the length of the genome, and Rm1 is more divergent throughout but equally similar in the Spike region. <bold>(c)</bold> Sequence similarity of the recipient Rm1 to its sibling HuB2013 (blue) and the donor Rp3. Rm1 and HuB2013 are highly similar throughout the length of the genome <italic>except</italic> in the Spike region, where Rm1 has received genetic material from Rp3. Thus, Rp3 and Rm1 are more similar in the Spike region.</p>
+</caption>
+<graphic xlink:href="EMS132842-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<title>Ancestral HGTs are consistent with sequence similarity but difficult to discover from similarity alone.</title>
+<p>We present a case study of an ancestral recombination which is highly supported in both the Spike and Nucleocapsid gene families, from the ancestor of the <italic>SC2-RaTG</italic> clade (orange) to the ancestor of the <italic>Pangolin</italic> clade (purple). <bold>(a)</bold> For much of the genome, <italic>Zhejiang</italic> is more similar to the donor <italic>SC2-RaTG</italic> than the recipient <italic>Pangolin</italic>. <bold>(b)</bold> Our analysis infers HGTs from <italic>SC2-RaTG</italic> to <italic>Pangolin</italic> in the Spike and Nucleocapsid proteins with supports of 640 and 813, respectively. <bold>(c)</bold> In the 3' region of the genome, <italic>Pangolin</italic> is often more similar to <italic>SC2-RaTG</italic>, especially in the Spike and parts of the Nucleocapsid gene families. However, it is difficult to clearly determine from sequence similarity alone which gene families have been affected by recombination, especially in ancestral cases such as these where the closest reference relative is the same for both donor and recipient.</p>
+</caption>
+<graphic xlink:href="EMS132842-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig. 6</label>
+<caption>
+<title>Pairs of strains with bi-directional HGTs suggest the presence of a third party donor.</title>
+<p>We present a case study of an inferred HGT between Anlong-103 (orange) and YN2013 (blue) in the Spike protein, with support of <bold>(a)</bold> 503 in the forward direction and <bold>(b)</bold> 497 in the backward direction. Such bi-directional support suggests strong evidence that an HGT occurred and a third-party was involved, but ambiguity as to the direction of the HGT. We found support for HGTs <bold>(a)</bold> from F46 to Anlong-103 (407 support) and <bold>(b)</bold> from F46 to YN2013 (393 support). <bold>(c)</bold> and <bold>(d)</bold> show Simplot analysis demonstrating both Anlong-103 and YN2013 are significantly different from their respective siblings (RS7327, green, and Rs4084, purple) in the Spike protein. <bold>(e)</bold> Simplot analysis shows that both Anlong-103 and YN2013 are equally similar to a putative third-party donor F46 (black).</p>
+</caption>
+<graphic xlink:href="EMS132842-f006"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Three candidate strain trees are highly divergent.</title>
+<p>(<italic>Top</italic>) The relatively high Robinson-Foulds (RF) distances between pairs of strain trees indicates substantial differences between the tree topologies, and suggests that substantial recombination has occurred throughout the <italic>Sarbecovirus</italic> subgenus. This result motivates the need for constructing a reliable strain tree using a non-recombinant region. (<italic>Bottom</italic>) We report the average normalized RF distance between trees constructed within a genomic region. We divided the genome into 1000-base pair windows with a 500-base pair offset, reconstructed a phylogeny on this window using RAxML, and computed all pairwise RF distances between the windows. We show the average internal pairwise RF distance for 5000-base pair windows and compare to the average internal pairwise RF distance for the two putative non-recombinant regions. <bold>NRR-B is more internally consistent than other genomic regions</bold>, which suggests less recombination in this region and motivates its use as our strain tree for reconciliation.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="top">Genome Region</th>
+<th align="center" valign="top">Normalized RF Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">Whole Genome vs. NRR-B</td>
+<td align="center" valign="top">0.660</td>
+</tr>
+<tr>
+<td align="center" valign="top">Whole Genome vs. NRR-A</td>
+<td align="center" valign="top">0.620</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="center" valign="top">NRR-A vs. NRR-B</td>
+<td align="center" valign="top">0.800</td>
+</tr>
+<tr>
+<td align="center" valign="top">0 - 5000</td>
+<td align="center" valign="top">0.522</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>4000 - 9000 (NRR-B)</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.496</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">5000 - 10000</td>
+<td align="center" valign="top">0.519</td>
+</tr>
+<tr>
+<td align="center" valign="top">10000 - 15000</td>
+<td align="center" valign="top">0.559</td>
+</tr>
+<tr>
+<td align="center" valign="top">13000 - 18000 (NRR-A)</td>
+<td align="center" valign="top">0.607</td>
+</tr>
+<tr>
+<td align="center" valign="top">15000 - 20000</td>
+<td align="center" valign="top">0.586</td>
+</tr>
+<tr>
+<td align="center" valign="top">20000 - 25000</td>
+<td align="center" valign="top">0.549</td>
+</tr>
+<tr>
+<td align="center" valign="top">25000 - 30000</td>
+<td align="center" valign="top">0.561</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

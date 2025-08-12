@@ -1,0 +1,420 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS134156</article-id>
+<article-id pub-id-type="doi">10.1101/2021.08.26.457577</article-id>
+<article-id pub-id-type="archive">PPR387848</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Epitopedia: identifying molecular mimicry of known immune epitopes</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Balbin</surname>
+<given-names>Christian A</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Nunez-Castilla</surname>
+<given-names>Janelle</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Siltberg-Liberles</surname>
+<given-names>Jessica</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Biological Sciences, College of Arts, Science and Education</aff>
+<aff id="A2">
+<label>2</label>Biomolecular Sciences Institute, Florida International University, 11200 SW 8th St, Miami, 33199, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>To whom correspondence should be addressed. Contact <email>cbalbin@fiu.edu</email>, <email>jliberle@fiu.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>08</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>27</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<sec id="S1">
+<title>Motivation</title>
+<p id="P1">Upon infection, pathogen epitopes stimulate the host’s immune system to produce antibodies targeting the pathogen. Molecular mimicry (structural similarity) between an infecting pathogen and host proteins or pathogenic proteins the host has previously encountered can impact the immune response of the host. The ability to identify potential molecular mimicry for a pathogen can illuminate immune effects with importance to pathogen treatment and vaccine design.</p>
+</sec>
+<sec id="S2">
+<title>Summary</title>
+<p id="P2">Epitopedia allows for identification of regions with three-dimensional molecular mimicry between a protein in a pathogen with known epitopes in the host.</p>
+</sec>
+<sec id="S3">
+<title>Results</title>
+<p id="P3">SARS-CoV-2 Spike returns molecular mimicry with 14 different epitopes including integrin beta-1 from <italic>Homo sapiens</italic>, lethal factor precursor from <italic>Bacillus anthracis</italic>, and pollen allergen Phl p 2 from Timothy grass.</p>
+</sec>
+<sec id="S4">
+<title>Availability</title>
+<p id="P4">Epitopedia is primarily written in Python and relies on established software and data-bases. Epitopedia is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/cbalbin-FIU/Epitopedia">https://github.com/cbalbin-FIU/Epitopedia</ext-link> under the opensource MIT license and is also packaged as a docker container at <ext-link ext-link-type="uri" xlink:href="https://hub.docker.com/r/cbalbin/epitopedia">https://hub.docker.com/r/cbalbin/epitopedia</ext-link>.</p>
+</sec>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S5" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P5">Pathogens present antigenic molecules that typically elicit a host immune response. For proteins, an epitope is the portion of the antigen which is bound by an antibody. Occasionally, pathogen epitopes may resemble host epitopes, a phenomenon termed molecular mimicry. In instances of molecular mimicry, infection with a pathogen can trigger the production of antibodies that mistakenly target an epitope in a host protein, resulting in autoimmune disease (<xref ref-type="bibr" rid="R4">Cusick <italic>et al</italic>., 2012</xref>). Alternatively, molecular mimicry between two pathogens can offer protective immunity for both after infection with either one (<xref ref-type="bibr" rid="R1">Agrawal, 2019</xref>).</p>
+<p id="P6">To the best of our knowledge there are currently no computational programs or pipelines readily available for the prediction of molecular mimicry of known epitopes, although programs to map peptides (mimotopes) onto the antigenic protein structure to identify a native epitope exist (<xref ref-type="bibr" rid="R5">Huang <italic>et al</italic>., 2008</xref>; <xref ref-type="bibr" rid="R7">Mayrose <italic>et al</italic>., 2007</xref>; <xref ref-type="bibr" rid="R8">Negi and Braun, 2009</xref>; <xref ref-type="bibr" rid="R3">Chen <italic>et al</italic>., 2012</xref>).</p>
+<p id="P7">We present Epitopedia, a computational pipeline for the prediction of molecular mimicry. Epitopedia identifies sequence and structural similarity between an antigenic protein of interest and any experimentally verified linear epitope found in the Immune Epitope Database (IEDB) (<xref ref-type="bibr" rid="R11">Vita <italic>et al</italic>., 2019</xref>). Given the structural similarity between these epitopes and the pathogenic protein, it follows that binding of the same antibody may be possible.</p>
+</sec>
+<sec id="S6">
+<label>2</label>
+<title>Implementation</title>
+<sec id="S7">
+<label>2.1</label>
+<title>Internal Database Generation</title>
+<p id="P8">Epitopedia utilizes IEDB and the Protein Data Bank (PDB) (<xref ref-type="bibr" rid="R2">Berman et al., 2000</xref>) to generate four internal data-bases. IEDB-FILT is derived from the IEDB database, which is reduced to only include the necessary data for mimicry discovery including the full-length source sequences. A BLASTP database (EPI-SEQ), including taxonomic origin, is generated from epitope linear peptide sequences (mean length 13 residues) with positive assays in IEDB. A repository of structural representatives (EPI-PDB) for the source sequences is generated from a sensitive (s=7.5) MMseqs2 (<xref ref-type="bibr" rid="R9">Steinegger and Söding, 2017</xref>) many-against-many search against the PDB. Alignments with less than 90% identity or 20% query coverage are discarded. Lastly, DSSP (<xref ref-type="bibr" rid="R6">Kabsch and Sander, 1983</xref>) is used to compute the accessible surface area (ASA) for every residue in each chain in PDB. The generated databses are then stored as tables in a SQLite3 database.</p>
+</sec>
+<sec id="S8">
+<label>2.2</label>
+<title>Searching for Sequence-Based Molecular Mimics</title>
+<p id="P9">The input for Epitopedia is one or more PDB structures. The protein sequence of the input structure is used to BLAST against EPI-SEQ. The BLASTP parameters evalue and max_target_seq are set to 2,000,000 to avoid discarding hits due to large evalue or reaching the match limit. The hits are filtered to only include hits with regions of 5 consecutive, identical amino acids between the query (input protein) and subject (epitope). If a hit meets this requirement for more than one region, the regions are split into subalignments (one epitope may have &gt;1 region).</p>
+<p id="P10">Further, to be considered molecular mimics, the regions must have at least 3 consecutive accessible amino acids with a relative accessible surface area &gt; 20%. Relative surface area is computed according to equation<disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mtext mathvariant="italic">RSA</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mrow>
+<mml:mtext mathvariant="italic">ASA</mml:mtext>
+</mml:mrow>
+<mml:mo>/</mml:mo>
+<mml:mrow>
+<mml:mtext mathvariant="italic">MaxASA</mml:mtext>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula>with Wilke (<xref ref-type="bibr" rid="R10">Tien <italic>et al</italic>., 2013</xref>) providing the maximum allowed solvent accessibility (MaxASA) per amino acid. Regions meeting these qualifications are considered sequence-based molecular mimics (SeqBMMs); those that do not meet the qualifications are discarded.</p>
+</sec>
+<sec id="S9">
+<label>2.3</label>
+<title>Identifying Structural Molecular Mimics</title>
+<p id="P11">The structural regions of the input structure corresponding to the SeqBMMs’ regions are evaluated to ensure that all residues are solved. To avoid potential problems of missing mimics in an input structure due to e.g., missing electron density, several structures can simultaneously be used as an input, helpful in the case of unsolved regions in some structures and allowing for the representation of a conformational ensemble. SeqBMMs represented in EPI-PDB and the corresponding hit fragment from the input structure are extracted. TM-align (<xref ref-type="bibr" rid="R13">Zhang and Skolnick, 2005</xref>) is used to evaluate the structural similarity for each extracted peptide structure pair. The alignment of the identical mimic region for the peptide pair is provided to TM-align which then performs the structural superposition and generates an RMSD value. Pairs with an RMSD ≤ 1Å are considered structural molecular mimics (StructBMMs).</p>
+</sec>
+<sec id="S10">
+<label>2.4</label>
+<title>Handling Redundancy and Visualization</title>
+<p id="P12">It is common to have several overlapping epitopes where both the StructBMM region and epitope source sequences are identical for multiple SeqBMMs. Internal accession numbers for all epitope source sequences in IEDB-FILT were assigned, such that any two or more identical sequences will have the same internal accession number. This allows for filtering of redundancy at the output stage of the pipeline. Epitopedia outputs results in CSV, JSON and a simple web interface. The web interface is built using Flask and Bootstrap.</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="results">
+<label>3</label>
+<title>Results</title>
+<p id="P13">Executing Epitopedia with SARS-CoV-2 Spike protein (PDB id: 6VXX, chain A (<xref ref-type="bibr" rid="R12">Walls <italic>et al</italic>., 2020</xref>)) as input yields 711 SeqBMMs, where 182 SeqBMMs from 83 source sequences have PDB representation (<xref ref-type="fig" rid="F1">Figure 1</xref>). Based on a cutoff of 1 Å, there are 14 StructBMMs. Of the 14 epitopes with molecular mimicry to Spike, 11 are from human such as integrin beta-1, and one each are from <italic>Mycobacterium tuberculosis</italic>, <italic>Bacillus anthracis</italic>, and Timothy grass (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>, <xref ref-type="supplementary-material" rid="SD2">Figures S1–S12</xref>). However, proteins are dynamic and the input PDB is important for the results. Thus, Epitopedia allows a set of PDB ids representing a conformational ensemble of the same protein or of different proteins to be used as input. If a conformational ensemble of the same protein is used, the pipeline will run for each PDB id, but at the end, all results will be considered in determining the structural molecular mimics based on the RMSD cutoff.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Table S1</label>
+<media xlink:href="EMS134156-supplement-Table_S1.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N65930" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Figures</label>
+<media xlink:href="EMS134156-supplement-Supplementary_Figures.pdf" mimetype="application" mime-subtype="pdf" id="N65939" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S12">
+<title>Acknowledgements</title>
+<p>We thank the RAPID group at FIU for weekly discussions and Trevor Cickovski for testing the software.</p>
+<sec id="S13">
+<title>Funding</title>
+<p>This work was partially supported by the National Science Foundation under Grant No. 2037374 (JNC and JSL).</p>
+</sec>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P14">
+<italic>Conflict of Interest:</italic> none declared.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Agrawal</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Heterologous Immunity: Role in Natural and Vaccine-Induced Resistance to Infections</article-title>
+<source>Front Immunol</source>
+<year>2019</year>
+<elocation-id>2631</elocation-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berman</surname>
+<given-names>HM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Protein Data Bank</article-title>
+<source>Nucleic Acids Res</source>
+<year>2000</year>
+<volume>28</volume>
+<fpage>235</fpage>
+<lpage>242</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pepmapper: A collaborative web tool for mapping epitopes from affinity-selected peptides</article-title>
+<source>PLoS One</source>
+<year>2012</year>
+<volume>7</volume>
+<elocation-id>37869</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cusick</surname>
+<given-names>MF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Molecular mimicry as a mechanism of autoimmune disease</article-title>
+<source>Clin Rev Allergy Immunol</source>
+<year>2012</year>
+<volume>42</volume>
+<fpage>102</fpage>
+<lpage>111</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>YX</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pep-3D-Search: A method for B-cell epitope prediction based on mimotope analysis</article-title>
+<source>BMC Bioinformatics</source>
+<year>2008</year>
+<volume>9</volume>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kabsch</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Sander</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Dictionary of protein secondary structure: Pattern recognition of hydrogen-bonded and geometrical features</article-title>
+<source>Biopolymers</source>
+<year>1983</year>
+<volume>22</volume>
+<fpage>2577</fpage>
+<lpage>2637</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mayrose</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pepitope: Epitope mapping from affinity-selected peptides</article-title>
+<source>Bioinformatics</source>
+<year>2007</year>
+<volume>23</volume>
+<fpage>3244</fpage>
+<lpage>3246</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Negi</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Braun</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Automated detection of conformational epitopes using phage display peptide sequences</article-title>
+<source>Bioinform Biol Insights</source>
+<year>2009</year>
+<volume>2009</volume>
+<fpage>71</fpage>
+<lpage>81</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Steinegger</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Söding</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets</article-title>
+<source>Nat Biotechnol</source>
+<year>2017</year>
+<volume>35</volume>
+<fpage>1026</fpage>
+<lpage>1028</lpage>
+<comment>2017 3511</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tien</surname>
+<given-names>MZ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Maximum allowed solvent accessibilites of residues in proteins</article-title>
+<source>PLoS One</source>
+<year>2013</year>
+<volume>8</volume>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vita</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Immune Epitope Database (IEDB): 2018 update</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D339</fpage>
+<lpage>D343</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure, Function, and Antigenicity of the SARS-CoV-2 Spike Glycoprotein</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>281</fpage>
+<lpage>292</lpage>
+<elocation-id>e6</elocation-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Skolnick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>TM-align: a protein structure alignment algorithm based on the TM-score</article-title>
+<source>Nucleic Acids Res</source>
+<year>2005</year>
+<volume>33</volume>
+<fpage>2302</fpage>
+<lpage>2309</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Epitopedia output overview based on input PDB 6VXX, chain A.</title>
+<p>For example of detailed output see example_output folder on the GitHub repository.</p>
+</caption>
+<graphic xlink:href="EMS134156-f001"/>
+</fig>
+</floats-group>
+</article>

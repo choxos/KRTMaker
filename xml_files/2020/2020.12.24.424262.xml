@@ -1,0 +1,2243 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS109164</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.24.424262</article-id>
+<article-id pub-id-type="archive">PPR257641</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>DeepImmuno: Deep learning-empowered prediction and generation of immunogenic peptides for T cell immunity</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Li</surname>
+<given-names>Guangyuan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Iyer</surname>
+<given-names>Balaji</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Surya Prasath</surname>
+<given-names>V. B.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Ni</surname>
+<given-names>Yizhao</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Salomonis</surname>
+<given-names>Nathan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Division of Biomedical Informatics, Cincinnati Children's Hospital Medical Center, Cincinnati, OH, USA</aff>
+<aff id="A2">
+<label>2</label>Department of Pediatrics, University of Cincinnati School of Medicine, Cincinnati, Ohio, USA</aff>
+<aff id="A3">
+<label>3</label>Department of Biomedical Informatics, College of Medicine, University of Cincinnati, OH, 45267 USA</aff>
+<aff id="A4">
+<label>4</label>Department of Electrical Engineering and Computer Science, University of Cincinnati, OH 45221 USA</aff>
+<author-notes>
+<corresp id="CR1">
+<bold>Corresponding Author</bold>: Guangyuan Li, <email>li2g2@mail.uc.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>25</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>24</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">T-cells play an essential role in the adaptive immune system by seeking out, binding and destroying foreign antigens presented on the cell surface of diseased cells. An improved understanding of T-cell immunity will greatly aid in the development of new cancer immunotherapies and vaccines for life threatening pathogens. Central to the design of such targeted therapies are computational methods to predict non-native epitopes to elicit a T cell response, however, we currently lack accurate immunogenicity inference methods. Another challenge is the ability to accurately simulate immunogenic peptides for specific human leukocyte antigen (HLA) alleles, for both synthetic biological applications and to augment real training datasets. Here, we proposed a beta-binomial distribution approach to derive epitope immunogenic potential from sequence alone. We conducted systematic benchmarking of five traditional machine learning (ElasticNet, KNN, SVM, Random Forest, AdaBoost) and three deep learning models (CNN, ResNet, GNN) using three independent prior validated immunogenic peptide collections (dengue virus, cancer neoantigen and SARS-Cov-2). We chose the CNN model as the best prediction model based on its adaptivity for small and large datasets, and performance relative to existing methods. In addition to outperforming two highly used immunogenicity prediction algorithms, DeepHLApan and IEDB, DeepImmuno-CNN further correctly predicts which residues are most important for T cell antigen recognition. Our independent generative adversarial network (GAN) approach, DeepImmuno-GAN, was further able to accurately simulate immunogenic peptides with physiochemical properties and immunogenicity predictions similar to that of real antigens. We provide DeepImmuno-CNN as source code and an easy-to-use web interface.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Immunotherapy has emerged as a promising strategy to combat cancer by “reprogramming” a patient's own immune system. Effective targeted immunotherapies require accurately predicting which cancer-specific neo-epitopes are most likely to elicit an immune response. Similar strategies are currently being designed to target antigens commonly produced by serious pathogens, such as the SARS-Cov-2 (COVID-19) virus [<xref ref-type="bibr" rid="R1">1</xref>]. Human leukocyte antigens (HLAs) are a polymorphic class of proteins on the cell surface of T cells that recognize foreign antigens presented by another cell. The process of antigen recognition is the cornerstone of the adaptive immune system. HLA proteins are encoded by the Major Histocompatibility Complex (MHC) genes in humans. Predicting the immunogenicity of MHC-I bound epitopes is crucial for understanding the molecular rules governing T cell directed adaptive immunity and creating precision cancer or pathogen targeting vaccines. Cellular antigen recognition is governed by a series of carefully orchestrated molecular interactions between cell-surface-presented antigen and T cells of the immune system. MHC-I proteins are responsible for presentation of short epitopes on the cell surface and mediating interactions with CD8+ T cell receptors (TCR). An immunogenic peptide is capable of binding with a cognate MHC molecule, resulting in the exposure of its non-self portion. The exposure of “foreign” signals trigger immunoreceptor tyrosine-based activation motifs (ITAMs) on the T cell to be phosphorated and activate an immune response [<xref ref-type="bibr" rid="R2">2</xref>]. The process ultimately results in targeted cell death of the antigen expression cell by CD8 T cell. Hence, the identification of immunogenic epitopes that can trigger T cell responses is central to developing new cancer immunotherapies and vaccines. Because thousands of potential disease-associated antigens can be presented in innate or foreign cells [<xref ref-type="bibr" rid="R3">3</xref>], it is necessary to prioritize which candidates are most likely to induce T cell response prior to experimental validation.</p>
+<p id="P3">To reduce the number of epitopes to be chosen, <italic>in silico</italic> methods have been developed to predict antigen immunogenicity. POPI [<xref ref-type="bibr" rid="R4">4</xref>] was developed as the first automated computational immunogenicity prediction tool. POPI used a selected subset of physicochemical features identified by a bi-objective algorithm for support vector machine (SVM) based classification. An updated version POPISK [<xref ref-type="bibr" rid="R5">5</xref>] further considers MHC binding properties to improve its prediction ability. PAAQD [<xref ref-type="bibr" rid="R6">6</xref>] was later developed to consider amino acid pairwise contact potential and quantum topological molecular similarity (QTMS) for feature selection. Subsequently, a machine learning-based immunogenicity predictor NeoPepsee [<xref ref-type="bibr" rid="R7">7</xref>] was developed that integrated 14 independent features to infer peptide immunogenicity. These initial methods paved the way for more advanced algorithms, however, the applicability of such methods have historically been challenging due to small training datasets and limited consideration of HLA alleles. A significant advance in the field came with the introduction of the immune epitope database (IEDB) and associated predictive immunogenicity tools [<xref ref-type="bibr" rid="R8">8</xref>]. This invaluable resource continues to systematically characterize the biochemical properties of over 30,000 MHCI-bound immunogenic epitopes. IEDB further includes a suite of algorithms to predict binding affinity and immunogenicity, including a position-weighted calculated schema by considering kullback-leibler (KL) divergence and amino acid preference (default method). More recently, algorithms with improved reported accuracy have been described, including a Random Forest based approach called INeo-Epp [<xref ref-type="bibr" rid="R9">9</xref>] which uses a customized immunogenic score and the recurrent neural network-based deep learning approach DeepHLApan [<xref ref-type="bibr" rid="R10">10</xref>]. While promising, a potential limitation of these these approaches is that the prediction of immunogenic epitopes is treated as a binary classification problem using predefined hard cutoffs, in which each peptide-MHC pair will be considered immunogenic or non-immunogenic, even though the immunogenicity of a certain peptide-MHC will vary substantially depending on the subject's immune profile and TCR repertoire [<xref ref-type="bibr" rid="R2">2</xref>]. Further, while DeepHLApan [<xref ref-type="bibr" rid="R10">10</xref>] applies a well-rationaled deep learning approach, its encoding of amino-acid sequence does not incorporate physicochemical or other amino-acid parameters (one-hot encoding). As a result, the outputs from these methods might not fully reflect the ability of the peptide-MHC to trigger a T cell response.</p>
+<p id="P4">A secondary, but important challenge in the field of immunogenicity prediction, is to learn the rules that govern which peptides are immunogenic and why. Understanding these rules, could be used to develop improved prediction models or produce large synthetic datasets for training more accurate predictive models. Deep generative models [<xref ref-type="bibr" rid="R11">11</xref>] are a newly-emerging area in artificial intelligence (AI) that can be applied to diverse research problems. In effect, such models allow for the creation of accurate synthetic models from limited existing training data. Such methods take random noise to create new datasets that reflect the original training data but that contain unique informative features. Generative adversarial networks (GANs) are widely used in computer vision [<xref ref-type="bibr" rid="R12">12</xref>] and synthetic biology [<xref ref-type="bibr" rid="R13">13</xref>] to generate new images or sequences of interest (i.e. antimicrobial peptides), but have not previously used to produce synthetic models of immunogenic peptides.</p>
+<p id="P5">To overcome the aforementioned limitations, we propose a new convolutional neural network (CNN) [<xref ref-type="bibr" rid="R14">14</xref>] approach called DeepImmuno-CNN. During the training, a beta-binomial probabilistic model is fitted to the training dataset to derive a continuous immunogenic score. This score differentially weights each peptide-MHC complex in the model based on its associated experimental evidence (high-confidence or low-confidence), to further produce a more reliable variable immunogenic score for each peptide in the test dataset. Each amino acid sequence is additionally encoded using a reduced principal component analysis (PCA) feature space of 566 well-curated amino acid physicochemical features from the AAindex1 database [<xref ref-type="bibr" rid="R15">15</xref>] to overcome sparsity issues related to one-hot encoding [<xref ref-type="bibr" rid="R16">16</xref>]. Diverse machine learning and deep learning approaches exist, which have potential strengths and weaknesses for this problem (e.g., performance, accuracy, flexibility to dataset size). To ensure the rigor of this approach, we performed a systematic comparison of five traditional machine learning algorithms (ElasticNet, K-Nearest Neighbors (KNN), SVM, Random Forest, AdaBoost) and three deep-learning models (CNN, Graph Neural Network (GNN), Residual Net (ResNet)). This benchmarking further supports the use of a CNN for this problem. In addition, an evaluation of different encoding schemas, confirms that our AAindex1 PCA encoding strategy provides excellent performance relative to alternative methods. When benchmarked against two state-of-the-art workflows for immunogenicity prediction (DeepHLApan and IEDB), DeepImmuno-CNN was able to significantly increase both precision and recall for different HLA genotypes using diverse real-world test datasets (IEDB, TESLA and COVID-19). To further explore the dependent epitope features for immunogenicity prediction, we developed a GAN model [<xref ref-type="bibr" rid="R13">13</xref>][<xref ref-type="bibr" rid="R17">17</xref>] which mimics the salient features of validated immunogenic peptides. These data support the hypothesis that immunogenic peptides are learnable as a possible future source for high quality synthetic training data.</p>
+<p id="P6">Hence, this work represents multiple important advances and insights into the field of immunogenicity prediction, including: 1) comprehensive benchmarking of existing and new methods, 2) improved quantitative prediction models, 3) applicability for neoantigen and infectious peptides, 4) crucial determinants for T cell responses and 5) an accurate approach for synthetic modeling.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Datasets</title>
+<p id="P7">Multiple training and test datasets were analyzed in this study using previously published experimentally tested datasets. For initial training and validation, we analyzed &gt;9,000 experimentally evaluated immunogenicity assay predictions from the Immune Epitope Database, IEDB database (August 13th, 2020). For our evaluation, we restricted the dataset to peptides with metadata that matched to the following keywords: (1) linear epitope, (2) T cell assay, (3) MHC class I, (4) human, and (5) disease. To restrict the dataset to informative predictions, we developed a rigorous data cleaning strategy. First, data instances without explicit 4-digit MHC alleles were discarded. Second, all redundant peptide-MHC allele instances were discarded (the same peptide with different HLA alleles were considered different instances). Third, all negative epitopes, without explicit experimental information (number of subjects tested, number of subjects responded) or with less than four tested subjects were removed (likely not informative at a human population-level). Fourth, peptides of length 9 and 10 were retained for the training process. 9-mer and 10-mer peptides cover 97.5% of all data instances and are also the dominant length for MHCI-bound peptides [<xref ref-type="bibr" rid="R18">18</xref>]. Finally, we separated out 408 dengue virus positive instances from Weiskopf et al [<xref ref-type="bibr" rid="R19">19</xref>] for the purpose of internal validation of different prediction methods. Specifically, 9,056 data instances were retained in the final dataset, among which 4,143 were positive reactive instances and the remaining 4,913 were negative. We used ten-fold cross validation for internal benchmark analysis to avoid over-fitting. That is, we split the datasets into 10 rotating subsets - nine for training and one for validation in each run. At the end of cross validation, the scores for each evaluation metric were averaged over the ten testing subsets as the model's performance. We selected two independent test datasets for further evaluation: 1) 637 experimentally tested tumor specific neoantigens from the Tumor Neoantigen Selection Alliance (TESLA) [<xref ref-type="bibr" rid="R20">20</xref>], and 2) 100 SARS-Cov-2 peptides [<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R20">20</xref>] tested for their immunogenicity in convalescent and unexposed subjects, respectively.</p>
+</sec>
+<sec id="S4">
+<title>Encoding Strategy</title>
+<p id="P8">To represent each HLA allele and encoded peptide sequences in a numerical matrix as the input for each evaluated machine learning and deep learning algorithms, we developed and tested different encoding strategies. We used HLA paratopes (HLA-antigen interacting residues) as a proxy of different HLA alleles as these sequences contain the most salient information to describe peptide-HLA spatial interactions. The AAindex encoding strategy was designed to account for amino acid comprehensive physicochemical properties.</p>
+<sec id="S5">
+<title>AAIndex</title>
+<p id="P9">We retrieved 566 amino acid associated physicochemical properties from the AAindex1 database [<xref ref-type="bibr" rid="R15">15</xref>]. Among the 566 properties, 13 indices were discarded due to missing values for certain amino acids (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>). We introduced a placeholder amino acid “-” for padding the gaps of HLA paratope sequences and 9-mer peptides (see below). The corresponding AAindex values were set as the average of all other 20 canonical amino acids. This method adds the total amino acid number to 21. The resulting 21 x 553 numeric matrix was normalized using RobustScaler [<xref ref-type="bibr" rid="R21">21</xref>] via the following operation: <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:msubsup>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>w</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>o</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>d</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>m</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>Q</mml:mi>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P10">Where <bold>X</bold> is the numeric matrix, <bold>m</bold> is the median per each feature column and <bold>IQR</bold> is the interquartile (Q3-Q1) per each feature column. The normalized feature matrix undergoes a principal component analysis (PCA) to remove noisy features such that it only retains relevant components. We chose 12 principal components which explain 95% total variance. This step leads to a 21 x 12 numerical matrix (hereafter AAindex matrix). For peptides, we adopted an encoding schema similar to that of O'Donnell et al [<xref ref-type="bibr" rid="R22">22</xref>] to pad shorter peptides (9-mer) to a longer sequence (10-mer) such that first five residues and the last four residues were joined by a placeholder “-”, since the two termini are often involved in binding interactions [<xref ref-type="bibr" rid="R23">23</xref>,<xref ref-type="bibr" rid="R24">24</xref>]. For MHC molecules, we encoded each MHC allele based on its parotopes sequence, which is the set of discontinuous residues sterically interacting with peptides. This paratope information was evidenced and analyzed from crystal structure and was retrieved from IMGT-3D-Structure database [<xref ref-type="bibr" rid="R25">25</xref>] (<ext-link ext-link-type="uri" xlink:href="http://www.imgt.org/3Dstructure-DB/">http://www.imgt.org/3Dstructure-DB/</ext-link>). For MHC alleles which did not have a solved peptide-MHC structure, their paratope information was determined by their neighbors. Specifically, the paratopes of allele HLA-A*2403 were determined by its nearest neighbor HLA-A*2402, which is a more frequent allele whose paratope sequence is available. We then performed two rounds of multiple sequence alignment using clustal-omega [<xref ref-type="bibr" rid="R26">26</xref>]. The first iteration was used for generating a consensus sequence for a single HLA allele from all its solved crystal structure, while the second round was for all paratope sequences with same length, gaps were filled with the placeholder “-” [<xref ref-type="bibr" rid="R26">26</xref>]. A schematic example is shown in <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 1</xref>.</p>
+</sec>
+</sec>
+<sec id="S6">
+<title>Beta Binomial immunogenic model</title>
+<p id="P11">Three columns of information from the IEDB database were used in the creation of the beta-binomial model, namely the immunogenic class (<bold>x</bold>), result claimed by submitter (positive, positive-high, positive-intermediate, positive-low, negative), number of subjects tested (<bold>s</bold>) and number of subjects responded (<bold>s-f</bold>). We derived a prior beta distribution based on the immunogenic class (<bold>x</bold>): <disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>N</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>28</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>w</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>30</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>32</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>I</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mi>O</mml:mi>
+<mml:mi>R</mml:mi>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P12">For a given epitope (data instance), assuming that we observe <bold>s</bold> successful T cell responses and <bold>f</bold> fails, then the posterior distribution of this epitope's immunogenic potential follow a new beta distribution: <disp-formula id="FD3">
+<mml:math id="M3">
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>N</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>28</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>w</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>30</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>B</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>32</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>I</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mi>O</mml:mi>
+<mml:mi>R</mml:mi>
+<mml:mo> </mml:mo>
+<mml:mo> </mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P13">We then performed 50 bootstrapped iterations from the derived posterior distribution and used the average as the final immunogenic potential of a certain peptide-MHC complex.</p>
+</sec>
+<sec id="S7">
+<title>Prediction models</title>
+<p id="P14">We first adopted and rigorously compared the performance of five machine learning algorithms (ElasticNet, KNN, SVM, Random Forest and AdaBoost), after optimizing parameters for each method as follows. ElasticNet regression was first cross-validated to determine the best hyperparameters (alpha=0.01, l1_ratio=0.51), where alpha controlled the regularization strength and l1_ratio determined the percentage of the L1-norm penalty (lasso regression) and the L2-norm penalty (ridge regression). KNN regressor was cross-validated to determine the best hyperparameters (n_neighbors=23), n_neighbors control the neighbor information used for inferring query point's properties. SVM linear regressor was cross-validated to determine the best hyperparameter (C=0.01), C is the reciprocal of regularization strength which is inversely proportional to how many mistakes are allowed in the model. Random Forest was cross-validated to determine the best hyperparameter (n_estimators=200, min_sample_leaf=1), n_estimators control the number of decision trees in the model and min_sample_leaf control the minimum amount of samples to be a leaf node. The aforementioned cross-validations were all 10-fold and rooted mean square error (RMSE) was used as default evaluation criteria if not specifically mentioned otherwise. The same hyperparameters were adopted for the adaptive boost (AdaBoost) model, similar to Random Forest, since they are both tree-based ensemble methods.</p>
+<p id="P15">We further implemented and optimized three deep learning architectures:</p>
+<sec id="S8">
+<title>CNN</title>
+<p id="P16">The pictorial architecture is shown in <xref ref-type="fig" rid="F1">Figure 1C</xref>. Peptide and MHC were processed by two consecutive convolutional layers, followed by two dense layers to consider the interactions between peptide and MHC. The basic convolution operation is mathematically represented as: <disp-formula id="FD4">
+<mml:math id="M4">
+<mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>d</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P17">Where <bold>F</bold> is the resultant feature map, <bold>X</bold> is the input numerical matrix and <bold>W</bold> is the kernel. Lower case <bold>d</bold> denotes the row index and <bold>i</bold> denotes the column index of original matrix and <bold>k</bold> denotes the index of kernels in the convolutional layers. The <bold>ReLu</bold> function was used as an activation function. When training the model, we set the batch_size = 128. Two early stopping strategies were adopted: 1) monitor the training_loss with patience = 2; training will immediately stop if training loss increases and 2) monitor the valiation_loss with patience=15; training will stop when we did not observe validation loss decrease in 15 epochs.</p>
+</sec>
+<sec id="S9">
+<title>ResNet</title>
+<p id="P18">An overview is shown in <xref ref-type="supplementary-material" rid="SD1">Supplement Figure 2A</xref>. Peptide and MHC undergo three consecutive residue blocks, each residual block containing three CNN layers followed by a maxpool layer. Two dense layers were used at the end for prediction. Each residual block [<xref ref-type="bibr" rid="R27">27</xref>] contains skip connection which feed the input back to the output to avoid gradient vanishing as determined by: <disp-formula id="FD5">
+<mml:math id="M5">
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>α</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>C</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P19">Where <bold>Y</bold> is the output matrix of a single residual block, <bold>α</bold> determines the fraction of convolutional output we want to keep, <bold>X</bold> is the original input matrix.</p>
+</sec>
+<sec id="S10">
+<title>GNN</title>
+<p id="P20">An overview is shown in <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 2B</xref>. Each peptide-MHC complex was represented by an acyclic undirected graph. Two types of edges were specified, ones were intra-edges denoting the interactions between/within-peptide and within-MHC interactions, others were inter-edges denoting the interactions between peptide and MHC. To emphasize the peptide-MHC interactions, we assigned a weight = 2 on inter-edges and weight = 1 on intra-edges. Two graph convolutional layers [<xref ref-type="bibr" rid="R28">28</xref>] were built upon the constructed graph objects, followed by a mean readout layer [<xref ref-type="bibr" rid="R29">29</xref>] to summarize node embedding at the graph level. The learned graph level features are fed into two dense layers for predictions. The core graph convolution operation can be mathematically described as: <disp-formula id="FD6">
+<mml:math id="M6">
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>A</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>A</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mi>H</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+</mml:mrow>
+</mml:msup>
+<mml:mover accent="true">
+<mml:mi>A</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+<mml:msup>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+</mml:mrow>
+</mml:msup>
+<mml:msup>
+<mml:mi>H</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msup>
+<mml:msup>
+<mml:mi>W</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P21">Where <bold>A<sub>ij</sub>
+</bold> is the adjacency matrix of graph objects, <bold>i-</bold>th row and <bold>j-</bold>th column represent the <bold>i</bold>th node and its <bold>j-</bold>th associated feature and <bold>I<sub>N</sub>
+</bold> is the self-loop which is a diagonal matrix. The degree matrix <bold>D</bold> is the sum of adjacency matrix over the columns. <bold>H</bold> is the graph representation, which corresponds to a <bold>N</bold> x <bold>M</bold> matrix where <bold>N</bold> is the number of nodes and <bold>M</bold> is the number of features associated with each node. Lower case <bold>i</bold> denotes the layer of graph representation and <bold>W</bold> is the trainable weight matrix that governs the learning process.</p>
+</sec>
+</sec>
+<sec id="S11">
+<title>Occlusion Sensitivity</title>
+<p id="P22">To assess the relative importance of each amino-acid position in the model, we sequentially occluded those features associated with each position by setting the values = 0 and re-assessed performance by recording the decrease in resultant predictive score. We measured the performance decrease in all 4,143 positive training instances. We sampled 2,000 positive instances each time and measured the decrease in performance and a rank of position was derived and recorded in an array. Note that we did not retrain the initial model but rather zeroed-out/masked each position. We simulated this process 100 times to validate the robustness of the ranking information. A one-sided Mann Whitney U test was performed to test the statistical significance of each occlusion. The motif heatmap of specific MHC alleles were generated based on the schema proposed by Hu et al. [<xref ref-type="bibr" rid="R24">24</xref>], where a position-weighted matrix was produced from all collected immunogenic peptides of the queried MHC allele as described by: <disp-formula id="FD7">
+<mml:math id="M7">
+<mml:msub>
+<mml:mi>H</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>*</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mn>1</mml:mn>
+<mml:mi>m</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P23">Where <bold>H</bold> is the resultant motif matrix, <bold>w</bold> is the position importance derived from occlusion analysis, <bold>j</bold> denotes 20 amino acids, <bold>i</bold> denotes the position index and <bold>m</bold> signifies the overall number of immunogenic peptides for the queried MHC allele and <bold>δ</bold> is an indicator function.</p>
+</sec>
+<sec id="S12">
+<title>Benchmarking</title>
+<p id="P24">We benchmarked DeepImmuno-CNN against two existing immunogenicity prediction tools with a high reported auROC. For deep learning based methods, we benchmark against a Gated Recurrent Unit (GRU) [<xref ref-type="bibr" rid="R30">30</xref>] based deep learning model DeepHLApan [<xref ref-type="bibr" rid="R10">10</xref>]. We downloaded the docker file from docker hub (<ext-link ext-link-type="uri" xlink:href="https://hub.docker.com/r/biopharm/deephlapan">https://hub.docker.com/r/biopharm/deephlapan</ext-link>) specified in the github page and ran the software in a docker container. We also benchmarked against IEDB's default MHC-I immunogenicity prediction algorithm [<xref ref-type="bibr" rid="R8">8</xref>] from the IEDB web portal. Benchmarking results are shown in <xref ref-type="fig" rid="F2">Figure 2</xref>. Other algorithms were excluded for evaluation due to either challenging to use interfaces (e.g. inability to query multiple alleles simultaneously - INeo-Epp [<xref ref-type="bibr" rid="R9">9</xref>]) or because they could not be directly compared due to underlying assumptions of the method (e.g., Neopepsee [<xref ref-type="bibr" rid="R7">7</xref>]). The evaluated algorithms were not time benchmarked, as the running time for all algorithms were relatively fast (seconds).</p>
+</sec>
+<sec id="S13">
+<title>Generative Adversarial Network (GAN)</title>
+<p id="P25">To determine whether immunogenic peptides could not only be predicted but learned and simulated, we trained a GAN model. The GAN model is composed of a generator and a discriminator. We adopted the architecture proposed by Gupta et al [<xref ref-type="bibr" rid="R13">13</xref>], as shown in <xref ref-type="fig" rid="F1">Figure 1D</xref>. Briefly, an one-hot encoding strategy was used to facilitate the inverse transformation from a probability to pseudo-sequence, then five residual blocks were chained together in both the generator and the discriminator. A 1-dimensional convolutional layer was used to convert the number of channels to be the number of 21 amino acids sequences. We modified the general objective function using Wasserstein distance (WGAN) [<xref ref-type="bibr" rid="R17">17</xref>] and improved the stability of training by enforcing 1-Lipshitz constraint using a gradient penalty (WGAN-GP) [<xref ref-type="bibr" rid="R31">31</xref>]. The proposed GAN model uses the following loss function: <disp-formula id="FD8">
+<mml:math id="M8">
+<mml:mi>L</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>~</mml:mo>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>~</mml:mo>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>λ</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mo>~</mml:mo>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>‖</mml:mo>
+<mml:mrow>
+<mml:mo>∇</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>‖</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P26">Where <bold>P<sub>g</sub>
+</bold> is the generated sequence, <bold>P<sub>r</sub>
+</bold> is the real sequence, and <bold>D(x)</bold> indicates the predictive score from the discriminator.</p>
+<p id="P27">We applied a previously described training strategy for the GAN [<xref ref-type="bibr" rid="R13">13</xref>]. Here, gumbel-softmax (tau=0.75) was used in lieu of ordinary softmax to allow sampling from the discrete output. Beta1 and Beta2 hyperparameters of the adaptive learning Adam optimization algorithm were set to 0.5 and 0.9 respectively. Finally, the parameters in the discriminator are updated every mini-batch, while the parameters in the generator are updated every 10 mini-batches. The model was trained using batch_size=64 and trained on 100 epochs.</p>
+</sec>
+<sec id="S14">
+<title>Similarity between pseudo-sequence and real sequence</title>
+<p id="P28">The similarity between two peptides' sequences was defined as the longest contiguous common sequence length between two queried sequences. For two sequence <bold>S1</bold> and <bold>S2</bold>, the similarity was computed as: <disp-formula id="FD9">
+<mml:math id="M9">
+<mml:mi>S</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mo>×</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:mi>∑</mml:mi>
+<mml:mi>M</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P29">Where <bold>M</bold> denotes the length of each longest common sequence (LCS). <bold>S1</bold> and <bold>S2</bold> belong to 20 amino acids plus a placeholder amino acid “-”. We used the SequenceMatcher function in Python3 difflib package for calculation.</p>
+</sec>
+<sec id="S15">
+<title>Web application development</title>
+<p id="P30">We built an interactive web application (<ext-link ext-link-type="uri" xlink:href="https://deepimmuno.herokuapp.com">https://deepimmuno.herokuapp.com</ext-link>) for quick query of immunogenic epitopes. The front-end was implemented in HTML5 with bootstrap 4 framework. The back-end was implemented in the Flask python3 framework. The webpage was deployed to Heroku platform through the DeepImmuno github webportal. The weblogos are generated using (<ext-link ext-link-type="uri" xlink:href="http://weblogo.threeplusone.com/create.cgi">http://weblogo.threeplusone.com/create.cgi</ext-link>) for bound peptides of each MHC allele [<xref ref-type="bibr" rid="R32">32</xref>]. Please note, if not recently used, the web app takes 30-60 seconds to load for each session.</p>
+</sec>
+</sec>
+<sec id="S16" sec-type="results">
+<title>Results</title>
+<p id="P31">DeepImmuno-CNN was developed with the primary objective of improving immunogenicity predictions for relevant disease antigens identified from diverse upstream approaches. To this end, we set out to systematically evaluate existing as well as potential machine and deep learning strategies. This benchmarking was performed on multiple recently described high-quality experimentally validated immunogenic peptides, after carefully excluding low-confidence experimental results (<xref ref-type="sec" rid="S2">Methods</xref>).</p>
+<sec id="S17">
+<title>Evaluation criteria</title>
+<p id="P32">We used different evaluation metrics depending on the characteristics of each testing dataset. For the tumor neoantigen test dataset, we considered: a restricted dataset of the (1) top 20 or (2) top 50 immunogenic peptides predictions for each algorithm's or (3) overall sensitivity. The top 20 or 50 immunogenic peptides were purposely selected as these are the same number of peptides considered in prior related discovery or clinical reports [<xref ref-type="bibr" rid="R20">20</xref>]. For the sensitivity analysis, a threshold of 0.5 was used for DeepImmuno-CNN and DeepHLApan and a threshold of 0 for the IEDB default classification algorithm, which has a distinct scoring range. Since an absolute threshold is not used for DeepImmuno-CNN, which outputs a score based on the trained binomial-distribution, this threshold was only used for comparative benchmarking purposes. It is worth noting that we do not consider specificity in the validated neoantigen dataset because each peptide has only been tested in a single cancer patient and hence it is highly likely that a certain peptide can be immunogenic in a larger population with more diverse TCR repertoires.</p>
+<p id="P33">For antigens from a recent COVID-19 study, we considered recall and precision as the primary criteria due to a much higher number of negative versus positive immunogenic antigens (imbalanced). For evaluation, we used 10-fold cross validation to assess the effectiveness of DeepImmuno-CNN. In each iteration, area under the Receiver Operating Characteristic curve (auROC) and area under the precision recall curve (auPR) were computed to compare performance at different selected cutoffs. auPR is more informative than auROC in an imbalanced scenario due to the incorrect interpretation of specificity [<xref ref-type="bibr" rid="R33">33</xref>]. For the five evaluated machine learning algorithms, we tuned the major hyperparameters based on ten-fold cross validation with Root Mean Square Error (RMSE) as the evaluation criterion.</p>
+</sec>
+<sec id="S18">
+<title>Comparison of immunogenicity prediction models</title>
+<p id="P34">To account for variable immunogenic potential for each evaluated peptide, we fitted a beta-binomial probabilistic model in the training dataset to derive a continuous immunogenic score (<xref ref-type="fig" rid="F1">Figure 1A,B</xref> and <xref ref-type="sec" rid="S2">Methods</xref>). For instance, the peptide RPIDDPFGL for the HLA allele HLA-B*0702 was tested in 40 subjects and triggered a T cell response in all 40 subjects, whereas the peptide KTWGQYWQV in conjunction with HLA-A*0201 elicited a T cell response in only 1 out of 6 subjects, even though both are “immunogenic”. Hence, the former epitope result is of greater confidence. By considering the derived immunogenic potential, we can better ensure that the final predictive scores are more reflective of an epitope's real immunogenicity.</p>
+<p id="P35">To select the best predictive model, we constructed five traditional machine learning regressors (ElasticNet, KNN, SVM, Random Forest and AdaBoost) and critical hyperparameters were tuned via cross-validation (<xref ref-type="sec" rid="S2">Methods</xref>). In addition, we explored the potential of three deep learning models (CNN, ResNet, GNN). We systematically gauged their performance in three testing datasets (dengue virus[<xref ref-type="bibr" rid="R19">19</xref>], tumor neoantigens[<xref ref-type="bibr" rid="R20">20</xref>] and SARS-CoV-2 [<xref ref-type="bibr" rid="R1">1</xref>]) (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table 2</xref>). Random Forest based regressor had a slightly better RMSE in the nested 10-fold validation than other models, and AdaBoost regression performed the best in dengue virus dataset with average accuracy = 0.91. However, the CNN model achieved superior performance in the neoantigen dataset, where it predicted 2.9 and 5.9 immunogenic epitopes on average and in its top 20 and top 50 predictions, respectively. All the models achieved similar results on the SARS-Cov-2 dataset with an average recall around 0.72 in convalescent patients and 0.81 in the unexposed groups. Given that it is able to mimic the interaction between peptide and MHC, we designed a Graph CNN model, however it suffered from “shortcut learning” [<xref ref-type="bibr" rid="R34">34</xref>] such that all the predictive values are around 0.5 to achieve a lower loss during the training stage. This can be attributed to the fact that the explicit weight assignment in the graph may not entirely reflect the real peptide-MHC interactions, which in turn can lead to ambiguous results. To explore whether increasing the complexity of the neural network architecture can boost performance, we constructed a ResNet model, with 12 layers and skip connections. As ResNet did not increase the performance and had inferior results in 8 out of 9 evaluation criteria across three testing datasets, we surmise that a more complex model is not required. Considering its performance overall and in human disease datasets, adaptability to training datasets of variable size and the complexity of the model, we chose CNN as the optimal prediction model for further analysis, which we call hereafter DeepImmuno-CNN. As a final consideration, we attempted to validate our proposed amino acid encoding strategy which considers both indices derived from amino acid physicochemical properties (AAindex) and HLA allotype information (paratopes). While, use of these algorithms did not result in significant performance boosts with neural network based approaches over alternative strategies, our selected encoding methods did not decrease performance and did offer a performance boost for specific machine learning methods (Random Forest) for specific test datasets, suggesting its benefits may be situation dependent (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table 2</xref>, <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 3</xref>).</p>
+<p id="P36">To validate the effectiveness of the DeepImmuno-CNN model, we conducted a ten-fold cross validation in the IEDB dataset, on its own (<xref ref-type="fig" rid="F2">Figure 2A, B</xref>). We foundDeepImmuno-CNN to be highly stable with a high average auROC (0.85) and auPR (0.81) for each fold. We next compared the performance of this CNN model relative to other prior described immunogenicity prediction methods, specifically DeepHLApan and IEDB (default algorithm), as these methods are well-validated and have easy-to-use interfaces. When evaluated in the tumor neoantigen dataset, DeepImmuno-CNN found an impressive 29 out of 35 (83%) immunogenic neoantigens, relative to IEDB which found 63% and DeepHLApan which only found (34%) out of a total of 637 antigens experimentally tested (<xref ref-type="fig" rid="F2">Figure 2C</xref>). For the same neoantigen dataset, DeepImmuno-CNN predicts 4 in the top 20 and 8 in the top 50 neoantigens, while IEDB performed relatively poorly (1 in the top 20 and 4 in the top 50), with DeepHLApan producing intermediate results (<xref ref-type="fig" rid="F2">Figure 2C</xref>).</p>
+<p id="P37">We further evaluated DeepImmuno-CNN using a recently published COVID-19 study, where immunogenic peptides were validated from two groups of subjects. Convalescent patients have already been infected by SARS-Cov-2 and are in the process of recovering, while unexposed patients haven't contracted the disease. In both convalescent and unexposed groups, DeepImmuno-CNN achieved the highest sensitivity (68% in convalescent, 88% in unexposed) compared to IEDB (52% in convalescent, 38% in unexposed) and DeepHLApan (40% in convalescent, 14% in unexposed) (<xref ref-type="fig" rid="F2">Figure 2D</xref>). DeepImmuno-CNN also achieved the highest precision (0.28 in convalescent, 0.11 in unexposed), with an overall low precision due partially to the fact that COVID-19 patients are a highly selective group and their unique immune profile might not be representative of the whole population. We next looked for potential immunodominant regions in the SARS-Cov-2 proteome, which can be exploited for T cell vaccine development. While our result suggests that both 9-mers and 10-mers do not predict immunodominant regions in general (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 4</xref>), some peptides derived from ORF2 spike protein display high immunogenic potential (mean&gt;0.75). These peptides likely reflect the protein's primary function, which is to interact with human ACE2 receptor [<xref ref-type="bibr" rid="R35">35</xref>] and increase the likelihood of triggering a T cell response.</p>
+</sec>
+<sec id="S19">
+<title>DeepImmuno-CNN reveals salient positions interacting with the TCR</title>
+<p id="P38">To understand the molecular underpinnings of DeepImmuno-CNN we examined the dependency of this model on each residue position using occlusion sensitivity. The largest decrease in performance corresponds to the most important position across the peptide as shown in a saliency heatmap (<xref ref-type="fig" rid="F3">Figure 3A</xref>). We simulated this process 100 times and an ascending ranking was performed each time to highlight the most salient position, as shown in (<xref ref-type="fig" rid="F3">Figure 3B</xref>). This analysis reveals that amino acid positions P4 (residue 4), P5 and P6 are consistently the most dependent positions, followed by P2, P8 and P9. Occlusion of the first and second most dependent positions (P4 and P5) compared to the least (P3 and P1) resulted in a significant performance drop of each single positive instance (One-sided Mann-Whitney U test, P-value = 7.9e-209), further evidencing these predictions (<xref ref-type="fig" rid="F3">Figure 3C</xref>). These studies support prior structural prediction studies which show that P4-6 interact with the TCR with greatest frequency [<xref ref-type="bibr" rid="R36">36</xref>,<xref ref-type="bibr" rid="R37">37</xref>], whereas, P2 and P9 serve as anchor points for binding of the peptide-MHC complex [<xref ref-type="bibr" rid="R8">8</xref>] and mirrors other computational predictions [<xref ref-type="bibr" rid="R5">5</xref>][<xref ref-type="bibr" rid="R8">8</xref>].</p>
+<p id="P39">To assess the rules governing T cell immunogenicity for different HLA alleles, we next evaluated MHC allele dependence on specific amino acid preferences. To perform this analysis, we collected all immunogenic peptides bound with each allele and derived a motif matrix based on the inferred position importance weight in the model (<xref ref-type="sec" rid="S2">Methods</xref>). These results are summarized in <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 5</xref>. For example, when examining the allele HLA-A*0201, we find Leucine is the most abundant amino acid in position 2 from the model, which is consistent with prior structural evidence [<xref ref-type="bibr" rid="R38">38</xref>]. Similarly, in a previous study by Hu et al [<xref ref-type="bibr" rid="R24">24</xref>], positions 2 and 9 were predicted to act as anchor points for interactions with this specific HLA allele. Here, our motif matrix additionally suggests that position 4 and 5 interact with the TCR on the other side. We conducted the same analysis on three other HLA alleles (HLA-A*2402, HLA-B*0702, HLA-B*0801). These alleles were chosen because the number of associated immunogenic peptides bound to these three alleles are greater than 150, suggesting that the immunogenic motif matrix for these alleles is stable. As expected, position 4 also shows a stronger pattern across these three alleles, compared to other positions, supporting a similar model of HLA-TCR interactions.</p>
+</sec>
+<sec id="S20">
+<title>DeepImmuno-GAN accurately mimics immunogenic peptide sequences</title>
+<p id="P40">To better understand the molecular interactions and biochemical properties of T cell immunogenicity, we attempted to generate <italic>de novo</italic> immunogenic peptides using a GAN-based approach. Successful creation of such peptides would indicate that immunogenic sequence motifs are learnable, potentially paving the way for direct synthesis and optimization of peptides for diverse applications (e.g., enhanced immunogenicity)[<xref ref-type="bibr" rid="R39">39</xref>].</p>
+<p id="P41">As a proof-of-concept, we collected all immunogenic peptides known to bind to HLA-A*0201 (the most abundant allele in the training database) for training the deep GAN model. We trained a Wasserstein GAN model for 100 epochs (<xref ref-type="sec" rid="S2">Methods</xref>) and extracted the generative pseudo-sequences from every 20 epochs. We utilized the same encoding schema we used in the prediction model to perform dimension reduction using PCA and visualized the distribution of generative and real immunogenic sequences (<xref ref-type="fig" rid="F4">Figure 4A,B</xref> and <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 6A</xref>). When viewed as a PCA projection, we find that random peptide sequences significantly deviate from the experimentally validated immunogenic peptide sequences, prior to GAN model training. However, after GAN model training, the generative pseudo-sequence maps to a common coordinate embedding within the PCA projection to that of real immunogenic peptide sequences. These data suggest that the GAN model is able to extract the high-level features from real instances and teach the generator to output similar immunogenic peptides built from random sequence as a starting input. The same distribution shifts were observed with tSNE dimensionality reduction (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 6B</xref>).</p>
+<p id="P42">To further assess the immunogenicity of these generative sequences, we submitted all generated sequences at different epoch points to our DeepImmuno-CNN model. At the beginning, the 1,024 random sequences were found to only contain 40% of the immunogenic sequence (predictive score &gt; 0.5). As training progresses, the fraction of immunogenic peptides gradually increases to 67%, which translates to 265 more immunogenic peptides generated during training (<xref ref-type="fig" rid="F4">Figure 4C</xref>). We compared each generative pseudo-sequence to their most similar real counterparts (<xref ref-type="fig" rid="F4">Figure 4D</xref>). The similarity was defined as the total longest contiguous matching subsequence (LCS) between the real and pseudo-sequence, with 87% (891/1024) of all pseudo-sequences having &gt;60% similarity to their matched real immunogenic peptides (<xref ref-type="sec" rid="S2">Methods</xref>) (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure 7</xref>) [<xref ref-type="bibr" rid="R40">40</xref>]. Hence, immunogenic peptides can be learned and produced when sufficient training data exists.</p>
+</sec>
+<sec id="S21">
+<title>Online web interface</title>
+<p id="P43">In order to simplify the process of building DeepImmuno from source code, we developed an easy-to-use web interface allowing users to quickly query peptide sequences to predict immunogenicity potential for a given HLA allele. Additionally, this service allows a user to query for which HLA allele would yield the highest immunogenicity and hence which patients might benefit most from an immunogenic therapy. A third supported query type is for an HLA allele, what epitopes it will prefer or disfavor. To address the latter question, the user can simply enter the queried epitope sequence and HLA allele to obtain the immunogenicity score, top five combinations with different HLA alleles and a weblogo view of all immunogenic and non-immunogenic epitopes associated with a certain HLA allele (<xref ref-type="fig" rid="F5">Figure 5</xref>). Moreover, the DeepImmuno web portal allows users to perform multiple queries by specifying an input file with epitope sequence information and an output text file with the predicted immunogenicity scores will automatically be returned.</p>
+</sec>
+</sec>
+<sec id="S22" sec-type="discussion">
+<title>Discussion</title>
+<p id="P44">The accurate identification of potential immunogenic epitopes remains a significant challenge for understanding the molecular mechanisms underlying host immune response and designing effective targeted therapies. Given the fact that millions of possible epitopes can be generated from human protein coding genes [<xref ref-type="bibr" rid="R3">3</xref>], experimentally validating all possibilities is simply not yet feasible. Effective computational models can largely accelerate this process by providing a pre-screening platform to find high-confidence immunogenic epitopes or to eliminate low confidence predictions. Machine learning and deep learning algorithms have been shown to provide increased performance in a wide spectrum of bioinformatics applications [<xref ref-type="bibr" rid="R41">41</xref>,<xref ref-type="bibr" rid="R42">42</xref>]. However, comprehensive benchmarking and the selection of an optimal encoding strategy are required to develop improved models that can be applied to diverse testing datasets.</p>
+<p id="P45">In this manuscript, we developed a beta-binomial model to generate more accurate immunogenicity potential by considering the overall quality of each experimentally tested antigen in the training dataset. Using these optimized training datasets, we systematically bencharked well-established machine learning and deep learning, and encoding strategies on independent immunogenic disease datasets, to understand the different situations in which these methods boost, decrease or do not impact overall classification performance. From this extensive comparison analysis we found that a CNN model in combination with a physiometric-aware encoding strategy balanced performance across diverse test datasets, while staying robust for different training dataset sizes. Indeed, we found that increasingly complex deep learning models, such as ResNet, could result in overfitting in this specific application. Our DeepImmuno-CNN model was able to significantly outperform two existing highly used immunogenicity prediction workflows, in terms of overall sensitivity and the top ranked hits, when applied to diverse real-world immunogenic antigen datasets, including cancer and COVID-19 infection. From a neoantigen pre-screening perspective, DeepImmuno-CNN, is mostly likely to increase the sensitivity for detection of valid neoantigens, such as tumor-specific mutations or splicing neojunctions, from large-scale genomics assays to be tested in downstream assays. Using this optimized model, we were able to effectively identify the most salient residues for interactions between peptide-MHC and TCR, which were recapitulated and added to prior knowledge. Moreover, we developed a GAN modelling approach to accurately generate immunogenic peptides from random noise and demonstrated the biochemical interactions were learnable given sufficient training data.</p>
+<p id="P46">Despite these advances described herein, several challenges remain in the field of immunogenicity prediction. While our model significantly improves upon existing approaches in terms of sensitivity, precision and recall, it is noteworthy that all existing approaches remain challenged by lower than preferred specificity to select immunogenic antigens with high confidence. This limitation could be due to the fact that few disease antigens have been thoroughly tested for their ability to mount a T cell response in large patient cohorts to ensure reproducibility and HLA allele coverage. However, it is noteworthy that an indispensable component of epitope recognition is the sequence of the TCR, which has not been taken into consideration due to the fact that there exists few matched TCR sequencing data for forming a sufficiently powered training set [<xref ref-type="bibr" rid="R43">43</xref>,<xref ref-type="bibr" rid="R44">44</xref>]. In addition, a model incorporating TCR information is only applicable following sufficient deep TCR repertoire patient sequencing. Although new high throughput methods for single-cell TCR sequencing have been developed, such techniques are still infrequently performed in research and clinical settings. The increased use of such techniques are likely to aid in the development of more accurate predictive models. In addition, neoantigen T-cell responses can significantly vary from patient-to-patient, due to a variety of factors including immune cell repertoire differences that impact diversity of activated T cell clones [<xref ref-type="bibr" rid="R45">45</xref>,<xref ref-type="bibr" rid="R46">46</xref>,<xref ref-type="bibr" rid="R47">47</xref>]. Hence, validated immunogenic epitopes may be ineffective in a subset of patients. The ambiguity of the definition of immunogenicity can account for part of the false positive predictions which might in fact be immunogenic for a set of patients. Integrating patients' immune profiles information and identifying how active the host immune system is can be a valuable extension to current immunogenicity models. Beyond providing a rubric for the design of peptide-related models, we believe our approach can be significantly extended to encode additional variables, such as TCR sequence heterogeneity and can be generalized to address diverse sequence-predictive analyses, beyond immunogenicity.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Table 1</label>
+<media xlink:href="EMS109164-supplement-Supplementary_Table_1.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67842" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Table 2</label>
+<media xlink:href="EMS109164-supplement-Supplementary_Table_2.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67851" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Information</label>
+<media xlink:href="EMS109164-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67860" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S23">
+<title>Funding</title>
+<p>This work was supported by the Cincinnati Children's Hospital Research Foundation and funding from the National Institutes of Health [R01CA226802].</p>
+</ack>
+<sec sec-type="data-availability" id="S24">
+<title>Data Availability</title>
+<p id="P47">DeepImmuno Python3 code is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/frankligy/DeepImmuno">https://github.com/frankligy/DeepImmuno</ext-link>. The DeepImmuno web portal is available from <ext-link ext-link-type="uri" xlink:href="https://deepimmuno.herokuapp.com">https://deepimmuno.herokuapp.com</ext-link>. The data in this article is available in GitHub and <xref ref-type="supplementary-material" rid="SD3">supplementary materials</xref>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P48">
+<bold>Conflict of interests</bold>
+</p>
+<p id="P49">The authors report no significant conflicts of interest.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nelde</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bilich</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Heitmann</surname>
+<given-names>JS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2-derived peptides define heterologous and COVID-19-induced T cell recognition</article-title>
+<source>Nat Immunol</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Joglekar</surname>
+<given-names>AV</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>T cell antigen discovery</article-title>
+<source>Nature Methods</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Madhavan</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>neoantigenR: An annotation based pipeline for tumor neoantigen identification from sequencing data</source>
+<year>2017</year>
+<comment>171843</comment>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tung</surname>
+<given-names>C-W</given-names>
+</name>
+<name>
+<surname>Ho</surname>
+<given-names>S-Y</given-names>
+</name>
+</person-group>
+<article-title>POPI: predicting immunogenicity of MHC class I binding peptides by mining informative physicochemical properties</article-title>
+<source>Bioinformatics</source>
+<year>2007</year>
+<volume>23</volume>
+<fpage>942</fpage>
+<lpage>949</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tung</surname>
+<given-names>C-W</given-names>
+</name>
+<name>
+<surname>Ziehm</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kämper</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>POPISK: T-cell reactivity prediction using support vector machines and string kernels</article-title>
+<source>BMC Bioinformatics</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>446</fpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saethang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Hirose</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Kimkong</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>PAAQD: Predicting immunogenicity of MHC class I binding peptides using amino acid pairwise contact potentials and quantum topological molecular similarity descriptors</article-title>
+<source>J Immunol Methods</source>
+<year>2013</year>
+<volume>387</volume>
+<fpage>293</fpage>
+<lpage>302</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>HS</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Neopepsee: accurate genome-level prediction of neoantigens by harnessing sequence and amino acid immunogenicity information</article-title>
+<source>Ann Oncol</source>
+<year>2018</year>
+<volume>29</volume>
+<fpage>1030</fpage>
+<lpage>1036</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Calis</surname>
+<given-names>JJA</given-names>
+</name>
+<name>
+<surname>Maybeno</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Greenbaum</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Properties of MHC class I presented peptides that enhance immunogenicity</article-title>
+<source>PLoS Comput Biol</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>e1003266</fpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jian</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>INeo-Epp: A Novel T-Cell HLA Class-I Immunogenicity or Neoantigenic Epitope Prediction Method Based on Sequence-Related Amino Acid Features</article-title>
+<source>Biomed Res Int</source>
+<year>2020</year>
+<volume>2020</volume>
+<comment>5798356</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DeepHLApan: A Deep Learning Approach for Neoantigen Prediction Considering Both HLA-Peptide Binding and Immunogenicity</article-title>
+<source>Front Immunol</source>
+<year>2019</year>
+<volume>10</volume>
+<fpage>2559</fpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kingma</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Mohamed</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rezende</surname>
+<given-names>Jimenez</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Semi-supervised learning with deep generative models</article-title>
+<source>Adv Neural Inf Process Syst</source>
+<year>2014</year>
+<volume>27</volume>
+<fpage>3581</fpage>
+<lpage>3589</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jin</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Generative Adversarial Network Technologies and Applications in Computer Vision</article-title>
+<source>Comput Intell Neurosci</source>
+<year>2020</year>
+<volume>2020</volume>
+<comment>1459107</comment>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gupta</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Feedback GAN for DNA optimizes protein functions</article-title>
+<source>Nature Machine Intelligence</source>
+<year>2019</year>
+<volume>1</volume>
+<fpage>105</fpage>
+<lpage>111</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Kuen</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Recent advances in convolutional neural networks</article-title>
+<source>Pattern Recognit</source>
+<year>2018</year>
+<volume>77</volume>
+<fpage>354</fpage>
+<lpage>377</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kawashima</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pokarowski</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Pokarowska</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>AAindex: amino acid index database, progress report 2008</article-title>
+<source>Nucleic Acids Research</source>
+<year>2007</year>
+<volume>36</volume>
+<fpage>D202</fpage>
+<lpage>D205</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cerda</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Kégl</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Similarity encoding for learning with dirty categorical variables</article-title>
+<source>Machine Learning</source>
+<year>2018</year>
+<volume>107</volume>
+<fpage>1477</fpage>
+<lpage>1494</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Martin Arjovsky</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Bottou</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Wasserstein generative adversarial networks</article-title>
+<conf-name>Proceedings of the 34 th International Conference on Machine Learning</conf-name>
+<conf-loc>Sydney, Australia</conf-loc>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nielsen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lundegaard</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Blicher</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>NetMHCpan, a Method for Quantitative Predictions of Peptide Binding to Any HLA-A and -B Locus Protein of Known Sequence</article-title>
+<source>PLoS ONE</source>
+<year>2007</year>
+<volume>2</volume>
+<fpage>e796</fpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weiskopf</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Angelo</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>de Azeredo</surname>
+<given-names>EL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive analysis of dengue virus-specific responses supports an HLA-linked protective role for CD8+ T cells</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2013</year>
+<volume>110</volume>
+<fpage>E2046</fpage>
+<lpage>53</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wells</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>van Buuren</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Dang</surname>
+<given-names>KK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Key Parameters of Tumor Epitope Immunogenicity Revealed Through a Consortium Approach Improve Neoantigen Prediction</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>183</volume>
+<fpage>818</fpage>
+<lpage>834.e13</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nelli</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Machine Learning with scikit-learn</article-title>
+<source>Python Data Analytics: With Pandas, NumPy, and Matplotlib</source>
+<year>2018</year>
+<fpage>313</fpage>
+<lpage>347</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O'Donnell</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Rubinsteyn</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Laserson</surname>
+<given-names>U</given-names>
+</name>
+</person-group>
+<article-title>MHCflurry 2.0: Improved Pan-Allele Prediction of MHC Class I-Presented Peptides by Incorporating Antigen Processing</article-title>
+<source>Cell Syst</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>418</fpage>
+<lpage>419</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Engelhard</surname>
+<given-names>VH</given-names>
+</name>
+</person-group>
+<article-title>Structure of Peptides Associated with Class I and Class II MHC Molecules</article-title>
+<source>Annual Review of Immunology</source>
+<year>1994</year>
+<volume>12</volume>
+<fpage>181</fpage>
+<lpage>207</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ACME: pan-specific peptide-MHC class I binding prediction through attention-based deep neural networks</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<fpage>4946</fpage>
+<lpage>4954</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ehrenmann</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Kaas</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Lefranc</surname>
+<given-names>M-P</given-names>
+</name>
+</person-group>
+<article-title>IMGT/3Dstructure-DB and IMGT/DomainGapAlign: a database and a tool for immunoglobulins or antibodies, T cell receptors, MHC, IgSF and MhcSF</article-title>
+<source>Nucleic Acids Res</source>
+<year>2010</year>
+<volume>38</volume>
+<fpage>D301</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sievers</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wilm</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dineen</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega</article-title>
+<source>Mol Syst Biol</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>539</fpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>He</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep Residual Learning for Image Recognition</article-title>
+<conf-name>2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</conf-name>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kipf</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Welling</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Semi-Supervised Classification with Graph Convolutional Networks</article-title>
+<source>arXiv [cs LG]</source>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Monti</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Frasca</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Eynard</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Fake News Detection on Social Media using Geometric Deep Learning</article-title>
+<source>arXiv [cs SI]</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cho</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>van Merrienboer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Gulcehre</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation</article-title>
+<source>arXiv [cs CL]</source>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gulrajani</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Ahmed</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Arjovsky</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Improved Training of Wasserstein GANs</article-title>
+<source>Advances in Neural Information Processing Systems</source>
+<year>2017</year>
+<volume>30</volume>
+<fpage>5767</fpage>
+<lpage>5777</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Crooks</surname>
+<given-names>GE</given-names>
+</name>
+</person-group>
+<article-title>WebLogo: A Sequence Logo Generator</article-title>
+<source>Genome Research</source>
+<year>2004</year>
+<volume>14</volume>
+<fpage>1188</fpage>
+<lpage>1190</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saito</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Rehmsmeier</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets</article-title>
+<source>PLOS ONE</source>
+<year>2015</year>
+<volume>10</volume>
+<fpage>e0118432</fpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Geirhos</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jacobsen</surname>
+<given-names>J-H</given-names>
+</name>
+<name>
+<surname>Michaelis</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Shortcut learning in deep neural networks</article-title>
+<source>Nature Machine Intelligence</source>
+<year>2020</year>
+<volume>2</volume>
+<fpage>665</fpage>
+<lpage>673</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Dorosky</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Engineering human ACE2 to optimize binding to the spike protein of SARS coronavirus 2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>1261</fpage>
+<lpage>1265</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wucherpfennig</surname>
+<given-names>KW</given-names>
+</name>
+<name>
+<surname>Call</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural alterations in peptide-MHC recognition by self-reactive T cell receptors</article-title>
+<source>Curr Opin Immunol</source>
+<year>2009</year>
+<volume>21</volume>
+<fpage>590</fpage>
+<lpage>595</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rudolph</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Stanfield</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>IA</given-names>
+</name>
+</person-group>
+<article-title>How TCRs bind MHCs, peptides, and coreceptors</article-title>
+<source>Annu Rev Immunol</source>
+<year>2006</year>
+<volume>24</volume>
+<fpage>419</fpage>
+<lpage>466</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gallagher</surname>
+<given-names>DT</given-names>
+</name>
+<name>
+<surname>Gowthaman</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for oligoclonal T cell recognition of a shared p53 cancer neoantigen</article-title>
+<source>Nat Commun</source>
+<year>2020</year>
+<volume>11</volume>
+<comment>2908</comment>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kearns-Jonker</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barteneva</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Mencel</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Use of molecular modeling and site-directed mutagenesis to define the structural basis for the immune response to carbohydrate xenoantigens</article-title>
+<source>BMC Immunol</source>
+<year>2007</year>
+<volume>8</volume>
+<fpage>3</fpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morra</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Fast Python: NumPy and Cython</article-title>
+<source>Lecture Notes in Earth System Sciences</source>
+<year>2018</year>
+<fpage>35</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alipanahi</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Delong</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Weirauch</surname>
+<given-names>MT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Predicting the sequence specificities of DNA-and RNA-binding proteins by deep learning</article-title>
+<source>Nature Biotechnology</source>
+<year>2015</year>
+<volume>33</volume>
+<fpage>831</fpage>
+<lpage>838</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pan</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>H-B</given-names>
+</name>
+</person-group>
+<article-title>Predicting RNA-protein binding sites and motifs through combining local and global deep convolutional neural networks</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>3427</fpage>
+<lpage>3436</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gowthaman</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pierce</surname>
+<given-names>BG</given-names>
+</name>
+</person-group>
+<article-title>TCR3d: The T cell receptor structural repertoire database</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<fpage>5323</fpage>
+<lpage>5325</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bagaev</surname>
+<given-names>DV</given-names>
+</name>
+<name>
+<surname>Vroomans</surname>
+<given-names>RMA</given-names>
+</name>
+<name>
+<surname>Samir</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>VDJdb in 2019: database extension, new analysis infrastructure and a T-cell receptor motif compendium</article-title>
+<source>Nucleic Acids Res</source>
+<year>2020</year>
+<volume>48</volume>
+<fpage>D1057</fpage>
+<lpage>D1062</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Azizi</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Carr</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Plitas</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Single-Cell Map of Diverse Immune Phenotypes in the Breast Tumor Microenvironment</article-title>
+<source>Cell</source>
+<year>2018</year>
+<volume>174</volume>
+<fpage>1293</fpage>
+<lpage>1308.e36</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vieyra-Lobato</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Vela-Ojeda</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Montiel-Cervantes</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Description of CD8 Regulatory T Lymphocytes and Their Specific Intervention in Graft-versus-Host and Infectious Diseases, Autoimmunity, and Cancer</article-title>
+<source>J Immunol Res</source>
+<year>2018</year>
+<volume>2018</volume>
+<comment>3758713</comment>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>De Boer</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Perelson</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>T cell repertoires and competitive exclusion</article-title>
+<source>J Theor Biol</source>
+<year>1994</year>
+<volume>169</volume>
+<fpage>375</fpage>
+<lpage>390</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>The DeepImmuno model.</title>
+<p>(A-B) In DeepImmuno, to assess the probability that a given antigen is immunogenic, variable peptide immunogenic potential is computed by sampling from a posterior beta distribution of well-defined true positive and true negative immunogenic antigens to produce a continuous immunogenic score. The posterior distribution is derived using a subset of T-cell immunogenic assay results from the Immune Epitope DataBase (binomial) and a prior beta distribution of either (A) negative or (B) positive assay results. (C) The DeepImmuno-CNN architecture is shown to predict interactions between each peptide and MHC allele. In this model, each peptide/MHC pair is subjected to two consecutive convolutional layers, followed by two fully-connected dense layers to output a predictive value for each pair. (D) The DeepImmuno-GAN architecture is depicted for simulating immunogenic peptide sequences using only random sequences as an input. The GAN model is composed of a generator and a discriminator. This learning generator produces pseudo-sequences in an attempt to artificially convince the discriminator the immunogenic sequences are real, while the discriminator uses real peptides sequences along with generated pseudo-sequences to distinguish the difference.</p>
+</caption>
+<graphic xlink:href="EMS109164-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>DeepImmuno-CNN produces stable predictions and outperforms existing methods.</title>
+<p>(A-B) The (A) ROC curve and (B) Precision Recall curve of only DeepImmuno-CNN's performance on 10-fold validation of the IEDB training dataset. (C) Comparison of immunogenicity predictions from an experimentally validated tumor neoantigen dataset (637 tested), with the number of true positive predictions overlapping with each algorithm's top 20 or top 50 predictions (left), or the sensitivity of each algorithm using a static scoring threshold (right). (D) In COVID-19 study, recall (left) and precision (right) of each algorithm in convalescent COVID-19 patients and the unexposed individuals.</p>
+</caption>
+<graphic xlink:href="EMS109164-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Identification of salinent immunogenic features of peptide-TCR interactions.</title>
+<p>(A) Schematic overview of the occlusion sensitivity technique to determine the relative contribution of each antigen residue for the DeepImmuno-CNN model predictive score. (B) Ascending importance-rank of each position, with the position with the largest performance drop received the highest ranking across 100 simulations. Dot size corresponds to the frequencies of each position being assigned the denoted rank, with different colors indicating different amino acid positions. (C) Performance drop for the occlusion of P4 + P5 with occlusion of P3 + P1. One-sided Mann-Whitney U test p-value (p=7.94e-209).</p>
+</caption>
+<graphic xlink:href="EMS109164-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>DeepImmuno-GAN is able to learn and produce synthetic immunogenic pseudosequences.</title>
+<p>(A-B) PCA analysis of the distribution of real sequences (blue dots) and random generative sequences (red dots) (A) prior to training and (B) after training (100 epochs). The degree of common embedding is considered an indicator of prediction similarity. (C) The number of DeepImmuno-CNN predicted immunogenic peptides, produced from noise, in different GAN training epochs. (D) Example generative pseudo-sequences and their most similar counterparts in experimentally observed HLA-A*0201 immunogenic peptides.</p>
+</caption>
+<graphic xlink:href="EMS109164-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>The DeepImmuno web interface.</title>
+<p>An easy-to-use web interface for querying peptide and HLA sequence pairs. The three primary outputs of the interface are: (1) Immunogenicity score for queried peptide-HLA combination, (2) the top 5 HLA combinations that will yield the highest immunogenicity score for each queried peptide and the (3) preferential motif of the queried HLA allele. Please note, if not recently used, the web app takes 30-60 seconds to load for each session.</p>
+</caption>
+<graphic xlink:href="EMS109164-f005"/>
+</fig>
+</floats-group>
+</article>

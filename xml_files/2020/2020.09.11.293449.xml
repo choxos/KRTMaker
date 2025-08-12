@@ -1,0 +1,4198 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS94991</article-id>
+<article-id pub-id-type="doi">10.1101/2020.09.11.293449</article-id>
+<article-id pub-id-type="archive">PPR213430</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Identifying zoonotic origin of SARS-CoV-2 by modeling the binding affinity between Spike receptor-binding domain and host ACE2</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>Xiaoqiang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Chengxin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Pearce</surname>
+<given-names>Robin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Omenn</surname>
+<given-names>Gilbert S.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Yang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Computational Medicine and Bioinformatics, University of Michigan, 100 Washtenaw Avenue, Ann Arbor, MI 48109, USA</aff>
+<aff id="A2">
+<label>2</label>Department of Biological Chemistry, University of Michigan, 100 Washtenaw Avenue, Ann Arbor, MI 48109, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label> To whom correspondence should be addressed. Tel: +1 734 647 1549; Fax: +1 734 615 6443; <email>zhng@umich.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>13</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>11</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Despite considerable research progress on SARS-CoV-2, the direct zoonotic origin (intermediate host) of the virus remains ambiguous. The most definitive approach to identify the intermediate host would be the detection of SARS-CoV-2-like coronaviruses in wild animals. However, due to the high number of animal species, it is not feasible to screen all the species in the laboratory. Given that the recognition of the binding ACE2 proteins is the first step for the coronaviruses to invade host cells, we proposed a computational pipeline to identify potential intermediate hosts of SARS-CoV-2 by modeling the binding affinity between the Spike receptor-binding domain (RBD) and host ACE2. Using this pipeline, we systematically examined 285 ACE2 variants from mammals, birds, fish, reptiles, and amphibians, and found that the binding energies calculated on the modeled Spike-RBD/ACE2 complex structures correlate closely with the effectiveness of animal infections as determined by multiple experimental datasets. Built on the optimized binding affinity cutoff, we suggested a set of 96 mammals, including 48 experimentally investigated ones, which are permissive to SARS-CoV-2, with candidates from primates, rodents, and carnivores at the highest risk of infection. Overall, this work not only suggested a limited range of potential intermediate SARS-CoV-2 hosts for further experimental investigation; but more importantly, it proposed a new structure-based approach to general zoonotic origin and susceptibility analyses that are critical for human infectious disease control and wildlife protection.</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>zoonotic origin</kwd>
+<kwd>intermediate host</kwd>
+<kwd>binding affinity</kwd>
+<kwd>EvoEF2 energy unit</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Identification of the direct zoonotic origin (intermediate host) of severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) is important for combating the coronavirus disease 2019 (COVID-19) pandemic [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>]. It has become well accepted that SARS-CoV-2 was likely to originate naturally from bats soon after its outbreak, built on the fact that SARS-CoV-2 shares a 96.2% nucleotide sequence identity with the bat coronavirus (CoV) RaTG13 isolated from <italic>Rhinolophus affinis</italic> [<xref ref-type="bibr" rid="R3">3</xref>] and that natural insertions were identified at the S1/S2 cleavage site of the Spike (S) protein of RmYN02-CoV isolated from <italic>Rhinolophus malayanus</italic> [<xref ref-type="bibr" rid="R4">4</xref>]. However, it remains unknown how the related CoV was transmitted from bats to humans.</p>
+<p id="P3">
+<italic>In vitro</italic> experiments suggest that RaTG13 also binds to human ACE2 (hACE2) and can use hACE2 as an entry receptor [<xref ref-type="bibr" rid="R5">5</xref>]; thus, it could be possible that a progenitor of SARS-CoV-2, e.g. RaTG13 or RaTG13-like CoV, infected humans and evolved during human-to-human transmission [<xref ref-type="bibr" rid="R6">6</xref>]. However, recent experiments show that the binding efficiency of RaTG13 to hACE2 is quite low [<xref ref-type="bibr" rid="R7">7</xref>], probably due to the lack of critical hACE2-binding residues. Besides, no evidence has shown that RaTG13 can directly infect humans in nature.</p>
+<p id="P4">It is widely believed that the novel CoV was transmitted from its natural host to humans via some intermediate host, during which a progenitor of SARS-CoV-2 acquired the critical ACE2 binding residues and/or furin cleavage site [<xref ref-type="bibr" rid="R6">6</xref>]. This point of view is supported in part by the fact that pangolin-CoV isolated from <italic>Manis javanica</italic> shares almost identical key ACE2-binding residues with SARS-CoV-2 [<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R11">11</xref>]. However, it is controversial whether pangolins are the intermediate host [<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R10">10</xref>] or natural host [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R11">11</xref>], or whether they are a host [<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R13">13</xref>]. Phylogenetic analyses show that some pangolin-CoVs are genetically related to SARS-CoV-2 but do not sufficiently support SARS-CoV-2 emerging directly from these pangolin-CoVs [<xref ref-type="bibr" rid="R14">14</xref>]. Obtaining related viral sequences from animal sources would be the most definitive approach to identify the zoonotic origin of a virus [<xref ref-type="bibr" rid="R6">6</xref>]. For instance, the full-length genome sequences of viruses isolated from palm civets and camels are 99.8% and 99.9% identical to human SARS-CoV and MERS-CoV [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>], respectively, thus consolidating that civets are the intermediate host for SARS-CoV and camels for MERS-CoV. In contrast, RaTG13 shares a genome identity of 96.2% with SARS-CoV-2 [<xref ref-type="bibr" rid="R3">3</xref>], and pangolin-CoVs only 85-93% [<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R13">13</xref>], which is not high enough to justify that bats or pangolins are a direct zoonotic host of SARS-CoV-2.</p>
+<p id="P5">Early studies assumed that the outbreak of SARS-CoV-2 was associated with the Huanan Seafood and Wildlife Market, where one or more animals sold there may be the direct zoonotic source [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R8">8</xref>]. However, this point of view was challenged by the report that the first case of infection was suggested not to be related to the market [<xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R18">18</xref>]. Therefore, strategies to trace back the origin of SARS-CoV-2 should not be limited to the animals sold in the market, but should also include a wide range of wild animals outside the market. Theoretically, all kinds of animals that may have close contact with humans should be investigated, but this would be extremely laborious as well as time-and money-consuming.</p>
+<p id="P6">ACE2 recognition by SARS-CoV-2 is an important determinant of viral infectivity and host range [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R19">19</xref>]. It has been reported that many animals can be infected by SARS-CoV-2 [<xref ref-type="bibr" rid="R20">20</xref>–<xref ref-type="bibr" rid="R28">28</xref>]. In this work, we computationally examined the ACE2 usage of SARS-CoV-2 for 285 vertebrates by modeling the binding energy between the SARS-CoV-2 Spike receptor-binding domain (S-RBD) and host ACE2. The binding data correlate well with the reported experimental studies, perfectly distinguishing the effective ACE2 receptors from the less effective ones. Our results reveal that many mammals could serve as intermediate hosts of SARS-CoV-2. This work presents a fast and reliable computational approach to screen potential animal hosts for further experimental analyses.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>A computational pipeline for ACE2 usage analysis</title>
+<p id="P7">Since SARS-CoV-2 utilizes ACE2 to invade host cells, ACE2 usage is considered to be an important determinant of infectivity and host range [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. To examine the ACE2 usage by SARS-CoV-2, we developed a pipeline to model the binding energy between S-RBD and host ACE2 (<xref ref-type="fig" rid="F1">Fig. 1</xref>). We hypothesized that an effective ACE2 receptor should exhibit a low binding energy (or equivalently, a high affinity) while a poor receptor should have a high binding energy. A total of 321 ACE2 orthologs were collected from NCBI, and 285 of them were analyzed in detail after discarding 36 defective sequences (see <xref ref-type="sec" rid="S13">Methods</xref> and <xref ref-type="supplementary-material" rid="SD1">Supporting Information Tables S1, S2, and S3</xref>). Homologous structure models were built by Modeller [<xref ref-type="bibr" rid="R30">30</xref>] using the crystal structure of the hACE2/S-RBD complex (PDB ID: 6M0J) [<xref ref-type="bibr" rid="R31">31</xref>] as a template. Each initial complex model was then optimized using FASPR [<xref ref-type="bibr" rid="R32">32</xref>] and EvoEF2 [<xref ref-type="bibr" rid="R33">33</xref>] to generate structure ensembles for binding energy calculation (see <xref ref-type="sec" rid="S13">Methods</xref>). The ACE2 that achieved a binding energy below a given cutoff was suggested to be an effective receptor for SARS-CoV-2. During structure modeling and binding energy calculation, the N-glycosylation on ACE2 and S-RBD was ignored because current methods are not well adapted for modeling glycosylated amino acids.</p>
+</sec>
+<sec id="S4">
+<title>Binding energy assessment and correlation with experimentally determined ACE2 usage information</title>
+<p id="P8">The length of 285 ACE2 protein sequences range from 431 to 872 amino acids (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S3</xref>), where most ACE2 sequences are composed of about 800 amino acids (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S1a</xref>). Five ACE2 sequences are partial (<italic>Bison bison bison, Thamnophis sirtalis, Haliaeetus albicilla, Fulmarus glacialis</italic>, and <italic>Panthera tigris altaica</italic>), but there are no missing interface residues according to sequence analysis. The ACE2 orthologs share a sequence identity of ≥55% with hACE2 (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S1b</xref>), indicating that ACE2 proteins are conserved. Therefore, reliable structure models can be built by homology modeling. Based on the experimental structure of the hACE2/S-RBD complex, 20 residues (Q24, T27, F28, D30, K31, H34, E35, E37, D38, Y41, Q42, L79, M82, Y83, N330, K353, G354, D355, R357, and R393) are present at the interface of hACE2 within 4 Å of S-RBD [<xref ref-type="bibr" rid="R31">31</xref>]. Among the ACE2 orthologs, the sequence identities of the 20 interface residues to hACE2 range from 30% to 100% (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S1c</xref>), while the sequence identities for the five key interface residues (K31, E35, D38, M82, and K353), which were regarded as important elements to determine host range [<xref ref-type="bibr" rid="R29">29</xref>], vary from 0 to 100% (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S1d</xref>).</p>
+<p id="P9">The binding energy for 285 ACE2 proteins ranged from -56.21 to -33.30 EvoEF2 energy units (EEU) (Supporting Information Table S4), where a lower energy represents a stronger binding affinity, which may correspond to a higher susceptibility to SARS-CoV-2. However, one the one hand, it was unknown how trustable the energy values were. On the other hand, given a binding energy, it was not easy to understand whether or not an ACE2 was suggested to be an effective receptor. To address such issues, we compared the calculated binding energy with the experimental ACE2 usage data. <xref ref-type="table" rid="T1">Table 1</xref> summarizes the reported infection cases in nature, and the infection studies <italic>in vivo</italic> and <italic>in vitro</italic>. Infection in nature represents that an infected case takes place naturally and has been confirmed by experiments such as quantitative real-time PCR [<xref ref-type="bibr" rid="R34">34</xref>]. <italic>In vivo</italic> infection means that the caged experimental animals can be infected by SARS-CoV-2 [<xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R24">24</xref>], while <italic>in vitro</italic> infection signifies that ACE2-expressing cells (e.g. HeLa cells transiently expressing ACE2) are permissive to SARS-CoV-2 infection [<xref ref-type="bibr" rid="R3">3</xref>]. The discrepancy may exist between <italic>in vivo</italic>, <italic>in vitro</italic>, and natural infections due to different experimental settings. For instance, it was reported that SARS-CoV-2 replicates poorly in dogs and pigs <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>], but it was shown that ACE2 of dogs and pigs could be effectively used for viral entry <italic>in vitro</italic> [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R35">35</xref>]. Moreover, pet dogs were reported to be infected naturally by their owners with COVID-19 [<xref ref-type="bibr" rid="R23">23</xref>]. In this situation, an animal’s ACE2 protein was regarded as an effective receptor to SARS-CoV-2 if any kind of experimental evidence holds.</p>
+<p id="P10">The calculated binding energy correlated well with the experimentally determined ACE2 usage data; the ACE2 proteins that can be more effectively used by SARS-CoV-2 achieved a relatively lower binding energy (<xref ref-type="table" rid="T1">Table 1</xref>). A binding energy cutoff of -47 EEU was able to discriminate the more efficient ACE2 receptors from the less efficient ones (<xref ref-type="table" rid="T1">Table 1</xref>), with the maximum Matthews correlation coefficient (MCC) of one (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S2</xref>). Among all the experimental species, apes (Sumatran orangutan, western gorilla, silvery gibbon, and chimpanzee) and Old-World monkeys (olive baboon, crab-eating macaque, gelada, rhesus macaque, golden snub-nosed monkey, and Ugandan red colobus) and humans achieved the lowest binding energy ranging from -56.21 to -54.79 EEU (<xref ref-type="table" rid="T1">Table 1</xref>). Besides, a few rodents (golden hamster, Chinese hamster, jerboa, white-footed mouse, and Arctic ground squirrel) and carnivores (sea lion, tiger, puma, leopard, seal, ferret, dog, cat, lynx, and bear) also achieved a relatively low binding energy varying from -53.84 to -50.62 EEU (<xref ref-type="table" rid="T1">Table 1</xref>). Three New-World monkeys (marmoset, black-capped squirrel monkey, and tufted capuchin), rats, mice, ducks, and chickens achieved a higher binding energy score (&gt;-47 EEU), consistent with the reports that these animals were less susceptible to SARS-CoV-2 [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R36">36</xref>].</p>
+</sec>
+<sec id="S5">
+<title>Binding energy-based intermediate host range prediction</title>
+<p id="P11">Based on the calculated binding energy and experimental data, we mapped the ACE2 usage effectiveness for all the 285 species (<xref ref-type="fig" rid="F2">Fig. 2</xref>). Fish (including <italic>Actinopterygii, Chondrichthyes</italic>, and <italic>Sarcopterygii</italic>), amphibians, reptiles, and birds were predicted to have a relatively high binding energy (&gt;-47 EEU), suggesting ACE2 of these species may be less permissive to SARS-CoV-2 binding. Mammals showed the broadest binding energy distribution, from -56.21 to -38.67 EEU (<xref ref-type="fig" rid="F2">Fig. 2</xref> and <xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S4</xref>). 97 non-human mammals achieved a binding energy below -47 EEU; that is, besides the experimentally-validated species, another 49 species were also predicted to have an effective ACE2 receptor for SARS-CoV-2 (<xref ref-type="fig" rid="F2">Fig. 2</xref> and <xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S4</xref>). These results suggest that mammals rather than other species are likely to be the main source of SARS-CoV-2 and hence they should be the major focus. This finding is also consistent with previous studies [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R37">37</xref>–<xref ref-type="bibr" rid="R41">41</xref>], but a more quantitative measurement was given here. Our findings also refute isolated reports claiming that non-mammal vertebrates such as reptiles could be the intermediate host [<xref ref-type="bibr" rid="R42">42</xref>, <xref ref-type="bibr" rid="R43">43</xref>].</p>
+<p id="P12">The binding energy calculation did not consider the impact of possible N-glycosylation of ACE2 and Spike. Although no N-glycosylation site is present at the interface of the hACE2/S-RBD complex [<xref ref-type="bibr" rid="R31">31</xref>], some ACE2 variants may have N-glycosylation sites at the interface region, which may prevent their binding to S-RBD due to steric hindrance. Thus, the analysis of interface N-glycosylation may help refine the list of effective ACE2 receptors classified by binding energy. N-glycosylation of asparagines occurs predominantly at the NX(T/S) motif, where X is any amino acid except proline. However, not all N-X-(T/S) sequons are glycosylated, so the motif alone may not be sufficient to discriminate between glycosylated and non-glycosylated asparagines. We tried three predictors, NGlycPred [<xref ref-type="bibr" rid="R44">44</xref>], N-GlyDE [<xref ref-type="bibr" rid="R45">45</xref>], and NetNGlyc (<ext-link ext-link-type="uri" xlink:href="http://www.cbs.dtu.dk/services/NetNGlyc/">http://www.cbs.dtu.dk/services/NetNGlyc/</ext-link>), to predict N-glycosylation on hACE2. None of them could accurately predict all the experimentally identified N-glycosylation sites (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S5</xref>). All seven NX(T/S) motifs are glycosylated in the experimentally determined structure (PDB ID: 6M17) [<xref ref-type="bibr" rid="R46">46</xref>], indicating that ACE2 is highly N-glycosylated. To avoid the omission of potential glycosylation sites, we systematically examined all of the NX(S/T) motifs for the 285 ACE2 proteins and manually checked if any N-glycosylation sites were present at the interface.</p>
+<p id="P13">64 out of the 285 ACE2 proteins were found to have one or more interface glycosylation sites, including 22 fish, one amphibian, 27 birds, seven mammals, and seven reptiles (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S6</xref>). Since many mammals are likely susceptible to SARS-CoV-2 (<xref ref-type="fig" rid="F2">Fig. 2</xref> and Supporting Information Table S4), we examined the seven mammals and mapped the putative interface N-glycosylation sites into their structure models. Interestingly, none of the effective ACE2 receptors in <xref ref-type="table" rid="T1">Table 1</xref> has an interface N-glycosylation site. The seven mammals were the Eurasian common shrew (<italic>Sorex araneus</italic>), small Madagascar hedgehog (<italic>Echinops telfairi</italic>), western European hedgehog (<italic>Erinaceus europaeus</italic>), aardvark (<italic>Orycteropus afer</italic>), big brown bat (<italic>Eptesicus fuscus</italic>), star-nosed mole (<italic>Condylura cristata</italic>), and greater horseshoe bat (<italic>Rhinolophus ferrumequinum</italic>), where their binding energies were -40.97, -44.99, -38.67, -48.79, -46.46, -45.56, and -44.47 EEU, respectively. Following the binding energy criterion, aardvark’s ACE2 was predicted to an effective receptor, but it may be ineffective due to glycosylation. The shrew had two interface glycosylation sites, N23 and N41, which form hydrogen bonds with N487 and Y449, respectively (<xref ref-type="fig" rid="F3">Fig. 3a</xref>); the aardvark had only one interface glycosylation site at N38, forming two hydrogen bonds with Y449 and Q498 (<xref ref-type="fig" rid="F3">Fig. 3b</xref>). Since these asparagine residues could form direct contact with S-RBD, their glycosylation may hinder the binding of the two proteins (i.e. ACE2 and Spike).</p>
+<p id="P14">Following the binding energy calculation and interface N-glycosylation site analysis, 96 non-human ACE2 proteins were suggested to be effectively utilized by SARS-CoV-2; half of them have been confirmed by experiments (<xref ref-type="table" rid="T1">Table 1</xref>) and the other half is summarized in <xref ref-type="table" rid="T2">Table 2</xref>. Therefore, compared with the original list of 285 animals, our method considerably narrowed the host range. The predicted potential zoonotic animals are distributed widely, including pets, domestic, agricultural, and zoological animals that may have close contact with humans (<xref ref-type="table" rid="T1">Tables 1</xref> and <xref ref-type="table" rid="T2">2</xref>).</p>
+</sec>
+<sec id="S6">
+<title>Case studies</title>
+<p id="P15">We then analyzed several ACE2 proteins to show molecular details about why they may or may not be effectively used by SARS-CoV-2 as an entry receptor. The first case is a New-World monkey, marmoset (<italic>Callithrix jacchus</italic>), which is of extremely low susceptibility to SARS-CoV-2 both <italic>in vivo</italic> and <italic>in vitro</italic> [<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R35">35</xref>]. The marmoset achieved a high binding score of -46.81 EEU. Compared with hACE2, there were four residue substitutions in the marmoset ACE2, i.e. Y41H, Q42E, M82T, and G354Q (<xref ref-type="table" rid="T3">Table 3</xref>). In hACE2, Y41 could form hydrogen bonds with T500 in the RBD; Q42 could form a hydrogen bond with the carbonyl group of G446 and another hydrogen bond with Y449 where the NE2 atom of Q42 acts as the donor and the OH atom of Y446 as the acceptor (<xref ref-type="fig" rid="F4">Fig. 4a</xref>, left). The substitution of Y41 into histidine not only results in a reduced van der Waals packing energy but also disrupts the favorable hydrogen bond with T500; mutation of Q42 into glutamic acid destroys the two hydrogen bonds with G446 and Y449; moreover, the M82T substitution could lead to a reduced packing interaction with F486 due to the smaller side-chain (<xref ref-type="fig" rid="F4">Fig. 4a</xref>, right). The loss of three hydrogen bonds and the weakened van der Waals forces result in the poor binding energy. As reported, the double mutant H41Y/E42Q made the variant marmoset receptor more permissive to SARS-CoV-2 infection [<xref ref-type="bibr" rid="R35">35</xref>]. Besides the New-World monkeys, we found that the ACE2 proteins of four bats (i.e. <italic>Eptesicus fuscus, Myotis brandtii, Myotis davidii</italic>, and <italic>Myotis lucifugus</italic>) also have the Y41H/Q42E substitution (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S7</xref>); interestingly, they were also predicted to be less effective with a binding score of &gt;-47 EEU.</p>
+<p id="P16">The second case is Malayan pangolin (<italic>Manis javanica</italic>), which has been suggested as a potential intermediate host in a few studies [<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R10">10</xref>]. Pangolin ACE2 shared an identity of 84.8%, 65%, and 60% with hACE2 for all, interface, and the key residues, respectively (Supporting Information Table S4). Although pangolin ACE2 had seven residues mutated compared with hACE2, i.e. Q24E, D30E, H34S, D38E, L79I, M82N, and G354H, it still achieved a relatively low binding energy of -51.73 EEU (<xref ref-type="table" rid="T3">Table 3</xref>). In the hACE2/S-RBD complex, Q24 forms a hydrogen bond with N487, and D38 forms a hydrogen bond with Y449; D30 forms a salt bridge with K417; L79 and M82 form favorable van der Waals contacts with F486 (<xref ref-type="fig" rid="F4">Fig. 4b</xref>, left). In the pangolin-ACE2/S-RBD complex, favorable interactions are also extensively formed. E38 could form two hydrogen bonds with Q498 and Y449; E30 and E24 could form a hydrogen bond with K417 and N487, respectively; S34 could form a hydrogen bond with Y453 though it has a reduced van der Waals interaction due to the small size compared with H34; I79 and N82 could also form favorable packing interactions with F486 (<xref ref-type="fig" rid="F4">Fig. 4b</xref>, right). Therefore, although pangolin ACE2 achieved a higher binding score than hACE2, probably due to worse contacting geometries, the extensive favorable interactions demonstrate that pangolin ACE2 can still be an effective receptor to SARS-CoV-2. Thus, the binding analysis and molecular details supported Malayan pangolin as a possible intermediate host.</p>
+<p id="P17">The third case is turtles (<italic>Chrysemys picta</italic>, <italic>Chelonia mydas</italic>, and <italic>Pelodiscus sinensis</italic>), which have been suggested as a potential intermediate host by Liu et al [<xref ref-type="bibr" rid="R43">43</xref>]. They argued that turtles have two important residues (Y41 and K353) in their ACE2 that are identical to those in hACE2 and that turtles in the markets were more common than pangolins [<xref ref-type="bibr" rid="R43">43</xref>]. Although it may be true that Y41 and K353 play an important role in binding S-RBD, it is, however, not a unique feature in the ACE2 of turtles and humans. As shown, many mammals have Y41 and K353 in their ACE2 proteins (Supporting Information Table S7). Besides, the first reported case of infection was suggested not to be associated with the market [<xref ref-type="bibr" rid="R17">17</xref>]. Therefore, their rules for screening intermediate hosts were not persuasive. The ACE2 protein of these turtles has ten amino acid substitutions compared with hACE2 (<xref ref-type="table" rid="T3">Table 3</xref>). <italic>C. picta</italic> and <italic>C. mydas</italic> have identical interface residues in their ACE2 proteins. <italic>P. sinensis</italic> has two different interface residues (E31 and Q35) compared with <italic>C. picta</italic> and <italic>C. mydas</italic> (<xref ref-type="table" rid="T3">Table 3</xref>). In <italic>C. picta</italic>, only E24 could form a hydrogen bond with N487 (<xref ref-type="fig" rid="F4">Fig. 4c</xref>, right), while the other mutations resulted in a substantial loss of favorable hydrogen bonds and salt bridges compared with those in the hACE2/S-RBD (<xref ref-type="fig" rid="F4">Fig. 4c</xref>, left). Expectedly, the three turtles (i.e. <italic>C. picta</italic>, <italic>C. mydas</italic>, and <italic>P. sinensis</italic>) achieved a poor binding score of -43.61, -42.23, and -40.68 EEU, respectively. Therefore, structure modeling did not support turtles as intermediate hosts.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="discussion">
+<title>Discussion</title>
+<p id="P18">As the COVID-19 pandemic continues, the direct zoonotic origin (intermediate host) of SARS-CoV-2 remains elusive. Many animals have been reported to be infected by SARS-CoV-2 in nature or the laboratory, suggesting a possibly wide host range for this novel coronavirus. Currently, the number of animals that have been experimentally tested is very small compared to the huge number of animal species. Previous studies suggested that receptor recognition is an important determinant of host range [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. Therefore, we proposed a computational pipeline for identifying the intermediate hosts of SARS-CoV-2 by modeling the binding affinity between host ACE2 and the viral S-RBD.</p>
+<sec id="S8">
+<title>The reasonability of ignoring TMPRSS2</title>
+<p id="P19">It has been shown that SARS-CoV-2 cell entry depends on ACE2 and the serine protease TMPRSS2 [<xref ref-type="bibr" rid="R47">47</xref>]. However, we did not consider the role of TMPRSS2 for host prediction, due to the following reasons. First, TMPRSS2’s role for priming spike may be replaced by some other proteases like cathepsin B and L [<xref ref-type="bibr" rid="R48">48</xref>]. Second, different from ACE2 which is used as a binding receptor only, TMPRSS2 cleaves Spike through chemical catalysis. Thus, to quantify the impact of TMPRSS2, its catalytic activity for cleavage needs to be predicted; this is, however, an impossible task to achieve at present, as almost all protease cleavage predictors were trained to predict cleavage sites for one known protease of one species [<xref ref-type="bibr" rid="R49">49</xref>]. Third, TMPRSS2 proteases from different species may be similarly efficient. This is supported in part by the fact that wild-type mice are insusceptible to SARS-CoV-2, while transgenic mice that express hACE2 can be infected [<xref ref-type="bibr" rid="R50">50</xref>], suggesting that mouse TMPRSS2 may be sufficiently efficient at cleaving Spike. Besides, a recent study showed that computational modeling failed to distinguish the binding capability of TMPRSS2 from different animals [<xref ref-type="bibr" rid="R41">41</xref>]. As a result, we believe that it may be reasonable to ignore TMPRSS2 for host prediction.</p>
+</sec>
+<sec id="S9">
+<title>ACE2 Sequence analysis alone is not accurate enough for host identification</title>
+<p id="P20">Built on the fact that hACE2 is highly susceptible to SARS-CoV-2, many previous studies only performed sequence analyses and used the sequence identity between animal ACE2 proteins and hACE2 to predict intermediate hosts [<xref ref-type="bibr" rid="R38">38</xref>, <xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R51">51</xref>], as it is believed that the ACE2 proteins that are similar to hACE2 may also be susceptible [<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. We calculated the MCCs for distinguishing experimentally determined effective ACE2 receptors from the less effective ones listed in <xref ref-type="table" rid="T1">Table 1</xref> using sequence identity. The maximum MCCs were 0.51,0.73, and 0.53 with the optimum sequence identity cutoff of 66%-78%, 61%~65%, and ≤60% in terms of all, interface, and key residues, respectively (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S3</xref>), which were much lower than that achieved by the classification via binding energy assessment (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S2</xref>). Four New-World monkeys (<italic>Sapajus apella, Aotus nancymaae, Saimiri boliviensis</italic>, and <italic>Callithrix jacchus</italic>) share a relatively high sequence identity of &gt;92%, 80%, and 80% with hACE2 in terms of all, interface, and key residues, respectively (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S4 and S7</xref>). Following the optimum sequence identity cutoffs, the ACE2 proteins of these New-World monkeys were predicted to be very effective receptors. However, <italic>in vivo</italic> infection studies showed <italic>C. jacchus</italic> was not susceptible to SARS-CoV-2 [<xref ref-type="bibr" rid="R28">28</xref>]; <italic>in vitro</italic> experiments also suggested that the ACE2 proteins of <italic>S. apella, S. boliviensis</italic>, and <italic>C. jacchus</italic> cannot be used by SARS-CoV-2 [<xref ref-type="bibr" rid="R35">35</xref>]. In contrast, dogs, cats, and ferrets, which have a much lower sequence identity to hACE2 than the new-world monkeys (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S4</xref>), can be infected by SARS-CoV-2 in nature and/or <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>–<xref ref-type="bibr" rid="R24">24</xref>]. These results suggest that an ACE2 protein with a higher sequence identity to hACE2 is not necessarily an effective receptor, whereas those with a lower identity is not necessarily a poor one. Therefore, sequence identity between hACE2 and animal ACE2 may not be a good descriptor for host identification.</p>
+</sec>
+<sec id="S10">
+<title>Binding energy is a better descriptor for host prediction</title>
+<p id="P21">As indicated by the high MCC achieved (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S2</xref>), structure-based binding energy assessment was more accurate than sequence identity for distinguishing experimentally confirmed species, provided that high-quality structure models were used. Critically, the structure models are very likely to be very reliable given the high sequence similarity between hACE2 and the ACE2 orthologs and the application of advanced structure modeling tools [<xref ref-type="bibr" rid="R30">30</xref>, <xref ref-type="bibr" rid="R32">32</xref>].</p>
+<p id="P22">Moreover, we argued that it is critical to model binding energy using structure ensembles rather than a single model. We found that the binding scores that were calculated for different models of the same ACE2/S-RBD complex fluctuated considerably (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S4</xref>). The maximum MCC of the classification by the binding energy derived from the first model was only about 0.63 (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S5</xref>), suggesting a single model was not sufficiently accurate for the classification even if a perfect scoring function is available. To circumvent the randomness of binding energy from a single model, we evaluated a large ensemble of structure models (e.g. 500 models in this work) for each complex and took the lowest binding score as the binding energy for ACE2 usage analysis. With a proper threshold (i.e. -47 EEU), the binding energy calculated in this way correlated well with experimental data, perfectly distinguishing the experimentally determined effective ACE2 receptors from the less effective ones with the maximum MCC of one (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Fig. S2</xref>).</p>
+</sec>
+<sec id="S11">
+<title>Identification and screening of potential zoonotic origins</title>
+<p id="P23">The most definitive strategy to identify the direct zoonotic origins of SARS-CoV-2 is to isolate related viruses from animal sources [<xref ref-type="bibr" rid="R6">6</xref>]. Unlike SARS-CoV and MERS-CoV, whose direct zoonotic origins were identified to be civets [<xref ref-type="bibr" rid="R15">15</xref>] and camels [<xref ref-type="bibr" rid="R16">16</xref>], respectively, soon after their outbreak, the clue for SARS-CoV-2 remain elusive as the first reported case of infection was suggested not to be associated with the Huanan Seafood and Wildlife Market [<xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R18">18</xref>]. As a result, a large number of animals have to be sampled to isolate viral strains that are highly similar to SARS-CoV-2 (e.g. &gt;99% genome identity); this is a formidable task that would require extensive effort. In this regard, our work presents a fast, yet reliable approach for screening potential animals for further analysis.</p>
+<p id="P24">Our result suggests that many mammals are likely to be potential intermediate hosts of SARS-CoV-2, which is consistent with a few recent studies [<xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R37">37</xref>, <xref ref-type="bibr" rid="R52">52</xref>]. Here, the ACE2 proteins of 285 species were assessed because their sequences were of good quality. In reality, there are more animals whose ACE2 proteins have not been sequenced yet. Thus, although 96 mammals in this study were predicted to have an effective ACE2 receptor capable of binding SARS-CoV-2 Spike, it does not necessarily mean that the real intermediate host must be one of them. The list may be further screened by considering the living environment of animals. For instance, some mammals like whales and dolphins live in the water, and therefore the chance for them to transmit bat viruses to humans may be extremely low, considering that bats are terrestrial animals.</p>
+</sec>
+</sec>
+<sec id="S12" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P25">The direct zoonotic origin (intermediate host) of SARS-CoV-2 that caused the COVID-19 pandemic remains elusive. In this work, we developed a computational pipeline to facilitate the identification of potential intermediate hosts of SARS-CoV-2 by modeling the binding affinity between the SARS-CoV-2 Spike receptor-binding domain and the ACE2 protein of host animals. The effectiveness of this method was verified by its performance on perfectly distinguishing the experimentally determined effective ACE2 receptors from the less effective ones with a maximum Matthews correlation coefficient (MCC) of one. Although the sequence identity-based descriptors have been widely used for predicting intermediate hosts, our results showed that their performance for discriminating between effective and less effective receptors was much worse than the binding-affinity based approach proposed here by achieving a maximum MCC of 0.73. Our results reveal that SARS-CoV-2 may have a broad host range and a few mammals, especially some primates, rodents, and carnivores, rather than the non-mammal animals could be potential hosts of SARS-CoV-2. Besides, as a supplementarity of our previous pangolin coronavirus genome assembly studies, the detailed structural modeling here also supported pangolins as a possible intermediate host with molecular-level insights. Since these animals are likely to be susceptible to SARS-CoV-2, continuous monitoring of viral circulation in these animals is very important for disease control and wildlife protection efforts.</p>
+</sec>
+<sec id="S13" sec-type="materials | methods">
+<title>Materials and methods</title>
+<sec id="S14">
+<title>Collection and examination of ACE2 orthologs</title>
+<p id="P26">A list of ACE2 orthologs from 318 vertebrate species was downloaded from the NCBI website (<ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/gene/59272/ortholog/?scope=7742">https://www.ncbi.nlm.nih.gov/gene/59272/ortholog/?scope=7742</ext-link>). Besides these, we also considered the ACE2 orthologs from three mammals that are not included in this list, namely, palm civets, raccoon dogs, and Chinese rufous horseshoe bats, as civets and raccoon dogs were suggested to be intermediate hosts of SARS-CoV [<xref ref-type="bibr" rid="R15">15</xref>]. Additionally, it was shown that the ACE2 proteins of civets and horseshoe bats can also be utilized by SARS-CoV-2 for viral entry in cell-level experiments [<xref ref-type="bibr" rid="R3">3</xref>].</p>
+<p id="P27">Among the 321 ACE2 orthologs, 30 sequences had one or more amino acids that were either nonstandard or incorrectly parsed, i.e. annotated as ‘X’, and thus these ACE2 orthologs were excluded from the detailed analysis (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S1</xref>). Moreover, sequence alignment analysis (see below) showed that the ACE2 proteins of six species had five or more missing S-RBD binding residues (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S2</xref>), i.e. <italic>Acanthisitta chloris</italic> (protein accession ID: XP_009082150.1), <italic>Apteryx mantelli mantelli</italic> (XP_013805736.1), <italic>Salmo salar</italic> (XP_014062928.1), <italic>Rhinopithecus bieti</italic> (XP_017744069.1), <italic>Leptonychotes weddellii</italic> (XP_030886750.1), and <italic>Petromyzon marinus</italic> (XP_032835032.1). Subsequent binding analysis (see below) showed that these ACE2 receptors had a much higher binding energy (and thus a lower binding capability) than the others (<xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S2</xref>), partly because of the incomplete binding interface. Therefore, we cannot suggest whether these animals are susceptible to SARS-CoV-2 based on the defective information.</p>
+<p id="P28">The remaining 285 ACE2 orthologs are summarized in <xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S3</xref>, including 134 mammals (<italic>Mammalia</italic>), 57 birds (<italic>Aves</italic>), 69 fish (<italic>Actinopterygii</italic> (66), <italic>Chondrichthyes</italic> (2), <italic>and Sarcopterygii</italic> (1)), 20 reptiles (<italic>Reptilia</italic>), and five amphibians (<italic>Amphibia</italic>). The protein ID, scientific classification (<italic>Class</italic> and <italic>Species</italic>), and common name are provided for easy retrieval.</p>
+</sec>
+<sec id="S15">
+<title>Sequence analyses</title>
+<p id="P29">291 ACE2 sequences, including the six ACE2 proteins with missing S-RBD binding residues in <xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S2</xref>, were subjected to multiple sequence alignment (MSA) analysis using Clustal Omega [<xref ref-type="bibr" rid="R53">53</xref>] with default parameters. Pairwise sequence identities between the full-length sequence of hACE2 (accession ID: NP_001358344.1) and the other ACE2 sequences were calculated based on the MSAs. Besides the full-length sequence identities, the sequence identities for the 20 interface residues [<xref ref-type="bibr" rid="R31">31</xref>] and five critical S-RBD binding residues [<xref ref-type="bibr" rid="R29">29</xref>] were also calculated from the MSAs. The results for these three types of sequence identities are shown in <xref ref-type="supplementary-material" rid="SD1">Supporting Information Table S4</xref>.</p>
+</sec>
+<sec id="S16">
+<title>Structure modeling</title>
+<p id="P30">It should be mentioned that in reality, the ACE2 receptors of some animals may not bind to S-RBD. However, to quantitatively compare the capability of different ACE2 receptors to bind to S-RBD, we first constructed initial ACE2/S-RBD complex models through homology modeling, assuming that all the ACE2 receptors could bind to S-RBD, and then computed the binding energies between the two partners.</p>
+<p id="P31">Pairwise sequence alignments between hACE2 and the other ACE2 orthologs were extracted from the MSAs and trimmed accordingly, as hACE2 was not full-length in the template complex (PDB ID: 6m0j) [<xref ref-type="bibr" rid="R31">31</xref>]. The trimming should not affect binding analysis because it was shown that the protein-protein interface is unabridged in the experimentally determined hACE2/S-RBD complex structures [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R31">31</xref>, <xref ref-type="bibr" rid="R54">54</xref>]. We utilized Modeller v9.24 [<xref ref-type="bibr" rid="R30">30</xref>] to build the initial putative complex models. Each model was first optimized with the variable target function method (VTFM) with conjugate gradients (CG) using parameters <italic>library_schedule = autosched.slow</italic> and <italic>max_var_iterations</italic> = 300, and then refined using molecular dynamics (MD) with simulated annealing (SA) using parameter settings <italic>md_level</italic> = <italic>refine.slow</italic>. The whole cycle was repeated two times and was not stopped unless the objective function was &gt;1e6 (parameter settings: <italic>repeat_optimization</italic> = <italic>2</italic> and <italic>max_molpdf</italic> = <italic>1e6</italic>). For each ACE2/S-RBD pair, 100 initial Modeller complex models were constructed.</p>
+</sec>
+<sec id="S17">
+<title>Binding energy calculation</title>
+<p id="P32">Before binding energy calculation, each Modeller complex model was first repacked using FASPR [<xref ref-type="bibr" rid="R32">32</xref>] to eliminate rotamer outliers and then the interface residue side-chain conformations were thoroughly refined (both for ACE2 and S-RBD) using the EvoEF2 force field in conjunction with a simulated annealing Monte Carlo (SAMC) optimization procedure [<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R55">55</xref>], which was also utilized for anti-SARS-CoV-2 peptide design [<xref ref-type="bibr" rid="R56">56</xref>]. During the side-chain refinement process, both the ACE2 and S-RBD sequences were kept fixed, while the different rotameric side-chain conformations were sampled. Since a stochastic SAMC optimization procedure was used, obtaining the global energy minimum may not always be guaranteed. Therefore, the optimization of the interface residues was performed five times independently to generate five refined low-energy models. Hence, for each ACE2/S-RBD pair, 500 final models were generated and scored using EvoEF2 [<xref ref-type="bibr" rid="R33">33</xref>]. The minimum binding interaction score achieved among all 500 complex models was regarded as the binding energy.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supporting Information</label>
+<media xlink:href="EMS94991-supplement-Supporting_Information.pdf" mimetype="application" mime-subtype="pdf" id="N66953" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S18">
+<title>Acknowledgments</title>
+<p>This work is supported in part by the National Institute of General Medical Sciences (GM136422, S10OD026825), the National Institute of Allergy and Infectious Diseases (AI134678), and the National Science Foundation (IIS1901191, DBI2030790). This work used the XSEDE clusters [<xref ref-type="bibr" rid="R57">57</xref>] which is supported by the National Science Foundation (ACI1548562) for providing computational resources.</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P33">
+<bold>Author contributions</bold>
+</p>
+<p id="P34">Y.Z. conceived and supervised the project; X.H. refined the structure models, performed sequence, structure, binding, and N-glycosylation analysis, and drafted the manuscript; C.Z. constructed the initial structure models; R.P. and G.S.O. participated in the discussion and edited the manuscript. All authors proofread and approved the final version of the manuscript.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P35">
+<bold>Conflicts of interest</bold>
+</p>
+<p id="P36">The authors declare that no conflict interest exists.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>YM</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>ZG</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tao</surname>
+<given-names>ZW</given-names>
+</name>
+<name>
+<surname>Tian</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>YY</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>ML</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>265</fpage>
+<lpage>269</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Novel Coronavirus from Patients with Pneumonia in China, 2019</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<volume>382</volume>
+<fpage>727</fpage>
+<lpage>733</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>XL</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>XG</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Si</surname>
+<given-names>HR</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>HD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>270</fpage>
+<lpage>273</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Hughes</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Novel Bat Coronavirus Closely Related to SARS-CoV-2 Contains Natural Insertions at the S1/S2 Cleavage Site of the Spike Protein</article-title>
+<source>Curr Biol</source>
+<year>2020</year>
+<volume>30</volume>
+<fpage>2196</fpage>
+<lpage>2203</lpage>
+<comment>e3</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Aihara</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Geng</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Auerbach</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Structural basis of receptor recognition by SARS-CoV-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<fpage>221</fpage>
+<lpage>224</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lipkin</surname>
+<given-names>WI</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Garry</surname>
+<given-names>RF</given-names>
+</name>
+</person-group>
+<article-title>The proximal origin of SARS-CoV-2</article-title>
+<source>Nat Med</source>
+<year>2020</year>
+<volume>26</volume>
+<fpage>450</fpage>
+<lpage>452</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Potential host range of multiple SARS-like coronaviruses and an improved ACE2-Fc variant that is potent against both SARS-CoV-2 and SARS-CoV-1</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.04.10.032342</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>TT</given-names>
+</name>
+<name>
+<surname>Jia</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>YW</given-names>
+</name>
+<name>
+<surname>Shum</surname>
+<given-names>MH</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>HC</given-names>
+</name>
+<name>
+<surname>Tong</surname>
+<given-names>YG</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>YX</given-names>
+</name>
+<name>
+<surname>Ni</surname>
+<given-names>XB</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>WJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Identifying SARS-CoV-2-related coronaviruses in Malayan pangolins</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>282</fpage>
+<lpage>285</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xiao</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhai</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Isolation of SARS-CoV-2-related coronavirus from Malayan pangolins</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>286</fpage>
+<lpage>289</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Protein Structure and Sequence Reanalysis of 2019-nCoV Genome Refutes Snakes as Its Intermediate Host and the Unique Similarity between Its Spike Protein Insertions and HIV-1</article-title>
+<source>J Proteome Res</source>
+<year>2020</year>
+<volume>19</volume>
+<fpage>1351</fpage>
+<lpage>1360</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Probable Pangolin Origin of SARS-CoV-2 Associated with the COVID-19 Outbreak</article-title>
+<source>Curr Biol</source>
+<year>2020</year>
+<volume>30</volume>
+<fpage>1346</fpage>
+<lpage>1351</lpage>
+<comment>e2</comment>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zai</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Nie</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>BT</given-names>
+</name>
+<name>
+<surname>Chaillon</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary history, potential intermediate animal host, and cross-species analyses of SARS-CoV-2</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<volume>92</volume>
+<fpage>602</fpage>
+<lpage>611</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>XF</given-names>
+</name>
+<name>
+<surname>Hua</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Are pangolins the intermediate host of the 2019 novel coronavirus (SARS-CoV-2)? PLoS Pathog</article-title>
+<year>2020</year>
+<volume>16</volume>
+<fpage>e1008421</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Roy</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Strategies to trace back the origin of COVID-19</article-title>
+<source>J Infect</source>
+<year>2020</year>
+<volume>80</volume>
+<fpage>e39</fpage>
+<lpage>e40</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>YQ</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>XL</given-names>
+</name>
+<name>
+<surname>Zhuang</surname>
+<given-names>ZX</given-names>
+</name>
+<name>
+<surname>Cheung</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>PH</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>YJ</given-names>
+</name>
+<name>
+<surname>Butt</surname>
+<given-names>KM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Isolation and characterization of viruses related to the SARS coronavirus from animals in southern China</article-title>
+<source>Science</source>
+<year>2003</year>
+<volume>302</volume>
+<fpage>276</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hemida</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LL</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Alhammadi</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Siu</surname>
+<given-names>LY</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Alnaeem</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>MERS coronavirus in dromedary camel herd, Saudi Arabia</article-title>
+<source>Emerg Infect Dis</source>
+<year>2014</year>
+<volume>20</volume>
+<fpage>1231</fpage>
+<lpage>1234</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Clinical features of patients infected with 2019 novel coronavirus in Wuhan, China</article-title>
+<source>Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<fpage>497</fpage>
+<lpage>506</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cohen</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Wuhan seafood market may not be source of novel virus spreading globally</article-title>
+<source>Science</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1126/science.abb0611</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Geng</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Auerbach</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Cell entry mechanisms of SARS-CoV-2</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>11727</fpage>
+<lpage>11734</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shuai</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Susceptibility of ferrets, cats, dogs, and other domesticated animals to SARS-coronavirus 2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>368</volume>
+<fpage>1016</fpage>
+<lpage>1020</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Halfmann</surname>
+<given-names>PJ</given-names>
+</name>
+<name>
+<surname>Hatta</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chiba</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Maemura</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Takeda</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kinoshita</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Hattori</surname>
+<given-names>SI</given-names>
+</name>
+<name>
+<surname>Sakai-Tagawa</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Iwatsuki-Horimoto</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Imai</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Transmission of SARS-CoV-2 in Domestic Cats</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<volume>383</volume>
+<fpage>592</fpage>
+<lpage>594</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goumenou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Spandidos</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Tsatsakis</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Possibility of transmission through dogs being a contributing factor to the extreme Covid19 outbreak in North Italy</article-title>
+<source>Mol Med Rep</source>
+<year>2020</year>
+<volume>21</volume>
+<fpage>2293</fpage>
+<lpage>2295</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sit</surname>
+<given-names>THC</given-names>
+</name>
+<name>
+<surname>Brackman</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Ip</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Tam</surname>
+<given-names>KWS</given-names>
+</name>
+<name>
+<surname>Law</surname>
+<given-names>PYT</given-names>
+</name>
+<name>
+<surname>To</surname>
+<given-names>EMW</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>VYT</given-names>
+</name>
+<name>
+<surname>Sims</surname>
+<given-names>LD</given-names>
+</name>
+<name>
+<surname>Tsang</surname>
+<given-names>DNC</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DKW</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LLM</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Infection of dogs with SARS-CoV-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2334-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>YI</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>SG</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>EH</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Casel</surname>
+<given-names>MAB</given-names>
+</name>
+<name>
+<surname>Um</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Infection and Rapid Transmission of SARS-CoV-2 in Ferrets</article-title>
+<source>Cell Host Microbe</source>
+<year>2020</year>
+<volume>27</volume>
+<fpage>704</fpage>
+<lpage>709</lpage>
+<comment>e2</comment>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sia</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>LM</given-names>
+</name>
+<name>
+<surname>Chin</surname>
+<given-names>AWH</given-names>
+</name>
+<name>
+<surname>Fung</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Choy</surname>
+<given-names>KT</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>AYL</given-names>
+</name>
+<name>
+<surname>Kaewpreedee</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LLM</given-names>
+</name>
+<name>
+<surname>Nicholls</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pathogenesis and transmission of SARS-CoV-2 in golden hamsters</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>834</fpage>
+<lpage>838</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oreshkova</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Molenaar</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Vreman</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Harders</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Oude Munnink</surname>
+<given-names>BB</given-names>
+</name>
+<name>
+<surname>Hakze-van der Honing</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Gerhards</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Tolsma</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bouwstra</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Sikkema</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Tacken</surname>
+<given-names>MG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 infection in farmed minks, the Netherlands, April and May 2020</article-title>
+<source>Euro Surveill</source>
+<year>2020</year>
+<volume>25</volume>
+<comment>pii=2001005</comment>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Munster</surname>
+<given-names>VJ</given-names>
+</name>
+<name>
+<surname>Feldmann</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Williamson</surname>
+<given-names>BN</given-names>
+</name>
+<name>
+<surname>van Doremalen</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Perez-Perez</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Schulz</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Meade-White</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Okumura</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Callison</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Brumbaugh</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Avanzato</surname>
+<given-names>VA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Respiratory disease in rhesus macaques inoculated with SARS-CoV-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2324-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kuang</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comparison of SARS-CoV-2 infections among 3 species of non-human primates</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.04.08.031807</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Receptor Recognition by the Novel Coronavirus from Wuhan: an Analysis Based on Decade-Long Structural Studies of SARS Coronavirus</article-title>
+<source>J Virol</source>
+<year>2020</year>
+<volume>94</volume>
+<fpage>e00127</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Webb</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sali</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<chapter-title>Protein structure modeling with MODELLER</chapter-title>
+<source>Functional Genomics</source>
+<year>2017</year>
+<fpage>39</fpage>
+<lpage>54</lpage>
+<publisher-name>Springer</publisher-name>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ge</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Structure of the SARS-CoV-2 spike receptor-binding domain bound to the ACE2 receptor</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<fpage>215</fpage>
+<lpage>220</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>FASPR: an open-source tool for fast and accurate protein side-chain packing</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>3758</fpage>
+<lpage>3765</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>EvoEF2: accurate and fast energy function for computational protein design</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>1135</fpage>
+<lpage>1142</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Corman</surname>
+<given-names>VM</given-names>
+</name>
+<name>
+<surname>Landt</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Kaiser</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Molenkamp</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Meijer</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DKW</given-names>
+</name>
+<name>
+<surname>Bleicker</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Brunink</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schneider</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Schmidt</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Mulders</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Detection of 2019 novel coronavirus (2019-nCoV) by real-time RT-PCR</article-title>
+<source>Euro Surveill</source>
+<year>2020</year>
+<volume>25</volume>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ji</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gong</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ju</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hong</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Functional and Genetic Analysis of Viral Receptor ACE2 Orthologs Reveals Broad Potential Host Range of SARS-CoV-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.04.22.046565</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Szabla</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>J-T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Broad and differential animal ACE2 receptor usage by SARS-CoV-2</article-title>
+<source>J Virol</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1128/JVI.00940-20</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Damas</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hughes</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Keough</surname>
+<given-names>KC</given-names>
+</name>
+<name>
+<surname>Painter</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Persky</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Corbo</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hiller</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Koepfli</surname>
+<given-names>K-P</given-names>
+</name>
+<name>
+<surname>Pfenning</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Genereux</surname>
+<given-names>DP</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Broad Host Range of SARS-CoV-2 Predicted by Comparative and Structural Analysis of ACE2 in Vertebrates</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.04.16.045302</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Spike protein recognition of mammalian ACE2 predicts the host range and an optimized ACE2 for SARS-CoV-2 infection</article-title>
+<source>Biochem Biophys Res Commun</source>
+<year>2020</year>
+<volume>526</volume>
+<fpage>165</fpage>
+<lpage>169</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Qiu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>YB</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>JY</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>ZJ</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Ge</surname>
+<given-names>XY</given-names>
+</name>
+</person-group>
+<article-title>Predicting the angiotensin converting enzyme 2 (ACE2) utilizing capability as the receptor of SARS-CoV-2</article-title>
+<source>Microbes Infect</source>
+<year>2020</year>
+<volume>22</volume>
+<fpage>221</fpage>
+<lpage>225</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhai</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>WT</given-names>
+</name>
+<name>
+<surname>Veit</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Su</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Comparison of Severe Acute Respiratory Syndrome Coronavirus 2 Spike Protein Binding to ACE2 Receptors from Human, Pets, Farm Animals, and Putative Intermediate Hosts</article-title>
+<source>J Virol</source>
+<year>2020</year>
+<volume>94</volume>
+<fpage>e00831</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>SD</given-names>
+</name>
+<name>
+<surname>Bordin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Waman</surname>
+<given-names>VP</given-names>
+</name>
+<name>
+<surname>Scholes</surname>
+<given-names>HM</given-names>
+</name>
+<name>
+<surname>Ashford</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Sen</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>van Dorp</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Rauer</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Dawson</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Pang</surname>
+<given-names>CSM</given-names>
+</name>
+<name>
+<surname>Abbasian</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 spike protein predicted to form stable complexes with host receptor protein orthologues from mammals, but not fish, birds or reptiles</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.05.01.072371</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ji</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zai</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Cross-species transmission of the newly identified coronavirus 2019-nCoV</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<volume>92</volume>
+<fpage>433</fpage>
+<lpage>440</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Composition and divergence of coronavirus spike proteins and host ACE2 receptors predict potential intermediate hosts of SARS-CoV-2</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<volume>92</volume>
+<fpage>595</fpage>
+<lpage>601</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chuang</surname>
+<given-names>G-Y</given-names>
+</name>
+<name>
+<surname>Boyington</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Joyce</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Nabel</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Kwong</surname>
+<given-names>PD</given-names>
+</name>
+<name>
+<surname>Georgiev</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Computational prediction of N-linked glycosylation incorporating structural properties and patterns</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<fpage>2249</fpage>
+<lpage>2255</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pitti</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>C-T</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>H-N</given-names>
+</name>
+<name>
+<surname>Choong</surname>
+<given-names>W-K</given-names>
+</name>
+<name>
+<surname>Hsu</surname>
+<given-names>W-L</given-names>
+</name>
+<name>
+<surname>Sung</surname>
+<given-names>T-Y</given-names>
+</name>
+</person-group>
+<article-title>N-GlyDE: a two-stage N-linked glycosylation site prediction incorporating gapped dipeptides and pattern-based encoding</article-title>
+<source>Sci Rep</source>
+<year>2019</year>
+<volume>9</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>Structural basis for the recognition of SARS-CoV-2 by full-length human ACE2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>367</volume>
+<fpage>1444</fpage>
+<lpage>1448</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoffmann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kleine-Weber</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schroeder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kruger</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Herrler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Erichsen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schiergens</surname>
+<given-names>TS</given-names>
+</name>
+<name>
+<surname>Herrler</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>NH</given-names>
+</name>
+<name>
+<surname>Nitsche</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Muller</surname>
+<given-names>MA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Cell Entry Depends on ACE2 and TMPRSS2 and Is Blocked by a Clinically Proven Protease Inhibitor</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>271</fpage>
+<lpage>280</lpage>
+<comment>e8</comment>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Simmons</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gosalia</surname>
+<given-names>DN</given-names>
+</name>
+<name>
+<surname>Rennekamp</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Reeves</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Diamond</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Bates</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Inhibitors of cathepsin L prevent severe acute respiratory syndrome coronavirus entry</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2005</year>
+<volume>102</volume>
+<fpage>11876</fpage>
+<lpage>11881</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fan</surname>
+<given-names>YX</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>HB</given-names>
+</name>
+</person-group>
+<article-title>LabCaS: labeling calpain substrate cleavage sites from amino acid sequence using conditional random fields</article-title>
+<source>Proteins</source>
+<year>2013</year>
+<volume>81</volume>
+<fpage>622</fpage>
+<lpage>634</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Qu</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The pathogenicity of SARS-CoV-2 in hACE2 transgenic mice</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<fpage>830</fpage>
+<lpage>833</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 spike protein favors ACE2 from Bovidae and Cricetidae</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1002/jmv.25817</pub-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Receptor recognition mechanisms of coronaviruses: a decade of structural studies</article-title>
+<source>J Virol</source>
+<year>2015</year>
+<volume>89</volume>
+<fpage>1954</fpage>
+<lpage>1964</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sievers</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wilm</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dineen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gibson</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Lopez</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>McWilliam</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Remmert</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Söding</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega</article-title>
+<source>Mol Syst Biol</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>539</fpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Qiao</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>KY</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural and Functional Basis of SARS-CoV-2 Entry by Using Human ACE2</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>894</fpage>
+<lpage>904</lpage>
+<comment>e9</comment>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Toward the Accuracy and Speed of Protein Side-Chain Packing: A Systematic Study on Rotamer Libraries</article-title>
+<source>J Chem Inf Model</source>
+<year>2020</year>
+<volume>60</volume>
+<fpage>410</fpage>
+<lpage>420</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>
+<italic>De novo</italic> design of protein peptides to block association of the SARS-CoV-2 spike protein with human ACE2</article-title>
+<source>Aging</source>
+<year>2020</year>
+<volume>12</volume>
+<fpage>11263</fpage>
+<lpage>11276</lpage>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Towns</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Cockerill</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Dahan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Foster</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Gaither</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Grimshaw</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hazlewood</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Lathrop</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lifka</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Peterson</surname>
+<given-names>GD</given-names>
+</name>
+</person-group>
+<article-title>XSEDE: accelerating scientific discovery</article-title>
+<source>Comput Sci Eng</source>
+<year>2014</year>
+<volume>16</volume>
+<fpage>62</fpage>
+<lpage>74</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holshue</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>DeBolt</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lindquist</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lofy</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Wiesman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bruce</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Spitters</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ericson</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wilkerson</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Tural</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Diaz</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Washington State -nCo VCIT. First Case of 2019 Novel Coronavirus in the United States</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1056/NEJMoa2001191</pub-id>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>59</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bartlett</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Diel</surname>
+<given-names>DG</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zec</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Laverack</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Martins</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Caserta</surname>
+<given-names>LC</given-names>
+</name>
+<name>
+<surname>Killian</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Terio</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Olmstead</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Delaney</surname>
+<given-names>MA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Infection And Longitudinal Fecal Screening In Malayan Tigers (Panthera tigris jacksoni), Amur Tigers (Panthera tigris altaica), And African Lions (Panthera leo krugeri) At The Bronx Zoo, New York, USA</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.08.14.250928</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>A computational pipeline for ACE2 usage analysis. 321 ACE2 orthologs are downloaded from NCBI. The crystal structure of the hACE2/S-RBD complex (PDB ID: 6M0J) was used as a template for homology modeling. For each ACE2/S-RBD pair, 100 initial Modeller complex models were constructed and repacked by FASPR, and then five models were generated by EvoEF2/SAMC remodeling for each FASPR model. The binding energy cutoff (<italic>E</italic>
+<sub>cutoff</sub>) was set to be -47 EvoEF2 energy units.</p>
+</caption>
+<graphic xlink:href="EMS94991-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<p>Mapping the calculated binding energy to 285 vertebrates. The ACE2 proteins are categorized by their animal Class (<italic>Actinopterygii, Amphibia, Aves, Chondrichthyes, Mammalia, Reptilia</italic>, and <italic>Sarcopterygii</italic>) and ranked by the binding energy from low to high in each Class. The ACE2 proteins that are experimentally shown to be effective or less effective to SARS-CoV-2 are shown in squares and triangles, respectively, while the others are shown in circles. Susceptible and insusceptible animals are highlighted in black and gray, respectively.</p>
+</caption>
+<graphic xlink:href="EMS94991-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>Putative N-glycosylation sites at the interface of two example ACE2/S-RBD complex structures. (a) Eurasian common shrew (<italic>Sorex araneus</italic>); and (b) Aardvark (<italic>Orycteropus afer</italic>). ACE2 and S-RBD are shown in green and cyan cartoons, respectively. The potential interface N-glycosylation motifs are shown with the asparagine residues highlighted in spheres.</p>
+</caption>
+<graphic xlink:href="EMS94991-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Comparison of the mutated interface between hACE2/S-RBD and animal-ACE2/S-RBD. (a) hACE2/S-RBD versus marmoset-ACE2/S-RBD; (b) hACE2/S-RBD versus pangolin-ACE2/S-RBD; and (c) hACE2/S-RBD versus turtle-ACE2/S-RBD. Residues in ACE2 and S-RBD are shown in magenta and yellow, respectively. Hydrogen bonds are shown in green dashed-lines.</p>
+</caption>
+<graphic xlink:href="EMS94991-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>The 59 animals whose ACE2 proteins are shown to be effective or less effective for SARS-CoV-2 entry by natural infection and/or experimental studies</title>
+<p>The table is organized by ranking the binding energy from low to high.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Index</th>
+<th align="left" valign="top">Animal name</th>
+<th align="left" valign="top">Binding energy (EEU) <sup>
+<xref ref-type="table-fn" rid="TFN1">a</xref>
+</sup>
+</th>
+<th align="left" valign="top">ACE2 usage <sup>
+<xref ref-type="table-fn" rid="TFN2">b</xref>
+</sup>
+</th>
+<th align="left" valign="top">Experimental evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">1</td>
+<td align="left" valign="top">Sumatran orangutan</td>
+<td align="left" valign="top">-56.21</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">2</td>
+<td align="left" valign="top">Western gorilla</td>
+<td align="left" valign="top">-55.84</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">3</td>
+<td align="left" valign="top">Olive baboon</td>
+<td align="left" valign="top">-55.77</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">4</td>
+<td align="left" valign="top">Silvery gibbon</td>
+<td align="left" valign="top">-55.73</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">5</td>
+<td align="left" valign="top">Crab-eating macaque</td>
+<td align="left" valign="top">-55.38</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">6</td>
+<td align="left" valign="top">Gelada</td>
+<td align="left" valign="top">-55.29</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">7</td>
+<td align="left" valign="top">Rhesus macaque</td>
+<td align="left" valign="top">-55.24</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R27">27</xref>, <xref ref-type="bibr" rid="R28">28</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">8</td>
+<td align="left" valign="top">Human</td>
+<td align="left" valign="top">-55.16</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">Natural [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R58">58</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">9</td>
+<td align="left" valign="top">Golden snub-nosed monkey</td>
+<td align="left" valign="top">-55.09</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">10</td>
+<td align="left" valign="top">Chimpanzee</td>
+<td align="left" valign="top">-54.97</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">11</td>
+<td align="left" valign="top">Ugandan red colobus</td>
+<td align="left" valign="top">-54.79</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">12</td>
+<td align="left" valign="top">Golden hamster</td>
+<td align="left" valign="top">-53.84</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R25">25</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">13</td>
+<td align="left" valign="top">Chinese hamster</td>
+<td align="left" valign="top">-53.77</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">14</td>
+<td align="left" valign="top">Steller sea lion</td>
+<td align="left" valign="top">-53.47</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">15</td>
+<td align="left" valign="top">Horse</td>
+<td align="left" valign="top">-52.95</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">16</td>
+<td align="left" valign="top">Amur tiger</td>
+<td align="left" valign="top">-52.93</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">Natural [<xref ref-type="bibr" rid="R59">59</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">17</td>
+<td align="left" valign="top">Goat</td>
+<td align="left" valign="top">-52.86</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">18</td>
+<td align="left" valign="top">Rabbit</td>
+<td align="left" valign="top">-52.84</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">19</td>
+<td align="left" valign="top">Wild yak</td>
+<td align="left" valign="top">-52.83</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">20</td>
+<td align="left" valign="top">Puma</td>
+<td align="left" valign="top">-52.79</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">21</td>
+<td align="left" valign="top">Leopard</td>
+<td align="left" valign="top">-52.74</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">22</td>
+<td align="left" valign="top">Cattle</td>
+<td align="left" valign="top">-52.71</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">23</td>
+<td align="left" valign="top">Hawaiian monk seal</td>
+<td align="left" valign="top">-52.56</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">24</td>
+<td align="left" valign="top">Ferret</td>
+<td align="left" valign="top">-52.55</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R24">24</xref>];</td>
+</tr>
+<tr>
+<td align="left" valign="top">25</td>
+<td align="left" valign="top">California sea lion</td>
+<td align="left" valign="top">-52.53</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">26</td>
+<td align="left" valign="top">Water buffalo</td>
+<td align="left" valign="top">-52.45</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">27</td>
+<td align="left" valign="top">Lesser egyptian jerboa</td>
+<td align="left" valign="top">-52.44</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">28</td>
+<td align="left" valign="top">Cat</td>
+<td align="left" valign="top">-52.33</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>], natural [<xref ref-type="bibr" rid="R21">21</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">29</td>
+<td align="left" valign="top">Canada lynx</td>
+<td align="left" valign="top">-52.21</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">30</td>
+<td align="left" valign="top">Giant panda</td>
+<td align="left" valign="top">-52.21</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">31</td>
+<td align="left" valign="top">White-footed mouse</td>
+<td align="left" valign="top">-52.15</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">32</td>
+<td align="left" valign="top">Sheep</td>
+<td align="left" valign="top">-52.09</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">33</td>
+<td align="left" valign="top">Beluga whale</td>
+<td align="left" valign="top">-51.98</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">34</td>
+<td align="left" valign="top">Sperm whale</td>
+<td align="left" valign="top">-51.94</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">35</td>
+<td align="left" valign="top">Polar bear</td>
+<td align="left" valign="top">-51.93</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">36</td>
+<td align="left" valign="top">Yangtze finless porpoise</td>
+<td align="left" valign="top">-51.85</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">37</td>
+<td align="left" valign="top">Malayan pangolin</td>
+<td align="left" valign="top">-51.73</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">38</td>
+<td align="left" valign="top">Red fox</td>
+<td align="left" valign="top">-51.58</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">39</td>
+<td align="left" valign="top">Dog</td>
+<td align="left" valign="top">-51.38</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>], natural [<xref ref-type="bibr" rid="R23">23</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">40</td>
+<td align="left" valign="top">Southern white rhinoceros</td>
+<td align="left" valign="top">-51.08</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">41</td>
+<td align="left" valign="top">Pig</td>
+<td align="left" valign="top">-50.74</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R7">7</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">42</td>
+<td align="left" valign="top">Arctic ground squirrel</td>
+<td align="left" valign="top">-50.62</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">43</td>
+<td align="left" valign="top">Chinese rufous horseshoe bat</td>
+<td align="left" valign="top">-49.91</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">44</td>
+<td align="left" valign="top">Bactrian camel</td>
+<td align="left" valign="top">-49.88</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">45</td>
+<td align="left" valign="top">Killer whale</td>
+<td align="left" valign="top">-49.47</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">46</td>
+<td align="left" valign="top">Long-finned pilot whale</td>
+<td align="left" valign="top">-49.19</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">47</td>
+<td align="left" valign="top">Atlantic bottle-nosed dolphin</td>
+<td align="left" valign="top">-49.05</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">48</td>
+<td align="left" valign="top">Yangtze river dolphin</td>
+<td align="left" valign="top">-49.05</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">49</td>
+<td align="left" valign="top">Masked palm civet</td>
+<td align="left" valign="top">-47.97</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R7">7</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">50</td>
+<td align="left" valign="top">Malayan tiger</td>
+<td align="left" valign="top">n.d.</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">Natural [<xref ref-type="bibr" rid="R59">59</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">51</td>
+<td align="left" valign="top">African lion</td>
+<td align="left" valign="top">n.d.</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">Natural [<xref ref-type="bibr" rid="R59">59</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">52</td>
+<td align="left" valign="top">Mink</td>
+<td align="left" valign="top">n.d.</td>
+<td align="left" valign="top">Y</td>
+<td align="left" valign="top">Natural [<xref ref-type="bibr" rid="R26">26</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">53</td>
+<td align="left" valign="top">Marmoset</td>
+<td align="left" valign="top">-46.81</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R28">28</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">54</td>
+<td align="left" valign="top">Black-capped squirrel monkey</td>
+<td align="left" valign="top">-46.71</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">55</td>
+<td align="left" valign="top">Tufted capuchin</td>
+<td align="left" valign="top">-46.13</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">56</td>
+<td align="left" valign="top">Brown rat</td>
+<td align="left" valign="top">-43.14</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">57</td>
+<td align="left" valign="top">House mouse</td>
+<td align="left" valign="top">-42.62</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R35">35</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">58</td>
+<td align="left" valign="top">Duck</td>
+<td align="left" valign="top">-42.54</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>]</td>
+</tr>
+<tr>
+<td align="left" valign="top">59</td>
+<td align="left" valign="top">Chicken</td>
+<td align="left" valign="top">-42.07</td>
+<td align="left" valign="top">N</td>
+<td align="left" valign="top">
+<italic>In vitro</italic> [<xref ref-type="bibr" rid="R7">7</xref>], <italic>in vivo</italic> [<xref ref-type="bibr" rid="R20">20</xref>]</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<label>a</label>
+<p id="P37">The binding energy was not calculated for Malayan tiger, lion, and mink because their ACE2 proteins were not included in the list of 321 ACE2 orthologs. EEU stands for EvoEF2 energy unit.</p>
+</fn>
+<fn id="TFN2">
+<label>b</label>
+<p id="P38">Y, effective ACE2 receptors; N, less effective ACE2 receptors. An ACE2 protein is classified as effective if at least one of the three kinds of experimental evidence holds.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>48 other animals were predicted to have an effective ACE2 receptor capable of S-RBD binding.</title>
+<p>The table is organized by ranking the binding energy from low to high. The animals in <xref ref-type="table" rid="T1">Table 1</xref> were not included in this table. The binding energy cutoff (-47 EEU) was chosen by maximally discriminating the experimentally determined effective ACE2 receptors from the less effective ones.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Index</th>
+<th align="left" valign="top">Species</th>
+<th align="left" valign="top">Animal name</th>
+<th align="left" valign="top">Binding energy (EEU)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">1</td>
+<td align="left" valign="top">
+<italic>Pan paniscus</italic>
+</td>
+<td align="left" valign="top">Bonobo</td>
+<td align="left" valign="top">-55.99</td>
+</tr>
+<tr>
+<td align="left" valign="top">2</td>
+<td align="left" valign="top">
+<italic>Nomascus leucogenys</italic>
+</td>
+<td align="left" valign="top">Northern white-cheeked gibbon</td>
+<td align="left" valign="top">-55.84</td>
+</tr>
+<tr>
+<td align="left" valign="top">3</td>
+<td align="left" valign="top">
+<italic>Chlorocebus sabaeus</italic>
+</td>
+<td align="left" valign="top">Green monkey</td>
+<td align="left" valign="top">-55.67</td>
+</tr>
+<tr>
+<td align="left" valign="top">4</td>
+<td align="left" valign="top">
+<italic>Macaca nemestrina</italic>
+</td>
+<td align="left" valign="top">Pig-tailed macaque</td>
+<td align="left" valign="top">-55.42</td>
+</tr>
+<tr>
+<td align="left" valign="top">5</td>
+<td align="left" valign="top">
+<italic>Cercocebus atys</italic>
+</td>
+<td align="left" valign="top">Sooty mangabey</td>
+<td align="left" valign="top">-55.19</td>
+</tr>
+<tr>
+<td align="left" valign="top">6</td>
+<td align="left" valign="top">
+<italic>Mandrillus leucophaeus</italic>
+</td>
+<td align="left" valign="top">Drill</td>
+<td align="left" valign="top">-54.94</td>
+</tr>
+<tr>
+<td align="left" valign="top">7</td>
+<td align="left" valign="top">
+<italic>Nannospalax galili</italic>
+</td>
+<td align="left" valign="top">Northern israeli blind subterranean mole rat</td>
+<td align="left" valign="top">-53.69</td>
+</tr>
+<tr>
+<td align="left" valign="top">8</td>
+<td align="left" valign="top">
+<italic>Propithecus coquereli</italic>
+</td>
+<td align="left" valign="top">Coquerel’s sifaka</td>
+<td align="left" valign="top">-53.35</td>
+</tr>
+<tr>
+<td align="left" valign="top">9</td>
+<td align="left" valign="top">
+<italic>Callorhinus ursinus</italic>
+</td>
+<td align="left" valign="top">Northern fur seal</td>
+<td align="left" valign="top">-52.98</td>
+</tr>
+<tr>
+<td align="left" valign="top">10</td>
+<td align="left" valign="top">
+<italic>Equus przewalskii</italic>
+</td>
+<td align="left" valign="top">Mongolian wild horse</td>
+<td align="left" valign="top">-52.95</td>
+</tr>
+<tr>
+<td align="left" valign="top">11</td>
+<td align="left" valign="top">
+<italic>Acinonyx jubatus</italic>
+</td>
+<td align="left" valign="top">Cheetah</td>
+<td align="left" valign="top">-52.88</td>
+</tr>
+<tr>
+<td align="left" valign="top">12</td>
+<td align="left" valign="top">
+<italic>Heterocephalus glaber</italic>
+</td>
+<td align="left" valign="top">Naked mole-rat</td>
+<td align="left" valign="top">-52.79</td>
+</tr>
+<tr>
+<td align="left" valign="top">13</td>
+<td align="left" valign="top">
+<italic>Bison bison bison</italic>
+</td>
+<td align="left" valign="top">Plains bison</td>
+<td align="left" valign="top">-52.78</td>
+</tr>
+<tr>
+<td align="left" valign="top">14</td>
+<td align="left" valign="top">
+<italic>Mustela erminea</italic>
+</td>
+<td align="left" valign="top">Ermine</td>
+<td align="left" valign="top">-52.74</td>
+</tr>
+<tr>
+<td align="left" valign="top">15</td>
+<td align="left" valign="top">
+<italic>Phoca vitulina</italic>
+</td>
+<td align="left" valign="top">Harbor seal</td>
+<td align="left" valign="top">-52.73</td>
+</tr>
+<tr>
+<td align="left" valign="top">16</td>
+<td align="left" valign="top">
+<italic>Bos indicus x Bos taurus</italic>
+</td>
+<td align="left" valign="top">Hybrid cattle</td>
+<td align="left" valign="top">-52.71</td>
+</tr>
+<tr>
+<td align="left" valign="top">17</td>
+<td align="left" valign="top">
+<italic>Lontra canadensis</italic>
+</td>
+<td align="left" valign="top">Northern american river otter</td>
+<td align="left" valign="top">-52.66</td>
+</tr>
+<tr>
+<td align="left" valign="top">18</td>
+<td align="left" valign="top">
+<italic>Odobenus rosmarus divergens</italic>
+</td>
+<td align="left" valign="top">Walrus</td>
+<td align="left" valign="top">-52.62</td>
+</tr>
+<tr>
+<td align="left" valign="top">19</td>
+<td align="left" valign="top">
+<italic>Bos indicus</italic>
+</td>
+<td align="left" valign="top">Zebu cattle</td>
+<td align="left" valign="top">-52.47</td>
+</tr>
+<tr>
+<td align="left" valign="top">20</td>
+<td align="left" valign="top">
+<italic>Peromyscus maniculatus bairdii</italic>
+</td>
+<td align="left" valign="top">Deer mouse</td>
+<td align="left" valign="top">-52.38</td>
+</tr>
+<tr>
+<td align="left" valign="top">21</td>
+<td align="left" valign="top">
+<italic>Odocoileus virginianus texanus</italic>
+</td>
+<td align="left" valign="top">White-tailed deer</td>
+<td align="left" valign="top">-52.24</td>
+</tr>
+<tr>
+<td align="left" valign="top">22</td>
+<td align="left" valign="top">
+<italic>Fukomys damarensis</italic>
+</td>
+<td align="left" valign="top">Damaraland mole-rat</td>
+<td align="left" valign="top">-52.22</td>
+</tr>
+<tr>
+<td align="left" valign="top">23</td>
+<td align="left" valign="top">
+<italic>Ursus arctos horribilis</italic>
+</td>
+<td align="left" valign="top">Grizzly bear</td>
+<td align="left" valign="top">-52.13</td>
+</tr>
+<tr>
+<td align="left" valign="top">24</td>
+<td align="left" valign="top">
+<italic>Monodon monoceros</italic>
+</td>
+<td align="left" valign="top">Narwhal</td>
+<td align="left" valign="top">-51.98</td>
+</tr>
+<tr>
+<td align="left" valign="top">25</td>
+<td align="left" valign="top">
+<italic>Phocoena sinus</italic>
+</td>
+<td align="left" valign="top">Vaquita</td>
+<td align="left" valign="top">-51.95</td>
+</tr>
+<tr>
+<td align="left" valign="top">26</td>
+<td align="left" valign="top">
+<italic>Microtus ochrogaster</italic>
+</td>
+<td align="left" valign="top">Prairie vole</td>
+<td align="left" valign="top">-51.76</td>
+</tr>
+<tr>
+<td align="left" valign="top">27</td>
+<td align="left" valign="top">
+<italic>Balaenoptera acutorostrata scammoni</italic>
+</td>
+<td align="left" valign="top">North pacific minke whale</td>
+<td align="left" valign="top">-51.65</td>
+</tr>
+<tr>
+<td align="left" valign="top">28</td>
+<td align="left" valign="top">
+<italic>Marmota marmota</italic>
+</td>
+<td align="left" valign="top">Alpine marmot</td>
+<td align="left" valign="top">-51.62</td>
+</tr>
+<tr>
+<td align="left" valign="top">29</td>
+<td align="left" valign="top">
+<italic>Ictidomys tridecemlineatus</italic>
+</td>
+<td align="left" valign="top">Thirteen-lined ground squirrel</td>
+<td align="left" valign="top">-51.54</td>
+</tr>
+<tr>
+<td align="left" valign="top">30</td>
+<td align="left" valign="top">
+<italic>Marmota flaviventris</italic>
+</td>
+<td align="left" valign="top">Yellow-bellied marmot</td>
+<td align="left" valign="top">-51.50</td>
+</tr>
+<tr>
+<td align="left" valign="top">31</td>
+<td align="left" valign="top">
+<italic>Canis lupus dingo</italic>
+</td>
+<td align="left" valign="top">Dingo</td>
+<td align="left" valign="top">-51.11</td>
+</tr>
+<tr>
+<td align="left" valign="top">32</td>
+<td align="left" valign="top">
+<italic>Ochotona princeps</italic>
+</td>
+<td align="left" valign="top">American pika</td>
+<td align="left" valign="top">-51.01</td>
+</tr>
+<tr>
+<td align="left" valign="top">33</td>
+<td align="left" valign="top">
+<italic>Rousettus aegyptiacus</italic>
+</td>
+<td align="left" valign="top">Egyptian rousette</td>
+<td align="left" valign="top">-50.91</td>
+</tr>
+<tr>
+<td align="left" valign="top">34</td>
+<td align="left" valign="top">
+<italic>Lagenorhynchus obliquidens</italic>
+</td>
+<td align="left" valign="top">Pacific white-sided dolphin</td>
+<td align="left" valign="top">-50.37</td>
+</tr>
+<tr>
+<td align="left" valign="top">35</td>
+<td align="left" valign="top">
+<italic>Nyctereutes procyonoides</italic>
+</td>
+<td align="left" valign="top">Raccoon dog</td>
+<td align="left" valign="top">-50.20</td>
+</tr>
+<tr>
+<td align="left" valign="top">36</td>
+<td align="left" valign="top">
+<italic>Equus asinus</italic>
+</td>
+<td align="left" valign="top">Donkey</td>
+<td align="left" valign="top">-50.02</td>
+</tr>
+<tr>
+<td align="left" valign="top">37</td>
+<td align="left" valign="top">
+<italic>Mirounga leonina</italic>
+</td>
+<td align="left" valign="top">Southern elephant seal</td>
+<td align="left" valign="top">-49.75</td>
+</tr>
+<tr>
+<td align="left" valign="top">38</td>
+<td align="left" valign="top">
+<italic>Camelus dromedarius</italic>
+</td>
+<td align="left" valign="top">Arabian camel</td>
+<td align="left" valign="top">-49.74</td>
+</tr>
+<tr>
+<td align="left" valign="top">39</td>
+<td align="left" valign="top">
+<italic>Phyllostomus discolor</italic>
+</td>
+<td align="left" valign="top">Pale spear-nosed bat</td>
+<td align="left" valign="top">-49.73</td>
+</tr>
+<tr>
+<td align="left" valign="top">40</td>
+<td align="left" valign="top">
+<italic>Camelus ferus</italic>
+</td>
+<td align="left" valign="top">Wild bactrian camel</td>
+<td align="left" valign="top">-49.63</td>
+</tr>
+<tr>
+<td align="left" valign="top">41</td>
+<td align="left" valign="top">
+<italic>Pteropus vampyrus</italic>
+</td>
+<td align="left" valign="top">Large flying fox</td>
+<td align="left" valign="top">-49.29</td>
+</tr>
+<tr>
+<td align="left" valign="top">42</td>
+<td align="left" valign="top">
+<italic>Pteropus alecto</italic>
+</td>
+<td align="left" valign="top">Black flying fox</td>
+<td align="left" valign="top">-49.29</td>
+</tr>
+<tr>
+<td align="left" valign="top">43</td>
+<td align="left" valign="top">
+<italic>Dipodomys ordii</italic>
+</td>
+<td align="left" valign="top">Ords kangaroo rat</td>
+<td align="left" valign="top">-49.01</td>
+</tr>
+<tr>
+<td align="left" valign="top">44</td>
+<td align="left" valign="top">
+<italic>Loxodonta africana</italic>
+</td>
+<td align="left" valign="top">African savanna elephant</td>
+<td align="left" valign="top">-48.80</td>
+</tr>
+<tr>
+<td align="left" valign="top">45</td>
+<td align="left" valign="top">
+<italic>Enhydra lutris kenyoni</italic>
+</td>
+<td align="left" valign="top">Sea otter</td>
+<td align="left" valign="top">-48.53</td>
+</tr>
+<tr>
+<td align="left" valign="top">46</td>
+<td align="left" valign="top">
+<italic>Trichechus manatus latirostris</italic>
+</td>
+<td align="left" valign="top">Florida manatee</td>
+<td align="left" valign="top">-48.13</td>
+</tr>
+<tr>
+<td align="left" valign="top">47</td>
+<td align="left" valign="top">
+<italic>Octodon degus</italic>
+</td>
+<td align="left" valign="top">Common degu</td>
+<td align="left" valign="top">-47.70</td>
+</tr>
+<tr>
+<td align="left" valign="top">48</td>
+<td align="left" valign="top">
+<italic>Vicugna pacos</italic>
+</td>
+<td align="left" valign="top">Alpaca</td>
+<td align="left" valign="top">-47.11</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Comparison of ACE2 interface residues and binding energy for humans, marmosets, pangolins, and turtles.</title>
+<p>Five key residues are underlined. Amino acid mutations relative to hACE2 are shown in bold.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="middle">Species</th>
+<th align="center" valign="top">Human<break/>(<italic>H. sapiens</italic>)</th>
+<th align="center" valign="top">Marmoset<break/>(<italic>C. jacchus</italic>)</th>
+<th align="center" valign="top">Pangolin<break/>(<italic>M. javanica</italic>)</th>
+<th align="center" valign="top">Turtle<break/>(<italic>C. picta</italic>)</th>
+<th align="center" valign="top">Turtle<break/>(<italic>C. mydas</italic>)</th>
+<th align="center" valign="top">Turtle<break/>(<italic>P. sinensis</italic>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle" rowspan="21">ACE2 interface residues</td>
+</tr>
+<tr>
+<td align="center" valign="top">Q24</td>
+<td align="center" valign="top">Q24</td>
+<td align="center" valign="top">
+<bold>E24</bold>
+</td>
+<td align="center" valign="top">
+<bold>E24</bold>
+</td>
+<td align="center" valign="top">
+<bold>E24</bold>
+</td>
+<td align="center" valign="top">
+<bold>E24</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">T27</td>
+<td align="center" valign="top">T27</td>
+<td align="center" valign="top">T27</td>
+<td align="center" valign="top">
+<bold>N27</bold>
+</td>
+<td align="center" valign="top">
+<bold>N27</bold>
+</td>
+<td align="center" valign="top">
+<bold>N27</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">F28</td>
+<td align="center" valign="top">F28</td>
+<td align="center" valign="top">F28</td>
+<td align="center" valign="top">F28</td>
+<td align="center" valign="top">F28</td>
+<td align="center" valign="top">F28</td>
+</tr>
+<tr>
+<td align="center" valign="top">D30</td>
+<td align="center" valign="top">D30</td>
+<td align="center" valign="top">
+<bold>E30</bold>
+</td>
+<td align="center" valign="top">
+<bold>S30</bold>
+</td>
+<td align="center" valign="top">
+<bold>S30</bold>
+</td>
+<td align="center" valign="top">
+<bold>S30</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<underline>K31</underline>
+</td>
+<td align="center" valign="top">
+<underline>K31</underline>
+</td>
+<td align="center" valign="top">
+<underline>K31</underline>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>Q31</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>Q31</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>E31</underline>
+</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">H34</td>
+<td align="center" valign="top">H34</td>
+<td align="center" valign="top">
+<bold>S34</bold>
+</td>
+<td align="center" valign="top">
+<bold>V34</bold>
+</td>
+<td align="center" valign="top">
+<bold>V34</bold>
+</td>
+<td align="center" valign="top">
+<bold>V34</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<underline>E35</underline>
+</td>
+<td align="center" valign="top">
+<underline>E35</underline>
+</td>
+<td align="center" valign="top">
+<underline>E35</underline>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>R35</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>R35</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>Q35</underline>
+</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">E37</td>
+<td align="center" valign="top">E37</td>
+<td align="center" valign="top">E37</td>
+<td align="center" valign="top">E37</td>
+<td align="center" valign="top">E37</td>
+<td align="center" valign="top">E37</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<underline>D38</underline>
+</td>
+<td align="center" valign="top">
+<underline>D38</underline>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>E38</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<underline>D38</underline>
+</td>
+<td align="center" valign="top">
+<underline>D38</underline>
+</td>
+<td align="center" valign="top">
+<underline>D38</underline>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Y41</td>
+<td align="center" valign="top">
+<bold>H41</bold>
+</td>
+<td align="center" valign="top">Y41</td>
+<td align="center" valign="top">Y41</td>
+<td align="center" valign="top">Y41</td>
+<td align="center" valign="top">Y41</td>
+</tr>
+<tr>
+<td align="center" valign="top">Q42</td>
+<td align="center" valign="top">
+<bold>E42</bold>
+</td>
+<td align="center" valign="top">Q42</td>
+<td align="center" valign="top">
+<bold>A42</bold>
+</td>
+<td align="center" valign="top">
+<bold>A42</bold>
+</td>
+<td align="center" valign="top">
+<bold>A42</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">L79</td>
+<td align="center" valign="top">L79</td>
+<td align="center" valign="top">
+<bold>I79</bold>
+</td>
+<td align="center" valign="top">
+<bold>N79</bold>
+</td>
+<td align="center" valign="top">
+<bold>N79</bold>
+</td>
+<td align="center" valign="top">
+<bold>N79</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<underline>M82</underline>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>T82</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>N82</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>K82</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>K82</underline>
+</bold>
+</td>
+<td align="center" valign="top">
+<bold>
+<underline>K82</underline>
+</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">Y83</td>
+<td align="center" valign="top">Y83</td>
+<td align="center" valign="top">Y83</td>
+<td align="center" valign="top">Y83</td>
+<td align="center" valign="top">Y83</td>
+<td align="center" valign="top">Y83</td>
+</tr>
+<tr>
+<td align="center" valign="top">N330</td>
+<td align="center" valign="top">N330</td>
+<td align="center" valign="top">N330</td>
+<td align="center" valign="top">N330</td>
+<td align="center" valign="top">N330</td>
+<td align="center" valign="top">N330</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+<td align="center" valign="top">
+<underline>K353</underline>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">G354</td>
+<td align="center" valign="top">
+<bold>Q354</bold>
+</td>
+<td align="center" valign="top">
+<bold>H354</bold>
+</td>
+<td align="center" valign="top">
+<bold>K354</bold>
+</td>
+<td align="center" valign="top">
+<bold>K354</bold>
+</td>
+<td align="center" valign="top">
+<bold>K354</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">D355</td>
+<td align="center" valign="top">D355</td>
+<td align="center" valign="top">D355</td>
+<td align="center" valign="top">D355</td>
+<td align="center" valign="top">D355</td>
+<td align="center" valign="top">D355</td>
+</tr>
+<tr>
+<td align="center" valign="top">R357</td>
+<td align="center" valign="top">R357</td>
+<td align="center" valign="top">R357</td>
+<td align="center" valign="top">R357</td>
+<td align="center" valign="top">R357</td>
+<td align="center" valign="top">R357</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="center" valign="top">R359</td>
+<td align="center" valign="top">R359</td>
+<td align="center" valign="top">R359</td>
+<td align="center" valign="top">R359</td>
+<td align="center" valign="top">R359</td>
+<td align="center" valign="top">R359</td>
+</tr>
+<tr>
+<td align="center" valign="top">Binding energy (EEU)</td>
+<td align="center" valign="top">-55.16</td>
+<td align="center" valign="top">-46.81</td>
+<td align="center" valign="top">-51.73</td>
+<td align="center" valign="top">-43.61</td>
+<td align="center" valign="top">-42.23</td>
+<td align="center" valign="top">-40.68</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

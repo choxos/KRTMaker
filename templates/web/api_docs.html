@@ -1,0 +1,558 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}API Documentation - KRT Maker{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">API Documentation</h1>
+            <p class="lead text-muted">Integrate KRT generation into your workflows</p>
+            <div class="badge bg-success fs-6 mb-3">Version {{ version }}</div>
+        </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="h3 mb-4">
+                        <i class="fas fa-rocket text-primary me-3"></i>Quick Start
+                    </h2>
+                    <p class="mb-4">
+                        The KRT Maker API allows you to programmatically generate Key Resource Tables 
+                        from bioRxiv preprints. All endpoints return JSON responses.
+                    </p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Base URL:</strong> <code>{{ base_url }}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Endpoints -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Available Endpoints</h2>
+            
+            <!-- Check DOI Availability -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <span class="badge bg-primary me-2">GET</span>
+                        Check DOI Availability
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Check if a DOI is available in our local database.</p>
+                    
+                    <h6>Endpoint</h6>
+                    <pre class="bg-light p-3 rounded"><code>GET /check-doi-local/</code></pre>
+                    
+                    <h6>Parameters</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>doi</code></td>
+                                    <td>string</td>
+                                    <td>Yes</td>
+                                    <td>The DOI to check (e.g., "10.1101/2025.01.01.123456")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6>Example Request</h6>
+                    <pre class="bg-light p-3 rounded"><code>curl -X GET "{{ base_url }}check-doi-local/?doi=10.1101/2025.01.01.123456"</code></pre>
+                    
+                    <h6>Example Response</h6>
+                    <pre class="bg-light p-3 rounded"><code>{
+  "success": true,
+  "available": true,
+  "doi": "10.1101/2025.01.01.123456",
+  "title": "Example Research Paper",
+  "file_size": 245760,
+  "downloaded_at": "2025-01-15T10:30:00Z"
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Get DOI Suggestions -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <span class="badge bg-primary me-2">GET</span>
+                        Get DOI Suggestions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Get random or filtered DOI suggestions from the database.</p>
+                    
+                    <h6>Endpoint</h6>
+                    <pre class="bg-light p-3 rounded"><code>GET /doi-suggestions/</code></pre>
+                    
+                    <h6>Parameters</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>q</code></td>
+                                    <td>string</td>
+                                    <td>No</td>
+                                    <td>Search query to filter suggestions</td>
+                                </tr>
+                                <tr>
+                                    <td><code>limit</code></td>
+                                    <td>integer</td>
+                                    <td>No</td>
+                                    <td>Number of suggestions to return (default: 10, max: 50)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6>Example Request</h6>
+                    <pre class="bg-light p-3 rounded"><code>curl -X GET "{{ base_url }}doi-suggestions/?q=cancer&limit=5"</code></pre>
+                    
+                    <h6>Example Response</h6>
+                    <pre class="bg-light p-3 rounded"><code>{
+  "success": true,
+  "suggestions": [
+    {
+      "doi": "10.1101/2025.01.01.123456",
+      "title": "Cancer Research Example",
+      "authors": "Smith J, Doe A",
+      "publication_date": "2025-01-01",
+      "file_size": 245760
+    }
+  ],
+  "total_available": 15420,
+  "query": "cancer"
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Get KRT Data by Session ID -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <span class="badge bg-info me-2">GET</span>
+                        Get KRT Data by Session ID
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Retrieve detailed KRT data for a specific extraction session.</p>
+                    
+                    <h6>Endpoint</h6>
+                    <pre class="bg-light p-3 rounded"><code>GET /api/krt/{session_id}/</code></pre>
+                    
+                    <h6>Parameters</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>session_id</code></td>
+                                    <td>string</td>
+                                    <td>Yes</td>
+                                    <td>The session ID from KRT generation</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6>Example Request</h6>
+                    <pre class="bg-light p-3 rounded"><code>curl -X GET "{{ base_url }}api/krt/abc123def456/"</code></pre>
+                    
+                    <h6>Example Response</h6>
+                    <pre class="bg-light p-3 rounded"><code>{
+  "success": true,
+  "session_id": "abc123def456",
+  "krt_data": [
+    {
+      "RESOURCE TYPE": "Antibody",
+      "RESOURCE NAME": "Anti-GFP antibody",
+      "SOURCE": "Abcam",
+      "IDENTIFIER": "ab13970",
+      "NEW/REUSE": "reuse",
+      "ADDITIONAL INFORMATION": "1:1000 dilution"
+    }
+  ],
+  "summary": {
+    "total_resources": 15,
+    "new_resources": 3,
+    "reused_resources": 12,
+    "processing_time": 45.2,
+    "provider": "anthropic",
+    "model": "claude-3-5-sonnet-20241022"
+  }
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Get KRT Data by DOI -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <span class="badge bg-info me-2">GET</span>
+                        Get KRT Data by DOI
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Retrieve the best KRT data for a bioRxiv paper by DOI.</p>
+                    
+                    <h6>Endpoint</h6>
+                    <pre class="bg-light p-3 rounded"><code>GET /api/krt/doi/{doi}/</code></pre>
+                    
+                    <h6>Parameters</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>doi</code></td>
+                                    <td>string</td>
+                                    <td>Yes</td>
+                                    <td>The DOI of the bioRxiv paper (e.g., "10.1101/2025.01.01.123456")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6>Example Request</h6>
+                    <pre class="bg-light p-3 rounded"><code>curl -X GET "{{ base_url }}api/krt/doi/10.1101/2025.01.01.123456/"</code></pre>
+                    
+                    <h6>Example Response</h6>
+                    <pre class="bg-light p-3 rounded"><code>{
+  "success": true,
+  "doi": "10.1101/2025.01.01.123456",
+  "session_id": "abc123def456",
+  "krt_data": [...],
+  "summary": {
+    "total_resources": 15,
+    "new_resources": 3,
+    "reused_resources": 12,
+    "total_sessions": 3
+  },
+  "article_info": {
+    "title": "Example Research Paper",
+    "authors": "Smith J, Doe A et al.",
+    "publication_date": "2025-01-01",
+    "is_biorxiv_paper": true
+  }
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Export KRT -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <span class="badge bg-success me-2">GET</span>
+                        Export KRT
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Export a generated KRT in various formats.</p>
+                    
+                    <h6>Endpoint</h6>
+                    <pre class="bg-light p-3 rounded"><code>GET /export/{session_id}/{format}/</code></pre>
+                    
+                    <h6>Parameters</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>session_id</code></td>
+                                    <td>string</td>
+                                    <td>Yes</td>
+                                    <td>The session ID from KRT generation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>format</code></td>
+                                    <td>string</td>
+                                    <td>Yes</td>
+                                    <td>Export format: "json", "csv", or "excel"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6>Example Request</h6>
+                    <pre class="bg-light p-3 rounded"><code>curl -X GET "{{ base_url }}export/abc123def456/json/" -H "Accept: application/json"</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key text-dark me-2"></i>Authentication
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Currently, the API endpoints are publicly accessible for read-only operations. 
+                        Authentication will be required for KRT generation endpoints in future versions.
+                    </p>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coming Soon:</strong> API key authentication for programmatic KRT generation.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Limiting -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="h3 mb-4">
+                        <i class="fas fa-tachometer-alt text-primary me-3"></i>Rate Limiting
+                    </h2>
+                    <p class="mb-3">
+                        To ensure fair usage and system stability, the following rate limits apply:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i><strong>DOI Checks:</strong> 100 requests per minute</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i><strong>Suggestions:</strong> 50 requests per minute</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i><strong>Exports:</strong> 20 requests per minute</li>
+                    </ul>
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Rate limit headers are included in all responses for monitoring your usage.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Codes -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Error Codes</h2>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>HTTP Code</th>
+                                    <th>Error Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>200</code></td>
+                                    <td>Success</td>
+                                    <td>Request completed successfully</td>
+                                </tr>
+                                <tr>
+                                    <td><code>400</code></td>
+                                    <td>Bad Request</td>
+                                    <td>Invalid parameters or malformed request</td>
+                                </tr>
+                                <tr>
+                                    <td><code>404</code></td>
+                                    <td>Not Found</td>
+                                    <td>Requested resource not found</td>
+                                </tr>
+                                <tr>
+                                    <td><code>429</code></td>
+                                    <td>Rate Limited</td>
+                                    <td>Rate limit exceeded, try again later</td>
+                                </tr>
+                                <tr>
+                                    <td><code>500</code></td>
+                                    <td>Server Error</td>
+                                    <td>Internal server error occurred</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SDKs and Libraries -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-5 text-center">
+                    <h2 class="h3 mb-3">
+                        <i class="fas fa-code text-primary me-3"></i>SDKs & Libraries
+                    </h2>
+                    <p class="lead mb-3">
+                        Official SDKs and client libraries are coming soon!
+                    </p>
+                    <p class="text-muted">
+                        We're working on Python, R, and JavaScript libraries to make integration even easier. 
+                        Follow our GitHub repository for updates.
+                    </p>
+                    <div class="mt-4">
+                        <span class="badge bg-secondary me-2">Python SDK</span>
+                        <span class="badge bg-secondary me-2">R Package</span>
+                        <span class="badge bg-secondary">JavaScript Library</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Examples -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Code Examples</h2>
+            
+            <!-- Python Example -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fab fa-python me-2"></i>Python Example
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded"><code>import requests
+
+# Check DOI availability
+response = requests.get('{{ base_url }}check-doi-local/', 
+                       params={'doi': '10.1101/2025.01.01.123456'})
+
+if response.status_code == 200:
+    data = response.json()
+    if data['success'] and data['available']:
+        print(f"DOI available: {data['title']}")
+        
+        # Get KRT data for this DOI
+        krt_response = requests.get(f'{{ base_url }}api/krt/doi/10.1101/2025.01.01.123456/')
+        if krt_response.status_code == 200:
+            krt_data = krt_response.json()
+            print(f"Found {krt_data['summary']['total_resources']} resources")
+    else:
+        print("DOI not available in database")
+else:
+    print(f"Error: {response.status_code}")</code></pre>
+                </div>
+            </div>
+
+            <!-- JavaScript Example -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="fab fa-js-square me-2"></i>JavaScript Example
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded"><code>// Get DOI suggestions
+async function getDOISuggestions(query) {
+    try {
+        const response = await fetch('{{ base_url }}doi-suggestions/?q=' + 
+                                   encodeURIComponent(query));
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Found suggestions:', data.suggestions);
+            return data.suggestions;
+        }
+    } catch (error) {
+        console.error('Error fetching suggestions:', error);
+    }
+}
+
+getDOISuggestions('cancer research');</code></pre>
+                </div>
+            </div>
+
+            <!-- cURL Example -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-terminal me-2"></i>cURL Example
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded"><code># Get random DOI suggestions
+curl -X GET "{{ base_url }}doi-suggestions/" \
+     -H "Accept: application/json"
+
+# Check specific DOI
+curl -X GET "{{ base_url }}check-doi-local/?doi=10.1101/2025.01.01.123456" \
+     -H "Accept: application/json"</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="card border-primary">
+                <div class="card-body p-4">
+                    <h3 class="h4 mb-3">Ready to Integrate?</h3>
+                    <p class="text-muted mb-4">
+                        Start building with our API to automate KRT generation in your research workflows.
+                    </p>
+                    <a href="{% url 'web:krt_maker' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-play me-2"></i>Try the API
+                    </a>
+                    <a href="{% url 'web:about' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-info-circle me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

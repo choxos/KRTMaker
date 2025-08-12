@@ -1,0 +1,2070 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS97932</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.09.332908</article-id>
+<article-id pub-id-type="archive">PPR224269</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Forecasting COVID-19 cases at the Amazon region: a comparison of classical and machine learning models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>de Souza</surname>
+<given-names>Dalton Garcia Borges</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Júnior</surname>
+<given-names>Francisco Tarcísio Alves</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Soma</surname>
+<given-names>Nei Yoshihiro</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Collegiate of Industrial Engineering, University of Amapa State, Macapá, AP, Brazil</aff>
+<aff id="A2">
+<label>2</label>PROFNIT Program, PROFNIT-UNIFAP, Macapá, AP, Brazil</aff>
+<aff id="A3">
+<label>3</label>Division of Computer Science, Aeronautics Institute of Technology, São José dos Campos, SP, Brazil</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>
+<email>dalgarbor@gmail.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>13</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>09</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<sec id="S1">
+<title>Background</title>
+<p id="P1">Since the first reports of COVID-19, decision-makers have been using traditional epidemiological models to predict the days to come. However, the enhancement of computational power, the demand for adaptable predictive frameworks, the short past of the disease, and uncertainties related to input data and prediction rules, also make other classical and machine learning techniques viable options.</p>
+</sec>
+<sec id="S2">
+<title>Objective</title>
+<p id="P2">This study investigates the efficiency of six models in forecasting COVID-19 confirmed cases with 17 days ahead. We compare the models autoregressive integrated moving average (ARIMA), Holt-Winters, support vector regression (SVR), k-nearest neighbors regressor (KNN), random trees regressor (RTR), seasonal linear regression with change-points (Prophet), and simple logistic regression (SLR).</p>
+</sec>
+<sec id="S3">
+<title>Material and Methods</title>
+<p id="P3">We implement the models to data provided by the health surveillance secretary of Amapá, a Brazilian state fully carved in the Amazon rainforest, which has been experiencing high infection rates. We evaluate the models according to their capacity to forecast in different historical scenarios of the COVID-19 progression, such as exponential increases, sudden decreases, and stability periods of daily cases. To do so, we use a rolling forward splitting approach for out-of-sample validation. We employ the metrics RMSE, R-squared, and sMAPE in evaluating the model in different cross-validation sections.</p>
+</sec>
+<sec id="S4">
+<title>Findings</title>
+<p id="P4">All models outperform SLG, especially Holt-Winters, that performs satisfactorily in all scenarios. SVR and ARIMA have better performances in isolated scenarios. To implement the comparisons, we have created a web application, which is available online.</p>
+</sec>
+<sec id="S5">
+<title>Conclusion</title>
+<p id="P5">This work represents an effort to assist the decision-makers of Amapá in future decisions to come, especially under scenarios of sudden variations in the number of confirmed cases of Amapá, which would be caused, for instance, by new contamination waves or vaccination. It is also an attempt to highlight alternative models that could be used in future epidemics.</p>
+</sec>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S6" sec-type="intro">
+<title>Introduction</title>
+<p id="P6">By September 20<sup>
+<italic>th</italic>
+</sup> 2020, almost nine months after SARS-COV-2 first appearance, World Health Organization (WHO) reported a total of 31.1 million cases worldwide, with 315, 919 daily cases and 962, 000 accumulated deaths due to coronavirus disease [<xref ref-type="bibr" rid="R1">1</xref>]. Brazilian authorities announced the first COVID-19 case by February 25<sup>
+<italic>th</italic>
+</sup>, 2020 [<xref ref-type="bibr" rid="R2">2</xref>]. Despite this two month delay, by the end of August 2020, Brazil already held the second largest number of accumulated infected (4.6 million) and death cases (137, 000) in the world. The number of daily new cases and deaths are also high, placing Brazil just after India and the United States of America, respectively, and both with much larger populations [<xref ref-type="bibr" rid="R3">3</xref>].</p>
+<p id="P7">All those numbers caught the attention of many researchers, that presented models to attend the concerns from the Brazilian government and population, such as when the outbreak will peak, how long it will last, and how many will be infected or die [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R5">5</xref>]. Many of those forecasting models rely on epidemiological approaches [<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R7">7</xref>] or state-of-art artificial intelligence (AI) algorithms. Generally, researchers address their models to the country as a unit or to highly populated areas, mainly big cities and federation states like Sao Paulo and Rio de Janeiro [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>].</p>
+<p id="P8">However, COVID-19 has also impacted other Brazilian regions, such as the North, that is a territory almost entirely covered by the Amazon rain-forest and accounts for almost half of the Brazilian territory. The north has a low population density (4.78 <italic>inh./km</italic>
+<sup>2</sup>), accounts for only 8.8% of the Brazilian population, and is responsible for 14.3% of all confirmed cases of COVID-19 in Brazil. It may be represented by infected per population rates: 2.6% in the North, versus 1.5% in the rest of the country [<xref ref-type="bibr" rid="R10">10</xref>]. <xref ref-type="fig" rid="F1">Figure 1</xref> shows the evolution of the infection rate in all five Brazilian regions.</p>
+<p id="P9">Carved into the Amazon rain-forest is Amapá, a northern state of Brazil. Amapá is like an island surrounded by the forest since it displays no land routes with any other Brazilian state (See <xref ref-type="fig" rid="F2">Fig. 2</xref>). It has only 830,000 inhabitants but living in an area bigger than England, which is Voc67 times denser. Like other parts of Amazon, Amapá already experiences an excess mortality from infectious diseases, especially among indigenous populations. Despite recent political efforts, many people living in the state still suffers from different social and health problems such as minimal access to clean water and public sanitation [<xref ref-type="bibr" rid="R11">11</xref>]. Those and other reasons make Amapá especially susceptible to COVID-19 and other epidemic outbreaks that may occur in the future. By the end of May, Mapacá, the Amapá's capital, saw its health system collapse due to COVID-19. By closing August 2020, the state consolidated the second highest infection rate in Brazil, according to official data [<xref ref-type="bibr" rid="R10">10</xref>]. By the end of September 2020, the state also has a low fatality rate (1.29%) when compared to the whole country (3.02%), which may be the result of local attempts to track new cases and avoid under-notifications.</p>
+<p id="P10">Respecting this ambiance, in this paper, we explore and compare traditional and AI forecasting models to support the Amapaense decision-makers in the future decisions to come. The interest variables are the accumulated number of confirmed and death cases. We compare the models autoregressive integrated moving average (ARIMA), Holt-Winters, support vector regression (SVR), k-nearest neighbors regressor (KNN), random trees regressor (RT), seasonal linear regression with change-points (SLiR) and simple logistic regression (SLR), which dictates the baseline performance in this study. We compare the models according to the necessities of local authorities. Thus, we measure the model's effectiveness to forecast the 17 days ahead and how fast they have responded to quick increases and decreases in the number of cases, as well as to periods of stability. This scenarios may repeat in the future, as result of new contamination waves or vaccination, for example. The forecasts are performed to each Amapaense municipality individually and to the state accumulated data, which we paint as our main example.</p>
+<p id="P11">Since the municipalities are in different stages of the COVID-19 spreading, they may also display very different curve growing behaviors. Thus, as a result of this study, we have also created an online application (which can be accessed in <ext-link ext-link-type="uri" xlink:href="http://www.previsor.covid19amapa.com/">http://www.previsor.covid19amapa.com/</ext-link>, that can be used to visualize the data at municipal level. The web application also allows decision-makers and researchers to follow the steps we do, as well as choose the best model to use in different occasions.</p>
+</sec>
+<sec id="S7">
+<label>1</label>
+<title>Research Framework</title>
+<p id="P12">In this section, we describe our research framework, which we split into: (<xref ref-type="sec" rid="S8">1.1</xref>) data acquisition, (<xref ref-type="sec" rid="S9">1.2</xref>) data splitting, (<xref ref-type="sec" rid="S10">1.3</xref>) fitting and forecasting, and (<xref ref-type="sec" rid="S19">4</xref>) model evaluation. The subsection that follows treats each one of those steps.</p>
+<sec id="S8">
+<label>1.1</label>
+<title>Data acquisition</title>
+<p id="P13">We performed all modelings to the cumulative confirmed cases of COVID-19 in Amapá, since the first official case, in March 20<sup>
+<italic>th</italic>
+</sup> 2020, up to August 20<sup>
+<italic>th</italic>
+</sup> 2020. We gather the data from official reports, from each of the 16<sup>
+<italic>th</italic>
+</sup> Amapense municipalities. The collected data is also available in an application programming interface provided by Brasil.io repository [<xref ref-type="bibr" rid="R10">10</xref>]. The measurement periods are different for each municipality and <xref ref-type="table" rid="T1">Tab. 1</xref> summarized the dates of the first and last reports.</p>
+<p id="P14">The data we use may diverge a little from the Brazilian government website, since the counting protocol may differ from those used by the Amapá state. Also, This paper does not treat case sub-notifications.</p>
+</sec>
+<sec id="S9">
+<label>1.2</label>
+<title>Data splitting</title>
+<p id="P15">First, we split the raw data into training and test datasets. However, we performed a rolling forward splitting, with a minimum of <italic>p</italic> training samples and a fixed value of <italic>q</italic> testing samples. Considering a total of <italic>n</italic> observations, we first took <italic>p</italic> days as the training set and tried to forecast the next <italic>q</italic> days. Then, interactively, we added one day to the training set, until it comprised <italic>n − q</italic> observations. Thus, for a given municipality, we have <italic>n − p − q</italic> + 1 different cross-validation splittings.</p>
+<p id="P16">In this paper, we use <italic>p</italic> and <italic>q</italic> equal to 17, since this the horizon required by Amapense decision-makers. Thus, in the first splitting, the raw data is divided into a proportion of half-and-half between training and testing sets (see <xref ref-type="other" rid="BX1">Algorithm 1</xref>).</p>
+<p id="P17">Each training sample (<italic>x</italic>) is then standardized (<italic>z</italic>) by its mean (<italic>u</italic>) and standard deviation (<italic>s</italic>), calculated as <italic>z</italic> = (<italic>x − u</italic>)<italic>/s</italic>. <boxed-text id="BX1" position="anchor" content-type="below">
+<caption>
+<title>Algorithm 1: cross-validation and forecasting</title>
+</caption>
+<p id="P18">    raw data = rd</p>
+<p id="P19">    p = 17</p>
+<p id="P20">    q = 17</p>
+<p id="P21">    i = 17 + 17</p>
+<p id="P22">    <bold>while</bold> <italic>p + q ≤ n</italic> : <bold>do</bold>
+</p>
+<p id="P23">          <italic>i = i + 1</italic>
+</p>
+<p id="P24">          <italic>train, test = rd[:i-q], rd[i-q:i]</italic>
+</p>
+<p id="P25">          <italic>train = standardization(train)</italic>
+</p>
+<p id="P26">          <italic>forecaster.fit(train)</italic>
+</p>
+<p id="P27">          <italic>pred = forecaster.predict(test)</italic>
+</p>
+<p id="P28">          <italic>metrics = [RMSE, R-Squared, sMAPE]</italic>
+</p>
+<p id="P29">          <bold>for</bold> <italic>metric in metrics</italic> <bold>do</bold>
+</p>
+<p id="P30">              <italic>metric = metric(test, pred)</italic>
+</p>
+<p id="P31">              <italic>
+<bold>return</bold> metric</italic>
+</p>
+<p id="P32">          <bold>end</bold>
+</p>
+<p id="P33">    <bold>end</bold>
+</p>
+</boxed-text>
+</p>
+</sec>
+<sec id="S10">
+<label>1.3</label>
+<title>Fitting and Forecasting</title>
+<p id="P34">We then fit the training datasets to each one the following models: autoregressive integrated moving average (ARIMA), Holt-Winters, support vector regression (SVR), k-nearest neighbors regressor (KNN), random forest regressor (RFR), seasonal linear regression with change-points (SLiR) and simple logistic regression (SLR). We also use search-grid to find the best hyperparameters sets to the state level data and for each model. With the exception of ARIMA model, which is automatized, when applicable the search-grid is performed only for the last time window we analyze. The models are applied to the bases that ensure the best fit for the model. Thus, the models Logistic Regression, Holt-Winters, ARIMA, and Prophet are modeled to accumulated databases, while SVR, KNN, and RFR use daily databases. we also reduce the Logistic, KNN, RFR and SVR regressors to the size of the testing samples, thus, 17 days. However, all of them are compared according to predicted accumulated values. This way, models running on a daily bases will convert the predicted values before calculating the metrics and comparing them. The models are explained as follows:</p>
+<sec id="S11">
+<label>1.3.1</label>
+<title>ARIMA</title>
+<p id="P35">The ARIMA model stands for integration (I) between autoregressive (AR) and moving average (MA) models. Box and Jerkings [<xref ref-type="bibr" rid="R12">12</xref>] are the first designers of this model. ARIMA may also be adjusted to consider seasonality, which optimal value may be found after the conduction of a Canova-Hansen test [<xref ref-type="bibr" rid="R13">13</xref>]. The optimum values of autoregressive (<italic>p</italic>), degree of their differences (<italic>d</italic>) and moving average (<italic>q</italic>) may also be found by search-grid. Usually, we select the parameters that minimize the Information Criterion (AIC). Articles such as Benvenuto et al. [<xref ref-type="bibr" rid="R14">14</xref>], Ceylan [<xref ref-type="bibr" rid="R15">15</xref>], and Singh et al. [<xref ref-type="bibr" rid="R16">16</xref>] bring examples of ARIMA applications to COVID-19 cases forecasting. The general equations for AR and MA models are [<xref ref-type="bibr" rid="R15">15</xref>]: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>ϕ</mml:mi>
+<mml:mn>1</mml:mn>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:math>
+</disp-formula> <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:math>
+</disp-formula> where <italic>Y<sub>t</sub>
+</italic>, <italic>ε</italic>, <italic>ϕ</italic>, and <italic>θ</italic> are the observed values at time <italic>t</italic>, the value of the random shock at time <italic>t</italic>, AR, and MA parameters, respectively. Thus, an ARMA model is given by: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>α</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>Y</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P36">Where <italic>α</italic> is a constant. When dealing with non stationarity, the data may be differenced, and the ARIMA model is then performed.</p>
+</sec>
+<sec id="S12">
+<label>1.3.2</label>
+<title>Holt-Winters</title>
+<p id="P37">Holt [<xref ref-type="bibr" rid="R17">17</xref>] and Winters [<xref ref-type="bibr" rid="R18">18</xref>] are the architectures of the Holt-Winters method, also known as triple exponential smoothing. This model is an upgraded version of the simple exponential smoothing to consider trend and seasonality. Thus, it employs three parameters: <italic>α</italic>, the smoothing factor, <italic>β</italic>, a trend smoothing parameter, and <italic>γ</italic>, which relates to seasonality. Different authors have explored this model to forecast COVID-19 cases [<xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>]. The equations of the additive model follow. <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>α</mml:mi>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>α</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P38">Where <italic>S</italic> is the smoothed observation, <italic>L</italic> the cycle length, and <italic>t</italic> a period. The trend factor (<italic>b</italic>), the seasonal index (<italic>I</italic>), and the forecast at <italic>m</italic> steps (<italic>F</italic>) are given by: <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M5">
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>γ</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>γ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</disp-formula> <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M6">
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>β</mml:mi>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>β</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</disp-formula> <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M7">
+<mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S13">
+<label>1.3.3</label>
+<title>SVR</title>
+<p id="P39">A support vector machine (SVM) is a supervised machine learning algorithm. It performs both regression and classification tasks. Vapnik [<xref ref-type="bibr" rid="R21">21</xref>] is the precursor of this technique, and its variant for regression, the support vector regression (SVR), which was widespread mainly by the work of Drucker et al. [<xref ref-type="bibr" rid="R22">22</xref>]. Some applications of SVR can be found in the context of COVID-19 case forecasting [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R24">24</xref>].</p>
+<p id="P40">The general logic of an SVR is relatively simple. Suppose a linear regression, which objective is to minimize the sum of square errors. <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M8">
+<mml:mi>M</mml:mi>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> where <italic>y<sub>i</sub>
+</italic> is the target, <italic>w<sub>i</sub>
+</italic> the coefficient and <italic>x<sub>i</sub>
+</italic> the feature. Then, the training of SVR aims to minimize the following system. <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M9">
+<mml:mtext mathvariant="italic">minimize</mml:mtext>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msup>
+<mml:mrow>
+<mml:mo>‖</mml:mo>
+<mml:mi>w</mml:mi>
+<mml:mo>‖</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:math>
+</disp-formula> <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M10">
+<mml:mtext mathvariant="italic">subject</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mtext mathvariant="italic">to</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>≤</mml:mo>
+<mml:mi>ε</mml:mi>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S14">
+<label>1.3.4</label>
+<title>KNN</title>
+<p id="P41">KNN stands for k-nearest neighbors and was primarily designed to deal with classification problems. Decades after the first conceptualizations of KNN, around the start of the '90s, researchers started exploring it for regression purposes [<xref ref-type="bibr" rid="R25">25</xref>]. In the time series context, the KNN algorithm searches for k nearest past similar values by minimizing a similarity measure. Then, the forecasting is an average of these k-nearest neighbors. However, it sounds straightforward, it demands a high computational cost [<xref ref-type="bibr" rid="R9">9</xref>]. In the context of COVID-19, Many researchers have used this approach in classification problems. Just a few have used it to COVID-19 case forecasting [<xref ref-type="bibr" rid="R9">9</xref>]. The main distance functions used for continuous variables are: <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M11">
+<mml:mtext mathvariant="italic">Euclidean</mml:mtext>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:math>
+</disp-formula> <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M12">
+<mml:mtext mathvariant="italic">Manhattan</mml:mtext>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> <disp-formula id="FD13">
+<label>(13)</label>
+<mml:math id="M13">
+<mml:mtext mathvariant="italic">Minkowski</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>q</mml:mi>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msup>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S15">
+<label>1.3.5</label>
+<title>RFR</title>
+<p id="P42">Random forest is a machine learning algorithm with many decision trees. Breiman [<xref ref-type="bibr" rid="R26">26</xref>] proposed a combination of bagging and random subspaces methods. Nowadays, researchers and machine learning practitioners employ RF in both classification and regression tasks. Authors have applied RF to deal with COVID-19 forecasting [<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R27">27</xref>]. This model randomly splits the data into in-Bag data and out-of-Bag data. Then many decision trees are randomly created with bootstrap samples. The branching of each tree is also performed according to randomly selected predictors. The final RF estimate in an average of the results from each tree. It is especially impressive when dealing with the randomness of the time series. In regression applications, Mean Squared Error (MSE) is used as splitting criteria in each tree's branch. We explain MSE in more detail later on.</p>
+</sec>
+<sec id="S16">
+<label>1.3.6</label>
+<title>Prophet</title>
+<p id="P43">Prophet is a forecasting approach developed by Facebook. It employs a decomposable times series model, with three main model components: trend (<italic>g</italic>(<italic>t</italic>)), seasonality (<italic>s</italic>(<italic>t</italic>)) and holidays (<italic>h</italic>(<italic>t</italic>)). It also assumes an error <italic>ϵ</italic> representing any idiosyncratic changes that are not predicted by the model. <disp-formula id="FD14">
+<label>(14)</label>
+<mml:math id="M14">
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ϵ</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:math>
+</disp-formula> with <disp-formula id="FD15">
+<label>(15)</label>
+<mml:math id="M15">
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:mi>δ</mml:mi>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mi>γ</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>k</italic> is the growth rate, <italic>δ</italic> is the rate adjustments, <italic>m</italic> is the offset parameter, and <italic>γ<sub>j</sub>
+</italic> is set to <italic>s<sub>j</sub>δ<sub>j</sub>
+</italic> to make the function continuous. Another important aspect is that the model performs automatic changepoint selection, putting a sparse prior on <italic>δ</italic>.</p>
+<p id="P44">On the other hand, it relies on Fourier series to incorporate daily, weekly, and annually seasonalities. In the case of COVID-19, we are more concerned about weekly seasonality. <disp-formula id="FD16">
+<label>(16)</label>
+<mml:math id="M16">
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mtext mathvariant="italic">cos</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mi>P</mml:mi>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mtext mathvariant="italic">sin</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>π</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mi>P</mml:mi>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P45">In the context of COVID-19, Prophet has few appearances in forecasting the accumulated confirmed and death cases [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R28">28</xref>].</p>
+</sec>
+</sec>
+<sec id="S17">
+<label>1.4</label>
+<title>Model evaluation</title>
+<p id="P46">We evaluate the performance of each forecasting models in terms of R-squared (<italic>R</italic>
+<sup>2</sup>), Root Mean Square Error (RMSE), and Symmetric Mean Absolute Percentage Error (SMAPE). We perform the evaluations for each train/test pair created by the rolling forward splitting. Thus, each metric is performed <italic>n − p − q</italic> + 1 times. <disp-formula id="FD17">
+<label>(17)</label>
+<mml:math id="M17">
+<mml:msup>
+<mml:mi>R</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">¯</mml:mo>
+</mml:mover>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula> <disp-formula id="FD18">
+<label>(18)</label>
+<mml:math id="M18">
+<mml:mtext mathvariant="italic">RMSE</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>n</mml:mi>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:math>
+</disp-formula> <disp-formula id="FD19">
+<label>(19)</label>
+<mml:math id="M19">
+<mml:mtext mathvariant="italic">sMAPE</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>2</mml:mn>
+<mml:mi>n</mml:mi>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> where n is the number of observations, <italic>y<sub>i</sub>
+</italic> and <inline-formula>
+<mml:math id="M20">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="true">^</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:math>
+</inline-formula> are the <italic>i<sup>th</sup>
+</italic> observed and predicted values.</p>
+</sec>
+</sec>
+<sec id="S18" sec-type="results | discussion">
+<label>2</label>
+<title>Results and Discussion</title>
+<p id="P47">This section describes the results of our experiments. We compare the models according to their efficiency to predict COVID-19 confirmed cases 17 days ahead and over different time windows. In the next subsections, we describe the models' performances during exponential increase, after a sudden decrease, during the stability of daily new cases, and overall for the whole period.</p>
+<sec id="S19">
+<label>2.1</label>
+<title>Exponential increase</title>
+<p id="P48">For the data related to the State as a whole, we take the period between March 20<sup>
+<italic>th</italic>
+</sup> and June 20<sup>
+<italic>th</italic>
+</sup> as an example of period with exponential increase. Among all models, ARIMA is the one that seems to perform better in the period, considering 17 days of rolling forward windows from May 1<sup>
+<italic>st</italic>
+</sup> to June 20<italic>th</italic>. Holt-Winters follows ARIMA during this period and even displaying slightly better results in the last 17 days window (ARIMA: RMSE = 649, R-Squared = 0.95, and sMAPE = 3.81; Holt-Winters: RMSE = 575, R-Squared = 0.96, and sMAPE = 3.09). <xref ref-type="fig" rid="F3">Fig. 3</xref> shows how Holt-Winters graphically fits the data.</p>
+</sec>
+<sec id="S20">
+<label>2.2</label>
+<title>After sudden decrease</title>
+<p id="P49">Still, for the Amapá state, we take the period between June 22<italic>th</italic> and July 14<sup>
+<italic>th</italic>
+</sup> as an example of a period after a sudden decrease. In this case, Holt-Winters, ARIMA, and RFR are those that perform better, considering 17 days rolling forward windows. For instance, in the last 17 days window Holt-Winters displays RMSE = 262, R-Squared = 0.95, and sMAPE = 0.74. <xref ref-type="fig" rid="F4">Fig. 4</xref> shows how Holt-Winters graphically fits this kind of data. Holt-Winters has a good performance for this specific time window. All forecasting models struggle to predict just after a sudden decrease in the number of daily confirmed cases. The models that have the fastest recover are SVR and Holt-Winters, in this order.</p>
+</sec>
+<sec id="S21">
+<label>2.3</label>
+<title>Stability period</title>
+<p id="P50">We take the period between July 14<sup>
+<italic>th</italic>
+</sup> to September 20<sup>
+<italic>th</italic>
+</sup> as a period of stability in daily new cases, where the average of daily new cases tends to be constant, and weekly seasonal variations and noise mostly influence the values. In this case, all ML models perform reasonably, with special attention to Holt-Winters, ARIMA, and SVR. For instance, <xref ref-type="fig" rid="F5">Fig. 5</xref> shows hot Holt-Winters graphically fits to a section of this type of period (RMSE = 162, R-Squared = 0.98, sMAPE = 0.34). At the same section, Logistic regression display as metrics RMSE = 667, R-Squared = 0.6 and sMAPE = 1.34.</p>
+</sec>
+<sec id="S22">
+<label>2.4</label>
+<title>Model’s overall performance</title>
+<p id="P51">In a general manner, all machine Learning models achieve better results than Logistic regression. In <xref ref-type="fig" rid="F6">Fig. 6</xref> we can see how Holt-Winters performs in comparison to the other five models. Those findings Notice that we measure rolling forward performances according to the R-Squared given by each cross-validation set.</p>
+<p id="P52">In each pair of models we can observe how the Holt-Winters perform in comparison to an other model and considering the periods we classify as (1) exponential increasing, (2) after sudden daily decreasing and (3) stability of daily new cases.</p>
+<p id="P53">Similar evaluations to the prediction of confirmed cases can be extended to death cases. In this case, Holt-Winters still seems to be the most suitable model, along with ARIMA. Similar considerations can also be draw to the municipalities of Amapá. However, for small cities where data is scarce, most models we present here struggle to make predictions. In this case, even naive approaches seem to be a good alternative.</p>
+</sec>
+</sec>
+<sec id="S23" sec-type="conclusions">
+<label>3</label>
+<title>Conclusions</title>
+<p id="P54">COVID-19 has been a burden issue to the world, and to a large number of countries. It imposes severe challenges to local authorities that do not have the necessary resources to fight it. The situation of Amapá is not different, a Brazilian state in the middle of the Amazon rain-forest. Like other Amazonian regions, various Amapaense communities already suffer from social and health problems, such as minimal access to public sanitation and different epidemiological diseases, such as Malaria and Yellow Fever. COVID-19 depreciates these social conditions. Knowing how the COVID-19 numbers will evolve is critical to local authorities to determine the best responses.</p>
+<p id="P55">Thus, in this paper, we compared classical and machine learning models to forecast the evolution of COVID-19 in the state. Despite the volume of research papers pointing Machine Learning models as those with the best performance for many locations, in the case of Amapá, two classical approaches seem to perform better: Holt-Winters and ARIMA. It may be a consequence of the Amapaense data, which has marked seasonality and sudden variations. One advantage of these two models is that they are easier to code and tune than machine learning models.</p>
+<p id="P56">This conclusions, as well as other analysis, can be made by exploring the web application we created and is available online at <ext-link ext-link-type="uri" xlink:href="http://www.previsor.covid19amapa.com/">http://www.previsor.covid19amapa.com/</ext-link>.</p>
+<p id="P57">As possible developments of this research, we highlight the investigation of Neural Networks models, which may consider other feature sets in forecasting future numbers of cases. We also intend to propose a framework that indicates the best forecasting model for each municipality and period, saving time from local decision-makers.</p>
+</sec>
+</body>
+<back>
+<ack id="S24">
+<title>Acknowledgments</title>
+<p>The authors would like to thank the Universidade Estadual do Amapá (UEAP), for the financial and administrative structure provided.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<collab>Organization WH</collab>
+<etal/>
+<source>Coronavirus disease 2019 (COVID-19): Situation Report – 64</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<collab>of Health of Brazil M</collab>
+<article-title>Painel Coronavírus</article-title>
+<source>Coronavírus Brasil</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roser</surname>
+<given-names>Max</given-names>
+</name>
+<name>
+<surname>OO</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Ritchie</surname>
+<given-names>Hannah</given-names>
+</name>
+<name>
+<surname>Hasell</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Coronavirus Pandemic (COVID-19)</article-title>
+<source>Our World in Data</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ribeiro</surname>
+<given-names>MHDM</given-names>
+</name>
+<name>
+<surname>da Silva</surname>
+<given-names>RG</given-names>
+</name>
+<name>
+<surname>Mariani</surname>
+<given-names>VC</given-names>
+</name>
+<name>
+<surname>dos Santos Coelho</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Short-term forecasting COVID-19 cumulative confirmed cases: Perspectives for Brazil</article-title>
+<source>Chaos, Solitons &amp; Fractals</source>
+<year>2020</year>
+<comment>p. 109853</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Predicting turning point, duration and attack rate of COVID-19 outbreaks in major Western countries</article-title>
+<source>Chaos, Solitons &amp; Fractals</source>
+<year>2020</year>
+<comment>p. 109829</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bastos</surname>
+<given-names>SB</given-names>
+</name>
+<name>
+<surname>Cajueiro</surname>
+<given-names>DO</given-names>
+</name>
+</person-group>
+<article-title>Modeling and forecasting the Covid-19 pandemic in Brazil</article-title>
+<source>arXiv preprint arXiv:200314288</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>da Cruz</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Cruz</surname>
+<given-names>LCC</given-names>
+</name>
+</person-group>
+<article-title>Mathematical Modeling and Epidemic Prediction of COVID-19 of the State of S£o Paulo, Brazil</article-title>
+<source>International Journal of Advanced Engineering Research and Science</source>
+<year>2020</year>
+<volume>7</volume>
+<issue>5</issue>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Prediction of epidemic trends in COVID-19 with logistic model and machine learning technics</article-title>
+<source>Chaos, Solitons &amp; Fractals</source>
+<year>2020</year>
+<comment>p. 110058</comment>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>da Silva</surname>
+<given-names>RG</given-names>
+</name>
+<name>
+<surname>Ribeiro</surname>
+<given-names>MHDM</given-names>
+</name>
+<name>
+<surname>Mariani</surname>
+<given-names>VC</given-names>
+</name>
+<name>
+<surname>dos Santos Coelho</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Forecasting Brazilian and American COVID-19 cases based on artificial intelligence coupled with climatic exogenous variables</article-title>
+<source>Chaos, Solitons &amp; Fractals</source>
+<year>2020</year>
+<volume>139</volume>
+<comment>110027</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Justen</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>COVID-19: coronavirus newsletters and cases by municipality per day</article-title>
+<source>Brasilio</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kaplan</surname>
+<given-names>HS</given-names>
+</name>
+<name>
+<surname>Trumble</surname>
+<given-names>BC</given-names>
+</name>
+<name>
+<surname>Stieglitz</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mamany</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Cayuba</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Moye</surname>
+<given-names>LM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Voluntary collective isolation as a best response to COVID-19 for indigenous populations? A case study and protocol from the Bolivian Amazon</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Box</surname>
+<given-names>GE</given-names>
+</name>
+<name>
+<surname>Jenkins</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Reinsel</surname>
+<given-names>GC</given-names>
+</name>
+</person-group>
+<source>Time series analysis: forecasting and control</source>
+<publisher-name>John Wiley &amp; Sons</publisher-name>
+<year>2011</year>
+<volume>734</volume>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Canova</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hansen</surname>
+<given-names>BE</given-names>
+</name>
+</person-group>
+<article-title>Are seasonal patterns constant over time? A test for seasonal stability</article-title>
+<source>Journal of Business &amp; Economic Statistics</source>
+<year>1995</year>
+<volume>13</volume>
+<issue>3</issue>
+<fpage>237</fpage>
+<lpage>252</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Benvenuto</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Giovanetti</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vassallo</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Angeletti</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ciccozzi</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Application of the ARIMA model on the COVID-2019 epidemic dataset</article-title>
+<source>Data in brief</source>
+<year>2020</year>
+<comment>p. 105340</comment>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ceylan</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Estimation of COVID-19 prevalence in Italy, Spain, and France</article-title>
+<source>Science of The Total Environment</source>
+<year>2020</year>
+<comment>p. 138817</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Singh</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Rani</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bhagavathula</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Sah</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Rodriguez-Morales</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Kalita</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Prediction of the COVID-19 pandemic for the top 15 affected countries: Advanced autoregressive integrated moving average (ARIMA) model</article-title>
+<source>JMIR public health and surveillance</source>
+<year>2020</year>
+<volume>6</volume>
+<issue>2</issue>
+<fpage>e19115</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holt</surname>
+<given-names>CC</given-names>
+</name>
+</person-group>
+<article-title>Forecasting seasonals and trends by exponentially weighted moving averages</article-title>
+<source>International journal of forecasting</source>
+<year>2004</year>
+<volume>20</volume>
+<issue>1</issue>
+<fpage>5</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Winters</surname>
+<given-names>PR</given-names>
+</name>
+</person-group>
+<article-title>Forecasting sales by exponentially weighted moving averages</article-title>
+<source>Management science</source>
+<year>1960</year>
+<volume>6</volume>
+<issue>3</issue>
+<fpage>324</fpage>
+<lpage>342</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Panda</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Application of ARIMA and Holt-Winters forecasting model to predict the spreading of COVID-19 for India and its states</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Petropoulos</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Makridakis</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Forecasting the novel coronavirus COVID-19</article-title>
+<source>PloS one</source>
+<year>2020</year>
+<volume>15</volume>
+<issue>3</issue>
+<fpage>e0231236</fpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vapnik</surname>
+<given-names>VN</given-names>
+</name>
+</person-group>
+<source>The nature of statistical learning theory</source>
+<year>1995</year>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Drucker</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Burges</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Kaufman</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Smola</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Vapnik</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Support vector regression machines</article-title>
+<source>Advances in neural information processing systems</source>
+<year>1997</year>
+<fpage>155</fpage>
+<lpage>161</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rustam</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Reshi</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Mehmood</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ullah</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>On</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Aslam</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19 Future Forecasting Using Supervised Machine Learning Models</article-title>
+<source>IEEE Access</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Herlawati</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>COVID-19 Spread Pattern Using Support Vector Regression</article-title>
+<source>PIKSEL: Penelitian Ilmu Komputer Sistem Embedded and Logic</source>
+<year>2020</year>
+<volume>8</volume>
+<issue>1</issue>
+<fpage>67</fpage>
+<lpage>74</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Altman</surname>
+<given-names>NS</given-names>
+</name>
+</person-group>
+<article-title>An introduction to kernel and nearest-neighbor nonparametric regression</article-title>
+<source>The American Statistician</source>
+<year>1992</year>
+<volume>46</volume>
+<issue>3</issue>
+<fpage>175</fpage>
+<lpage>185</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Breiman</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Random forests</article-title>
+<source>Machine learning</source>
+<year>2001</year>
+<volume>45</volume>
+<issue>1</issue>
+<fpage>5</fpage>
+<lpage>32</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yeşilkanat</surname>
+<given-names>CM</given-names>
+</name>
+</person-group>
+<article-title>Spatio-temporal estimation of the daily cases of COVID-19 in worldwide using random forest machine learning algorithm</article-title>
+<source>Chaos, Solitons &amp; Fractals</source>
+<year>2020</year>
+<comment>p. 110210</comment>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yadav</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Maheshwari</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chandra</surname>
+<given-names>U</given-names>
+</name>
+</person-group>
+<article-title>Outbreak prediction of covid-19 in most susceptible countries</article-title>
+<source>Global Journal of Environmental Science and Management</source>
+<year>2020</year>
+<volume>6</volume>
+<issue>Special Issue (Covid-19)</issue>
+<fpage>11</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig 1</label>
+<caption>
+<title>Evolution of the infection rate in all five Brazilian regions</title>
+</caption>
+<graphic xlink:href="EMS97932-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig 2</label>
+<caption>
+<title>Amapá, Brazil</title>
+</caption>
+<graphic xlink:href="EMS97932-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig 3</label>
+<caption>
+<title>Forecasting during exponential growth with Holt-Winters</title>
+</caption>
+<graphic xlink:href="EMS97932-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig 4</label>
+<caption>
+<title>Forecasting during stability with Holt-Winters</title>
+</caption>
+<graphic xlink:href="EMS97932-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig 5</label>
+<caption>
+<title>Forecasting during stability with Holt-Winters</title>
+</caption>
+<graphic xlink:href="EMS97932-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig 6</label>
+<caption>
+<title>Rolling forward performance of Holt-Winters in comparison to other models (R-squared metric)</title>
+</caption>
+<graphic xlink:href="EMS97932-f006"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Number of observed days by city</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="middle">Municipality</th>
+<th align="left" valign="middle">First report</th>
+<th align="left" valign="middle">Last report</th>
+<th align="left" valign="middle">Observ. days</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">Amapá</td>
+<td align="center" valign="top">26-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">149</td>
+</tr>
+<tr>
+<td align="left" valign="top">Calçoene</td>
+<td align="center" valign="top">1-May</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">144</td>
+</tr>
+<tr>
+<td align="left" valign="top">Cutias</td>
+<td align="center" valign="top">5-May</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">140</td>
+</tr>
+<tr>
+<td align="left" valign="top">Ferreira Gomes</td>
+<td align="center" valign="top">2-May</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">143</td>
+</tr>
+<tr>
+<td align="left" valign="top">Itaubal</td>
+<td align="center" valign="top">24-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">151</td>
+</tr>
+<tr>
+<td align="left" valign="top">Laranjal do Jari</td>
+<td align="center" valign="top">15-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">160</td>
+</tr>
+<tr>
+<td align="left" valign="top">Macapá</td>
+<td align="center" valign="top">20-Mar</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">186</td>
+</tr>
+<tr>
+<td align="left" valign="top">Mazegão</td>
+<td align="center" valign="top">14-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">161</td>
+</tr>
+<tr>
+<td align="left" valign="top">Oiapoque</td>
+<td align="center" valign="top">4-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">171</td>
+</tr>
+<tr>
+<td align="left" valign="top">Pedra Branca do Amapári</td>
+<td align="center" valign="top">23-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">152</td>
+</tr>
+<tr>
+<td align="left" valign="top">Porto Grande</td>
+<td align="center" valign="top">14-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">161</td>
+</tr>
+<tr>
+<td align="left" valign="top">Pracuúba</td>
+<td align="center" valign="top">5-May</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">140</td>
+</tr>
+<tr>
+<td align="left" valign="top">Santana</td>
+<td align="center" valign="top">5-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">170</td>
+</tr>
+<tr>
+<td align="left" valign="top">Serra do Navio</td>
+<td align="center" valign="top">22-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">153</td>
+</tr>
+<tr>
+<td align="left" valign="top">Tartarugalzinho</td>
+<td align="center" valign="top">26-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">149</td>
+</tr>
+<tr>
+<td align="left" valign="top">Vitória do Jari</td>
+<td align="center" valign="top">14-Apr</td>
+<td align="center" valign="top">21-Sep</td>
+<td align="center" valign="top">161</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

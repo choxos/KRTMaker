@@ -1,0 +1,485 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141202</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.21.473702</article-id>
+<article-id pub-id-type="archive">PPR436134</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Tutorial: Investigating SARS-CoV-2 evolution and phylogeny using MNHN-Tree-Tools</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Haschka</surname>
+<given-names>Thomas</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<email>haschka@gmail.com</email>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Genomic structure and instability CNRS UMR 7196 / INSERM U1154 - Muséum Nationale d’Histoire Naturelle. 43, rue Cuvier, 75005 Paris, France - +33 7 85 72 72 43</aff>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>23</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The Covid-19 pandemic has caused at more than 3 million deaths by Mai this year [<xref ref-type="bibr" rid="R1">1</xref>]. It had a significant impact on the daily life and the global economy [<xref ref-type="bibr" rid="R2">2</xref>]. The virus has since its first recorded outbreak in China [<xref ref-type="bibr" rid="R3">3</xref>] mutated into new strains [<xref ref-type="bibr" rid="R4">4</xref>]. The Nextstrain [<xref ref-type="bibr" rid="R5">5</xref>] project has so far been monitoring the evolution of the virus. At the same time we were developing in our lab the MNHN-Tree-Tools [<xref ref-type="bibr" rid="R6">6</xref>] toolkit, primarily for the investigation of DNA repeat sequences. We have further extended MNHN-Tree-Tools [<xref ref-type="bibr" rid="R6">6</xref>] to guide phylogenetics. As such the toolkit has evolved into a high performance code, allowing for a fast investigation of millions of sequences. Given the context of the pandemic it became evident that we will use our versatile tool to investigate the evolution of SARS-CoV-2 sequences. Our efforts have cumulated in this tutorial that we share with the scientific community.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">The SARS-CoV-2 virus was first recorded in China [<xref ref-type="bibr" rid="R3">3</xref>] in 2019. At least 3 million deaths caused by the virus [<xref ref-type="bibr" rid="R1">1</xref>] have been recorded by Mai 2021. The virus further has impacted social life and economies around the globe [<xref ref-type="bibr" rid="R2">2</xref>]. Even though successful vaccine campaigns are run, especially in the western world, the virus has since underwent several escape mutations that might jeopardize them in the future [<xref ref-type="bibr" rid="R4">4</xref>]. As such constant monitoring of the viruses evolution is needed. As the virus sequence databases are growing faster, more efficient solutions are needed in order to rapidly infer phylogeny. More than 1.5 million sequenced samples are openly available to researchers and can be readily downloaded from the internet. Having our in house developed MNHN-Tree-Tools [<xref ref-type="bibr" rid="R6">6</xref>] toolkit at hand, we grasped this opportunity and investigated the diversity of the virus. In order to yield proper results, the sequences that we prepare for our algorithm should at least roughly correspond to the sequence distribution that is spread around the globe. So far we have no means to verify if this might be the actual case. The data that is freely and openly available to us overrepresents SARS-CoV-2 sequences for the United States. Aware of these shortcomings we proceeded in our endeavor and found that we can clearly distinguish variants of concern, and that clades, especially pointing to the alpha and delta variants, are clearly visible in tree traced by the MNHN-Tree-Tools algorithm. Such a tree is outlined in <xref ref-type="fig" rid="F1">figure 1</xref>. We like to point out that our trees monitor the evolution of at least 29 500 bases pairs of the SARS-CoV-2 virus and do not limit themselfs to regions that express the spike protein. We further find that according to our dataset alpha, beta and gamma variants seem to be closer related and that the delta variant seems to envolve apart. These properties are visibly in the trees that we have traced shown in detail in <xref ref-type="fig" rid="F1">figures 1</xref>, <xref ref-type="fig" rid="F2">2</xref> and <xref ref-type="fig" rid="F3">3</xref>.</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Tutorial - Methods</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Machine and software requirements</title>
+<p id="P3">This tutorial was performed on a 64bit Intel (R) architecture Linux machine consisting of 28 real and due to hyper threading 56 virtual cores. Due to the nature MNHN-Tree-Tools it is imperative that the CPU cores of the machine support the AVX instruction set. The machine further was equipped with 128 gigabytes of random access memory (RAM). MNHN-Tree-Tools was installed on the machine as described in its manual<sup>
+<xref ref-type="fn" rid="FN1">1</xref>
+</sup> [<xref ref-type="bibr" rid="R6">6</xref>]. We suggest that the reader following this tutorial uses a similar machine, although different configurations might work.</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Covid-19 sequence retrieval</title>
+<p id="P4">On the 16th of september 2021 we downloaded 1 442 669 nucleotide sequences of the SARS-CoV-2 virus from the NCBI SARS-CoV-2 Resources website <sup>
+<xref ref-type="fn" rid="FN2">2</xref>
+</sup>. The sequences were selected to match a minimum length of 29 500 bases pairs and do not exceed a length of 32 300 bases pairs. Further only sequences obtained from human, homo sapiens, host identified by taxid:9606 in the database were selected. We instructed the NCBI website to prepare the data in FASTA format, containing only the SARS-CoV-2 Pango linage identifier as well as the NCBI accession code in the sequence identifier lines of the FASTA file. No further filtering of the FASTA raw resources was performed. The obtained FASTA file is stored as <italic>covid-ncbi-16-sept-2021.fasta</italic>.</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>K-merization of the Covid-19 sequences</title>
+<p id="P5">Having these 1 442 669 nucleotide sequences at hand we went ahead and instructed MNHN-Tree-Tools to calculate the k-mer represenations of these sequences. In order to capture the information held by sequences of a length of approximately 32 000 bases pairs we opted for a 6-mer representation. The transformation was performed using the <italic>fasta2kmer</italic> tool by executing the following command: <preformat preformat-type="computer code">
+fasta2kmer covid-ncbi-16-sept-2021.fasta 6 56 0 &gt; covid-ncbi-16-sept-2021.6mer</preformat> which transforms all downloaded SARS-CoV-2 sequences stored in <italic>covid-ncbi-16-sept-2021.fasta</italic> to 6mer sequences, using 56 compute threads.</p>
+</sec>
+<sec id="S6">
+<label>2.4</label>
+<title>Projections onto Principal Components</title>
+<p id="P6">In the next step we used the <italic>kmers2pca</italic> tool of the MNHN-Tree-Tools toolbox to perform PCA on the 6-mer representations of the SARS-CoV-2 sequences. The first 7 principal components with the 7 highest corresponding eigenvalues were selected. Even though information capture at this reduced number of principal components might not be optimal we stopped at this resolution in order to avoid the course of dimensionality that might hinder subsequent clustering runs. All 6-mer representations were projected into the 7 dimensions spun by the selected 7 principal components. The <italic>kmer2pca</italic> tool from MNHN-Tree-Tools was used, as outlined below, in order to perform this task:
+<preformat preformat-type="computer code">kmer2pca covid-ncbi-16-sept-2021.6mer covid-ncbi-16-sept-2021.6mer-pca7v \
+covid-ncbi-16-sept-2021.6mer-ev 7 56</preformat>
+</p>
+</sec>
+<sec id="S7">
+<label>2.5</label>
+<title>Adaptive clustering and tree building</title>
+<p id="P7">Using the <italic>adaptive_clustering_PCA</italic> tool part of MNHN-Tree-Tools we continue performing clustering using the DBSCAN [<xref ref-type="bibr" rid="R7">7</xref>] algorithm at different sequence densities and subsequent treebuilding. For in depth details we refer the reader to the algorithmic supplement published with the article [<xref ref-type="bibr" rid="R6">6</xref>]. The parameters chosen for the run were: Initial epsilon <italic>ϵ</italic>
+<sub>0</sub> = 0.5, an epsilon increase per step Δ<italic>ϵ</italic> = 0.1 and a minimal number of sequences to form or extend a cluster of minpts = 6, which resulted in a tree containg 50 stages. The following commands were executed to perform this task: <preformat preformat-type="computer code">
+mkdir clusters
+adaptive_clustering_PCA covid-ncbi-16-sept-2021.fasta 0.5 0.1 6 \
+clusters/covid-ncbi-16-sept -2021-6mer-pca-7v-0.5-0.1-6-56 7 \
+covid-ncbi-16-sept-2021.6mer-pca7v &gt; \
+clusters/covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-output</preformat>
+</p>
+<p id="P8">In order to visualize the results we have to create a tree in Newick format<sup>
+<xref ref-type="fn" rid="FN3">3</xref>
+</sup> from the adaptive clustering run that we have performed beforehand. This is done by invoking <italic>split_sets_to_newick</italic> as follows:
+<preformat preformat-type="computer code">
+mkdir clusters/covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-additions
+cd clusters
+split_sets_to_newick 0 0 \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-00* &gt; \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-additions/full-tree.dnd
+</preformat>
+</p>
+<p id="P9">The resulting <italic>full-tree.dnd</italic> file allows us to use common software tools that visualize Newick trees such as the Newick utilities [<xref ref-type="bibr" rid="R8">8</xref>]. The resulting tree is shown in its entirety in <xref ref-type="fig" rid="F1">figure 1</xref>. The different shades are proportional to the logarithm of the number of sequences found in the tree nodes. From white for 0 sequences, to full black for the 1 442 669 sequences contained in our dataset. In order to visualize the tree with the shading outlined above a <italic>map</italic> that can be supplied to the Newick utilities [<xref ref-type="bibr" rid="R8">8</xref>] has to be created. The <italic>tree_map_for_split_set</italic> tool using the final tree layer, containing all sequences, in our case number 49, is perfect for such a task: <preformat preformat-type="computer code">
+tree_map_for_split_set covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-0049 \
+../covid-ncbi-16-sept-2021.fasta 1 2 1,#000000 \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-00* &gt; \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-additions/full-log-gradient.map</preformat>
+</p>
+</sec>
+<sec id="S8">
+<label>2.6</label>
+<title>Visulization of the different Covid-19 variants</title>
+<p id="P10">In the dataset lineages B.1.1.7 Q.1 Q.2 Q.3 Q.4 Q.5 Q.6 Q.7 and Q.8 were designated to be of the alpha, B.1.135 of beta, P.1 to be of gamma and B.1.617.2 AY.1 AY.2 AY.3 AY.3.1 AY.4 AY.4.1 AY.5 AY.5.1 AY.5.2 AY.6 AY.7 AY.7.1 AY.7.2 AY.8 AY.9 AY.10 AY.11 AY.12 AY.13 AY.14 AY.15 AY.16 AY.17 AY.17 AY.19 AY.20 AY.21 AY.22 AY.23 AY.24 AY.25 AY.26 AY.27 AY.28 AY.29 AY.31 AY.32 AY.33 AY.34 AY.35 AY.36 AY.37 and AY.38 of the delta variant. Using the FASTA file annotations for the <italic>split_set_from_annotation</italic> tool which is part of MNHN-Tree-Tools were created. We first processed the downloaded FASTA file with general shell utilities available on our Linux system. In order for the following commands to work the reader has to make sure that Pango linage is in the “$1” row according to the <italic>awk</italic> tool in the FASTA annotation lines.</p>
+<preformat preformat-type="computer code">
+grep ’&gt;’ covid-ncbi-16-sept-2021. fasta &gt; covid-ncbi-16-sept-2021. annotations
+awk ’{print $1}’ covid-ncbi-16-sept-2021.annotations &gt; \
+covid-ncbi-16-sept-2021.strains
+</preformat>
+<p id="P11">The commands above extract all Pango lineage codes into a text file. In order to create valid annotation from this text file we created a small utility in C whose source code is outlined in the following: <preformat preformat-type="computer code">
+#include&lt;stdio.h&gt;
+#include&lt;string.h&gt;
+
+int main(int argc, char** argv) {
+
+  int i;
+  int check;
+
+  FILE* f = fopen (argv [1], "r");
+
+  int n_words = argc-2;
+  char string_buffer [200];
+
+  while (1 == fscanf (f,"%s", string_buffer)) {
+   check = 0;
+   if (strlen(string_buffer) &gt; 1) {
+     for(i=0;i&lt;n_words ;i++) {
+	    if (0 == strcmp((argv[i+2]),(string_buffer+1))) {
+		  check = 1;
+	    }
+     }
+   }
+   printf("%i\n",check);
+  }
+  return(0);
+}</preformat>
+</p>
+<p id="P12">This tool allows us to create annotation files containing either 1 if a certain sequence belongs to a certain variant, or 0 if it does not. We invoke our utility like the following to create annotations for the alpha, beta, gamma and delta variants: <preformat preformat-type="computer code">
+./a.out covid-ncbi-16-sept-2021.strains \
+B.1.1.7 Q.1 Q.2 Q.3 Q.4 Q.5 Q.6 Q.7 Q.8 &gt; covid-ncbi-16-sept-2021.alpha
+./a.out covid-ncbi-16-sept-2021.strains B.1.351 &gt; covid-ncbi-16-sept-2021.beta
+./a.out covid-ncbi-16-sept-2021.strains P.1 &gt; covid-ncbi-16-sept-2021.gamma
+./a.out covid-ncbi-16-sept-2021.strains B.1.617.2 AY.1 AY.2 AY.3 \
+  AY .3.1 AY.4 AY .4.1 AY .5 AY .5.1 AY .5.2 AY.6 AY .7 AY .7.1 AY .7.2 AY.8 \
+  AY .9 AY .10 AY .11 AY .12 AY.13 AY.14 AY .15 AY .16 AY .17 AY.17 AY .19 \
+  AY .20 AY.21 AY .22 AY .23 AY .24 AY.25 AY .26 AY .27 AY .28 AY.29 AY .31 \
+  AY .32 AY.33 AY .34 AY .35 AY .36 AY.37 AY .38 &gt; \
+  covid-ncbi-16-sept-2021. delta</preformat>
+</p>
+<p id="P13">Using the sets created with this tool that indexed the sequences by the afformentioned annotations for alpha, beta, gamma and delta variants we are able to use the <italic>tree_map_split_set</italic> tool, again part of MNHN-Tree-Tools, to create color maps that allow us to highlight the different variants in our tree using the newick utilities [<xref ref-type="bibr" rid="R8">8</xref>]. We performed this step using the following command on the BASH shell: <preformat preformat-type="computer code">
+for i in al pha be ta gam ma delta
+do tree_map_for_split_set ../covid-ncbi-16-sept-2021.$i-split-set \
+../covid-ncbi-16-sept-2021.fasta 1 2 2,#000000 \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-00* &gt; \
+covid-ncbi-16-sept-2021-6mer-pca-7v-0.5-0.1-6-additions/$i-opposition-map
+done</preformat>
+</p>
+<p id="P14">All trees were finally visualized using the newick utilities [<xref ref-type="bibr" rid="R8">8</xref>]. A multicolored tree highlighting both the alpha and gamma variant in a single tree was created by overlaying and postprocessing the results using the GIMP program. The resulting visualizations are highlighted in <xref ref-type="fig" rid="F1">figures 1</xref>, <xref ref-type="fig" rid="F2">2</xref> and <xref ref-type="fig" rid="F3">3</xref>.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="discussion">
+<label>3</label>
+<title>Discussion</title>
+<p id="P15">The data that we obtained is probably skewed as most of the sequences are either of the alpha or delta variant, and most sequences in the dataset originate from the United States with way more populus countries such as India significantly underrepresented. Intrigingly we find very well that beta and gamma variants are mostly related to clades in which the alpha variant labeled sequences reside. Looking at <xref ref-type="fig" rid="F1">figures 1</xref>, <xref ref-type="fig" rid="F2">2</xref> and <xref ref-type="fig" rid="F3">3</xref> we clearly can identify on the upper left a delta clade and on the upper right an alpha clade. This finding further is replicated by two clades on the lower right side of the <xref ref-type="fig" rid="F1">figures 1</xref>, <xref ref-type="fig" rid="F2">2</xref> and <xref ref-type="fig" rid="F3">3</xref>. In this lower right area the tree develops two boot like structures, where the left boot contains alpha, but intriguingly also beta and gamma sequences, while the right boot contains only delta sequences. A tree provided by the <monospace>
+<ext-link ext-link-type="uri" xlink:href="https://nextstrain.org">https://nextstrain.org</ext-link>
+</monospace> website, shown in <xref ref-type="fig" rid="F4">figure 4</xref>, looks different, but seems to highlight the same features in the sense that alpha, beta and gamma sequences seem closer related than delta sequences. An in depth comparison between our algorithm, tree and data with the one provided by Nextstrain [<xref ref-type="bibr" rid="R5">5</xref>], albeit interesting lies out of the scope of this tutorial. The interested reader is referred to the algorithmic supplement provided with MNHN-Tree-Tools [<xref ref-type="bibr" rid="R6">6</xref>].</p>
+<p id="P16">We conclude that MNHN-Tree-Tools and its efficiency handling millions of sequences can be useful in studying the evolution of SARS-CoV-2 and its phylogenetics. The public dataset available here provides fast results. These results should however be clearly inspected, and readers are referred to use more comprehensive and cleaned data with this algorithm.</p>
+</sec>
+</body>
+<back>
+<ack id="S10">
+<title>Acknowledgments</title>
+<p>We thank the french Musém National d’Histoire Naturelle (MNHN) for providing the computational resources in order to write this tutorial.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P17">
+<ext-link ext-link-type="uri" xlink:href="http://treetools.haschka.net/">http://treetools.haschka.net/</ext-link>
+</p>
+</fn>
+<fn id="FN2">
+<label>2</label>
+<p id="P18">
+<ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/sars-cov-2/">https://www.ncbi.nlm.nih.gov/sars-cov-2/</ext-link>
+</p>
+</fn>
+<fn id="FN3">
+<label>3</label>
+<p id="P19">
+<ext-link ext-link-type="uri" xlink:href="https://evolution.genetics.washington.edu/phylip/newicktree.html">https://evolution.genetics.washington.edu/phylip/newicktree.html</ext-link>
+</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dyer</surname>
+<given-names>Owen</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: Study claims real global deaths are twice official figures</article-title>
+<source>BMJ</source>
+<year>2021</year>
+<volume>373</volume>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sarkodie</surname>
+<given-names>Samuel Asumadu</given-names>
+</name>
+<name>
+<surname>Owusu</surname>
+<given-names>Phebe Asantewaa</given-names>
+</name>
+</person-group>
+<article-title>Global assessment of environment, health and economic impact of the novel coronavirus (covid-19)</article-title>
+<source>Environment, Development and Sustainability</source>
+<year>2021</year>
+<month>Apr</month>
+<volume>23</volume>
+<issue>4</issue>
+<fpage>5005</fpage>
+<lpage>5015</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leung</surname>
+<given-names>Kathy</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Joseph T</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Di</given-names>
+</name>
+<name>
+<surname>Leung</surname>
+<given-names>Gabriel M</given-names>
+</name>
+</person-group>
+<article-title>First-wave covid-19 transmissibility and severity in china outside hubei after control measures, and second-wave scenario planning: a modelling impact assessment</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>10233</issue>
+<fpage>1382</fpage>
+<lpage>1393</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hossain</surname>
+<given-names>MdKamal</given-names>
+</name>
+<name>
+<surname>Hassanzadeganroudsari</surname>
+<given-names>Majid</given-names>
+</name>
+<name>
+<surname>Apos-tolopoulos</surname>
+<given-names>Vasso</given-names>
+</name>
+</person-group>
+<article-title>The emergence of new strains of sars-cov-2. what does it mean for covid-19 vaccines?</article-title>
+<source>Expert Review of Vaccines</source>
+<year>2021</year>
+<volume>20</volume>
+<issue>6</issue>
+<fpage>635</fpage>
+<lpage>638</lpage>
+<pub-id pub-id-type="pmid">33896316</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>James</given-names>
+</name>
+<name>
+<surname>Megill</surname>
+<given-names>Colin</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>Sidney M</given-names>
+</name>
+<name>
+<surname>Huddleston</surname>
+<given-names>John</given-names>
+</name>
+<name>
+<surname>Potter</surname>
+<given-names>Barney</given-names>
+</name>
+<name>
+<surname>Callender</surname>
+<given-names>Charlton</given-names>
+</name>
+<name>
+<surname>Sagulenko</surname>
+<given-names>Pavel</given-names>
+</name>
+<name>
+<surname>Bedford</surname>
+<given-names>Trevor</given-names>
+</name>
+<name>
+<surname>Neher</surname>
+<given-names>Richard A</given-names>
+</name>
+</person-group>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<day>05</day>
+<volume>34</volume>
+<issue>23</issue>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Haschka</surname>
+<given-names>Thomas</given-names>
+</name>
+<name>
+<surname>Ponger</surname>
+<given-names>Loic</given-names>
+</name>
+<name>
+<surname>Escudé</surname>
+<given-names>Christophe</given-names>
+</name>
+<name>
+<surname>Mozzi-conacci</surname>
+<given-names>Julien</given-names>
+</name>
+</person-group>
+<article-title>MNHN-Tree-Tools: a toolbox for tree inference using multiscale clustering of a set of sequences</article-title>
+<source>Bioinformatics</source>
+<year>2021</year>
+<day>06</day>
+<volume>37</volume>
+<issue>21</issue>
+<fpage>3947</fpage>
+<lpage>3949</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Ester</surname>
+<given-names>Martin</given-names>
+</name>
+<name>
+<surname>Kriegel</surname>
+<given-names>Hans-Peter</given-names>
+</name>
+<name>
+<surname>Sander</surname>
+<given-names>Jörg</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Xiaowei</given-names>
+</name>
+</person-group>
+<source>A density-based algorithm for discovering clusters a density-based algorithm for discovering clusters in large spatial databases with noise</source>
+<conf-name>Proceedings of the Second International Conference on Know ledge Discovery and Data Mining, KDD’96</conf-name>
+<publisher-name>AAAI Press</publisher-name>
+<year>1996</year>
+<fpage>226</fpage>
+<lpage>231</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Junier</surname>
+<given-names>Thomas</given-names>
+</name>
+<name>
+<surname>Zdobnov</surname>
+<given-names>Evgeny M</given-names>
+</name>
+</person-group>
+<article-title>The Newick utilities: high-throughput phylogenetic tree processing in the Unix shell</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<day>05</day>
+<volume>26</volume>
+<issue>13</issue>
+<fpage>1669</fpage>
+<lpage>1670</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>The complete MNHN-Tree-Tools infered tree of our downloaded dataset of 1 442 669 SARS-CoV-2 sequences. Number of sequences in nodes are shown logarithmically in a gradient from with (0 sequences) to dark black (1 442 669).</p>
+</caption>
+<graphic xlink:href="EMS141202-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>A tree composed of only alpha and delta variant sequences. Delta variant sequences are highlighted in orange, Alpha sequences are highlighted in blue. Mixed clusters are outlined as gray-black. The number of sequences is highlighted by a logarithmic color intensity gradient from white clusters containing no sequences to increasing saturation up until all sequences are contained in full black.</p>
+</caption>
+<graphic xlink:href="EMS141202-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Partial highlighted parts of the tree outlined in <xref ref-type="fig" rid="F1">figure 1</xref>. Highlighted are for the variants alpha, beta, gamma and delta the nodes that contain sequences of the corresponding variant. The nodes highlighte the number of sequences of the variant in questions in logarithmic gradient from white for no occurrence of the variant to black, all sequences found in the dataset and attributed to the variant in question are part of this node.</p>
+</caption>
+<graphic xlink:href="EMS141202-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Clades of SARS-CoV-2 strains as infered from openly available data on the <monospace>
+<ext-link ext-link-type="uri" xlink:href="https://nextrain.org">https://nextrain.org</ext-link>
+</monospace> website.</title>
+</caption>
+<graphic xlink:href="EMS141202-f004"/>
+</fig>
+</floats-group>
+</article>

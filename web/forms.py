@@ -170,7 +170,8 @@ class KRTMakerForm(forms.Form):
         help_text="Your API key for the selected provider (not needed for local Ollama)",
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'sk-...'
+            'placeholder': 'sk-...',
+            'autocomplete': 'current-password'
         })
     )
     

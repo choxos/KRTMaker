@@ -1,0 +1,2292 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS104496</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.17.387068</article-id>
+<article-id pub-id-type="archive">PPR239473</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Assessment of protein-protein interfaces in cryo-EM derived assemblies</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Malhotra</surname>
+<given-names>Sony</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Joseph</surname>
+<given-names>Agnel Praveen</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Thiyagalingam</surname>
+<given-names>Jeyan</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Topf</surname>
+<given-names>Maya</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Institute of Structural and Molecular Biology, Department of Biological Sciences, Birkbeck College, University of London, Malet Street, London WC1E 7HX, United Kingdom</aff>
+<aff id="A2">
+<label>2</label>Scientific Computing Department, Science and Technology Facilities Council, Research Complex at Harwell, Didcot OX11 0FA, United Kingdom</aff>
+<aff id="A3">
+<label>3</label>Department of Engineering Sciences, Parks Road, Oxford, OX1 3PJ, United Kingdom</aff>
+<aff id="A4">
+<label>4</label>Centre for Structural Systems Biology, Heinrich-Pette-Institut, Leibniz-Institut fur Experimentelle Virologie and Universitätsklinikum Hamburg-Eppendorf (UKE), 22607 Hamburg, Germany</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Co-corresponding authors <email>s.malhotra@mail.cryst.bbk.ac.uk</email> (SM), <email>m.topf@cryst.bbk.ac.uk</email> (MT)</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>19</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>17</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Structures of macromolecular assemblies derived from cryo-EM maps often contain errors that become more abundant with decreasing resolution. Despite efforts in the cryo-EM community to develop metrics for the map and atomistic model validation, thus far, no specific scoring metrics have been applied systematically to assess the interface between the assembly subunits. Here, we have assessed protein-protein interfaces in macromolecular assemblies derived by cryo-EM. To this end, we developed PI-score, a density-independent machine learning-based metric, trained using protein-protein interfaces’ features in high-resolution crystal structures. Using PI-score, we were able to identify errors at interfaces in the PDB-deposited cryo-EM structures (including SARS-CoV-2 complexes) and in the models submitted for cryo-EM targets in CASP13 and the EM model challenge. Some of the identified errors, especially at medium-to-low resolution structures, were not captured by density-based assessment scores. Our method can therefore provide a powerful complementary assessment tool for the increasing number of complexes solved by cryo-EM.</p>
+</abstract>
+<kwd-group>
+<kwd>Protein-protein complexes</kwd>
+<kwd>cryo-EM</kwd>
+<kwd>cryo-EM fitting</kwd>
+<kwd>Assessment</kwd>
+<kwd>Validation</kwd>
+<kwd>Interface quality</kwd>
+<kwd>Protein-protein interface</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Proteins are known to interact with other biomolecules, and themselves, to perform their functions, and sustain the activities of cells. Unveiling the molecular details underlying these functions provides crucial structural, and functional insights. In recent years, cryo-EM has become a prominent technique for solving the structures of complex biological systems, such as polymerases, transmembrane receptors, viral assemblies and ribosomes, by overcoming some of the limitations of X-ray crystallography and NMR spectroscopy<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup>. Cryo-EM techniques, which usually require a small amount of sample, are more forbearing on sample purity, and the rapid freezing of the sample maintains its closeness to native state. Due to these strengths, cryo-EM provides an alternative to X-ray crystallography for large complexes. Recent advances in instrumentation and image processing methods in structure determination using cryo-EM and tomography of sub-cellular structures have pushed the resolution of structures. However, the average resolution of structures solved using singleparticle cryo-EM every year is worse than 5 Å (5.6 Å for 2019 and 6.2 Å for 2020), and determining structures at near-atomic resolution is still a challenge and largely sample dependent<sup>
+<xref ref-type="bibr" rid="R2">2</xref>,<xref ref-type="bibr" rid="R3">3</xref>
+</sup>. Additionally, many of the cryo-EM maps associated with a near-atomic global resolution have regions at intermediate resolutions (or even lower), owing to the variability in local resolution.</p>
+<p id="P3">The resolution of the cryo-EM map dictates the approach to be adopted for model building, fitting, refinement and validation to a great extent<sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. Regardless of the resolution of the map, upon model building and/or fitting, assessment of the atomistic model is crucial to ensure its overall reliability, and thus should be independent of the score(s) optimised during the fitting stage.</p>
+<p id="P4">The most commonly used global score to optimise the fitting is density cross-correlation coefficient (CCC) between the cryo-EM map, and simulated density of the fitted atomistic model. Apart from some variations of the CCC with masks and filters, there are other global scores, such as the mutual information<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. Local scores are very useful in identifying the regions of poor fit in the models, which can be further refined to obtain a better fit. Local Mutual Information (MI), TEMPy local scores-SMOC<sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup> (segment-based Manders’ overlap coefficient) and SCCC<sup>
+<xref ref-type="bibr" rid="R7">7</xref>
+</sup> (segment-based cross correlation score), Q-scores<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>, and EMRinger<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup> are scores that can guide the fitting at different structure representations, such as residues, domains, secondary structure elements, and loop regions. Additionally, there are other metrics that assess the geometry of models, such as MolProbity<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup> and CaBLAM<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup>. These metrics, however, do not include the assessment of the quaternary structure in terms of quality of the interface between subunits.</p>
+<p id="P5">Some of the common scenarios that may result in sub-optimal protein-protein interfaces in cryo-EM derived models are as follows: <list list-type="simple" id="L1">
+<list-item>
+<label>⍰</label>
+<p id="P6">fitted models are usually built sequentially, <italic>i.e.</italic> one chain is fitted into the map at a time, independent of the others;</p>
+</list-item>
+<list-item>
+<label>⍰</label>
+<p id="P7">map segmentations are an integral part of model building, but segmentation techniques are not accurate enough to identify boundaries between the subunits;</p>
+</list-item>
+<list-item>
+<label>⍰</label>
+<p id="P8">building the model of only one protomer and applying symmetry operations; and</p>
+</list-item>
+<list-item>
+<label>⍰</label>
+<p id="P9">integrating models of subunits built in maps reconstructed by refinement focused on certain segment(s) of the macromolecule.</p>
+</list-item>
+</list>
+</p>
+<p id="P10">Scoring quality of protein-protein interfaces will provide crucial model quality assessment, especially for the cases listed above. The features that characterise the interfaces can be used to build an overall metric, and while being density-independent, to provide an additional complementary quality measure to assess the quality of the modelled assembly in the cryo-EM map. Features that have been shown to be discriminatory in identifying biological (<italic>‘native-like’</italic>) interfaces are, for example, conservation of residues present at interlace<sup>
+<xref ref-type="bibr" rid="R12">12</xref>–<xref ref-type="bibr" rid="R16">16</xref>
+</sup>, shape<sup>
+<xref ref-type="bibr" rid="R17">17</xref>,<xref ref-type="bibr" rid="R18">18</xref>
+</sup> and electrostatic complementarity<sup>
+<xref ref-type="bibr" rid="R19">19</xref>,<xref ref-type="bibr" rid="R20">20</xref>
+</sup>, residue contact pairs<sup>
+<xref ref-type="bibr" rid="R21">21</xref>,<xref ref-type="bibr" rid="R22">22</xref>
+</sup>, types of interactions<sup>
+<xref ref-type="bibr" rid="R23">23</xref>–<xref ref-type="bibr" rid="R26">26</xref>
+</sup>, and interface size and area<sup>
+<xref ref-type="bibr" rid="R25">25</xref>,<xref ref-type="bibr" rid="R27">27</xref>–<xref ref-type="bibr" rid="R29">29</xref>
+</sup>.</p>
+<p id="P11">Although these features are useful in identifying the quality of interfaces, these derivations are often done in isolation, and largely relies on the expertise of the scientists for validation based on their experience. As such, computational algorithms for computing scores based on the metrics and features described above, ignores one major aspect – extraction and reuse of the knowledge from different datasets. Machine learning (ML)-based approaches, on the other hand, are inherently data-centric, can accumulate knowledge from various datasets. ML, a class of algorithms that learns from the data are often <italic>trained</italic> on several datasets prior to using them on real datasets (inferencing). At the simplest level, the model learns to classify and distinguish <italic>‘native’</italic> and <italic>‘native-like’</italic> interactions from the false interactions.</p>
+<p id="P12">In fact, a number of approaches have utilised ML methods for predicting protein-protein interactions. These approaches vary in terms of exact algorithms used, datasets (<italic>i.e.,</italic> protein-protein complexes), and more importantly, on the set of features used for training. The most commonly used features for predicting protein-protein interactions using ML-based methods include physicochemical properties, evolutionary features, secondary structures, solvent accessible area and binding energies among others. The choice of algorithms for training ML models include Support Vector Machines (SVM), Random Forest (RF), Neural Networks (NN) or ensemble learning<sup>
+<xref ref-type="bibr" rid="R30">30</xref>
+</sup>. Combination of different features and ML algorithms lead to a very rich set of methods that one can rely on. Recent reviews<sup>
+<xref ref-type="bibr" rid="R30">30</xref>,<xref ref-type="bibr" rid="R31">31</xref>
+</sup>, provide an elaborative comparison of structure- and sequence-based existing methods, providing detailed account on their performance and availability of those techniques.</p>
+<p id="P13">In this article, we present a systematic assessment of protein-protein interfaces in cryo-EM derived assemblies using a new metric-Protein Interface-score (PI-score). The score was developed based on various features describing protein-protein interfaces in high-resolution crystal structures from the Protein Data Bank (PDB). These derived features were further used to train a ML-based classifier in order to distinguish ‘good’ (native/native-like) and ‘bad’ interfaces. To assess the applicability and performance of the trained model to cryo-EM derived assemblies, we used PI-score to assess the quality of interfaces in CASP-13 cryo-EM targets, EM model challenge targets (2016 and 2019), and PDB entries associated with Electron Microscopy Data Bank (EMDB) (4913, as of Aug 2020).</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P14">In this section, we discuss the workflow of building a training and testing dataset for a machine learning (ML)-based model to assess protein-protein interfaces. The derived score (PI-score) is then applied to assess the quality of interfaces in models submitted for CASP13 targets, EM model challenge targets, and PDB entries associated with EMDB. We discuss the examples from each of these datasets. We also compared the performance of PI-score with other density based-score and statistical interface potentials.</p>
+<sec id="S3">
+<title>Building the Dataset</title>
+<p id="P15">A total of 3,926 high-resolution complexes obtained from PDB<sup>
+<xref ref-type="bibr" rid="R32">32</xref>
+</sup> were subjected to an <italic>in-house</italic> pipeline to assign the interfaces using a distance-based threshold (Methods). To avoid the over-representation of similar interfaces in the dataset, structurally similar interfaces within a quaternary structure were filtered out using interface similarity score calculated with <italic>iAlign</italic>
+<sup>
+<xref ref-type="bibr" rid="R33">33</xref>
+</sup>, resulting in 2,858 interfaces from 2,314 complexes. Various interface features, namely: number of interface residues, contact pairs, surface area, shape complementarity, number of hydrophobic, charged, polar and conserved residues at the interface and other interface properties evaluated by PISA, were computed for the dataset. These features were successfully calculated for 2,406 interfaces, which form “positive dataset1” (PD1, see <xref ref-type="sec" rid="S22">Methods</xref>).</p>
+<p id="P16">To train the ML classifiers of our choice on data closer in quality to models fitted on cryo-EM maps (especially at intermediate-to-low resolutions), noise was added to PD1 by slightly perturbing the relative positions and orientations of the interacting subunits. This was performed using a protein-protein docking method<sup>
+<xref ref-type="bibr" rid="R34">34</xref>
+</sup> and then selecting the poses with high fraction of aligned interface residues/interface residues in native complex (f<sub>Nal</sub>), and low interface RMSD (iRMSD) (see <xref ref-type="sec" rid="S22">Methods</xref> for cut-offs). This set, which contains 3,743 interfaces, is referred to as “positive dataset2” (PD2).</p>
+<p id="P17">A “negative dataset” (ND), containing 3,578 interfaces, was also derived using docking and includes complexes in which the interfaces are structurally different, <italic>i.e.,</italic> ‘far’ from native interfaces (low f<sub>Nal</sub> and high iRMSD, see <xref ref-type="sec" rid="S22">Methods</xref> for cut-offs). The schematic of the procedure to collate the datasets and workflow is summarised in <xref ref-type="fig" rid="F1">Figure 1</xref>.</p>
+</sec>
+<sec id="S4">
+<title>Ranking of Interface Features</title>
+<p id="P18">Various interface features (listed in Methods) were computed for the above-described datasets. As the number of derived features (12) was manageable and computationally not very expensive, we used all the features to train our classifiers. To identify the top-ranking (or most influential) interface feature(s), we used different methods namely, Ridge, Random Forest, Recursive Feature Elimination, Linear Regression and Lasso for feature ranking. Our exploration showed that the top-ranking features were shape complementarity, number of polar interface residues, number of charged interface residues, and interface solvation energy (<xref ref-type="fig" rid="F2">Figure 2a</xref>).</p>
+</sec>
+<sec id="S5">
+<title>Training the Classifier and Cross-Validation</title>
+<p id="P19">To develop a better understanding of the performance, we evaluated three ML classifiers, namely, Support Vector Machine (SVM), Random Forest (RF), and plain vanilla Neural Network (NN), or simply, multi-layer perceptron (MLP), using the Scikit-learn Python package<sup>
+<xref ref-type="bibr" rid="R35">35</xref>
+</sup> (<italic>scikit</italic>).</p>
+<p id="P20">We used the following combination of datasets described above to train two high-level models, namely, Model A and Model B (referred to as models henceforth), using the interface features (Methods) (<xref ref-type="fig" rid="F1">Figure 1</xref>). Each of these models relies on three different classifiers, described above (SVM, RF and NN).</p>
+<p id="P21">
+<bold>Model A:</bold> Positive and negative datasets derived using docking (PD2 and ND, respectively).</p>
+<p id="P22">
+<bold>Model B:</bold> Positive dataset constitutes high-resolution complexes and computationally derived docked complexes (PD1 + PD2) and ND as negative dataset.</p>
+<p id="P23">While training and testing both models (Model A and Model B), to minimise the bias of the classifiers, which can easily become an issue with unbalanced datasets, we used <italic>stratified shuffle split</italic> with ten splits (and test size of 30%) as a measure of cross-validation. In both scenarios, the performance, which was measured based on ML- and classifier-specific metrics, namely, accuracy, precision, recall, F1 and Matthew’s Correlation Coefficient (MCC), was comparable between the three methods (<xref ref-type="fig" rid="F2">Figure 2b and Figure 2c</xref>).</p>
+<p id="P24">Among these, the SVM-trained model offered the best validation accuracy of 86% (Model B), and it was selected to assess the quality of protein-protein interfaces modelled in cryo-EM maps. The SVM classifier finds a hyperplane that maximises the inter-class variance, and we used the distance of a given data-point from this hyperplane as the machine learning-based score (PI-score) for a given prediction (interface). The farther a point (interface) is located from the hyperplane (more negative or positive), the more confident is the prediction using the SVM model<sup>
+<xref ref-type="bibr" rid="R36">36</xref>
+</sup>. We assessed the performance of the PI-score at different thresholds by analysing the number of false positives (FP) and false negatives (FN). For the ten test sets (30%) obtained using the stratified shuffle split (for cross validation purpose), the fractions of FP (41%) and FN (42%) were observed to be highest in the PI-score ranges of (0 to 0.5] and (-0.5 to 0], respectively (<xref ref-type="fig" rid="F2">Figure 2d</xref>). We also estimated the measures of performance in different PI-score thresholds and observed that the PI-scores &gt;1 and &lt;-1 (for the positive and negative class label, respectively), were more reliable, based on the low false positive rate (FPR) and high true positive rate (TPR) in the respective bins (<xref ref-type="table" rid="T1">Table 1</xref>).</p>
+</sec>
+<sec id="S6">
+<title>Application to CASP Targets (High Resolution Targets)</title>
+<p id="P25">We applied the above trained models to make predictions on the quality of protein-protein interfaces in cryo-EM targets from the CASP13 competition<sup>
+<xref ref-type="bibr" rid="R37">37</xref>
+</sup>. Three of the targets (T1020o, T0995o, and T0984o) were classified as ‘easy targets’, with many high-accuracy models deposited by the participating groups and were also evaluated for the goodness-of-fit to the experimental cryo-EM maps<sup>
+<xref ref-type="bibr" rid="R38">38</xref>
+</sup>. For each of these targets, a submitted pool of models, an experimentally solved structure (target) and a density-based score for assessing the goodness-of-fit are available from the CASP13 website. Therefore, these targets form an ideal dataset for assessing the performance of PI-score.</p>
+<p id="P26">We used the CASP multimeric scores (<ext-link ext-link-type="uri" xlink:href="https://predictioncenter.org/casp13/multimer_results.cgi">https://predictioncenter.org/casp13/multimer_results.cgi</ext-link>), namely, F1, Jaccard index, lDDT(oligo) and GDT(o) (see <xref ref-type="sec" rid="S22">Methods</xref>: comparison with CASP13 oligomeric scores) to define true positives (TP), true negatives (TN), FP and FN for CASP targets. If any of the four CASP13 multimeric scores was equal or greater than (&gt;=) 0.5, and the model was scored positive by our classifier, it was treated as TP. TN were defined as model structures which did not have any of the CASP13 scores &gt;=0.5 and were scored negative by the classifier. The models which were scored &gt;=0.5 by any of the four CASP13 scores and negative using our classifier score were defined as FP and models which were scored negative by the classifier but had at least one of the CASP13 score &gt;=0.5 were FN.</p>
+<sec id="S7">
+<title>T1020o: 3.3 Å resolution homo-trimer structure of an S-type anion channel from Brachypodium distachyon</title>
+<p id="P27">Using our SVM classifier, nine of the assessed 111 submitted models (with 329 interfaces) were predicted to have at least one ‘negative’ interface (negative PI-score) in the complex. These nine models were also scored low on the CASP multimeric assessment scores<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup> (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S1</xref>). With a more systematic comparison of PI-scores against the oligomeric assembly assessment scores from CASP13<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup>, we achieve 82% accuracy for this target (see <xref ref-type="sec" rid="S22">Methods</xref>: comparison with CASP13 oligomeric scores).</p>
+<p id="P28">All interfaces in the target structure (<xref ref-type="fig" rid="F3">Figure 3a</xref>) and in the top-ranked model based on the cross-correlation of the model with the cryo-EM density (CCC) ((TS004_2o, <xref ref-type="fig" rid="F3">Figure 3b</xref>) have positive PI-score. Out of the nine negatively-scoring models, TS008_4o and TS135_3o had negative PI-score for all the three interfaces (<xref ref-type="fig" rid="F3">Figure 3c and Figure 3d</xref>, respectively). When these models are compared to the target structure, all three interfaces have high iRMSD and low fraction of aligned native residues (Average iRMSD of 2.93 Å and 3.33 Å for TS008_4o and TS135_3o, respectively, <xref ref-type="table" rid="T2">Table 2</xref>). For model TS208_1o, two of the interfaces (formed by chains, AC and BC) have negative PI-score (<xref ref-type="fig" rid="F3">Figure 3e</xref>) and PI-score was not calculated for the third interface, as the number of interface residues were only nine and eight for chain A and B, respectively, which was less than our cut-off for defining an interface (Methods).</p>
+<p id="P29">For the model TS208_1o (CCC = 0.42, target structure CCC = 0.77), we generated density maps at resolutions lower than the target map: 5, 8, 10 and 12 Å using the <italic>‘low pass filter’</italic> utility in CCP-EM suite (<ext-link ext-link-type="uri" xlink:href="https://www.ccpem.ac.uk/">https://www.ccpem.ac.uk/</ext-link>). Since the CCC does not have a defined absolute cut off value to differentiate between good and bad fit at any given resolution, it is difficult to identify ‘target-like’ models. On the other hand, PI-score, which is a density-independent metric, can be very useful to distinguish ‘target/native-like’ interfaces in the modelled complex(es) (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S2</xref>).</p>
+</sec>
+<sec id="S8">
+<title>T0995o: A 3.15 Å resolution homo-octamer (A8) of cyanide dehydratase</title>
+<p id="P30">The PI-score for the target structure was positive for the dimer interface (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure S1a</xref>), which is repeated to form an octameric complex. We calculated the PI-score for 657 interfaces in the 118 CASP13 models for this target and assessed the quality of the dimer interface between all subunits. 123 interfaces in 37 models were observed to have negative PI-score. The top-ranked model (after target) in terms of CCC was TS008_2o (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure S1b</xref>), which is calculated to have positive PI-score for the equivalent dimer interface (iRMSD=1.55 Å). Examples for the models with negative PI-score are TS117_1o (iRMSD = 4 Å, <xref ref-type="supplementary-material" rid="SD1">Supplementary Figure S1c</xref>) and TS008_5o (iRMSD = 2.76 Å, <xref ref-type="supplementary-material" rid="SD1">Supplementary Figure S1d</xref>). The models with interfaces having negative PI-score using our classifier were also scored low for the CASP13 multimeric scores (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S1</xref>).</p>
+<p id="P31">By comparing it with the multimeric scores in CASP13, we achieve an accuracy of 67% for this target. This target has higher stoichiometry and more interfaces than T1020o, and therefore it is expected to achieve a lower accuracy against the CASP13 assembly scores, which are calculated per complex (while our classifier is per interface and hence this may not be a direct comparison).</p>
+<p id="P32">PI-scores for the assessed interfaces in models for CASP13 cryo-EM targets is provided in <xref ref-type="supplementary-material" rid="SD5">Supplementary Table S3</xref>.</p>
+</sec>
+<sec id="S9">
+<title>T0984o: A 3.4 Å dimer of a calcium channel</title>
+<p id="P33">145 models were assessed, and all were observed to have a positive PI-score for the interface (<xref ref-type="supplementary-material" rid="SD5">Supplementary Table S3</xref>).</p>
+<p id="P34">Given the nature of CASP experiments where the participating groups model the complexes without the knowledge of cryo-EM map, protein-protein interface assessments such as PI-score will provide complementary assessment and are crucial to provide insights into model quality.</p>
+</sec>
+</sec>
+<sec id="S10">
+<title>Application to EM Model Challenge</title>
+<p id="P35">Next, we calculated PI-scores for the models submitted for the targets from two EM validation challenges (<ext-link ext-link-type="uri" xlink:href="https://challenges.emdataresource.org/">https://challenges.emdataresource.org/</ext-link>), namely, 2016 EM model challenge and 2019 model metrics challenge (<xref ref-type="supplementary-material" rid="SD6">Supplementary Table S4</xref>).</p>
+<p id="P36">Target T0002 (from model challenge 2016) is a 3.3 Å resolution cryo-EM map of the 20S proteasome (EMD-5623). We assessed the ten submitted models (with 175 interfaces) and interfaces in the target structure (PDB ID: 3J9I). In three of the models- EM164_1, EM189_1 and EM189_2, there was at least one interface that obtained a negative PI-score.</p>
+<p id="P37">As an example, we chose model EM164_1, for which most the interfaces in the alpha and beta subunits were scored negative (<xref ref-type="supplementary-material" rid="SD6">Supplementary Table S4</xref>). In the alpha ring, the two subunits in the model (chains F and C, shown in red and green <xref ref-type="fig" rid="F4">Figure 4a</xref>) were scored negative by our classifier (PI-score: −2.27). The interface conformation is slightly different as compared to the target structure (iRMSD = 0.86, f<sub>Nal</sub> = 0.54). This interface is loosely packed (<xref ref-type="fig" rid="F4">Figure 4</xref>) and smaller than the equivalent interface in the target structure (23 interface residues in model and 37 in the target structure). Due to its small size the iRMSD is low, and therefore is not a good indicator of the quality of the modelled interface in this case. Due to the offset in the modelled interface the shape complementarity at the interface drops significantly to 0.32 as opposed to 0.73 for the interface in the target structure. We also checked the multimeric scores from CASP assessment and EM164_1 is scored high for QS-global (0.88) and lDDT (0.98)) scores but these scores reflect the quality of a multimeric structure as a whole rather than per interface. Other interface assessment scores (from CASP13) such as F1 and Jaccard index, which are calculated per interface, are not reported in the CASP website for this model.</p>
+<p id="P38">Structurally equivalent subunits in the target structure (chains P and Q) have a CCC of 0.85 and the model subunits (chains F and C) have a CCC of 0.73 (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S5</xref>) and local score (SMOC) averaged over interface residues are 0.73 and 0.23 for target and EM164_1 respectively. Our model has rightly predicted this interface as ‘negative’ as reflected by the loose packing at the interface and lower local density-based score for the modelled interface.</p>
+<p id="P39">Further, we calculated the density-based scores (global and SMOC) at different resolutions (map simulated using <italic>low pass filter utility</italic> in CCP-EM, <xref ref-type="supplementary-material" rid="SD2">Supplementary Table S5</xref>). The scores assessing the fit of the model (with interface offset) are comparable at resolution worse than 5 Å. Therefore, especially at intermediate-low resolution, our proposed densityindependent PI-score can be a crucial model validation tool.</p>
+<p id="P40">The interfaces between the beta-subunits were also scored negative (TS164_1) by our classifier. This is reflected by the presence of steric clashes at the interface (blue and purple in <xref ref-type="fig" rid="F4">Figure 4</xref>). The clashes present at the interface resulted in lower shape complementarity score for the interface in model (0.28) as opposed to a higher score (0.62) for the equivalent interface in the target structure. The subunits (chains X and Y) have a CCC of 0.85 whereas the subunits (chains n and d) of model have a CCC of 0.65. This model interface also has a much lower SMOC score than the equivalent interface in the target at all resolutions (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S5</xref>).</p>
+<p id="P41">Recently, model metrics challenge (2019) was open, and we applied our score for assessing the only multimeric target -T0104 (Horse Liver Alcohol Dehydrogenase, 2.9 Å, dimer). We assessed the reference structure (PDB ID: 6NBB) and 17 submitted models using PI-score. Two models (T0104EM060_1; PI-score −0.31 and T0104EM060_2; PI-score 0.13), were scored low (<xref ref-type="supplementary-material" rid="SD6">Supplementary Table S4</xref>), which is in agreement with the CASP multimeric scores (QS and lDDT scores, <ext-link ext-link-type="uri" xlink:href="https://challenges.emdataresource.org/?q=model-metrics-challenge-2019">https://challenges.emdataresource.org/?q=model-metrics-challenge-2019</ext-link>).</p>
+</sec>
+<sec id="S11">
+<title>Application to Fitted Entries in EMDB</title>
+<p id="P42">We divided this dataset into three sets: high resolution (better than 4Å, ‘high resolution’), 4-8 Å (‘intermediate resolution) and 8-12 Å (low resolution). As we have described above the performance of PI-score using high-resolution complexes from CASP and the EM model challenge targets, in this section we will focus more on selected examples from intermediate and low resolution cryo-EM maps. The fitted models were also compared with the interfaces in the corresponding crystal structures.</p>
+<p id="P43">For completeness, we also provide the PI-scores of our SVM model for the interfaces fitted at high resolution (better than 4Å) in <xref ref-type="supplementary-material" rid="SD7">Supplementary Table S6</xref>.</p>
+<sec id="S12">
+<title>Intermediate resolution (4-8Å)</title>
+<p id="P44">Chikungunya virus: A cryo-EM map resolved at 5 Å (EMD-5577) with fitted model is available for the virus (PDB: 3J2W, shown in green and red in <xref ref-type="fig" rid="F5">Figure 5a</xref>, with interface residues shown as grey circles). The envelope1-envelope2 (E1-E2) heterodimer was observed to have a negative PI-score (-1.67). The available crystal structure (PDB: 3N44, 2.35Å) for the E1-E2 subcomplex (chains B and F, coloured in golden and interface residues in grey spheres, <xref ref-type="fig" rid="F5">Figure 5a</xref>) is scored positive (PI-score: 1.67). The interface between E1-E2 is slightly shifted as compared to the crystal structure (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S7</xref>).</p>
+<p id="P45">We also calculated the density-based scores (global and local) for the E1-E2 subcomplex to assess the fitted model and crystal structure. The E1-E2 subcomplexes from both the fitted model and crystal structure have a CCC of 0.64 and average SMOC over interface residues of 0.72 and hence are indistinguishable with these scores. The plot for the SMOC score (per residue) is shown in <xref ref-type="fig" rid="F5">Figure 5a</xref>, for both chains and the average SMOC score per chain is shown with a blue dashed line. Interestingly, the interface residues (grey circles) are observed to score higher than the per-chain average, especially for chain B. Therefore, at intermediate resolution interface-based scores such as PI-score can prove useful to distinguish the offsets in the modelled protein-protein interfaces that are indistinguishable with the density-based scores.</p>
+<p id="P46">PI-scores for the interfaces in the fitted models at the intermediate resolution range derived from EMDB are available as <xref ref-type="supplementary-material" rid="SD8">Supplementary Table S8</xref>.</p>
+</sec>
+<sec id="S13">
+<title>Low resolution set (8-12Å)</title>
+<p id="P47">Transcription initiation factor TFIID complex: A cryo-EM map resolved at 9.8 Å resolution (EMD-9302) with fitted model is available for the structure of the TFIID complex (PDB: 6MZD, shown in green and red in <xref ref-type="fig" rid="F5">Figure 5b</xref>, with interface residues shown as grey circles). The interface between subunits 9 and 5 in the fitted model (LF) was scored negative (PI-score: −1.99). This interface is shifted when compared to the corresponding crystal structure (<xref ref-type="supplementary-material" rid="SD2">Supplementary Table S7</xref>) at 2.5 Å (PDB: 6F3T, chains F and A, shown in golden with interface residues marked as grey circles, <xref ref-type="fig" rid="F5">Figure 5b</xref>).</p>
+<p id="P48">Next, we calculated the density-based scores (global and local) to assess the fitted model and crystal structure. The CCC of the fitted model is 0.54 and CCC of the crystal structure is 0.63 upon local optimization of the fit in map, whereas the average SMOC score over interface residues is 0.84 and 0.87 for the fitted model and crystal structure, respectively (<xref ref-type="fig" rid="F5">Figure 5b</xref>). In this example, we see again (but this time with low resolution maps) that PI-score can provide additional complementary assessment when density-based scores alone are not sufficient to identify the offsets in the modelled interfaces.</p>
+<p id="P49">PI-scores for the interfaces in the fitted models at the low-resolution range derived from EMDB are available as <xref ref-type="supplementary-material" rid="SD9">Supplementary Table S9</xref>.</p>
+</sec>
+</sec>
+<sec id="S14">
+<title>Application to SARS-CoV-2 Cryo-EM Derived Complexes</title>
+<p id="P50">We also assessed the fitted models in the SARS-CoV-2 cryo-EM maps using PI-score. 108 fitted models were downloaded from EMDB [<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/pdbe/emdb/searchResults.html/?EMDBSearch&amp;q=text:(ncov%20OR%20SARS-CoV-2)">https://www.ebi.ac.uk/pdbe/emdb/searchResults.html/?EMDBSearch&amp;q=text:(ncov%20OR%20SARS-CoV-2)</ext-link>]. Out of the 108 models, we were able to successfully compute interface features and PI-scores for 55 complexes (149 interfaces). Of these 149 interfaces, 12 were observed to have a negative PI-scores (<xref ref-type="supplementary-material" rid="SD10">Supplementary Table S10</xref>), with 11 of these being antibody-antibody or protein-antibody interfaces. As our machine learning classifier is not trained on such interfaces (which are reported to have different shape complementarity from other protein-protein interfaces<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>), we decided not to further investigate these cases.</p>
+<p id="P51">However, the interface between small subunits (S28-S5) of a human 40S ribosome bound to <italic>nsp1</italic> (blue spheres, <xref ref-type="supplementary-material" rid="SD3">Supplementary Figure S2a</xref>) SARS-Cov2 protein (EMD-11301, PDB ID: 6ZMT) obtained a negative PI-score of −0.04 (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure S2b</xref>). We next inspected this complex using the validation suite in CCP-EM (Joseph A.P, <italic>et al</italic>., under preparation). The sub-complex S28-S5 was found to have a clashscore of 7.20 with severe clashes reported at the interface. We used <italic>‘real space refine zone’</italic> and <italic>‘auto fit rotamer’,</italic> with backrub rotamers switched on to fix the steric clashes at the interface using Coot<sup>
+<xref ref-type="bibr" rid="R40">40</xref>
+</sup>. Upon rerefinement in Coot, the clashscore drops to 6.20 and PI-score improves to 0.25 (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure S2c</xref>). The improvement in the PI-scores is most likely due to resolving the clashes between the interface residue pairs R63-A138, V55-34S and L59-R122 (<xref ref-type="supplementary-material" rid="SD3">Supplementary Figure S2b</xref>) from chain d and K, respectively.</p>
+</sec>
+<sec id="S15">
+<title>Comparison with Protein-protein Interface Statistical Potentials</title>
+<p id="P52">Next, we compared PI-score to the existing protein-protein interface-based statistical potentials (PIE<sup>
+<xref ref-type="bibr" rid="R41">41</xref>
+</sup> and PISA<sup>
+<xref ref-type="bibr" rid="R42">42</xref>
+</sup>) commonly used for protein-protein docking. PIE and PISA scores provide residue and atomic potentials respectively, and we also used a combination (0.1*PISA + (-0.8)*PIE + PISA*PIE) of these, which is reported to perform better in identifying “native-like” complexes<sup>
+<xref ref-type="bibr" rid="R42">42</xref>
+</sup>. We used the 30% randomly selected test dataset from the entire set (PD1+PD2+ND) to calculate the statistical potentials (combined PIE-PISA score) for the interfaces. Different weights for SVM-based score and statistical potentials were tried ranging from 0 to 1, with an increment of 0.1. For this dataset, the combined statistical potential score alone was unable to discriminate between the complexes from ND and PD2 datasets which are both derived using docking (whereas the PI-score separates these complexes better (<xref ref-type="supplementary-material" rid="SD4">Supplementary Figure S3</xref>).</p>
+</sec>
+</sec>
+<sec id="S16" sec-type="discussion">
+<title>Discussion</title>
+<sec id="S17">
+<title>Density independent PI-score to assess modelled assemblies in cryo-EM maps</title>
+<p id="P53">Machine learning-based methods trained using interface features have proven to be discriminatory in identifying the ‘native-like’ complexes, and are routinely used for protein interface sites and hotspots prediction using sequence and structure-based features<sup>
+<xref ref-type="bibr" rid="R30">30</xref>
+</sup>. So far, such methods have not been applied to the atomic models derived from cryo-EM data, where errors at the interface are likely. Here, we have developed a density independent metric to assess the quality of protein-protein interfaces in cryoEM derived models (PI-score), using a machine learning-based method trained on interface features. We carefully collated high-resolution crystal structures of the protein-protein complexes and annotated them with interface features, which were further used to train a machine learning-based classifier. In total, 12 features were calculated for 9727 interfaces in our dataset.</p>
+<p id="P54">In total, 12 features were calculated for 9727 interfaces in our dataset. A 9727*12 vector was used as an input to train a classifier using Random Forest, Support Vector Machines and Neural Networks. Shape complementarity at the interface, which is a well-known feature to discriminate ‘native-like’ complexes<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>, was observed to be the most discriminatory feature (see section <xref ref-type="sec" rid="S5">“training the classifier”</xref>). Using both PD1 and PD2 as positive labels and ND as negative class labels, we were able to achieve a validation accuracy of 86%using a ten-fold cross-validation.</p>
+<p id="P55">We show that our PI-score can help in identifying native-like fits from a pool of candidate models (see sections <xref ref-type="sec" rid="S6">“Application to CASP targets”</xref> and <xref ref-type="sec" rid="S10">“Application to EM model challenge targets”</xref>).</p>
+</sec>
+<sec id="S18">
+<title>Importance of interface validation in cryo-EM maps</title>
+<p id="P56">Most of the structures (~95%) derived using cryo-EM have at least two protein chains. Hence, it becomes crucial to model protein-protein interfaces in such structures. With the recent advances in technology, single-particle reconstructions are getting to near-atomic resolution, where the modelling of protein-protein interface is becoming more accurate. However, several complexes in the EMDB are in the intermediate-to-low resolution range. The average resolution achieved in 2019 is still less than 5 Å, where the models are likely to be less reliable, especially at regions with less-resolved density. Additionally, there are plenty of maps where the nominal reported resolution is high, but the local resolution varies significantly. In EMDB, we have identified 107 interfaces in 54 complexes (at resolution better than 4 Å), 508 interfaces in 171 complexes (at 4-8 Å), and 51 interfaces in 23 complexes (less than 8 Å), with a negative PI-score, implying potential modelling issues at the protein-protein interface. Investigating these cases revealed that the errors at the interface could be of different types, including steric clashes, loose interface packing, smaller interface size and lower shape complementarity (see section on <xref ref-type="sec" rid="S11">“Application to fitted models from EMDB”</xref>).</p>
+</sec>
+<sec id="S19">
+<title>Comparison with other scores</title>
+<p id="P57">As we have demonstrated, PI-score is density-independent and is especially useful to distinguish the native-like interfaces at low-to-intermediate resolution, where density-based scores alone become less informative (see section on <xref ref-type="sec" rid="S11">“Application to fitted models from EMDB”</xref>). Most studies calculate the global CCC, which will not reflect minor changes at local regions of the structure (such as interface regions). Local scores can be more informative in this respect; however, they require a well-resolved density around the interface. PI-score captures different type of information, specifically assessing interface quality, and therefore will have an added value. Therefore, we believe that the combination will be extremely beneficial in guiding model fitting and validation (see section <xref ref-type="sec" rid="S11">“Application to fitted entries in EMDB”</xref>).</p>
+</sec>
+<sec id="S20">
+<title>Potential usage of PI-score</title>
+<p id="P58">PI-score has two key uses: to validate and to aid the modelling of interfaces in cryo-EM derived assemblies. We demonstrated its use as a validation score on the CASP and EM model challenge targets. In addition to these, PI-score can also be implemented as part of the model building/refinement process in software packages, such as CCP-EM<sup>
+<xref ref-type="bibr" rid="R43">43</xref>
+</sup> and Scipion<sup>
+<xref ref-type="bibr" rid="R44">44</xref>
+</sup>, to guide the process of model building and model validation (e.g. as part of the CCP-EM validation suite at <ext-link ext-link-type="uri" xlink:href="https://www.ccpem.ac.uk/download.php">https://www.ccpem.ac.uk/download.php</ext-link>). Furthermore, PI-score can also be used to filter solutions and identify ‘native-like’ interfaces from protein-protein docking software, such as Z-Dock, and from software that use multi-component assembly fitting approaches, such as PRISM-EM<sup>
+<xref ref-type="bibr" rid="R45">45</xref>
+</sup>, IMP<sup>
+<xref ref-type="bibr" rid="R46">46</xref>
+</sup> and gamma-TEMPy<sup>
+<xref ref-type="bibr" rid="R47">47</xref>
+</sup>.</p>
+</sec>
+<sec id="S21">
+<title>Summary and Future Directions</title>
+<p id="P59">In this work we have introduced an interface-centric metric, PI-score, and systematically assessed, for the first time, cryo-EM derived assemblies. We are working towards expanding the features’ set (<italic>e.g.</italic> coevolution scores) to calculate PI-score and implementing deeplearning approaches. We believe that PI-score will be a crucial addition to the set of validation scores currently used in the cryo-EM community as part of structure modelling tools. It is likely that many protein-protein interfaces in future-deposited cryo-EM structures will contain errors, especially in low-to-intermediate resolution structures. Scores such as PI-score, which provide insights into interface modelling, have the potential to be extremely beneficial if included in the EMDB validation report.</p>
+</sec>
+</sec>
+<sec id="S22" sec-type="methods">
+<title>Methods</title>
+<sec id="S23">
+<title>Dataset of High-Resolution Complexes (Positive Dataset1-PD1, ‘native’ interfaces)</title>
+<p id="P60">High-resolution crystal structures of complexes were obtained from PDB with following filters: <list list-type="order" id="L2">
+<list-item>
+<p id="P61">Minimum number of chains =2</p>
+</list-item>
+<list-item>
+<p id="P62">Experimental method = X-ray</p>
+</list-item>
+<list-item>
+<p id="P63">Resolution between 0.0-2.5Å</p>
+</list-item>
+<list-item>
+<p id="P64">R factor (all) between 0 and 0.25</p>
+</list-item>
+<list-item>
+<p id="P65">R-free between 0 and 0.3</p>
+</list-item>
+<list-item>
+<p id="P66">Length of each chain &gt;= 30 amino acids</p>
+</list-item>
+</list>
+</p>
+<p id="P67">Using these filters, we fetched the non-redundant PDB structures at 40% sequence identity, resulting in a total of 3926 complexes.</p>
+<p id="P68">The complexes were further processed to remove symmetric interfaces present in the same structure using <italic>iAlign</italic>
+<sup>
+<xref ref-type="bibr" rid="R33">33</xref>
+</sup> to structurally align the protein-protein interfaces between different chains of the same PDB structure. At the recommended cut-off of interface similarity score of 0.7, non-identical or identical monomers forming similar interfaces were filtered out and the final set contained 2315 complexes with 2858 interfaces.</p>
+</sec>
+<sec id="S24">
+<title>Dataset of Near-Native Complexes (Positive Dataset2-PD2)</title>
+<p id="P69">“Near-native” complexes were derived from the native complexes (PD1). The pair of interacting chains from PD1 dataset were subjected to protein-protein docking using ZDOCK<sup>
+<xref ref-type="bibr" rid="R34">34</xref>
+</sup> and the poses (interfaces) with f<sub>Nal</sub> (fraction of aligned native interface residues) &gt;=0.7 and iRMSD (interface root mean square deviation)<sup>
+<xref ref-type="bibr" rid="R33">33</xref>
+</sup> &lt;=3Å were selected.</p>
+</sec>
+<sec id="S25">
+<title>Dataset of Non-biological Complexes (Negative Dataset-ND)</title>
+<p id="P70">The pairs of interacting chains from PD1 were subjected to docking using ZDOCK and the docked poses with f<sub>Nal</sub> &lt;0.3 or iRMSD &gt;4Å were selected.</p>
+</sec>
+<sec id="S26">
+<title>Interface Assignment</title>
+<p id="P71">Interface residues between two chains were defined using the distance-based threshold of Cα-Cα distance of 7 Å. An interface was only included in the datasets, if it contained at least ten residues from each of the interacting chains.</p>
+</sec>
+<sec id="S27">
+<title>Calculation of Interface Features</title>
+<p id="P72">The following interface parameters were computed: <list list-type="order" id="L3">
+<list-item>
+<p id="P73">
+<underline>Number of interface residues</underline> (num_intf_residues)</p>
+<p id="P74">This was calculated using an <italic>in-house</italic> python script to assign the interface as explained above and count the number of residues from each chain of the complex.</p>
+</list-item>
+<list-item>
+<p id="P75">
+<underline>Conserved residues at the interface</underline> (conserved_interface)</p>
+<p id="P76">For each chain in a given protein-protein complex, the homologs were collected using <italic>PSI-BLAST</italic>
+<sup>
+<xref ref-type="bibr" rid="R48">48</xref>
+</sup> (number of iterations = 3, e-value = 10<sup>-5</sup>, query coverage=80%) against Swiss-Prot<sup>
+<xref ref-type="bibr" rid="R49">49</xref>
+</sup> database. The homologs were further clustered at 90% sequence identity using <italic>usearch</italic>
+<sup>
+<xref ref-type="bibr" rid="R50">50</xref>
+</sup>, and subsequently aligned using MUSCLE (v3.8.31)<sup>
+<xref ref-type="bibr" rid="R51">51</xref>
+</sup>. The conservation scores were calculated using the generated multiple sequence alignment as input to the maximum likelihood-based method <italic>Rate4Site</italic>
+<sup>
+<xref ref-type="bibr" rid="R52">52</xref>
+</sup>, which measures the evolution of amino acids residues and identifies functionally important sites. The intersection of conserved residues and interface residues (as assigned above) were selected as a set of conserved residues at the interface.</p>
+</list-item>
+<list-item>
+<p id="P77">
+<underline>Charged residues at the interface</underline> (charged)</p>
+<p id="P78">The charged (Asp, Glu, Lys, Arg) amino acids were counted at the interface and this was normalised by the total number of interface residues.</p>
+</list-item>
+<list-item>
+<p id="P79">
+<underline>Polar residues at the interface</underline> (polar)</p>
+<p id="P80">The polar (Ser, Thr, Asn, Gln, His and Tyr) amino acids were counted at the interface and this was normalised by the total number of interface residues.</p>
+</list-item>
+<list-item>
+<p id="P81">
+<underline>Hydrophobic residues at the interface</underline> (hydrophobic)</p>
+<p id="P82">Hydrophobic amino acids (Ala, Leu, Ile, Val, Phe, Trp, Cys, Met) were counted at the interface and this was normalised by the total number of interface residues.</p>
+</list-item>
+<list-item>
+<p id="P83">
+<underline>Number of contact pairs</underline> (contact_pairs)</p>
+<p id="P84">The contact pairs were defined as the number of atomic contacts between the interface residues from the interacting chains.</p>
+</list-item>
+<list-item>
+<p id="P85">
+<underline>Shape complementarity (sc)</underline>
+</p>
+<p id="P86">This geometric shape complementarity of protein-protein interfaces were computed using the program-SC<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup> from the CCP4<sup>
+<xref ref-type="bibr" rid="R53">53</xref>
+</sup> software suite. The value of the calculated statistic sc (shape correlation) describes the extent of interactions of the two chains with respect to each other and varies between 0-1. Protein-protein interface with sc = 1 suggests that the two protein subunits mesh precisely, whereas with sc closer to zero implies an interface with uncorrelated topography.</p>
+</list-item>
+</list>
+</p>
+<p id="P87">The following features were calculated using PISA (<italic>via</italic> CCP4) (Protein interfaces, surfaces and assemblies):<sup>
+<xref ref-type="bibr" rid="R54">54</xref>
+</sup> <list list-type="order" continued-from="L3" id="L4">
+<list-item>
+<p id="P88">
+<underline>Hydrogen Bonds</underline> (hb)</p>
+<p id="P89">The number of potential hydrogen bonds at the interface</p>
+</list-item>
+<list-item>
+<p id="P90">
+<underline>Salt Bridges</underline> (sb)</p>
+<p id="P91">The number of potential salt bridges at the interface</p>
+</list-item>
+<list-item>
+<p id="P92">
+<underline>Interface solvation energy (int_solv_en)</underline>
+</p>
+<p id="P93">The difference in energy between the bound and unbound monomers due to solvation effect.</p>
+</list-item>
+<list-item>
+<p id="P94">
+<underline>Hydrophobic p-value (pvalue)</underline>
+</p>
+<p id="P95">Probability measure of the specificity of a given interface. The lower the probability is, the more specific the interface is.</p>
+</list-item>
+<list-item>
+<p id="P96">
+<underline>Interface surface area</underline> (int_area)</p>
+<p id="P97">Surface area, which becomes inaccessible to the solvent upon interface formation, measured in Å<sup>2</sup>.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S28">
+<title>Importance of Interface Features</title>
+<p id="P98">Five methods (Ridge, Random forest, Recursive feature elimination, Linear Regression, and Lasso) were used to rank the importance of each of the interface features. We used the <italic>sklearn</italic> Python package with default parameter settings. The mean scores from each of these methods were used to rank the derived features.</p>
+</sec>
+<sec id="S29">
+<title>Performance Assessment Metrics</title>
+<p id="P99">True positive (TP), true negative (TN), false positive (FP) and false negative (FN) were used to assess the performance of the model using the following definitions:</p>
+<p id="P100">TP TPR (True Positive Rate) <inline-formula>
+<mml:math id="M1">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P101">FPR (False Positive Rate) <inline-formula>
+<mml:math id="M2">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P102">Precision <inline-formula>
+<mml:math id="M3">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P103">Accuracy <inline-formula>
+<mml:math id="M4">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P104">F1 <inline-formula>
+<mml:math id="M5">
+<mml:mo>=</mml:mo>
+<mml:mn>2</mml:mn>
+<mml:mo>*</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P105">Specificity <inline-formula>
+<mml:math id="M6">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+<p id="P106">Matthews correlation coefficient (MCC) <inline-formula>
+<mml:math id="M7">
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>√</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</inline-formula>
+</p>
+</sec>
+<sec id="S30">
+<title>Benchmark Datasets</title>
+<list list-type="order" id="L5">
+<list-item>
+<p id="P107">The structures of fitted models and targets, and corresponding target cryo-EM maps were downloaded from the CASP13 website (<ext-link ext-link-type="uri" xlink:href="https://predictioncenter.org/casp13/">https://predictioncenter.org/casp13/</ext-link>).</p>
+</list-item>
+<list-item>
+<p id="P108">The targets’ structure, map and submitted models for EM model challenge 2016 and 2019 were downloaded from EM model challenge website (<ext-link ext-link-type="uri" xlink:href="https://model-compare.emdataresource.org/">https://model-compare.emdataresource.org/</ext-link>).</p>
+</list-item>
+<list-item>
+<p id="P109">The entries with fitted models were obtained from EMDB (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/pdbe/emdb/">https://www.ebi.ac.uk/pdbe/emdb/</ext-link>).</p>
+</list-item>
+</list>
+</sec>
+<sec id="S31">
+<title>Density-based Scores</title>
+<p id="P110">The goodness-of-fit between the model and cryo-EM map was estimated using global and local cross-correlation scores. The global cross-correlation (CCC) was calculated using Fit-in-Map function in UCSF Chimera<sup>
+<xref ref-type="bibr" rid="R55">55</xref>
+</sup> and the local scores (TEMPy SMOC-Segment-based Manders’ Overlap Coefficient<sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup>) were calculated using the CCP-EM<sup>
+<xref ref-type="bibr" rid="R43">43</xref>
+</sup> GUI interface.</p>
+</sec>
+<sec id="S32">
+<title>Comparison with CASP13 Oligomeric Scores</title>
+<p id="P111">The models for CASP13 cryo-EM targets which were scored using our classifier were compared with the protein assembly scores used in CASP13. The machine learning-based classifier score (PI-score) for multiple interfaces within a model structure were averaged by the number of interfaces and this was compared with the CASP13 scores (F1, Jaccard index, lDDT(oligo) and GDT(o))<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup>. Interface contact similarity (F1) and interface patch scores (Jaccard coefficient) range from 0 (worst) to 1(best). GDTo and lDDT(oligo) (local distance difference test) consider the whole oligomeric assembly and range from 0 (different quaternary structure) to 1(similar quaternary structure). The latter are computed after mapping the equivalent chains between the target and the model using QS algorithm<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup>. If at least one of these CASP13 multimeric scores was &gt;=0.5 and the model was scored positive using our classifier, it was treated as true positive (TP). True negatives (TN) are the set of model structures which do not have any of the CASP13 scores &gt;=0.5 and are scored negative by the classifier. False positives (FP) are the models which were scored &gt;=0.5 by at least one of the four CASP13 scores and negative using our classifier score whereas false negatives (FN) are the models scored negative using the classifier and have at least one of the CASP13 score &gt;=0.5.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Fig S1</label>
+<media xlink:href="EMS104496-supplement-Fig_S1.tif" mimetype="image" mime-subtype="tiff" id="N67401" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Tables S1, S2, S5 and S7</label>
+<media xlink:href="EMS104496-supplement-Tables_S1__S2__S5_and_S7.docx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.wordprocessingml.document" id="N67410" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Fig S2</label>
+<media xlink:href="EMS104496-supplement-Fig_S2.tif" mimetype="image" mime-subtype="tiff" id="N67419" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Fig S3</label>
+<media xlink:href="EMS104496-supplement-Fig_S3.tif" mimetype="image" mime-subtype="tiff" id="N67428" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD5">
+<label>Table S3</label>
+<media xlink:href="EMS104496-supplement-Table_S3.xls" mimetype="application" mime-subtype="vnd.ms-excel" id="N67437" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD6">
+<label>Table S4</label>
+<media xlink:href="EMS104496-supplement-Table_S4.xls" mimetype="application" mime-subtype="vnd.ms-excel" id="N67446" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD7">
+<label>Table S6</label>
+<media xlink:href="EMS104496-supplement-Table_S6.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67455" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD8">
+<label>Table S8</label>
+<media xlink:href="EMS104496-supplement-Table_S8.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67464" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD9">
+<label>Table S9</label>
+<media xlink:href="EMS104496-supplement-Table_S9.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67473" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD10">
+<label>Table S10</label>
+<media xlink:href="EMS104496-supplement-Table_S10.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N67482" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD11">
+<label>Supplementary Figures and Tables Legends</label>
+<media xlink:href="EMS104496-supplement-Supplementary_Figures_and_Tables_Legends.pdf" mimetype="application" mime-subtype="pdf" id="N67491" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S33">
+<title>Acknowledgements</title>
+<p>We thank Prof. Adrian Shepherd (Birkbeck) for the useful discussions and Dr. David Houldershaw (Birkbeck) for the computer support. We also thank Dr. Andriy Kryshtafovych (UC Davis) for the help and advice with CASP and EM model challenge targets. We are grateful for funding from the Wellcome Trust (209250/Z/17/Z and 208398/Z/17/Z). This work was also partially supported by Wave 1 of The UKRI Strategic Priorities Fund under the EPSRC Grant EP/T001569/1, particularly the “AI for Science” theme within that grant &amp; The Alan Turing Institute.</p>
+</ack>
+<sec id="S34" sec-type="data-availability">
+<title>Code Availability</title>
+<p id="P112">The software to calculate the PI-score is freely available for academic use through: <ext-link ext-link-type="uri" xlink:href="https://gitlab.com/topf-lab/pi_score">https://gitlab.com/topf-lab/pi_score</ext-link>
+</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P113">
+<bold>Competing Interests statement</bold>
+</p>
+<p id="P114">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bai</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>McMullan</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Scheres</surname>
+<given-names>SHW</given-names>
+</name>
+</person-group>
+<article-title>How cryo-EM is revolutionizing structural biology</article-title>
+<source>Trends Biochem Sci</source>
+<year>2015</year>
+<volume>40</volume>
+<fpage>49</fpage>
+<lpage>57</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saibil</surname>
+<given-names>HR</given-names>
+</name>
+</person-group>
+<article-title>Blob-ology and biology of cryo-EM: an interview with Helen Saibil</article-title>
+<source>BMC Biology</source>
+<year>2017</year>
+<volume>15</volume>
+<fpage>77</fpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Patwardhan</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Trends in the Electron Microscopy Data Bank (EMDB)</article-title>
+<source>ActaCrystallogr D Struct Biol</source>
+<year>2017</year>
+<volume>73</volume>
+<fpage>503</fpage>
+<lpage>508</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malhotra</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Träger</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dal Peraro</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Topf</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Modelling structures in cryo-EM maps</article-title>
+<source>Current Opinion in Structural Biology</source>
+<year>2019</year>
+<volume>58</volume>
+<fpage>105</fpage>
+<lpage>114</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Joseph</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Lagerstedt</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Patwardhan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Topf</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Winn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Improved metrics for comparing structures of macromolecular assemblies determined by 3D electronmicroscopy</article-title>
+<source>J Struct Biol</source>
+<year>2017</year>
+<volume>199</volume>
+<fpage>12</fpage>
+<lpage>26</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Joseph</surname>
+<given-names>AP</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Refinement of atomic models in high resolution EM reconstructions using Flex-EM and local assessment</article-title>
+<source>Methods</source>
+<year>2016</year>
+<volume>100</volume>
+<fpage>42</fpage>
+<lpage>49</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Farabella</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>TEMPy: a Python library for assessment of three-dimensional electron microscopy density fits</article-title>
+<source>J Appl Crystallogr</source>
+<year>2015</year>
+<volume>48</volume>
+<fpage>1314</fpage>
+<lpage>1323</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pintilie</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Measurement of atom resolvability in cryo-EM maps with Q-scores</article-title>
+<source>Nature Methods</source>
+<year>2020</year>
+<volume>17</volume>
+<fpage>328</fpage>
+<lpage>334</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barad</surname>
+<given-names>BA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>EMRinger: side chain-directed model and map validation for 3D cryoelectron microscopy</article-title>
+<source>Nat Methods</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>943</fpage>
+<lpage>946</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>VB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>MolProbity: all-atom structure validation for macromolecular crystallography</article-title>
+<source>Acta Crystallogr D Biol Crystallogr</source>
+<year>2010</year>
+<volume>66</volume>
+<fpage>12</fpage>
+<lpage>21</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Prisant</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>VB</given-names>
+</name>
+<name>
+<surname>Richardson</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Richardson</surname>
+<given-names>DC</given-names>
+</name>
+</person-group>
+<article-title>New tools in MolProbity validation: CaBLAM for CryoEM backbone, UnDowser to rethink ‘waters,’ and NGL Viewer to recapture online 3D graphics</article-title>
+<source>Protein Sci</source>
+<year>2020</year>
+<volume>29</volume>
+<fpage>315</fpage>
+<lpage>329</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Caffrey</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Somaroo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hughes</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Mintseris</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>ES</given-names>
+</name>
+</person-group>
+<article-title>Are protein–protein interfaces more conserved in sequence than the rest of the protein surface?</article-title>
+<source>Protein Sci</source>
+<year>2004</year>
+<volume>13</volume>
+<fpage>190</fpage>
+<lpage>202</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malhotra</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Sankar</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Sowdhamini</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Structural interface parameters are discriminatory in recognising near-native poses of protein-protein interactions</article-title>
+<source>PLoS ONE</source>
+<year>2014</year>
+<volume>9</volume>
+<fpage>e80255</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Valdar</surname>
+<given-names>WSJ</given-names>
+</name>
+<name>
+<surname>Thornton</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>Protein–protein interfaces: Analysis of amino acid conservation in homodimers</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2001</year>
+<volume>42</volume>
+<fpage>108</fpage>
+<lpage>124</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guharoy</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chakrabarti</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Conservation and relative importance of residues across protein-protein interfaces</article-title>
+<source>PNAS</source>
+<year>2005</year>
+<volume>102</volume>
+<fpage>15447</fpage>
+<lpage>15452</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Joseph</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Swapna</surname>
+<given-names>LS</given-names>
+</name>
+<name>
+<surname>Rakesh</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Srinivasan</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Use of evolutionary information in the fitting of atomic level protein models in low resolution cryo-EM map of a protein assembly improves the accuracy of the fitting</article-title>
+<source>J Struct Biol</source>
+<year>2016</year>
+<volume>195</volume>
+<fpage>294</fpage>
+<lpage>305</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lawrence</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Colman</surname>
+<given-names>PM</given-names>
+</name>
+</person-group>
+<article-title>Shape complementarity at protein/protein interfaces</article-title>
+<source>J Mol Biol</source>
+<year>1993</year>
+<volume>234</volume>
+<fpage>946</fpage>
+<lpage>950</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Norel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Wolfson</surname>
+<given-names>HJ</given-names>
+</name>
+<name>
+<surname>Nussinov</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Shape complementarity at protein-protein interfaces</article-title>
+<source>Biopolymers</source>
+<year>1994</year>
+<volume>34</volume>
+<fpage>933</fpage>
+<lpage>940</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tsuchiya</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kinoshita</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Nakamura</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Analyses of homo-oligomer interfaces of proteins from the complementarity of molecular surface, electrostatic potential and hydrophobicity</article-title>
+<source>Protein Eng Des Sel</source>
+<year>2006</year>
+<volume>19</volume>
+<fpage>421</fpage>
+<lpage>429</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McCoy</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Chandana Epa</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Colman</surname>
+<given-names>PM</given-names>
+</name>
+</person-group>
+<article-title>Electrostatic complementarity at protein/protein interfaces11 Edited by B. Honig</article-title>
+<source>Journal of Molecular Biology</source>
+<year>1997</year>
+<volume>268</volume>
+<fpage>570</fpage>
+<lpage>584</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ofran</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Rost</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Analysing Six Types of Protein–Protein Interfaces</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2003</year>
+<volume>325</volume>
+<fpage>377</fpage>
+<lpage>387</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Glaser</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Steinberg</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Vakser</surname>
+<given-names>IA</given-names>
+</name>
+<name>
+<surname>Ben-Tal</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Residue frequencies and pairing preferences at protein–protein interfaces</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2001</year>
+<volume>43</volume>
+<fpage>89</fpage>
+<lpage>102</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Conte</surname>
+<given-names>LL</given-names>
+</name>
+<name>
+<surname>Chothia</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Janin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>The atomic structure of protein-protein recognition sites11Edited by A. R. Fersht</article-title>
+<source>Journal of Molecular Biology</source>
+<year>1999</year>
+<volume>285</volume>
+<fpage>2177</fpage>
+<lpage>2198</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sheinerman</surname>
+<given-names>FB</given-names>
+</name>
+<name>
+<surname>Norel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Honig</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Electrostatic aspects of protein–protein interactions</article-title>
+<source>Current Opinion in Structural Biology</source>
+<year>2000</year>
+<volume>10</volume>
+<fpage>153</fpage>
+<lpage>159</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chakrabarti</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Janin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Dissecting protein–protein recognition sites</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2002</year>
+<volume>47</volume>
+<fpage>334</fpage>
+<lpage>343</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bogan</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Thorn</surname>
+<given-names>KS</given-names>
+</name>
+</person-group>
+<article-title>Anatomy of hot spots in protein interfaces</article-title>
+<source>J Mol Biol</source>
+<year>1998</year>
+<volume>280</volume>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nooren</surname>
+<given-names>IMA</given-names>
+</name>
+<name>
+<surname>Thornton</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>Diversity of protein-protein interactions</article-title>
+<source>EMBO J</source>
+<year>2003</year>
+<volume>22</volume>
+<fpage>3486</fpage>
+<lpage>3492</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Jernigan</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Dobbs</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Honavar</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Characterization of Protein-Protein Interfaces</article-title>
+<source>Protein J</source>
+<year>2008</year>
+<volume>27</volume>
+<fpage>59</fpage>
+<lpage>70</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jones</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Marin</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Thornton</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>Protein domain interfaces: characterization and comparison with oligomeric protein interfaces</article-title>
+<source>Protein Eng Des Sei</source>
+<year>2000</year>
+<volume>13</volume>
+<fpage>77</fpage>
+<lpage>82</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Machine Learning Approaches for Protein–Protein Interaction Hot Spot Prediction: Progress and Comparative Assessment</article-title>
+<source>Molecules</source>
+<year>2018</year>
+<volume>23</volume>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kurgan</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Review and comparative assessment of sequence-based predictors of protein-binding residues</article-title>
+<source>Brief Bioinform</source>
+<year>2018</year>
+<volume>19</volume>
+<fpage>821</fpage>
+<lpage>837</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berman</surname>
+<given-names>HM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Protein Data Bank</article-title>
+<source>Nucleic Acids Res</source>
+<year>2000</year>
+<volume>28</volume>
+<fpage>235</fpage>
+<lpage>242</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gao</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Skolnick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>iAlign: a method for the structural comparison of protein-protein interfaces</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<fpage>2259</fpage>
+<lpage>2265</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Weng</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>ZDOCK: an initial-stage protein-docking algorithm</article-title>
+<source>Proteins</source>
+<year>2003</year>
+<volume>52</volume>
+<fpage>80</fpage>
+<lpage>87</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine Learning in Python</article-title>
+<source>MACHINE LEARNING IN PYTHON</source>
+<fpage>6</fpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xia</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Xiong</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>A method to improve support vector machine based on distance to hyperplane</article-title>
+<source>Optik</source>
+<year>2015</year>
+<volume>126</volume>
+<fpage>2405</fpage>
+<lpage>2410</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kryshtafovych</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schwede</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Topf</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Fidelis</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Moult</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Critical assessment of methods of protein structure prediction (CASP)–Round XIII</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1011</fpage>
+<lpage>1020</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kryshtafovych</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cryo-electron microscopy targets in CASP13: Overview and evaluation of results</article-title>
+<source>Proteins</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1128</fpage>
+<lpage>1140</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guzenko</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Lafita</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Monastyrskyy</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Kryshtafovych</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Duarte</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>Assessment of protein assembly prediction in CASP13</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1190</fpage>
+<lpage>1199</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Emsley</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Lohkamp</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Scott</surname>
+<given-names>WG</given-names>
+</name>
+<name>
+<surname>Cowtan</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Features and development of Coot</article-title>
+<source>Acta Crystallographica Section D Biological Crystallography</source>
+<year>2010</year>
+<volume>66</volume>
+<fpage>486</fpage>
+<lpage>501</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dintyala</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Elber</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>PIE - Efficient filters and coarse grained potentials for unbound protein-protein docking</article-title>
+<source>Proteins</source>
+<year>2010</year>
+<volume>78</volume>
+<fpage>400</fpage>
+<lpage>419</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Viswanath</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Ravikant</surname>
+<given-names>DVS</given-names>
+</name>
+<name>
+<surname>Elber</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Improving ranking of models for protein complexes with side chain modeling and atomic potentials</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2013</year>
+<volume>81</volume>
+<fpage>592</fpage>
+<lpage>606</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Burnley</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Palmer</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Winn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Recent developments in the CCP-EM software suite</article-title>
+<source>Acta Cryst D</source>
+<year>2017</year>
+<volume>73</volume>
+<fpage>469</fpage>
+<lpage>477</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>de la Rosa-TrevÍn</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scipion: A software framework toward integration, reproducibility and validation in 3D electron microscopy</article-title>
+<source>Journal of Structural Biology</source>
+<year>2016</year>
+<volume>195</volume>
+<fpage>93</fpage>
+<lpage>99</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuzu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Keskin</surname>
+<given-names>0</given-names>
+</name>
+<name>
+<surname>Nussinov</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Gursoy</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>PRISM-EM: template interface-based modelling of multi-protein complexes guided by cryo-electron microscopy density maps</article-title>
+<source>Acta Cryst D</source>
+<year>2016</year>
+<volume>72</volume>
+<fpage>1137</fpage>
+<lpage>1148</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Russel</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Putting the pieces together: integrative modeling platform software for structure determination of macromolecular assemblies</article-title>
+<source>PLoS Biol</source>
+<year>2012</year>
+<volume>10</volume>
+<fpage>e1001244</fpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pandurangan</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Vasishtan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Alber</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Topf</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>y-TEMPy: Simultaneous Fitting of Components in 3D-EM Maps of Their Assembly Using a Genetic Algorithm</article-title>
+<source>Structure</source>
+<year>2015</year>
+<volume>23</volume>
+<fpage>2365</fpage>
+<lpage>2376</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Altschul</surname>
+<given-names>SF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Gapped BLAST and PSI-BLAST: a new generation of protein database search programs</article-title>
+<source>Nucleic Acids Res</source>
+<year>1997</year>
+<volume>25</volume>
+<fpage>3389</fpage>
+<lpage>3402</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<article-title>UniProt: the universal protein knowledgebase</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>D158</fpage>
+<lpage>D169</lpage>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Edgar</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>Search and clustering orders of magnitude faster than BLAST</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<fpage>2460</fpage>
+<lpage>2461</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Edgar</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>MUSCLE: multiple sequence alignment with high accuracy and high throughput</article-title>
+<source>Nucleic Acids Res</source>
+<year>2004</year>
+<volume>32</volume>
+<fpage>1792</fpage>
+<lpage>1797</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pupko</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Mayrose</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Glaser</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ben-Tal</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Rate4Site: an algorithmic tool for the identification of functional regions in proteins by surface mapping of evolutionary determinants within their homologues</article-title>
+<source>Bioinformatics</source>
+<year>2002</year>
+<volume>18</volume>
+<fpage>S7l</fpage>
+<lpage>S77</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Winn</surname>
+<given-names>MD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Overview of the CCP4 suite and current developments</article-title>
+<source>Acta Crystallogr D Biol Crystallogr</source>
+<year>2011</year>
+<volume>67</volume>
+<fpage>235</fpage>
+<lpage>242</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krissinel</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Henrick</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Inference of Macromolecular Assemblies from Crystalline State</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2007</year>
+<volume>372</volume>
+<fpage>774</fpage>
+<lpage>797</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pettersen</surname>
+<given-names>EF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UCSF Chimera--a visualization system for exploratory research and analysis</article-title>
+<source>J Comput Chem</source>
+<year>2004</year>
+<volume>25</volume>
+<fpage>1605</fpage>
+<lpage>1612</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Workflow for developing a protein-protein interface-based score (PI-score) to assess macromolecular assemblies derived using cryo-EM.</title>
+<p>High resolution complexes (with &gt;=two chains) were obtained from the PDB and are referred to as the “positive dataset1” (PD1). Protein-protein docking was used to derive, structurally close (to PD1) complexes to form the “positive dataset2” (PD2). The complexes obtained upon docking that have a higher interface RMSD (iRMSD) and lower fraction of aligned native residues (f<sub>Nal</sub>) at the interface, form the “negative dataset” (ND). Interface features were calculated on all the complexes and are used as an input to train a supervised machine learning classifier, which is further used to predict the class labels of the benchmark dataset.</p>
+</caption>
+<graphic xlink:href="EMS104496-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Machine learning based classifier to assess the quality of protein-protein interfaces.</title>
+<p>a) Importance of interface features in distinguishing the ‘native-like’ interface. The ranks from different methods (Ridge, Random Forest (RF), Recursive feature elimination (RFE), Linear regression (Linear reg) and Lasso) were normalised between 0-1 and the mean feature rank is plotted in black. b) and c) Performance of different classifiers on the training dataset: RF (Random forest), SVM (Support vector machine), and NN (Neural Networks) are used to perform supervised learning on the training dataset using <italic>stratified shuffle split</italic> as a means of cross-validation with ten splits. The performance is evaluated using accuracy, precision, F1, recall scores and Matthews correlation coefficient. Performance measures of Model A (b): trained on docking-derived positive dataset (PD2) and negative dataset (ND). Performance measures of Model B (c): trained using both high-resolution and docking-derived positive datasets (PD1+PD2) and negative dataset (ND). d) Fraction of True Positives (TP), True Negatives (TN), False Positives (FP) and False Negatives (FN) in different PI-score thresholds. The fractions (Y-axis) are averaged over the ten splits (<italic>stratified shuffle split</italic>) of the data. The different PI-score thresholds (X-axis) are indicated in absolute values.</p>
+</caption>
+<graphic xlink:href="EMS104496-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Scoring the interfaces in the oligomeric CASP13 target T1020o.</title>
+<p>The target structure is shown in gold in all the panels and the model structures being assessed are shown in red, green and blue. The chains are labelled accordingly. a) Target structure within the cryo-EM map. The interface residues from the three chains are shown as grey spheres. b) Model TS004_2o, with a positive PI-score for all the three interfaces in the trimeric assembly. c), d) and e) Models TS008_4o, TS135_3o and TS208_1o, respectively, for which their interfaces are scored negatively with PI-score.</p>
+</caption>
+<graphic xlink:href="EMS104496-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Scoring the interfaces in the target T0002 from 2016 EM model challenge.</title>
+<p>a) Scoring the interfaces between the alpha subunits’ ring in the model structure EM164_1, the chains (F and C), which form a negatively-scoring interface is shown in red and green and the target structure is shown in golden. The surface for the interface forming chains (F and C) are shown as spheres and the loose packing at the interface is marked with black ovals. b) Scoring the interfaces in the beta subunits’ ring of the 20S proteasome, one of the targets in EM model challenge (T0002). The target structure is shown in golden and the chains forming the interface (n and d) in the model structure (EM164_1) being assessed are shown in blue and purple. The surface (mesh) of the chains forming interface are shown to highlight the clashes at the interface formed by chains n and d in the model.</p>
+</caption>
+<graphic xlink:href="EMS104496-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>Application to the fitted models in EMDB at intermediate-low resolution.</title>
+<p>The chains from the crystal structure are in gold and the chains from modelled structure are in red and green. The interface residues are shown as grey spheres. The plot of the local density-based score (SMOC) is shown for the chains forming an interface in the model and the equivalent chain in the crystal structure. The X-axis is numbered as per the residue numbers in the crystal structure. The average SMOC over the model chain is shown as blue dashed line. a) 5 Å resolution structure of Chikungunya virus and the subcomplex envelope1-envelope2 heterodimer (E1-E2) (EMD-5577; fitted PDB: 3J2W). The corresponding 2.35 Å resolution crystal structure is PDB: 3N44 (gold). b) 9.8 Å resolution structure of the TFIID subunit 5 and 9 sub-complex (EMD-9302, fitted PDB: 6MZD, cyan and green). The 2.5 Å corresponding crystal structure for subunit5-subunit 9 is PDB: 6F3T (gold).</p>
+</caption>
+<graphic xlink:href="EMS104496-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Performance in different bins of the scores using the SVM machine learning-based classifier.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top">Scores’ bins</th>
+<th align="left" valign="top">TPR (True Positive Rate)</th>
+<th align="left" valign="top">FPR (False positive Rate)</th>
+<th align="left" valign="top">Precision</th>
+<th align="left" valign="top">Specificity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">(-/+)[0.0 to 0.5)</td>
+<td align="left" valign="top">0.15</td>
+<td align="left" valign="top">0.76</td>
+<td align="left" valign="top">0.15</td>
+<td align="left" valign="top">0.24</td>
+</tr>
+<tr>
+<td align="left" valign="top">(-/+) [0.5 to 1.0)</td>
+<td align="left" valign="top">0.29</td>
+<td align="left" valign="top">0.58</td>
+<td align="left" valign="top">0.29</td>
+<td align="left" valign="top">0.41</td>
+</tr>
+<tr>
+<td align="left" valign="top">(-/+) [1.0 to 1.5)</td>
+<td align="left" valign="top">0.61</td>
+<td align="left" valign="top">0.39</td>
+<td align="left" valign="top">0.63</td>
+<td align="left" valign="top">0.61</td>
+</tr>
+<tr>
+<td align="left" valign="top">(-/+) [1.5 to 2.0)</td>
+<td align="left" valign="top">0.78</td>
+<td align="left" valign="top">0.21</td>
+<td align="left" valign="top">0.78</td>
+<td align="left" valign="top">0.78</td>
+</tr>
+<tr>
+<td align="left" valign="top">(-/+) [2.0 to 2.5)</td>
+<td align="left" valign="top">0.93</td>
+<td align="left" valign="top">0.11</td>
+<td align="left" valign="top">0.93</td>
+<td align="left" valign="top">0.99</td>
+</tr>
+<tr>
+<td align="left" valign="top">&gt;=2.5 and &lt;=- 2.5</td>
+<td align="left" valign="top">1.0</td>
+<td align="left" valign="top">0.18</td>
+<td align="left" valign="top">0.97</td>
+<td align="left" valign="top">0.81</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<p id="P115">The following bins according to the listed thresholds and the measure TPR, FPR, Precision and Specificity are averaged values over the test datasets obtained from ten-fold crossvalidation:</p>
+<p id="P116">0.0-0.5: True positives present in the score range of 0.0 to 0.5 and true negative in score range of -0.5 to 0.0. False positives are the complexes from negative dataset (ND) but are predicted positive with a score assigned between (0.0 to 0.5) and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score between (-0.5 to 0.0).</p>
+<p id="P117">0.5-1.0: True positives present in the score range of 0.5 to 1.0 and true negative in score range of -0.5 to -1.0. False positives are the complexes from negative dataset (ND) but are predicted positive with a score assigned between (0.5 to 1) and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score between (-0.5 to -1.0).</p>
+<p id="P118">1.0-1.5: True positives present in the score range of 1.0 to 1.5 and true negative in score range of -1.0 to -1.5. False positives are the complexes from negative dataset (ND) but are predicted positive with a score assigned between (1.0 to 1.5) and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score between (-1.0 to -1.5).</p>
+<p id="P119">1.5-2.0: True positives present in the score range of 1.5 to 2.0 and true negative in score range of -1.5 to -2.0. False positives are the complexes from negative dataset (ND) but are predicted positive with a score assigned between (1.5 to 2.0) and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score between (-1.5 to -2.0).</p>
+<p id="P120">2.0-2.5: True positives present in the score range of 2.0 to 2.5 and true negative in score range of -2.0 to -2.5. False positives are the complexes from negative dataset (ND) but are predicted positive with a score assigned between (2.0 to 2.5) and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score between (-2.0 to -2.5).</p>
+<p id="P121">&gt;=2.5 and &lt;=-2.5: True positives with a score &gt;= 2.5 and true negative with score &lt;= -2.5. False positives are the complexes from negative dataset (ND) but are predicted positive with a score &gt;2.5 and false negatives are positive complexes from either positive dataset 1 or 2 (PD1 or PD2) but are predicted as negative with the score &lt; -2.5.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Assessment of interfaces in the models of CASP13 cryo-EM target T1020o. The model and equivalent target chains forming the interface are listed along with the interface RMSD (iRMSD), fraction of aligned native interface residues (f<sub>Nat</sub>) and predicted class using our model.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top">Model ID</th>
+<th align="left" valign="top">Model interface</th>
+<th align="left" valign="top">Target interface</th>
+<th align="left" valign="top">iRMSD (Å), f<sub>nat</sub>
+</th>
+<th align="left" valign="top">Predicted class</th>
+<th align="left" valign="top">Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">TS004_2o</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">2.2, 0.81</td>
+<td align="left" valign="top">Positive</td>
+<td align="left" valign="top">2.6</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">2.5, 0.75</td>
+<td align="left" valign="top">Positive</td>
+<td align="left" valign="top">2.6</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">2.1, 0.82</td>
+<td align="left" valign="top">Positive</td>
+<td align="left" valign="top">2.7</td>
+</tr>
+<tr>
+<td align="left" valign="top">TS008_4o</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">3.16, 0.42</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.5</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">2.82, 0.48</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.5</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">2.81, 0.48</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.5</td>
+</tr>
+<tr>
+<td align="left" valign="top">TS135_3o</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">3.08, 0.56</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.6</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">3.4, 0.52</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.6</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">3.51, 0.6</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-1.6</td>
+</tr>
+<tr>
+<td align="left" valign="top">TS208_1o</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">2.6, 0.63</td>
+<td align="left" valign="top">Not ranked (Interface residues from model 9 and 8)</td>
+<td align="left" valign="top">NA</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">BC</td>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">2.5, 0.54</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-0.2</td>
+</tr>
+<tr>
+<td align="left" valign="top"/>
+<td align="left" valign="top">AC</td>
+<td align="left" valign="top">AB</td>
+<td align="left" valign="top">2.6, 0.52</td>
+<td align="left" valign="top">Negative</td>
+<td align="left" valign="top">-0.39</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

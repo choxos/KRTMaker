@@ -1,0 +1,1826 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS94381</article-id>
+<article-id pub-id-type="doi">10.1101/2020.08.28.271965</article-id>
+<article-id pub-id-type="archive">PPR207730</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Structure-Altering Mutations of the SARS-CoV-2 Frame Shifting RNA Element</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Schlick</surname>
+<given-names>T.</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>Q.</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>S.</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>S.</given-names>
+</name>
+</contrib>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>01</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>30</day>
+<month>08</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">With the rapid rate of Covid-19 infections and deaths, treatments and cures besides hand washing, social distancing, masks, isolation, and quarantines are urgently needed. The treatments and vaccines rely on the basic biophysics of the complex viral apparatus. While proteins are serving as main drug and vaccine targets, therapeutic approaches targeting the 30,000 nucleotide RNA viral genome form important complementary approaches. Indeed, the high conservation of the viral genome, its close evolutionary relationship to other viruses, and the rise of gene editing and RNA-based vaccines all argue for a focus on the RNA agent itself. One of the key steps in the viral replication cycle inside host cells is the ribosomal frameshifting required for translation of overlapping open reading frames. The frameshifting element (FSE), one of three highly conserved regions of coronaviruses, includes an RNA pseudoknot considered essential for this ribosomal switching. In this work, we apply our graph-theory-based framework for representing RNA secondary structures, “RAG” (RNA-As Graphs), to alter key structural features of the FSE of the SARS-CoV-2 virus. Specifically, using RAG machinery of genetic algorithms for inverse folding adapted for RNA structures with pseudoknots, we computationally predict minimal mutations that destroy a structurally-important stem and/or the pseudoknot of the FSE, potentially dismantling the virus against translation of the polyproteins. Additionally, our microsecond molecular dynamics simulations of mutant structures indicate relatively stable secondary structures. These findings not only advance our computational design of RNAs containing pseudoknots; they pinpoint to key residues of the SARS-CoV-2 virus as targets for anti-viral drugs and gene editing approaches.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">The novel coronavirus SARS-CoV-2, the agent of the Covid-19 pandemic that has upended our world in a very short time, poses an international health emergency of unprecedented proportions. With rapid transmission and high death rates, this virus threatens the lives and livelihood of billions of people worldwide. Scientists have been quick to rise to the task to investigate collaboratively many viable paths of defense. These include development of better techniques for detection and tracing of infection, identification of viable compounds that mitigate the virus’s harm, and development of vaccines.</p>
+<p id="P3">Some clues into the complex virus apparatus involved in the infection process are available from highly related cousins of this pathogenic coronavirus. From the SARS (SARS-CoV) and MERS (MERS-CoV) viral outbreaks, we have a reasonable mechanistic understanding of the SARS-CoV-2 virus life cycle and the infection process. This includes the cellular invasion by the viral spike (or S) protein and its binding to the ACE2 cellular receptors, and the triad of main proteins essential for producing a complete viral particle (envelope, membrane, and nucleocapsid) (<xref ref-type="bibr" rid="R1">1</xref>–<xref ref-type="bibr" rid="R3">3</xref>). In addition, scientific advances since the SARS and MERS outbreaks, along with accumulating data about the disease since its emergence in late 2019 from China, provide insights into the virology, pathology, and empirical treatments of such infections (<xref ref-type="bibr" rid="R1">1</xref>–<xref ref-type="bibr" rid="R3">3</xref>).</p>
+<p id="P4">From this information and knowledge of other viruses like HIV-AIDS, Ebola, Influenza, Hepatitis C, or Malaria (<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R5">5</xref>), we have suites of anti-viral and other compounds that can potentially mitigate the damage of the virus on the body, including Remdesivir, Tocilizumab, Favipiravir, Galidesivir, Brilacidin, and Dexamethasone (<xref ref-type="bibr" rid="R5">5</xref>). In particular, Remdesivir, which resembles the structure of an HIV reverse-transcriptase inhibitor, has shown promise for reducing recovery time of patients in acute stages, and the steroid Dexamethasone, used widely to fight serious inflammatory reactions, was shown to reduce Covid-19 deaths. Drugs that block spike, membrane, or envelope proteins on the viral shell of coronaviruses are actively being sought, and some are being investigated in clinical trials.</p>
+<p id="P5">With rapid deaths, as well as second and third waves of infection already seen in some countries, scientific data are critically needed to help guide clinical efforts and offer genomic, bioinformatic, and biophysical insights into effective disease treatment approaches, <italic>both short and long term</italic>. Because a vaccine is not imminent and new coronavirus epidemics can be anticipated, a better understanding of the viral machinery and potential therapeutic avenues that are not currently widely explored are warranted.</p>
+<p id="P6">SARS-CoV-2, like other coronaviruses, has a ≈ 30,000 base-pair RNA genome. The viral RNA agent hijacks the host cells’ ribosome machinery to replicate and assemble itself by synthesizing a suite of viral proteins and thus continue to invade host organs. An attractive alternative line of research to protein-targeting approaches involves compounds that degrade and thus disarm the main workhorse of the virus, the RNA genome (<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R7">7</xref>). RNA-targeting approaches offer therapeutic potentials due to the high sequence and structure conservation of the untranslated regions of the viral genomes; they nonetheless pose physiochemical challenges due to their more complex structures. With rapid emergence of CRISPR technology, however, such approaches are becoming more viable and valuable. Indeed, CRISPR/Cas13d technology may be used in connection with a guided-RNA delivery system to edit the SARS-CoV-2 viral genome in strategic locations such as the Open Reading Frame ORF1a,b and the spike gene of the virus, with the aim of disrupting key replication or invasion processes (<xref ref-type="bibr" rid="R7">7</xref>). Two vaccine candidates based on the RNA are under advanced clinical trials (<xref ref-type="bibr" rid="R8">8</xref>) — an mRNA vaccine by Moderna, and an adenovirus vector by Johnson &amp; Johnson.</p>
+<p id="P7">One of the critical steps in viral replication is the translation of overlapping, but shifted, ORF1a,b gene region which codes for the unstructured polypeptides that start the cascade of viral protein synthesis. This is achieved via the process of −1 programmed ribosomal frameshifting, a mechanism to stall ribosomal translation utilized by many viruses to handle overlapping reading frames (<xref ref-type="bibr" rid="R9">9</xref>). The frameshifting element (FSE) is a small region (less than 100 nucleotides) in the middle of the ORF1a,b gene region; it is believed that such mechanisms rely on specific structural modules and/or associated structural transitions (<xref ref-type="bibr" rid="R10">10</xref>). In the SARS-CoV virus, this frame-shifting element was identified as a three-stem structure, where Stems 1 and 2 intertwine via a pseudoknot, or an intertwined base pair region (<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R12">12</xref>). Drug screening for this structure had suggested a potential drug to a central loop region (<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R13">13</xref>), and recent research suggests promise for SARS-CoV-2 as well (<xref ref-type="bibr" rid="R14">14</xref>).</p>
+<p id="P8">Here we expand upon these insights for SARS-CoV-2 applications using our graph-theoretic approach, “RAG” (RNAAs-Graphs), that uses tree and dual graphs to represent, study, predict, and design RNA secondary (2D) structures (<xref ref-type="bibr" rid="R15">15</xref>–<xref ref-type="bibr" rid="R20">20</xref>). Our dual graphs represent RNA stems/helices as graph vertices and loops as edges. These graph objects can handle RNA pseudoknot motifs. By focusing on the overall connectivity/shape of the RNA 2D structural elements, RAG substantially simplifies the RNA structure, making it insensitive to the number of residues in stems and loop regions. Because our approach is general, similar techniques can be applied to other regions of the viral genome.</p>
+<p id="P9">Here we investigate structural features of the FSE of SARS-CoV-2, and predict minimal mutations that destroy key structural features thought to be critical to its function, thus providing targets for anti-viral or gene therapy. Specifically, we use our inverse folding procedure, RAG-IF, which utilizes a genetic algorithm to systematically mutate RNA sequences to fold onto a target graph motif (<xref ref-type="bibr" rid="R21">21</xref>). RAG-IF relies on our computational pipeline to design RNA sequences for target graphs from constituent building blocks (<xref ref-type="bibr" rid="R22">22</xref>) based on fragment assembly of subgraphs (<xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R24">24</xref>) using a library of subgraphs and corresponding 3D structures of solved RNAs (<xref ref-type="bibr" rid="R25">25</xref>). Such RNA design is a computationally efficient approach that can generate hundreds of candidate of sequence pools and then sort them for minimal mutations. The proposed candidates from our original design pipeline have already shown promise through experimental chemical reactivity testing (SHAPE) (<xref ref-type="bibr" rid="R24">24</xref>).</p>
+<p id="P10">In this work, we first identify the SARS-CoV-2 FSE region (based on the SARS-CoV FSE sequence) and obtain its consensus structure with eight different secondary-structure prediction programs; we represent this region as dual graph 3_6, 3 stems with a pseudoknot intertwining Stems 1 and 2 (<xref ref-type="fig" rid="F1">Fig. 1A-C</xref>). Next, we use RAG-IF (<xref ref-type="bibr" rid="R21">21</xref>), modified here to handle pseudoknots, to identify critical residues that can transform the FSE using minimal mutations to closely-related graph motifs that correspond to other known RNA structures chosen from our dual-graph motif atlas (<xref ref-type="bibr" rid="R26">26</xref>). Intriguingly, we find that mutating only 2-3 critical residues in the FSE can alter its structure dramatically. We also assess the stability of these mutants by compensatory mutations using the same inverse folding techniques; this essentially provides a measure of how easily ‘reversible’ these mutations are. Next, we report emerging structural insights from microsecond molecular dynamics (MD) simulations of the wildtype and mutants as additional measures of structural stability. We conclude with a summary and discussion of our findings, including a figure with key drug-target residues emerging from this work, implications to Covid-19 therapy, and future plans.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<label>2</label>
+<title>Materials and Methods</title>
+<sec id="S3">
+<label>2.1</label>
+<title>Identification of the SARS-CoV-2 FSE</title>
+<p id="P11">The SARS-CoV FSE has been identified as the slippery site UUUAAAC, and a downstream three-stem pseudoknot-containing structure (<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R27">27</xref>). Taking this information as a guide, we used RNAMotif (<xref ref-type="bibr" rid="R28">28</xref>) to search for the same nucleotide pattern (bracketed by 5′UUUAAAC, an H-type pseudoknot, and UUU3′) in SARS-CoV-2 complete RNA genome(GenBank entry MT246482). This led to the identification of a 84-nucleotide sequence in the viral genome of SARSCoV-2, with a single-nucleotide substitution as compared to SARS-CoV FSE (<xref ref-type="fig" rid="F1">Fig. 1A</xref>).</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Secondary Structure Prediction Packages</title>
+<p id="P12">We use eight RNA 2D structure prediction packages that handle pseudoknots to predict the 2D structures of 84-residue and 77-residue (without the slippery site) FSE of SARSCoV-2: PKNOTS (<xref ref-type="bibr" rid="R29">29</xref>), NUPACK (<xref ref-type="bibr" rid="R30">30</xref>), IPknot (<xref ref-type="bibr" rid="R31">31</xref>), Hotknot(<xref ref-type="bibr" rid="R32">32</xref>), Vfold2D (<xref ref-type="bibr" rid="R33">33</xref>), SPOT-RNA (<xref ref-type="bibr" rid="R34">34</xref>), ProbKnot (<xref ref-type="bibr" rid="R35">35</xref>), andvsFold5 (<xref ref-type="bibr" rid="R36">36</xref>). PKNOTS and NUPACK were installed locally, and webservers were used for the others. The structures were first predicted using the default parameter sets for all eight packages; if the default set did not yield the expected three-stem pseudoknot structure, other parameter sets available on the webservers were also utilized.</p>
+<p id="P13">Fig. S1 and Fig. S2 show the minimum free energy structures predicted by the eight programs, using the default or alternative parameter set, for both the 84-residue and 77-residue FSE.</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>RAG Dual Graphs</title>
+<p id="P14">In RNA 2D structures, double-stranded (base-paired) regions are called stems/helices, and single-stranded regions are called loops (<xref ref-type="bibr" rid="R15">15</xref>–<xref ref-type="bibr" rid="R17">17</xref>). The rules for representing 2D structures as dual graphs are: <list id="L1" list-type="order">
+<list-item>
+<p id="P15">Stems are represented as vertices and loop strands are represented as edges.</p>
+</list-item>
+<list-item>
+<p id="P16">Stems must have at least two base pairs to be considered as vertices.</p>
+</list-item>
+<list-item>
+<p id="P17">Each single strand in bulges, internal loops and junctions are represented as an edge that connects vertices. Bulges/internal loops with only one residue on each strand are ignored.</p>
+</list-item>
+<list-item>
+<p id="P18">Hairpin loops are represented as self edges.</p>
+</list-item>
+<list-item>
+<p id="P19">Unpaired residues at the 5′ and 3′ ends are ignored.</p>
+</list-item>
+</list>
+</p>
+<p id="P20">
+<xref ref-type="fig" rid="F1">Fig. 1A,C</xref> show the 2D structure of the SARS-CoV-2 FSE and its corresponding dual graph, 3_6. Our dual graph enumeration algorithm (<xref ref-type="bibr" rid="R26">26</xref>) uses graph theory to describe all possible dual graphs for 2-9 vertices. There are 110,667 dual graphs in our current dual graph library, and we show those with 2-5 vertices in Fig. S3.</p>
+</sec>
+<sec id="S6">
+<label>2.4</label>
+<title>RAG-IF for Minimal Mutations</title>
+<p id="P21">We use our inverse-folding protocol RAG-IF (<xref ref-type="bibr" rid="R21">21</xref>) to mutate the 77-residue FSE sequence to fold onto closely related dual graph motifs. Our RAG-IF program defines the inverse-folding with mutations section of our computational pipeline for novel RNA design (<xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R24">24</xref>). For a target tree graph (i.e., nopseudoknots), our original design pipeline generates a pool of RNA sequences, some of which fold onto the target graph, as determined by two 2D structure prediction packages. For the unsuccessful ones, RAG-IF is applied to determine minimal mutations that lead these sequence to fold onto the target topology.</p>
+<p id="P22">RAG-IF has three steps: (1) identify mutation regions and target 2D structures, (2) produce candidate sequences by mutations by a genetic algorithm (GA), and (3) optimize the mutated sequence pool by sorting and retaining only minimal or essential mutations that fold onto the target graph.</p>
+<p id="P23">For tree graphs, all three steps are automated. However, to use RAG-IF for dual graphs capable of handling pseudoknots, we manually choose the target residues for mutation (step 1), modify aspects of the GA for speed, and change the 2D structure prediction packages to ones that can handle pseudoknots for steps 2 and 3.</p>
+<sec id="S7">
+<label>2.4.1</label>
+<title>Selection of mutation regions</title>
+<p id="P24">We compare the wildtype FSE graph and the target graph to identify the smallest possible mutation regions required for the transformation. Specifically, we focus on breaking the FSE pseudoknot/Stem 2. Here we describe how this is accomplished for our four most successful target graphs 3_5,3_2,2_1, and 3_3 (shown in <xref ref-type="fig" rid="F1">Fig. 1D</xref> and Fig. S4).</p>
+<p id="P25">Target dual graph 3_5 is a three-way junction, without any pseudoknots, and it corresponds to RNAs like the thi-box riboswitch. Two of the three stems of the FSE (Stems 1 and 3) are also present in the 3_5 graph, hence are kept intact in the transformation. To break the FSE pseudoknot/Stem 2, we seek residues at the 3′ end of the FSE to form a new stemwith the 5′ end. Hence, we select residues 71-77, part of Stem2 and the 3′ end, as targets for mutation.</p>
+<p id="P26">Target graph 3_2 has 3 stems connected by a singlestranded region and an internal loop, and it includes theoriginal Stem 3. This graph corresponds to RNAs like U6snRNA. For this transformation, we use the 5′ end and hairpinloop of Stem 1 (Fig. S4) to form a new stem. To pair theresidues involved, we select the 3′ strand of the original Stem1, residues 27-33, as the mutation region.</p>
+<p id="P27">Target graph 2_1, corresponding to RNAs like the cleaved hammerhead ribozyme, has two stems and a connecting singlestranded region. For this transformation, we aim to keep Stems 1 and 3 intact, but destroy Stem 2, while avoiding two other potential pseudoknots (shown in Fig. S4). Hence, we selectresidues 22-24 and 70-74 of Stem 2 and the 3′ end residues75-77 for mutation.</p>
+<p id="P28">Target graph 3_3 has 3 stems and a structurally different pseudoknot. It corresponds to RNAs like the IRES (PDB ID:2IL9). To break the FSE pseudoknot, we want the 3′ strand of Stem 2 to bind with the hairpin loop of Stem 3 to form a new pseudoknot. However, to avoid a another potential pseudoknotas shown in Fig. S4, we select residues 22-24 and the 3′ strand of Stem 2 (residues 68-73) as mutation regions.</p>
+</sec>
+<sec id="S8">
+<label>2.4.2</label>
+<title>Genetic algorithm application</title>
+<p id="P29">Genetic algorithms (GA) mimic evolution in Nature. A population with a defined <italic>fitness</italic> undergoes random mutation,crossover and selection, and those with high fitness are retained. In our case, the individuals in the population are RNA sequences, and the fitness is the number of residues that have the same 2D structure in both the target and thepredicted structure. Based on prediction performance on the 77-residue FSE and computational complexity (see below),we choose NUPACK to be the prediction program used in the GA. The initial population is obtained by randomly assigning nucleotides to the mutation region in the RNA sequence.This population is then subject to 100 iterations of random mutation, crossover, selection and nomination (see (<xref ref-type="bibr" rid="R21">21</xref>) fordetails).</p>
+<p id="P30">For minimal mutation search, we use a population of 100 sequences (and 10 sequence replacement in the selectionstep). The GA terminates if 200 high-fitness sequences are nominated or the execution time exceeds 6 hours. The nominated sequences are further screened by prediction program PKNOTS, and only those that satisfactorily fold onto thetarget graph by both NUPACK and PKNOTS are retained.</p>
+<p id="P31">For compensatory mutation search, the starting sequences are the mutants, the mutation regions are the same, and the target folding is the 2D structure predicted by NUPACK for the wildtype 77-residue FSE. Expanded RAG-IF runs (500 sequences) are taken for targets 2_1 and 3_3, with 50 sequence replacement instead of 10.</p>
+</sec>
+<sec id="S9">
+<label>2.4.3</label>
+<title>Sequence pool optimization</title>
+<p id="P32">During mutation optimization, we remove any mutations that do not change the target fold (dual graph) of the sequence.The remaining mutations are deemed as essential or minimal(<xref ref-type="bibr" rid="R21">21</xref>).</p>
+</sec>
+</sec>
+<sec id="S10">
+<label>2.5</label>
+<title>Molecular Dynamics Simulation Details</title>
+<p id="P33">The 3D structures of the 77-residue wildtype FSE, along with three mutants, 72C-74C, 30G-32C, 23G-73A, were predicted using 4 structure prediction webservers: RNAComposer (<xref ref-type="bibr" rid="R37">37</xref>),Vfold3D (<xref ref-type="bibr" rid="R38">38</xref>), SimRNA (<xref ref-type="bibr" rid="R39">39</xref>), and 3dRNA(<xref ref-type="bibr" rid="R40">40</xref>). We discard any structure that did not correspond to the intended dual graph motif (3_6 for the wildtype, 3_5 for 72C-74C mutant,3_2 for 30G-32C mutant, and 2_1 for 23G-73A mutant) based on the 2D structures annotated by either DSSR (<xref ref-type="bibr" rid="R41">41</xref>)or RNAView (<xref ref-type="bibr" rid="R42">42</xref>). Structure validation was performed by MolProbity (<xref ref-type="bibr" rid="R43">43</xref>) (using nuclear hydrogen positions), and thestructure with least steric clashes and best geometry was selected for the subsequent MD simulations. For the wildtype as well as the 3 mutants, the selected structure was predicted by RNAComposer.</p>
+<p id="P34">MD simulations were performed using Gromacs 2020.3(<xref ref-type="bibr" rid="R44">44</xref>), with the Amber OL3 forcefield (<xref ref-type="bibr" rid="R45">45</xref>). The systems were solvated with TIP3P water molecules in the cubic box whose boundaries extended at least 10 Å from any RNA atom (<xref ref-type="bibr" rid="R46">46</xref>). Sodium ions were randomly placed for charge neutralization, and additional Na<sup>+</sup> and Cl<sup>-</sup> were added for 0.1M bulk concentration. The total number of atoms for the simulations of the wildtype, 72C-74C mutant, 30G-32C mutant, and 23G-73Amutant are 119671, 156619, 162175, and 151076, respectively.</p>
+<p id="P35">The systems were energy minimized via steepest descent and equilibrated while fixing the RNA. Simulations were run with a timestep of 2 fs and a SHAKE-like LINCS algorithm (<xref ref-type="bibr" rid="R47">47</xref>) with constraints on all bonds. The equilibration was performed for 100 ps in the NVT ensemble (300 K) and then 100 ps in NPT ensemble (300 K and 1 bar). Production runs were performed for 1 <italic>μ</italic>s under NPT. The RNA and ionicsolvent were independently coupled to external heat baths with a relaxation time of 0.1 ps. The Particle Mesh Ewald method (<xref ref-type="bibr" rid="R48">48</xref>) was used to treat long-range electrostatics. The short-range electrostatic cutoff is set at 10 Å, and the Van der Waals cutoff is set at 10 Å.</p>
+<p id="P36">The trajectories were analyzed using Gromacs, and structure visualization was prepared by PyMOL (<xref ref-type="bibr" rid="R49">49</xref>) and VMD (<xref ref-type="bibr" rid="R50">50</xref>). Root mean square deviations (RMSD) and root mean square fluctuations (RMSF) were calculated with reference to the NPT equilibrated structure using all heavy RNA atoms. Cluster analysis was conducted via Gromos method with the RMSD cutoff of 3.5 Å on RNA non-H backbone atoms. Principal component analysis (PCA) was performed using all heavy atoms in the RNA. Structures used for clustering and PCA analyses were taken every 250 ps from 500ns to 1 <italic>μ</italic>s.</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="results">
+<label>3</label>
+<title>Results</title>
+<sec id="S12">
+<label>3.1</label>
+<title>Secondary Structure and Dual Graph forSARS-CoV-2 FSE</title>
+<p id="P37">Based on genomic sequencing, SARS-CoV-2 genome is 89% similar to SARS-CoV and 50% to MERS-CoV. From the study of earlier RNA viruses, the FSE consists of two components: a heptamer of the form XXXYYYZ, known as the slippery site, where the tRNA dissociates from the mRNAand the ribosome ‘slips’ to an overlapping reading frame; and a downstream mRNA element, usually a pseudoknot(<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R51">51</xref>). Specifically, the SARS-CoV FSE has been identified as the slippery site UUUAAAC, and a downstream three-stemp seudoknot-containing structure (<xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R27">27</xref>). Because of strong sequence conservation, it is presumed that this similar FSE motif would also exist in SARS-CoV-2. We searched for this FSE motif (see Identification of the SARS-CoV-2 FSE) and identified the same 84-nucleotide sequence in the viral genome of SARS-CoV-2 (residues 13405–13488, analogous to the SARS-CoV residues 13392–13475), with a mere single nucleotide substitution (A in SARS-CoV-2 instead of C inSARS-CoV in position 72 of this sequence), as shown in <xref ref-type="fig" rid="F1">Fig. 1A</xref>.</p>
+<p id="P38">To assess the secondary (2D) structure of the SARS-CoV-2 FSE and to select software for our mutational analysis, weapplied eight 2D-structure prediction packages that can handle pseudoknots. See Secondary Structure Prediction Packages for computational details.</p>
+<p id="P39">Out of these eight packages, 3 programs predicted a three-stem pseudoknot structure (Fig. S1). As the remaining programs predicted additional stems or pseudoknots that involved the heptamer slippery sequence, we applied the 8 programs again to the 77-residue system without the slippery site. Now 5 of the 8 programs predict a three-stem pseudoknot structure (Fig. S2).</p>
+<p id="P40">Our resulting consensus three-stemmed pseudoknot structure in <xref ref-type="fig" rid="F1">Fig. 1A</xref> shows the stem regions that lead to an intertwined structure in three dimensional space. The corresponding circular plot shows the base pairing. Using our rules to represent RNA 2D structure for RAG dual graphs (RAG DualGraphs), this FSE structure corresponds to the dual graph 3_6 from our recently enumerated atlas of dual graphs up to 9 vertices (<xref ref-type="bibr" rid="R26">26</xref>). The three stems correspond to three vertices, and the loops correspond to connecting edges. This 3_6 fold motif also corresponds to multiple riboswitch structures of SAM (PDB IDs: 3NPN, 3NPQ) and flouride ribo switches (PDB IDs: 3VRS, 4EN5, 4ENA, 4ENB, and 4ENC) (<xref ref-type="bibr" rid="R26">26</xref>).</p>
+<p id="P41">Although it is not conclusively known what the FSE structure is in SARS-CoV-2 and whether this region’s folding may be affected by neighboring sequences and its binding to the nucleocapsid protein (see <xref ref-type="sec" rid="S20">Conclusion and Discussion</xref>), other recent works have used various computational tools and experimental input to suggest its structure (<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R52">52</xref>).</p>
+<p id="P42">Since our dual graphs are independent of the number of residues in stems and loops, the graph motif 3_6 corresponds to every three-stem pseudoknot structure predicted by the above programs for both the 84-residue and 77-residue FSE. Thus, the insensitivity of our graph-based approach to small differences in base pairing annotations makes its application more robust. We use the 77-residue FSE and software packages NUPACK and PKNOTS for our computational mutational analysis described here.</p>
+</sec>
+<sec id="S13">
+<label>3.2</label>
+<title>Identification of Minimal Mutations To Destroy Stem 2 and/or Pseudoknot</title>
+<p id="P43">The SARS-CoV-2 FSE structure and associated transitions are thought to be key for ribosomal frameshifting and the subsequent translation of the ORF1a,b region of the viral genome. Any disruption of key structural features would possibly in hibit or hamper this translation. Therefore, we seek crucial FSE nucleotides, especially those that destroy Stem 2 (<xref ref-type="fig" rid="F1">Fig. 1</xref>) and the pseudoknot, that can potentially serve asantiviral drug targets.</p>
+<p id="P44">Identifying these crucial residues is challenging, even in a relatively small sized RNA like the FSE. Fortunately, our RAG representations allow us to simplify this problem. We formulate our goal here as identifying minimal mutations to transform the 3_6 dual graph motif of the FSE into nine other dual graphs, of equal or smaller size, that correspond to 2D structures of known RNAs (<xref ref-type="bibr" rid="R26">26</xref>). These nine targets are shown in <xref ref-type="fig" rid="F1">Fig. 1D</xref>. Among these, 6 graphs are pseudoknot free (blue) and the remaining 3 contain pseudoknots (green).</p>
+<p id="P45">We use our inverse-folding protocol RAG-IF (<xref ref-type="bibr" rid="R21">21</xref>) tomutate the FSE sequence, as described in <xref ref-type="sec" rid="S2">Materials and Methods</xref>. After the minimal mutations are identified, we transform the top mutated sequences back to the original FSE graph 3_6 using RAF-IF to access the mutants’ stability. We want to determine whether we recover the original FSE sequence and whether other compensatory mutations can accomplish structural transformations.</p>
+<p id="P46">Below, we describe minimal mutation and compensatory mutation results for four of the most successful targets, 3_5,3_2, 2_1, and 3_3, in turn (see <xref ref-type="fig" rid="F2">Fig. 2</xref>, <xref ref-type="fig" rid="F3">3</xref>, <xref ref-type="fig" rid="F4">4</xref>, <xref ref-type="fig" rid="F5">5</xref>). Summary <xref ref-type="fig" rid="F6">Fig. 6A</xref> shows residues involved.</p>
+<sec id="S14">
+<label>3.2.1</label>
+<title>Mutations for target graph 3_5 (3-way junction)</title>
+<p id="P47">To transform 3_6 of the FSE into target 3_5 (<xref ref-type="fig" rid="F2">Fig. 2A</xref>), we keep Stem 1 and 3 intact and select residues 71-77 (highlighted in red) in Stem 2 for mutation.</p>
+<p id="P48">RAG-IF GA produces 115 sequences that fold onto the target graph 3_5 by both NUPACK and PKNOTS, with number of mutations ranging from 3−7 (Table S1). Following mutation optimization to remove non-essential mutations, we obtain 16 unique sequences with 2−7 minimal mutations. Significantly, [72G-C, 74U-C] destroys the corresponding base pairs in Stem 2 of the FSE and strengthens the new stem of 3_5 with G-C base pairs.</p>
+<p id="P49">The same outcome for this transformation of 3_6 to 3_5using [72G-C, 74U-C] comes from two additional prediction programs (see Fig. S5). Thus, we consider this the top mutant choice for target 3_5. Its predicted 2D structure is shown in <xref ref-type="fig" rid="F2">Fig. 2A</xref>.</p>
+<p id="P50">Transforming this mutant [72G-C, 74U-C] back to the 3_6 graph can be accomplished by 2 double mutants besides [72CG, 74C-U]: [72C-G, 74C-G] and [72C-G, 74C-A] (<xref ref-type="fig" rid="F2">Fig. 2B</xref>).</p>
+</sec>
+<sec id="S15">
+<label>3.2.2</label>
+<title>Mutations for target graph 3_2 (3-stem with internal loop)</title>
+<p id="P51">Next, we transform the FSE into target graph 3_2 (<xref ref-type="fig" rid="F3">Fig. 3A</xref>).To construct 3_2 from 3_6, we keep Stem 3 intact, and select the mutation region as residues 27-33.</p>
+<p id="P52">RAG-IF GA generates 64 candidate sequences that fold onto the target 3_2 by both NUPACK and PKNOTS, with mutations ranging from 3−7 (see Table S1). Following mutation optimization, we obtain 16 unique sequences, with 2−6 minimal mutations. Two of the 16 optimized sequences require only 2 mutations: either residues 30 (from A to G) or31 (from C to G), with residue 32 (from A to C).</p>
+<p id="P53">Both sequences mutate key residues to destroy Stem 1 ofthe FSE, along with the hairpin loop that forms the pseudoknot (Stem 2), and streng then the newly formed stems with G-C base pairs. The predicted structure for mutation [30A-G, 32AC] (<xref ref-type="fig" rid="F3">Fig. 3A</xref>) is confirmed by another prediction program (Fig. S5).</p>
+<p id="P54">When transforming the mutant [30A-G, 32A-C] back to the 3_6 graph, we obtain 55 candidate sequences before optimization from the GA. Besides recovering [30G-A, 32CA], we find two other single-point mutations, [32C-A] and [32C-G], that recover the graph 3_6. In fact, 48 of the 55 sequences mutate residue 32. Following optimization, we obtain 9 unique sequences (<xref ref-type="fig" rid="F3">Fig. 3B</xref>).</p>
+<p id="P55">Interestingly, most of the mutations from 44 of the 55 candidates are deemed non-essential, and only [32C-A] or [32C-G] are retained. This includes the reverse mutation [30GA, 32C-A]. Mutating residue 32 breaks the middle base pair in a relatively small stem in the 3_2 mutant, thus destabilizing the whole structure. If residue 32 is not mutated, at least 3 minimal mutations are required, rendering residue 32 as one of the key residues for structural transformations.</p>
+</sec>
+<sec id="S16">
+<label>3.2.3</label>
+<title>Mutations for target graph 2_1 (two stems)</title>
+<p id="P56">To transform 3_6 of the FSE into 2_1, we aim to destroy Stem 2, and select residues 22-24 and 70-77 as mutation candidate regions.</p>
+<p id="P57">RAG-IF GA produces 221 candidate sequences that fold onto the target graph 2_1 by both NUPACK and PKNOTS: the number of mutations ranges from 6–11 (Table S1). After mutation optimization, we retain 9 unique sequences (shown in <xref ref-type="fig" rid="F4">Fig. 4A</xref>) with 2–5 minimal mutations. The three sequences with only 2 mutations involve residues 23 (from C to G) and 73 (from C to A, G, or U). Because Stem 2 in the FSE is mainly formed by four G-C base pairs, mutating 23 and 73 breaks two of them which destabilizes the stem.</p>
+<p id="P58">The mutant RNA [23C-G, 73C-A] sequence also folds onto our target graph 2_1 by two additional prediction programs (Fig. S5). The predicted 2D structure, shown in <xref ref-type="fig" rid="F4">Fig. 4A</xref>, has Stem 1 longer than that of the original FSE.</p>
+<p id="P59">Our reverse transformation of the mutant [23C-G, 73C-A]to 3_6 generates 23 unique sequences after an expanded pool(see <xref ref-type="sec" rid="S2">Materials and Methods</xref>), recovering [23G-C, 73A-C] and finding many others (<xref ref-type="fig" rid="F4">Fig. 4B</xref>).</p>
+</sec>
+<sec id="S17">
+<label>3.2.4</label>
+<title>Mutations for target graph 3_3 (3-stem with different pseudoknot)</title>
+<p id="P60">To transform 3_6 of the FSE into 3_3 (<xref ref-type="fig" rid="F5">Fig. 5A</xref>), we destroy Stem 2 to form the new pseudoknot, by mutating residues 22-24 and 68-73, the two strands of Stem 2.</p>
+<p id="P61">RAG-IF GA produces 200 candidate sequences that fold onto the target 3_3 by both NUPACK and PKNOTS, with mutations ranging from 4−9. Following optimization, 6 unique sequences emerge with only 2−3 minimal mutations. Two sequences that require two mutations, involve residues 23(from C to G or A) and 69 (from A to U).</p>
+<p id="P62">Interestingly, all unique sequences require mutating residue 69 to U, which is a bulge in the FSE Stem 2. Although mutating residue 69 to U creates an A-U base pair for the new pseudoknot, residue 69 likely has a more important stabilizing role for the original Stem 2. The RNA sequence with mutation[23C-G, 69A-U] in <xref ref-type="fig" rid="F5">Fig. 5A</xref> is supported by another prediction program (Fig. S5).</p>
+<p id="P63">Reverse transformation of mutant [23C-G, 69A-U] onto graph 3_6 with a large pool of sequences generates 24 unique sequences, 8 of which require only 2 mutations. Four of these sequences mutate the same residues 23 and 69, including the mutation that recovers the wildtype FSE [23G-C, 69U-A] (highlighted in red).</p>
+<p id="P64">In addition, one single-point mutation [71G-C] is also found. Residue 71 is not one of the original mutation residues, but it is base paired with residue 23 in the wildtype FSE pseudoknot. Therefore, the compensatory mutation [71G-C] restores this G-C base pair and hence the original pseudoknot.</p>
+</sec>
+<sec id="S18">
+<label>3.2.5</label>
+<title>Summary of minimal mutations</title>
+<p id="P65">Transformations of the FSE into our four target RNAs utilize unpaired residues to form new stems, often keeping Stem 3 intact, and focusing on Stem 2 (<xref ref-type="fig" rid="F6">Fig. 6A</xref>). Residue 23 is mutated from C to G in the top minimal mutation for both2_1 and 3_3. This mutation breaks the G-C base pair in the original Stem 2 and elongates Stem 1 by forming new G-C base pair.</p>
+<p id="P66">In the reverse transformations back to 3_6, the original mutations are recovered by RAG-IF, and single mutations are also found in the case of 3_2 and 3_3. Because RAGIF aims to recover the original graph 3_6, not the original FSE sequence, compensatory mutations that require fewer residues than the forward mutations are possible. In 3_5, all compensatory mutations require the original 2 residues, so we consider this design the most stable one.</p>
+<p id="P67">For other target graphs shown in <xref ref-type="fig" rid="F1">Fig. 1D</xref>, such as 3_1 and 3_8, at least 4 residues are required for minimal mutations, and for graph 2_2, 14 residues are required (see Table S2).</p>
+</sec>
+</sec>
+<sec id="S19">
+<label>3.3</label>
+<title>Molecular Dynamics Analysis of Wildtype and Mutant Systems</title>
+<p id="P68">To assess the stability of the wildtype FSE of SARS-CoV-2and the top 3 mutants predicted by mutational analysis (3_5[72G-C, 74U-C] mutant, 3_2 [30A-G, 32A-C] mutant, and2_1 [23C-G, 73C-A] mutant), we subject the solvated systems to MD simulations of 1 <italic>μ</italic>s. To develop initial tertiary structures for these systems, we use four 3D structure prediction webservers: RNAComposer (<xref ref-type="bibr" rid="R37">37</xref>), Vfold3D (<xref ref-type="bibr" rid="R38">38</xref>), SimRNA(<xref ref-type="bibr" rid="R39">39</xref>), and 3dRNA (<xref ref-type="bibr" rid="R40">40</xref>).We select one structure each for the wildtype and the 3 mutants for MD simulation (<xref ref-type="sec" rid="S2">Materials and Methods</xref>).</p>
+<p id="P69">RMSD over the 1 <italic>μ</italic>s simulations is a measure of the conformational stability of the predicted structures (<xref ref-type="fig" rid="F7">Fig. 7</xref>).Since predicted (and not experimentally determined) 3D structures are used for the simulations, high RMSD values (in10s Å here) with reference to the starting structures is expected. However, the simulation settles down within the first 250-300ns (with the 3_2 mutant taking the longest), indicating that the wildtype and the 3 mutant systems have reached a relatively stable state. The residues that fluctuate most are the unpaired residues in the loop regions, as indicated by the RMSF plotsin <xref ref-type="fig" rid="F7">Fig. 7</xref>. The 3_2 mutant is again the exception here, likelydue to the time taken to reach relative stability.</p>
+<p id="P70">To study changes in 2D structures of the wildtype and mutants, we clustered the conformations between 500ns to1 <italic>μ</italic>s (see <xref ref-type="sec" rid="S2">Materials and Methods</xref>). The dominant cluster for the wildtype contains roughly 73% of the total conformations, indicating the stability of the system. The values are 50-60% for the 3_5 and 2_1 mutants, and around 23% for the 3_2 mutant, suggesting that order of increased flexibility. In addition, the representatives of all top clusters (more than50 conformations) for the wildtype, the 3_5 and the 2_1 mutant, and all but one top cluster for the 3_2 mutant have the intended dual graph motif. This indicates that the even though small changes in 2D structures occur over the course of the simulation (see Fig. S6), our dual graph motifs and predicted mutations can lead to stable structures.</p>
+<p id="P71">We also dissect the dominant motions of the wildtype andthe 3_5 mutant with PCA (see <xref ref-type="fig" rid="F8">Fig. 8</xref>). The wildtype system has global bending of loop 3 as PC1, and stem twisting for PC2 and PC3. The main motions of 3_5 mutant are bending of terminal loops and twisting of the stems. It is possible that these motions are involved in large-scale structural transitions, but more extensive simulations with possibly enhanced sampling techniques are needed.</p>
+<p id="P72">Our electrostatic surface (generated using the CHARMMGUI PBEQ solver at <ext-link ext-link-type="uri" xlink:href="http://www.charmm-gui.org/?doc=input/pbeqsolver">http://www.charmm-gui.org/?doc=input/pbeqsolver</ext-link>) analysis of the wildtype system revealssome positively-charged regions along the mostly negative surface, and some grooves (<xref ref-type="fig" rid="F9">Fig. 9</xref>). Some of these positively charged regions and grooves are found near residues 75-77 at the 3′ end of the FSE, residues 26-27 at the juncture of Stems 1 and 2, base pair 10-33 in Stem 1, residues 3-5 atthe 5′ end of the FSE, and residues 47-53 near the hairpin loop of Stem 3. Interestingly, some of these regions coincidewith the crucial residues identified by our mutational analysis.These regions provide candidate targets for in vitro screening of active compounds.</p>
+</sec>
+<sec id="S20" sec-type="conclusions | discussion">
+<label>4</label>
+<title>Conclusion and Discussion</title>
+<p id="P73">We have proposed by computational design motif-altering minimal mutations of the SARS-CoV-2 FSE. In the key mutations highlighted,<italic>only two residue changes</italic> can accomplish a dramatic change in structure, namely destruction of Stem 2 and the pseudoknot. That the graph motif of the wildtype FSE can be recovered by compensatory mutations using our reverse design, in some cases with only one residue change, is also promising. Our MD simulations suggest overall stability of the wildtype and mutant system 2D structures. The tools developed here to design in <italic>silico</italic> RNAs containing pseudoknotsare widely applicable to other design problems. The genetic algorithm in RAF-IF for inverse folding is very successful at generating a large number of sequences quickly and sorting out the sequence pools to obtain minimal mutations.</p>
+<p id="P74">Besides these computational advances, the results produced here immediately suggest key residues as drug, as well as gene editing, targets for Covid-19 therapy. Already, for the SARS FSE, the small drug compound <italic>1,4-diazepane derivative 10</italic> (MTDB) has been shown to inhibit this frameshifting process (<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R13">13</xref>). Recent <italic>in vitro</italic> MTDB bindingexperiments to the SARS-CoV-2 FSE demonstrated a similar inhibition effect (<xref ref-type="bibr" rid="R14">14</xref>). This lead, together with our identified mutation sites, as well as positively-charged regions of theRNA identified by electrostatic surface analysis of the FSE, are shown in <xref ref-type="fig" rid="F9">Fig. 9</xref>. Underway are <italic>in silico</italic> screening for anti-viral compounds targeting the FSE with these residues. Viral-RNA based therapies that utilize CRISPR-like systems delivered through small-molecule vectors are also becoming more feasible.</p>
+<p id="P75">Recently, a complete 2D structure prediction of SARSCoV-2 genome was reported using <italic>in vivo</italic> SHAPE-MaP data(<xref ref-type="bibr" rid="R52">52</xref>). Two different FSE structures were predicted: one consistent with our 3-stem structure, and one forming a different Stem 3 with downstream sequence. The two possibilities were considered commensurate with the conformational flexibility of the pseudoknot. More thorough experiments are needed to confirm the FSE structure and examine its conformational flexibility.</p>
+<p id="P76">As is well appreciated, various secondary-structure prediction programs use different algorithms and often produce different predictions. For the 77-residue system, 5 of the 8 prediction programs yield the 3-stem pseudoknot structure(<xref ref-type="fig" rid="F1">Fig. 1</xref>). However, when the slippery site is added, only 2 of the 5 programs preserve the pseudoknot structure. Larger systems yield more diverse structures. The computational time for the different programs also varies significantly. For example, PKNOTS takes approximately 30 seconds for predicting the structure of 77 nucleotides, but with a time complexity <italic>O</italic>(n<sup>6</sup>), where <italic>n</italic> is the number of residues, large systems are too costly to handle. Programs like IPknot have a more favorite sizescaling, and replacing PKNOTS with IPknot in our RAGIF pipeline will allow us to extend our design pipeline to longer RNAs. The use of our graph-based tools is critical here for mutational transformations, as it provides us a robust coarse-grained approach insensitive to small differences in2D structures.</p>
+<p id="P77">Clearly, the overall fold of the FSE may depend on neighboring residues and on complexes with the nucleocapsid protein in the cellular context. In <xref ref-type="fig" rid="F10">Fig. 10</xref>, we show predicted structures for the wildtype and 3-way junction mutant 3_5 in the context of different flanking sequences. The differences as a function of sequence length that emerge also reflect differences between programs. Interestingly, in some cases, a large sequence can recover our 77-nt consensus structure better than a shorter construct. Thus in vivo imaging andother experiments like SHAPE reactivity probing (<xref ref-type="bibr" rid="R54">54</xref>) would be important for understanding the contextual folding of this important region of the virus explored in this work in isolation.</p>
+<p id="P78">Because accumulating data show that SARS-CoV-2 isactively acquiring new mutations that allow it to escape known protein-targeting drugs, alternative therapeutic strategies which target the RNA viral genome, rather than viral shell or auxiliary proteins, present a flexible and efficient approach to counter new infections. By examining the 73,739 aligned viral sequences available in the GISAID database (<xref ref-type="bibr" rid="R53">53</xref>) as of August 10, 2020, in <xref ref-type="fig" rid="F6">Fig. 6B</xref>, we found that only 1316 sequences (1.78%) have mutations in the 84nt FSE region. Among these, 1268 contain single point mutation, underscoring the high conservation of the FSE region. These mutations are shown along with the residues we identified for top minimal mutations in <xref ref-type="fig" rid="F6">Fig. 6</xref>. Our mutation residues 23 and 74 are not among current variants, but residues 69,72 and 73 occur with one mutation to U each; residue 32 is mutated twice to G, and residue 30 is mutated 7 times to G. This generally high sequence conservation of the FSE and stability to mutations suggests it is a good drug target.</p>
+<p id="P79">Indeed, drug binding of MTDB to six FSE natural point mutations suggested insensitivity to natural mutations (<xref ref-type="bibr" rid="R55">55</xref>). The mutational transformations we reported here provide insights for further <italic>in silico</italic> and ultimately <italic>in vitro</italic> drug screening to find other therapeutically effective drugs. In general, understanding the structure of the FSE and other generegions of coronaviruses is important for helping address future viral threats which inevitably may arise. Such knowledge and methodologies are also transfer able to other coronaviruses or other viruses that could pose threats to human health in the future.</p>
+<p id="P80">Further SARS-CoV-2 viral genome variant analyses are also important for drug discovery and for identifying the spread of Covid-19 around the globe. Initially, it was believed that different strains are not related to virulence or infectivity, but theories are evolving, as associations of different genomic mutations with different levels of infectivity are being debated (e.g., (<xref ref-type="bibr" rid="R56">56</xref>)). As more data on associations of viral mutants and disease outcome accumulate, further analysis on the viral genome will be invaluable.</p>
+<p id="P81">In closing, molecular modeling and computational experiments such as described here have an important role to play in this fight against the small RNA enemy which has upended our modern world as never before since World World II. The continued interaction and participation of the biophysics, high performance computing, and bioinformatics/computational biology communities will be invaluable in this quest. An improved understanding of the complex structural biophysics of the RNA viral genome will undoubtedly be useful and relevant to other coronaviruses, whose potential to emerge in the future cannot be understated.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S21">
+<title>Acknowledgments</title>
+<p>We gratefully acknowledge funding from the National Science Foundation RAPID Award 2030377 from the Division of Mathematical Science and the Division of Chemistry; National Institutes of Health R35GM122562 Award from the National Institute of General Medical Sciences; and PhilipMorris International to T. Schlick. We thank Shereef Elmetwaly for technical assistance, and David Ackerman, Stratos Efstathiadis, and Shenglong Wang from the NYU High Performance Computing facilities for providing our group dedicated resources to perform this work.</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<label>5</label>
+<p id="P82">
+<bold>Author Contributions</bold>
+</p>
+<p id="P83">TS, QZ, SJ, and SY designed the research. TS, QZ, SJ, and SY performed the computational study and analyzed the results.TS, QZ, SJ, and SY wrote the article.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xie</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>Insight into 2019 novelcoronavirus – An updated interim review and lessonsfrom SARS-CoV and MERS-CoV</article-title>
+<source>Int J Inf Diseases</source>
+<year>2020</year>
+<volume>94</volume>
+<fpage>119</fpage>
+<lpage>124</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pathological findingsof COVID-19 associated with acute respiratory distress syndrome</article-title>
+<source>Lancet Respir Med</source>
+<year>2020</year>
+<volume>8</volume>
+<fpage>420</fpage>
+<lpage>422</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>T</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>A 3-Month Preliminary Epidemiological Assessment of Some Factors Affecting the Human-ToHuman Transmission of Causal Agent SARS-CoV-2Virus for Infection Rates of COVID-19</article-title>
+<source>Int J Pub Heal Saf</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>3</fpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kebede</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Potential Drug Options for Treatment Process of COVID-19: A Review</article-title>
+<source>Coronaviruses</source>
+<year>2020</year>
+<volume>1</volume>
+<fpage>1</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Cascella</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rajnik</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cuomo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dulebohn</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Di Napoli</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<chapter-title>Features, Evaluation and TreatmentCoronavirus (COVID-19)</chapter-title>
+<source>StatPearls</source>
+<publisher-name>Treasure Island(FL): StatPearls Publishing</publisher-name>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hermann</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Small molecules targeting viral RNA</article-title>
+<source>WIREs RNA</source>
+<year>2016</year>
+<volume>7</volume>
+<fpage>726</fpage>
+<lpage>743</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nguyen</surname>
+<given-names>TM</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Pandolfi</surname>
+<given-names>PP</given-names>
+</name>
+</person-group>
+<article-title>Virus against virus: a potential treatment for 2019-nCov (SARS-CoV-2) and other RNA viruses</article-title>
+<source>Cell Res</source>
+<year>2020</year>
+<volume>30</volume>
+<fpage>189</fpage>
+<lpage>190</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jackson</surname>
+<given-names>LA</given-names>
+</name>
+<name>
+<surname>Anderson</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Rouphael</surname>
+<given-names>NG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>An mRNA Vaccine against SARS-CoV-2 — Preliminary Report</article-title>
+<source>New Eng J Med</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brierley</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Ribosomal frameshifting on viral RNAs</article-title>
+<source>J Gen Virol</source>
+<year>1995</year>
+<volume>76</volume>
+<fpage>1885</fpage>
+<lpage>1892</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ritchie</surname>
+<given-names>DB</given-names>
+</name>
+<name>
+<surname>Soong</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sikkema</surname>
+<given-names>WKA</given-names>
+</name>
+<name>
+<surname>Woodside</surname>
+<given-names>MT</given-names>
+</name>
+</person-group>
+<article-title>Anti-frameshifting Ligand Reduces the Conformational Plasticity of the SARS Virus Pseudoknot</article-title>
+<source>J Amer Chem Soc</source>
+<year>2014</year>
+<volume>136</volume>
+<fpage>2196</fpage>
+<lpage>2199</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dinman</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Ruiz-Echevarria</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Peltz</surname>
+<given-names>SW</given-names>
+</name>
+</person-group>
+<article-title>Translating old drugs into new treatments: ribosomal frameshifting as a target for antiviral agents</article-title>
+<source>Trend Biotech</source>
+<year>1998</year>
+<volume>16</volume>
+<fpage>190</fpage>
+<lpage>196</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Plant</surname>
+<given-names>EP</given-names>
+</name>
+<name>
+<surname>Pérez-Alvarado</surname>
+<given-names>GC</given-names>
+</name>
+<name>
+<surname>Jacobs</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Mukhopadhyay</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Hennig</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dinman</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>A three-stemmed mRNA Pseudoknot in the SARS Coronavirus Frameshift Signal</article-title>
+<source>PLOS Biology</source>
+<year>2005</year>
+<volume>3</volume>
+<fpage>172</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Y-G</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>S-J</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>H-J</given-names>
+</name>
+</person-group>
+<article-title>Identification of RNA Pseudoknot-Binding Ligand That Inhibits the-1 Ribosomal Frameshifting of SARS-Coronavirus by Structure-Based Virtual Screening</article-title>
+<source>J Amer Chem Soc</source>
+<year>2011</year>
+<volume>133</volume>
+<fpage>10094</fpage>
+<lpage>10100</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kelly</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Olson</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Neupane</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Munshi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Emeterio</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Pollack</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Woodside</surname>
+<given-names>MT</given-names>
+</name>
+<name>
+<surname>Dinman</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>Structural and functional conservation of the programmed 1 ribosomal frameshift signal of SARS coronavirus 2 (SARS-CoV-2)</article-title>
+<source>J Biol Chem</source>
+<year>2020</year>
+<volume>295</volume>
+<fpage>10741</fpage>
+<lpage>10748</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gan</surname>
+<given-names>HH</given-names>
+</name>
+<name>
+<surname>Pasquali</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Exploringthe repertoire of RNA secondary motifs using graphtheory; implications for RNA design</article-title>
+<source>Nucleic Acids Res</source>
+<year>2003</year>
+<volume>31</volume>
+<fpage>2926</fpage>
+<lpage>2943</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pasquali</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gan</surname>
+<given-names>HH</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Modular RNA architecture revealed by computational analysis of existing pseudoknots and ribosomal RNAs</article-title>
+<source>Nucleic Acids Res</source>
+<year>2005</year>
+<volume>33</volume>
+<fpage>1384</fpage>
+<lpage>1398</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gevertz</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gan</surname>
+<given-names>HH</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>In vitro RNA random pools are not structurally diverse: a computational analysis</article-title>
+<source>RNA</source>
+<year>2005</year>
+<volume>11</volume>
+<fpage>853</fpage>
+<lpage>863</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Adventures with RNA Graphs</article-title>
+<source>Methods</source>
+<year>2018</year>
+<volume>143</volume>
+<fpage>16</fpage>
+<lpage>33</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bayrak</surname>
+<given-names>CS</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Using sequence signatures and kink-turn motifs in knowledge based statistical potentials for RNA structure prediction</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>5414</fpage>
+<lpage>5422</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Meng</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Tariq</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Elmetwaly</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>RAG-Web: RNA Structure Prediction/Design using RNA-As-Graphs</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>647</fpage>
+<lpage>648</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Tao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Inverse Folding with RNA-As-Graphs Produces a Large Pool of Candidate Sequences with Target Topologies</article-title>
+<source>J Struct Biol</source>
+<year>2020</year>
+<volume>209</volume>
+<fpage>107438</fpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Laing</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Elmetwaly</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Graph-based sampling for approximating global helical topologies of RNA</article-title>
+<source>Proc Nat Acad Sci USA</source>
+<year>2014</year>
+<volume>111</volume>
+<fpage>4079</fpage>
+<lpage>4084</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>F-RAG: Generating Atomic Models from RNA Graphs using Fragment Assembly</article-title>
+<source>J Mol Biol</source>
+<year>2017</year>
+<volume>429</volume>
+<fpage>3587</fpage>
+<lpage>3605</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Laederach</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ramos</surname>
+<given-names>SBV</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>A pipeline for computational design of novel RNA-like topologies</article-title>
+<source>Nucleic Acids Res</source>
+<year>2018</year>
+<volume>46</volume>
+<fpage>7040</fpage>
+<lpage>7051</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zahran</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bayrak</surname>
+<given-names>CS</given-names>
+</name>
+<name>
+<surname>Elmetwaly</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>RAG-3D: a search tool for RNA 3D substructures</article-title>
+<source>Nucleic Acids Res</source>
+<year>2015</year>
+<volume>43</volume>
+<fpage>9474</fpage>
+<lpage>9488</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Saju</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Petingi</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Schlick</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>An extended dual graph library and partitioning algorithm applicable to pseudoknotted RNA structures</article-title>
+<source>Methods</source>
+<year>2019</year>
+<volume>162–163</volume>
+<fpage>74</fpage>
+<lpage>84</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thiel</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Ivanov</surname>
+<given-names>KA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Mechanisms and enzymes involved in SARS coronavirus genome expression</article-title>
+<source>J Gen Virol</source>
+<year>2003</year>
+<volume>84</volume>
+<fpage>2305</fpage>
+<lpage>2315</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Macke</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Ecker</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Gutell</surname>
+<given-names>RR</given-names>
+</name>
+<name>
+<surname>Gautheret</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RNAMotif, an RNA secondary structure definition and search algorithm</article-title>
+<source>Nucleic Acids Res</source>
+<year>2001</year>
+<volume>29</volume>
+<fpage>4724</fpage>
+<lpage>4735</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rivas</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>A dynamic programming algorithm for RNA structure prediction including pseudoknots</article-title>
+<source>J Mol Biol</source>
+<year>1999</year>
+<volume>285</volume>
+<fpage>2053</fpage>
+<lpage>2068</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dirks</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pierce</surname>
+<given-names>NA</given-names>
+</name>
+</person-group>
+<article-title>A partition function algorithm for nucleic acid secondary structure including pseudoknots</article-title>
+<source>J Comput Chem</source>
+<year>2003</year>
+<volume>24</volume>
+<fpage>1664</fpage>
+<lpage>1677</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sato</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kato</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hamada</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Akutsu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Asai</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>IPknot: fast and accurate prediction of RNA secondary structures with pseudoknots using integer programming</article-title>
+<source>Bioinformatics</source>
+<year>2011</year>
+<volume>27</volume>
+<fpage>i85</fpage>
+<lpage>i93</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andronescu</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Pop</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Condon</surname>
+<given-names>AE</given-names>
+</name>
+</person-group>
+<article-title>Improved free energy parameters for RNA pseudoknotted secondary structure prediction</article-title>
+<source>RNA</source>
+<year>2010</year>
+<volume>16</volume>
+<fpage>26</fpage>
+<lpage>42</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S-J</given-names>
+</name>
+</person-group>
+<article-title>Vfold: A Web Server for RNA Structure and Folding Thermodynamics Prediction</article-title>
+<source>PLOS ONE</source>
+<year>2014</year>
+<volume>9</volume>
+<fpage>1</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Singh</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hanson</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Paliwal</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>RNA secondary structure prediction using an ensemble of twodimensional deep neural networks and transfer learning</article-title>
+<source>Nat Commun</source>
+<year>2019</year>
+<volume>10</volume>
+<fpage>5407</fpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bellaousov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>ProbKnot: fast prediction of RNA secondary structure including pseudoknots</article-title>
+<source>RNA</source>
+<year>2010</year>
+<volume>16</volume>
+<fpage>1870</fpage>
+<lpage>1880</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dawson</surname>
+<given-names>WK</given-names>
+</name>
+<name>
+<surname>Fujiwara</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kawai</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Prediction of RNA Pseudoknots Using Heuristic Modeling with Mapping and Sequential Folding</article-title>
+<source>PLOS ONE</source>
+<year>2007</year>
+<volume>2</volume>
+<fpage>1</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Popenda</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Szachniuk</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Antczak</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Automated 3D structure composition for large RNAs</article-title>
+<source>Nucleic Acids Res</source>
+<year>2012</year>
+<volume>40</volume>
+<fpage>e112</fpage>
+<lpage>e112</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S-J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Hierarchical Assembly of RNA Three-Dimensional Structures Based on Loop Templates</article-title>
+<source>J Phys Chem B</source>
+<year>2018</year>
+<volume>122</volume>
+<fpage>5327</fpage>
+<lpage>5335</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Magnus</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Boniecki</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Dawson</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Bujnicki</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>SimRNAweb: a web server for RNA 3D structure modeling with optional restraints</article-title>
+<source>Nucleic Acids Res</source>
+<year>2016</year>
+<volume>44</volume>
+<fpage>W315</fpage>
+<lpage>W319</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>3dRNA v2.0: An Updated Web Server for RNA 3D Structure Prediction</article-title>
+<source>Int J Mol Sci</source>
+<year>2019</year>
+<volume>20</volume>
+<fpage>4116</fpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Olson</surname>
+<given-names>WK</given-names>
+</name>
+</person-group>
+<article-title>3DNA: a software package for the analysis, rebuilding and visualization of three-dimensional nucleic acid structures</article-title>
+<source>Nucleic Acids Res</source>
+<year>2003</year>
+<volume>31</volume>
+<fpage>5108</fpage>
+<lpage>5121</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jossinet</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Leontis</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tools for the automatic identification and classification of RNA base pairs</article-title>
+<source>Nucleic Acids Res</source>
+<year>2003</year>
+<volume>31</volume>
+<fpage>3450</fpage>
+<lpage>3460</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Williams</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Headd</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Moriarty</surname>
+<given-names>NW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>MolProbity: More and better reference data for improved all-atom structure validation</article-title>
+<source>Protein Science</source>
+<year>2018</year>
+<volume>27</volume>
+<fpage>293</fpage>
+<lpage>315</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abraham</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Murtola</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Schulz</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>GROMACS: High performance molecular simulations through multi-level parallelism from laptops to supercomputers</article-title>
+<source>SoftwareX</source>
+<year>2015</year>
+<volume>1-2</volume>
+<fpage>19</fpage>
+<lpage>25</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zgarbová</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Otyepka</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Šponer</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mládek</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Banáš</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Jurečka</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Refinement of the Cornell et al. Nucleic Acids Force Field Based on Reference Quantum Chemical Calculations of Glycosidic Torsion Profiles</article-title>
+<source>J Chem</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>2886</fpage>
+<lpage>2902</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jorgensen</surname>
+<given-names>WL</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Madura</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Impey</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+</person-group>
+<article-title>Comparison of simple potential functions for simulating liquid water</article-title>
+<source>J Chem Phys</source>
+<year>1983</year>
+<volume>79</volume>
+<fpage>926</fpage>
+<lpage>935</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hess</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bekker</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Berendsen</surname>
+<given-names>HJC</given-names>
+</name>
+<name>
+<surname>Fraaije</surname>
+<given-names>JGEM</given-names>
+</name>
+</person-group>
+<article-title>LINCS: A linear constraint solver for molecular simulations</article-title>
+<source>J Comput Chem</source>
+<year>1997</year>
+<volume>18</volume>
+<fpage>1463</fpage>
+<lpage>1472</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Essmann</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Berkowitz</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Pedersen</surname>
+<given-names>LG</given-names>
+</name>
+</person-group>
+<article-title>A smooth particle mesh Ewald method</article-title>
+<source>J Chem Phys</source>
+<year>1995</year>
+<volume>103</volume>
+<fpage>8577</fpage>
+<lpage>8593</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schrödinger</surname>
+<given-names>LLC</given-names>
+</name>
+</person-group>
+<article-title>The PyMOL Molecular Graphics System</article-title>
+<source>Version 1.8</source>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Humphrey</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Dalke</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>VMD – Visual Molecular Dynamics</article-title>
+<source>J Mol Graphics</source>
+<year>1996</year>
+<volume>14</volume>
+<fpage>33</fpage>
+<lpage>38</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brierley</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Digard</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Inglis</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Characterization of an efficient coronavirus ribosomal frameshifting signal: requirement for an RNA pseudoknot</article-title>
+<source>Cell</source>
+<year>1989</year>
+<volume>57</volume>
+<fpage>537</fpage>
+<lpage>547</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huston</surname>
+<given-names>NC</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>de Cesaris Araujo Tavares</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wilen</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Pyle</surname>
+<given-names>AM</given-names>
+</name>
+</person-group>
+<article-title>Comprehensive in-vivo secondary structure of the SARS-CoV-2 genome reveals novel regulatory motifs and mechanisms</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.07.10.197079</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Glob Chall</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Siegfried</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Busan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rice</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Nelson</surname>
+<given-names>JAE</given-names>
+</name>
+<name>
+<surname>Weeks</surname>
+<given-names>KM</given-names>
+</name>
+</person-group>
+<article-title>RNA motif discovery by SHAPE and mutational profiling (SHAPE-MaP)</article-title>
+<source>Nat Methods</source>
+<year>2014</year>
+<volume>11</volume>
+<fpage>959</fpage>
+<lpage>965</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Neupane</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Munshi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ritchie</surname>
+<given-names>DB</given-names>
+</name>
+<name>
+<surname>Ileperuma</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Woodside</surname>
+<given-names>MT</given-names>
+</name>
+</person-group>
+<article-title>Anti-frameshifting ligand active against SARS coronavirus-2 is resistant to natural mutations of the frameshift-stimulatory pseudoknot</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.06.29.178707</pub-id>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Korber</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Gnanakaran</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tracking Changes in SARS-CoV-2 Spike: Evidence that D614G Increases Infectivity of the COVID-19 Virus</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Significance</title>
+</caption>
+<p>Since the outbreak of Covid-19, numerous projects were launched to discover drugs and vaccines. Compared to protein-focused approaches, targeting the RNA genome, especially highly conserved crucial regions, can destruct the virus life cycle more fundamentally and avoid problems of viral mutations. We choose to target the small frame-shifting element (FSE) embedded in the Open Reading Frame 1a,b of SARS-CoV-2. This FSE is essential for translating overlapping reading frames and thus controlling the viral protein synthesis pathway. By applying graph-theory-based computational algorithms, we identify structurally crucial residues in the FSE as potential targets for anti-viral drugs and gene editing.</p>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Consensus structure of the SARS-CoV-2 frame-shifting element (FSE) and related dual graph targets. (A) 2D structure of the FSE, a three-stem pseudoknot motif. (B) Circular plot of the FSE 2D structure, where the pseudoknot corresponds to the crossing of the two base pairs. (C) Associated dual graph motif 3_6 for the FSE 2D structure. (D) Dual graphs with 2 or 3 vertices related to the FSE 3_6 motif. In dual graphs, stems in RNA secondary structures are vertices, while junctions, bulges and loops are edges (<xref ref-type="bibr" rid="R15">15</xref>). The targets containing pseudoknots are shown in green. Those not containing pseudoknots, are also represented as tree graphs, where stems denote edges and junctions, bulges and loops are vertices.</p>
+</caption>
+<graphic xlink:href="EMS94381-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Mutation results for the 3-way junction target graph 3_5. (A) Minimal mutations: mutation candidate region is highlighted in red. Point mutations are colored according to the nucleotides. One top mutation is selected, whose predicted secondary structure is shown. (B) Minimal compensatory mutations.</p>
+</caption>
+<graphic xlink:href="EMS94381-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Mutation results for the 3-stem with internal loop target graph 3_2. See <xref ref-type="fig" rid="F2">Fig. 2</xref> caption.</p>
+</caption>
+<graphic xlink:href="EMS94381-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Mutation results for the 2-stem target graph 2_1. See <xref ref-type="fig" rid="F2">Fig. 2</xref> caption.</p>
+</caption>
+<graphic xlink:href="EMS94381-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Mutation results for the 3-stem with different pseudoknot target graph 3_3. See <xref ref-type="fig" rid="F2">Fig. 2</xref> caption.</p>
+</caption>
+<graphic xlink:href="EMS94381-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>FSE residue analyses. (A) Minimal mutation residues are circled for the different mutants: yellow for 3_5, red for 3_2, blue for 2_1, and green for 3_3. (B) FSE mutation findings for Covid-19 variants from the GISAID database (<xref ref-type="bibr" rid="R53">53</xref>) as of August 10, 2020.</p>
+</caption>
+<graphic xlink:href="EMS94381-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<p>MD simulations of the wildtype and selected mutant systems using predicted models as initial structures. Snapshots of the wildtype and mutant systems at 1 <italic>μ</italic>s along with RMSD and RMSF are presented for (A) wildtype, (B) 3_5 mutant, (C) 3_2 mutant and (D) 2_1 mutant. The screenshots and RMSF plots are color-coded for each RNA: (A) residues 7-16 and 27-36 in blue, residues 20-26 and 67-74 in red, residues 37-45 and 55-64 in green; (B) residues 1-7 and 68-74 in blue, residues 27-35 and 8-16 in red, residues 36-45 and 55-65 in green; (C) residues 1-9 and 17-24 in blue, residues 30-33 and 70-73 in red, residues 35-45 and 55-66 in green; (D) residues 7-16 and 27-36 in blue, residues 37-45 and 55-64 in red.</p>
+</caption>
+<graphic xlink:href="EMS94381-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<p>Dominant structure and motions of the wildtype and 3-way junction (3_5) mutant from MD simulations. (A) The largest cluster center structures from last 500 ns in the 1 <italic>μ</italic>s MD trajectories of wildtype and 3_5 mutant. (B-C) Motions of (B) the wildtype and (C) 3_5 mutant by top 3 principal components (PCs). Screenshots were extracted as two extreme structures on selected PC.</p>
+</caption>
+<graphic xlink:href="EMS94381-f008"/>
+</fig>
+<fig id="F9" position="float">
+<label>Figure 9</label>
+<caption>
+<p>Target residues for drugs or gene editing emerging from this work. Resides correspond to previously identified drug-binding residues (<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R13">13</xref>), minimal mutations, and positively charged pockets that arose of our electrostatic analysis are shown for the frame-shifting element of the SARS-CoV-2 viral genome.</p>
+</caption>
+<graphic xlink:href="EMS94381-f009"/>
+</fig>
+<fig id="F10" position="float">
+<label>Figure 10</label>
+<caption>
+<p>Predicted structures for the wildtype and mutant 3_5 using different sequence lengths. The 84nt sequence contains the slippery site, and the 144nt sequence adds 30nt to both ends of the 84nt sequence. The sequences (aligned with common 77nt subsequence, red) are shown for: (A) wildtype FSE/NUPACK (<xref ref-type="bibr" rid="R30">30</xref>), (B) 3-way junction mutant 3_5/NUPACK, (C) wildtype/PKNOTS (<xref ref-type="bibr" rid="R29">29</xref>), (D) 3_5/PKNOTS, (E) wildtype/IPknot (<xref ref-type="bibr" rid="R31">31</xref>), (F) 3_5/IPknot.</p>
+</caption>
+<graphic xlink:href="EMS94381-f010"/>
+</fig>
+</floats-group>
+</article>

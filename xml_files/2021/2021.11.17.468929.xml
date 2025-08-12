@@ -1,0 +1,1169 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS139966</article-id>
+<article-id pub-id-type="doi">10.1101/2021.11.17.468929</article-id>
+<article-id pub-id-type="archive">PPR421712</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Predicting SARS-CoV-2 epitope-specific TCR recognition using pre-trained protein embeddings</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Han</surname>
+<given-names>Youngmahn</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>Aeri</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Center for Super-computing Application Research, Korea Institute of Science and Technology Information, Daejeon, Republic of Korea</aff>
+<aff id="A2">
+<label>2</label>BioBrain Inc, Daejeon, Republic of Korea</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>ihansyou@gmail.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>17</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The COVID-19 pandemic is ongoing because of the high transmission rate and the emergence of SARS-CoV-2 variants. The <bold>P272L</bold> mutation in SARS-Cov-2 <bold>S</bold>-protein is known to be highly relevant to the viral escape associated with the second pandemic wave in Europe. Epitope-specific T-cell receptor (TCR) recognition is a key factor in determining the T-cell immunogenicity of a SARS-CoV-2 epitope. Although several data-driven methods for predicting epitope-specific TCR recognition have been proposed, they remain challenging owing to the enormous diversity of TCRs and the lack of available training data. Self-supervised transfer learning has recently been demonstrated to be powerful for extracting useful information from unlabeled protein sequences and increasing the predictive performance of the fine-tuned models in downstream tasks.</p>
+<p id="P2">Here, we present a predictive model based on Bidirectional Encoder Representations from Transformers (BERT), employing self-supervised transfer learning, to predict SARS-CoV-2 T-cell epitope-specific TCR recognition. The fine-tuned model showed notably high predictive performance for independent evaluation using the SARS-CoV-2 epitope-specific TCR CDR3β sequence datasets. In particular, we found the proline at position 4 corresponding to the <bold>P272L</bold> mutation in the SARS-CoV-2 <bold>S</bold>-protein<sub>269-277</sub> epitope (<bold>YLQPRTFLL</bold>) may contribute substantially to TCR recognition of the epitope through interpreting the output attention weights of our model.</p>
+<p id="P3">We anticipate that our findings will provide new directions for constructing a reliable data-driven model to predict the immunogenic T-cell epitopes using limited training data and help accelerate the development of an effective vaccine in response to SARS-CoV-2 variants.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P4">The global population is currently suffering from a pandemic of the coronavirus disease 2019 (COVID-19) caused by the novel coronavirus known as severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2). Since the World Health Organization (WHO) declared COVID-19 as a pandemic on March 11, 2020, there have been 237,251,035 confirmed cases worldwide, and 4,842,805 deaths (GISAID, <ext-link ext-link-type="uri" xlink:href="https://www.gisaid.org/epiflu-applications/global-cases-covid-19/">https://www.gisaid.org/epiflu-applications/global-cases-covid-19/</ext-link>) [<xref ref-type="bibr" rid="R1">1</xref>]. Despite the number of vaccinations exceeding 6.4 billion, the pandemic is ongoing because of the high transmission rate and the emergent SARS-CoV-2 variants associated with disease severity and viral escape of humoral immunity [<xref ref-type="bibr" rid="R2">2</xref>]. To end the pandemic, many countries and global scientific communities are developing effective vaccines and appropriate treatments in response to these variants.</p>
+<p id="P5">In addition to the virus-neutralizing antibodies produced by B-cells, cytotoxic CD8<sup>+</sup> T-cells and the helper CD4<sup>+</sup> T-cells are essential for viral clearance. T-cells circulating in the blood lead the first response to any virus in the adaptive immune system: they detect infected cells and mount an immune response or directly clear the infected cells, often before symptoms appear [<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R6">6</xref>]. The development of effective COVID-19 vaccines, therefore, depends on the identification of T-cell epitopes that can induce T-cell immune responses.</p>
+<p id="P6">Peptide-major histocompatibility complexes (MHCs) on the cell surface are recognized by T-cells via a dimeric surface protein, the T-cell receptor (TCR), consequently leading to T-cell activation and proliferation by clonal expansion [<xref ref-type="bibr" rid="R7">7</xref>]. TCR recognition of a T- cell epitope is therefore crucial for determining the immunogenicity of the epitope. TCRs are generated by genomic rearrangement of the germline TCR loci from a large collection of variable (V), diversity (D), and joining (J) gene segments. During T cell development, most TCRs are formed by a pair of α- and β-chains (90-95% of T cells) via the V(D)J recombination in each locus independently. This rearrangement is estimated to generate 10<sup>18</sup> different TCRs, providing an enormous diversity of epitope-specific T-cell repertoires [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>].</p>
+<p id="P7">Despite this TCR diversity, recent studies have found that TCRs recognizing a specific target epitope often share common sequence features. Glanville <italic>et al</italic>. [<xref ref-type="bibr" rid="R10">10</xref>] and Dash <italic>et al</italic>. [<xref ref-type="bibr" rid="R11">11</xref>] have shown a clear signature of the amino acid motif in the complementarity-determining region 3(CDR3) of TCRβ and TCRα that interacts with specific peptides presented by specific MHC molecules. Furthermore, concerted data collection efforts [<xref ref-type="bibr" rid="R12">12</xref>–<xref ref-type="bibr" rid="R15">15</xref>] and advances in high-throughput TCR sequencing technologies have demonstrated T-cell specificity [<xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R17">17</xref>], allowing the development of a data-driven model for predicting epitope-specific TCR recognition [<xref ref-type="bibr" rid="R18">18</xref>]. Several methods using position-specific scoring matrices [<xref ref-type="bibr" rid="R10">10</xref>], Gaussian processes [<xref ref-type="bibr" rid="R19">19</xref>], random forests [<xref ref-type="bibr" rid="R20">20</xref>], convolutional neural networks [<xref ref-type="bibr" rid="R21">21</xref>], deep generative models [<xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R23">23</xref>], and natural language process (NLP)-based deep learning models [<xref ref-type="bibr" rid="R24">24</xref>] have been proposed. However, increasing the predictive power of a machine-learning (or deep learning) model remains challenging because of the scarcity of training data: as of October 2019, the VDJdb [<xref ref-type="bibr" rid="R15">15</xref>] and McPAS-TCR [<xref ref-type="bibr" rid="R13">13</xref>] databases contained about 20,000 and 55,000 epitope-specific TCR sequences, respectively.</p>
+<p id="P8">Recent advances in NLP have demonstrated that self-supervised learning can be a powerful tool for extracting useful information from unlabeled sequence data [<xref ref-type="bibr" rid="R25">25</xref>–<xref ref-type="bibr" rid="R27">27</xref>]. One successful approach, Bidirectional Encoder Representations from Transformers (BERT) [<xref ref-type="bibr" rid="R26">26</xref>], is a language model pre-trained using a huge amount of unlabeled text data via two self-supervised tasks, masked token prediction and next sentence prediction. BERT models, fine-tuned using a small number of datasets, have shown ground-breaking results in 11 NLP downstream tasks. The self-supervised transfer learning strategy constructs the final model by fine-tuning the self-supervised pre-trained model on a large amount of unlabeled data, using a small amount of labeled data in a downstream task; this strategy can be useful for increasing the predictive power of a deep learning model when there is scarce training data. The self-supervised transfer learning has been demonstrated to help learn protein sequence patterns [<xref ref-type="bibr" rid="R28">28</xref>–<xref ref-type="bibr" rid="R30">30</xref>]. The Tasks Assessing Protein Embeddings (TAPE) [<xref ref-type="bibr" rid="R28">28</xref>] model was pre-trained on 31 million unlabeled protein sequences derived from the Pfam database [<xref ref-type="bibr" rid="R31">31</xref>] via two protein-specific self-supervised tasks, amino acid contact prediction and remote homology detection. The TAPE pre-trained model is helpful for improving the predictive performance in supervised downstream tasks such as secondary structure prediction, amino acid contact prediction, remote homology detection, fluorescence landscape prediction, and protein stability landscape prediction. BERTMHC [<xref ref-type="bibr" rid="R32">32</xref>], a deep learning model generated by fine-tuning the pre-trained TAPE model, has shown a reliable performance in predicting both peptide-MHC-II binding and presentation, using relatively little training data.</p>
+<p id="P9">Many sequence-based methods for modeling epitope-specific TCR recognition have used a multiple sequence alignment (MSA) of TCR sequences to identify position-specific amino acid motifs. This makes it difficult to find the critical amino acid positions in both the epitope and the TCR sequence, which can be highly relevant in TCR recognition [<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R22">22</xref>–<xref ref-type="bibr" rid="R24">24</xref>, <xref ref-type="bibr" rid="R37">37</xref>]. A recent study [<xref ref-type="bibr" rid="R33">33</xref>] of protein language models has shown that the output attentions of BERT-based protein models can capture biologically relevant protein properties. An attention-based deep learning model for peptide-MHC-I binding predictions [<xref ref-type="bibr" rid="R34">34</xref>] has shown that the attentions learned by the predictive model can capture critical amino acid positions of the peptides, which help stabilize the peptide-MHC-I bindings.</p>
+<p id="P10">Here, we present a BERT-based model employing self-supervised transfer learning for predicting SARS-CoV-2 T-cell epitope-specific TCR recognition. The predictive model was generated by fine-tuning the pre-trained TAPE model using epitope-specific TCR CDR3β sequence datasets. The fine-tuned model showed markedly high predictive performance in the independent evaluation using SARS-CoV-2 epitope-specific CDR3β sequence datasets and outperformed the recent Gaussian process-based method. In particular, we found the critical amino acid positions of both epitope and CDR3β sequences, which potentially contribute greatly to the TCR recognition of an epitope, can be captured using the output attention weights of our model. We anticipate that our findings will provide new directions for constructing a reliable model for predicting the immunogenic T-cell epitopes using limited training data and help accelerate the development of an effective vaccine in response to SARS-CoV-2 variants, by identifying potential amino acid motifs highly relevant to the epitope-specific TCR recognition.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S3">
+<title>Training process and model architecture</title>
+<p id="P11">
+<xref ref-type="fig" rid="F1">Figure 1</xref> is a schematic representation of the training process of the proposed model. The initial model is cloned from the pre-trained BERT-based TAPE model, adding a classification layer at the end. First, the initial TAPE model is fine-tuned using general epitope-specific CDR3β sequence data, while freezing the embedding layer and top two encoding layers. Next, the final model is fine-tuned from using SARS-CoV-2 epitope-specific CDR3β sequence data derived from Immune Epitope Database (IEDB), while freezing the embedding layer and top six encoding layers.</p>
+<p id="P12">
+<xref ref-type="fig" rid="F2">Figure 2</xref> shows the proposed model architecture. Input amino acid sequences concatenated by epitope and CDR3β sequences are first encoded into tokens using a tokenizer, where each token is an integer code for a single amino acid. Each token is then embedded into a 768-dimensional vector in the pre-trained TAPE model based on the BERT model which has 12 encoding layers with 12 self-attention heads in each layer. The TAPE model was pre-trained using 31 million unlabeled protein sequences, via next-token prediction and bidirectional masked-token prediction tasks, with further supervised training via protein-specific tasks, contact prediction and remote homology detection. The output of the pre-trained TAPE model is the hidden states of the first token. The final classifier, a 2-layer feed-forward network, is then used to predict either binder or not from the output of the TAPE model.</p>
+</sec>
+<sec id="S4">
+<title>Datasets</title>
+<sec id="S5">
+<title>Fine-tuning datasets</title>
+<p id="P13">For the first fine-tuning round, the positive dataset containing epitope-specific TCR CDR3β sequences was compiled in May 2021 from three data sources: Dash <italic>et al</italic>.[Dash:2017go]<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup>, providing epitope-specific paired TCRα and TCRβ chains for three human epitopes and seven mouse epitopes, and two manually curated databases providing pathology-associated TCR sequences, VDJdb [<xref ref-type="bibr" rid="R15">15</xref>] (<ext-link ext-link-type="uri" xlink:href="https://vdjdb.cdr3.net">https://vdjdb.cdr3.net</ext-link>) and McPAS-TCR [<xref ref-type="bibr" rid="R13">13</xref>] (<ext-link ext-link-type="uri" xlink:href="http://friedmanlab.weizmann.ac.il/McPAS-TCR/">http://friedmanlab.weizmann.ac.il/McPAS-TCR/</ext-link>). All VDJdb entries have confidence scores: 0, critical information missing; 1, medium confidence; 2, high confidence; 3, very high confidence. We selected all VDJdb entries with a confidence score of at least 1. For the second fine-tuning round, SARS-CoV-2 T-cell epitope-specific CDR3β sequence data were obtained from the Immune Epitope Database [<xref ref-type="bibr" rid="R35">35</xref>] (<ext-link ext-link-type="uri" xlink:href="https://iedb.org">https://iedb.org</ext-link>) in June 2021. After selecting all epitopes with at least 20 CDR3β sequences and removing duplicates with the same combination of epitope and CDR3β sequences from each fine-tuning dataset, the datasets for the first and second fine-tuning rounds contained, respectively, 12,569 positive data points covering 78 epitopes, and 49,282 positive data points covering 145 epitopes.</p>
+<p id="P14">To increase the specificity of our model, it was necessary to add more epitope-specific TCR CDR3β sequence data to each fine-tuning dataset as negative examples that are not expected to interact with TCRs and epitopes. Background CDR3β sequences were obtained from Howie <italic>et al</italic>. [<xref ref-type="bibr" rid="R36">36</xref>], who collected blood from two healthy donors. A negative example was generated by combining an epitope from the positive dataset and a randomly selected background TCR CDR3β sequence. <xref ref-type="supplementary-material" rid="SD2">Table S1</xref> summarizes the final epitope-specific CDR3β sequence data for each fine-tuning dataset.</p>
+</sec>
+<sec id="S6">
+<title>Evaluation datasets</title>
+<p id="P15">We evaluated the final model using two independent datasets. The first dataset contained 305 COVID-19 <bold>S</bold>-protein<sub>269-277</sub> T-cell epitope (<bold>YLQPRTFLL</bold>)-specific TCRβs from a recent study by Shomuradova <italic>et al</italic>. [<xref ref-type="bibr" rid="R37">37</xref>] (hereafter referred to as the Shomuradova dataset) and the same number of negative data points. The second dataset (hereafter referred to as the ImmuneCODE dataset) contained 390 <bold>YLQPRTFLL</bold>-specific TCRβs from the ImmuneRACE study launched on June 10, 2020, by Adaptive Biotechnologies and Microsoft (<ext-link ext-link-type="uri" xlink:href="https://immunerace.adaptivebiotech.com">https://immunerace.adaptivebiotech.com</ext-link>), and 328 negative data points (<xref ref-type="supplementary-material" rid="SD3">Table S2</xref>).</p>
+</sec>
+</sec>
+<sec id="S7">
+<title>Finetuning and evaluating the model</title>
+<p id="P16">We fine-tuned the pre-trained model in two rounds, changing the frozen layers between rounds in a progressively specialized manner. In the first fine-tuning round, the model was trained while freezing the embedding layer and top two encoding layers, so that the weights of the layers were not updated during the training process. In the second fine-tuning round, freezing was extended to the top six encoding layers. In each fine-tuning round, the training dataset was split into 80% training and 20% validation subsets, and training-validation was repeated for up to 200 epochs. The training and validation losses were measured for each epoch; the training process was stopped early at the epoch in which the validation loss had not been decreased for 15 consecutive epochs [<xref ref-type="bibr" rid="R38">38</xref>]. We used the Adam optimizer [<xref ref-type="bibr" rid="R39">39</xref>] with a learning rate of 0.0001 and batch size of 128, in all epochs. The PyTorch deep learning library(<ext-link ext-link-type="uri" xlink:href="https://pytorch.org">https://pytorch.org</ext-link>) was used to implement the model. We evaluated the final fine-tuned model using the Shomuradova and ImmuneCODE datasets and quantified its predictive performance using the area under a receiver operating characteristic (AUROC) score.</p>
+</sec>
+<sec id="S8">
+<title>Interpreting position-specific attention weights</title>
+<p id="P17">To identify the critical amino acid positions in both the SARS-CoV-2 epitope (<bold>YLQPRTFLL</bold>) and CDR3β sequences, which potentially contribute greatly to TCR recognition of the epitope, we investigated the output attention weights of our model for the <bold>YLQPRTFLL</bold>-CDR3β sequence pairs predicted as a binder in the Shomuradova and ImmuneCODE datasets. We selected CDR3β sequences with the most common lengths of 13(n=159), 16(n=62), and 11(n=35) from the Shomuradova dataset, and 13(n=162), 14(n=60), and 16(n=58) from the ImmuneCODE dataset were selected. The output attention weights have the dimension (<bold>L, N, H, S, S</bold>), where <bold>L</bold> is the number of encoding layers, <bold>N</bold> is the number of <bold>YLQPRTFLL</bold>-CDR3β sequence pairs, <bold>H</bold> is the number of attention heads, and <bold>S</bold> is the fixed-length of the sequences. The attention weights were marginalized into a one-dimensional vector of length of <bold>S</bold>. A value of the vector at the position <italic>m</italic>, <italic>
+<bold>A<sub>m</sub>
+</bold>
+</italic> is given by the following equation:</p>
+<p id="P18">
+<disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mi>k</mml:mi>
+<mml:mi>H</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>L</mml:mo>
+<mml:mo>×</mml:mo>
+<mml:mo>N</mml:mo>
+<mml:mo>×</mml:mo>
+<mml:mo>H</mml:mo>
+<mml:mo>×</mml:mo>
+<mml:mo>S</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P19">where, <bold>
+<italic>a</italic>(<italic>i, j, k, l, m</italic>)</bold> is an attention weight.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<sec id="S10">
+<title>Finetuning results</title>
+<p id="P20">The final validation accuracies were 0.793 and 0.934 in two fine-tuning rounds, respectively (<xref ref-type="fig" rid="F3">Figure 3</xref>). In first fine-tuning round used a more general training dataset and more trainable encoding layers, the validation accuracy was lower and the difference between training and validation accuracies was higher. In contrast, in the second fine-tuning round used a more specific training dataset and fewer trainable encoding layers, the validation accuracy was markedly high and the difference between the training and validation accuracies was smaller. Fine-tuning the pre-trained model in this progressively specialized manner has the potential to generate a final model with high predictive performance for a specific task while avoiding model overfitting.</p>
+</sec>
+<sec id="S11">
+<title>Evaluation results</title>
+<p id="P21">The final fine-tuned model was evaluated using two external test datasets containing the SARS-CoV-2 epitope (<bold>YLQPRTFLL</bold>)-specific CDR3β sequences. <xref ref-type="fig" rid="F4">Figure 4</xref> shows the ROC curves for the two datasets. The AUROC scores were significantly high, at 0.981 and 0.983 for Shomuradova and ImmuneCODE datasets, respectively. Our model outperformed the recent Gaussian process-based method, TCRGP [<xref ref-type="bibr" rid="R19">19</xref>], which produced an AUROC score of 0.895 for the ImmuneCODE dataset.</p>
+</sec>
+<sec id="S12">
+<title>Position-wise attention weight analysis</title>
+<p id="P22">To identify critical amino acid positions in both <bold>YLQPRTFLL</bold> and CDR3β sequences, we investigated the output attention weights of our model for the <bold>YLQPRTFLL</bold>- CDR3β sequence pairs predicted as a binder from the Shomuradova and ImmuneCODE datasets (<xref ref-type="fig" rid="F5">Figure 5</xref>).</p>
+<p id="P23">For the Shomuradova dataset, the proline at the position 4 (P4) in the epitope has a relatively high attention weight, indicating that P4 may have a critical contribution to TCR recognition of the epitope (<xref ref-type="fig" rid="F5">Figure 5A</xref>). A recent experimental study [<xref ref-type="bibr" rid="R40">40</xref>] of SARS-CoV-2 variants found that CD8<sup>+</sup> T-cells from a cohort of convalescent patients, comprising more than 120 different TCRs, failed to respond to the <bold>P272L</bold> variant corresponding to P4. Furthermore, sizable populations of CD8<sup>+</sup> T cells from individuals immunized with the currently approved COVID-19 vaccines failed to bind to the <bold>P272L</bold> reagent. In the CDR3β sequences, the attention weights at the central positions 5-8 were higher than those at both ends, indicating that the TCR amino acids at the positions may interact relatively well with the proline at P4 of the epitope, thereby contributing substantially to TCR recognition of the epitope.</p>
+<p id="P24">Very similar attention weight patterns were observed for the ImmuneCODE dataset (<xref ref-type="fig" rid="F5">Figure 5B</xref>), for both the epitope and CDR3β sequences: there were relatively high attention weights at P4 in the epitope and the central positions 6-9 in the CDR3β sequences. Interestingly, our attention-based results differed from those of the MSA-based approaches, which consider conserved positions to be highly relevant to epitope-specific TCR recognition. In contrast, our findings suggest that the variable amino acid positions in the CDR3β sequences contribute substantially to TCR recognition of the epitope (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref> provides the sequence logos [<xref ref-type="bibr" rid="R41">41</xref>] of MSAs of the CDR3β sequences).</p>
+</sec>
+</sec>
+<sec id="S13" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P25">We developed a BERT-based model employing self-supervised transfer learning to predict SARS-CoV-2 epitope-specific TCR recognition. The predictive model was generated by fine-tuning the pre-trained TAPE model using epitope-specific TCR CDR3β sequence datasets in a progressively specialized manner. The fine-tuned model demonstrated a markedly high predictive performance for two evaluation datasets containing the SARS-CoV-2 <bold>S</bold>-protein<sub>269-277</sub> epitope (<bold>YLQPRTFLL</bold>)-specific CDR3β sequences, and outperformed the recent Gaussian process-based model, TCRGP, for the ImmuneCODE dataset. In particular, the output attention weights of our model suggest that the proline at <bold>P4</bold> in the epitope may contribute critically to TCR recognition of the epitope. A recent experimental study of SARS-CoV-2 variants demonstrated that CD8<sup>+</sup> T-cells failed to respond to the <bold>P272L</bold> variant corresponding to P4. Further, CDR3β-sequence amino acids at the central positions, rather than at both ends, may contribute to the TCR recognition of the epitope. Our attention-based approach, which can capture all motifs in both the epitope and CDR3β sequences in epitope-specific TCR recognition, may be more useful for predicting immunogenic changes in T-cell epitopes derived from SARS-CoV-2 mutations than MSA-based approaches which depend entirely on TCR sequences.</p>
+<p id="P26">In further studies, sequence data related to interactions between TCRα chains and MHC molecules will be integrated into our framework to predict global interaction patterns in TCR recognition of peptide-MHC complexes. We anticipate that our findings will provide new frameworks for constructing a reliable data-driven model for predicting the immunogenic T cell epitopes using limited training data and help accelerate the development of an effective vaccine for the response to SARS-CoV-2 variants, by identifying critical amino acid positions that are important in epitope-specific TCR recognition.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>All figures</label>
+<media xlink:href="EMS139966-supplement-All_figures.pptx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.presentationml.presentation" id="N66357" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Table 1</label>
+<media xlink:href="EMS139966-supplement-Supplementary_Table_1.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66366" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Table 2</label>
+<media xlink:href="EMS139966-supplement-Supplementary_Table_2.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66375" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S14">
+<title>Acknowledgements</title>
+<p>The authors would like to thank Dr. G. Kim and W. Jeon for helpful discussions and comments.</p>
+<sec id="S15">
+<title>Funding</title>
+<p>This work was supported by the research program of Korea Institute of Science and Technology Information (KISTI).</p>
+</sec>
+</ack>
+<sec id="S16" sec-type="data-availability">
+<title>Availability of data and materials</title>
+<p id="P27">Python source codes and all the datasets supporting this work can be downloaded from <ext-link ext-link-type="uri" xlink:href="https://github.com/luseedbio/TCRBert">https://github.com/luseedbio/TCRBert</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P28">
+<bold>Authors’ contributions</bold>
+</p>
+<p id="P29">YH designed the method, developed the software, conducted the experiments, and wrote the manuscript. AL supported the experiments and writing. All authors read and approved the final manuscript.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P30">
+<bold>Competing interests</bold>
+</p>
+<p id="P31">The authors declare that they have no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Global Challenges</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tao</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The biological and clinical significance of emerging SARS-CoV-2 variants</article-title>
+<source>Nat Rev Genet</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>17</lpage>
+<pub-id pub-id-type="doi">10.1038/s41576-021-00408-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oh</surname>
+<given-names>H-LJ</given-names>
+</name>
+<name>
+<surname>Gan</surname>
+<given-names>SK-E</given-names>
+</name>
+<name>
+<surname>Bertoletti</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Y-J</given-names>
+</name>
+</person-group>
+<article-title>Understanding the T cell immune response in SARS coronavirus infection</article-title>
+<source>Emerging Microbes &amp; Infections</source>
+<year>2019</year>
+<volume>1</volume>
+<fpage>1</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Channappanavar</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>research</surname>
+<given-names>SPI</given-names>
+</name>
+</person-group>
+<article-title>T cell-mediated immune response to respiratory coronaviruses</article-title>
+<source>Immunologic research 2014</source>
+<year>2014</year>
+<fpage>118</fpage>
+<lpage>128</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Channappanavar</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Virus-Specific Memory CD8 T Cells Provide Substantial Protection from Lethal Severe Acute Respiratory Syndrome Coronavirus Infection</article-title>
+<source>Journal of Virology</source>
+<year>2014</year>
+<volume>88</volume>
+<fpage>11034</fpage>
+<lpage>11044</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Persistent memory CD4+ and CD8+ T-cell responses in recovered severe acute respiratory syndrome (SARS) patients to SARS coronavirus M antigen</article-title>
+<source>The Journal of general virology</source>
+<year>2007</year>
+<volume>88</volume>
+<fpage>2740</fpage>
+<lpage>2748</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rudolph</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Stanfield</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>IA</given-names>
+</name>
+</person-group>
+<article-title>HOW TCRS BIND MHCS, PEPTIDES, AND CORECEPTORS</article-title>
+<source>Annu Rev Immunol</source>
+<year>2006</year>
+<volume>24</volume>
+<fpage>419</fpage>
+<lpage>466</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bassing</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Swat</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Alt</surname>
+<given-names>FW</given-names>
+</name>
+</person-group>
+<article-title>The Mechanism and Regulation of Chromosomal V(D)J Recombination</article-title>
+<source>Cell</source>
+<year>2002</year>
+<volume>109</volume>
+<fpage>S45</fpage>
+<lpage>S55</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robins</surname>
+<given-names>HS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive assessment of T-cell receptor β-chain diversity in αβ T cells</article-title>
+<source>Blood</source>
+<year>2009</year>
+<volume>114</volume>
+<fpage>4099</fpage>
+<lpage>4107</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Glanville</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Identifying specificity groups in the T cell receptor repertoire</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>547</volume>
+<fpage>94</fpage>
+<lpage>98</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dash</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Quantifiable predictive features define epitope-specific T cell receptor repertoires</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>547</volume>
+<fpage>89</fpage>
+<lpage>93</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Borrman</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ATLAS: A database linking binding affinities with structures for wild-type and mutant TCR-pMHC complexes</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2017</year>
+<volume>85</volume>
+<fpage>908</fpage>
+<lpage>916</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tickotsky</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Sagiv</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Prilusky</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shifrut</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Friedman</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>McPAS-TCR: a manually curated catalogue of pathology-associated T cell receptor sequences</article-title>
+<source>Bioinformatics</source>
+<year>2017</year>
+<volume>33</volume>
+<fpage>2924</fpage>
+<lpage>2929</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mahajan</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Epitope Specific Antibodies and T Cell Receptors in the Immune Epitope Database</article-title>
+<source>Frontiers in Immunology</source>
+<year>2018</year>
+<volume>9</volume>
+<fpage>3628</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Bagaev</surname>
+<given-names>DV</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>VDJdb in 2019: database extension, new analysis infrastructure and a T-cell receptor motif compendium</article-title>
+<publisher-name>Oxford University Press</publisher-name>
+<year>2019</year>
+<fpage>1</fpage>
+<lpage>6</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkz874</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klinger</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Multiplex Identification of Antigen-Specific T Cell Receptors Using a Combination of Immune Assays and Immune Receptor Sequencing</article-title>
+<source>PLoS ONE</source>
+<year>2015</year>
+<volume>10</volume>
+<elocation-id>e0141561</elocation-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bentzen</surname>
+<given-names>AK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Large-scale detection of antigen-specific T cells using peptide-MHC-I multimers labeled with DNA barcodes</article-title>
+<source>Nature Biotechnology</source>
+<year>2016</year>
+<volume>34</volume>
+<fpage>1037</fpage>
+<lpage>1045</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zvyagin</surname>
+<given-names>IV</given-names>
+</name>
+<name>
+<surname>Tsvetkov</surname>
+<given-names>VO</given-names>
+</name>
+<name>
+<surname>Chudakov</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Shugay</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>An overview of immunoinformatics approaches and databases linking T cell receptor repertoires to their antigen specificity</article-title>
+<source>Immunogenetics</source>
+<year>2019</year>
+<fpage>1</fpage>
+<lpage>8</lpage>
+<pub-id pub-id-type="doi">10.1007/s00251-019-01139-4</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jokinen</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Huuhtanen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mustjoki</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Heinonen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lähdesmäki</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Predicting recognition between T cell receptors and epitopes with TCRGP</article-title>
+<source>PLoS Computational Biology</source>
+<year>2021</year>
+<volume>17</volume>
+<elocation-id>e1008814</elocation-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gielis</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Detection of Enriched T Cell Epitope Specificity in Full T Cell Receptor Sequence Repertoires</article-title>
+<source>Frontiers in Immunology</source>
+<year>2019</year>
+<volume>10</volume>
+<fpage>2820</fpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jurtz</surname>
+<given-names>VI</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>NetTCR: sequence-based prediction of TCR binding to peptide-MHC complexes using convolutional neural networks</article-title>
+<source>bioRxiv</source>
+<year>2018</year>
+<elocation-id>433706</elocation-id>
+<pub-id pub-id-type="doi">10.1101/433706</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Isacchini</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Walczak</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Mora</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Nourmohammad</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Deep generative selection models of T and B cell receptor repertoires with soNNia</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2021</year>
+<volume>118</volume>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sidhom</surname>
+<given-names>J-W</given-names>
+</name>
+<name>
+<surname>Larman</surname>
+<given-names>HB</given-names>
+</name>
+<name>
+<surname>Pardoll</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Baras</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>DeepTCR is a deep learning framework for revealing sequence concepts within T-cell repertoires</article-title>
+<source>Nature Communications</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>12</lpage>
+<pub-id pub-id-type="doi">10.1038/s41467-021-21879-w</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Springer</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Besser</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tickotsky-Moskovitz</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Dvorkin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Louzoun</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Prediction of Specific TCR-Peptide Binding From Large Dictionaries of TCR-Peptide Pairs</article-title>
+<source>Frontiers in Immunology</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>1803</fpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peters</surname>
+<given-names>ME</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep contextualized word representations</article-title>
+<source>arXivorg csCL</source>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Devlin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>M-W</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Toutanova</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</article-title>
+<source>arXivorg csCL</source>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Radford</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Child</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Language models are unsupervised multitask learners</article-title>
+<publisher-name>OpenAI blog</publisher-name>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rao</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Evaluating Protein Transfer Learning with TAPE</article-title>
+<source>Advances in neural information processing systems</source>
+<year>2019</year>
+<volume>32</volume>
+<fpage>9689</fpage>
+<lpage>9701</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Heinzinger</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Modeling aspects of the language of life through transfer-learning protein sequences</article-title>
+<source>BMC Bioinformatics</source>
+<year>2019</year>
+<volume>20</volume>
+<fpage>1</fpage>
+<lpage>17</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Nambiar</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Transforming the language of life: transformer neural networks for protein prediction tasks</source>
+<conf-name>Proceedings of the 11th ACM International Conference on Bioinformatics, Computational Biology and Health Informatics</conf-name>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>El-Gebali</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Pfam protein families database in 2019</article-title>
+<source>Nucleic Acids Res</source>
+<volume>47</volume>
+<elocation-id>gky995-2018</elocation-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bendjama</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Rittner</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Malone</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>BERTMHC: Improves MHC-peptide class II interaction prediction with transformer and multiple instance learning</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<elocation-id>2020.11.24.396101</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.11.24.396101</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vig</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>BERTology Meets Biology: Interpreting Attention in Protein Language Models</article-title>
+<source>Arxiv csCL</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jin</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep learning pan-specific model for interpretable MHC-I peptide binding prediction with improved attention mechanism</article-title>
+<source>Proteins Struct Funct Bioinform</source>
+<year>2021</year>
+<volume>89</volume>
+<fpage>866</fpage>
+<lpage>883</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vita</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The immune epitope database (IEDB) 3.0</article-title>
+<source>Nucleic Acids Research</source>
+<year>2015</year>
+<volume>43</volume>
+<fpage>D405</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Howie</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>High-throughput pairing of T cell receptor α and β sequences</article-title>
+<source>Science Translational Medicine</source>
+<year>2015</year>
+<volume>7</volume>
+<elocation-id>301ra131-301ra131</elocation-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shomuradova</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Epitopes Are Recognized by a Public and Diverse Repertoire of Human T Cell Receptors</article-title>
+<source>Immunity</source>
+<year>2020</year>
+<volume>53</volume>
+<fpage>1245</fpage>
+<lpage>1257</lpage>
+<elocation-id>e5</elocation-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Prechelt</surname>
+<given-names>Lutz</given-names>
+</name>
+</person-group>
+<chapter-title>Early stopping-but when?</chapter-title>
+<source>Neural Networks: Tricks of the trade</source>
+<publisher-name>Springer</publisher-name>
+<publisher-loc>Berlin, Heidelberg</publisher-loc>
+<year>1998</year>
+<fpage>55</fpage>
+<lpage>69</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kingma</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Ba</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Adam: A Method for Stochastic Optimization</article-title>
+<source>arXivorg csLG</source>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dolton</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence of immune escape at dominant SARS-CoV-2 killer T-cell epitope</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thomsen</surname>
+<given-names>MCF</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Seq2Logo: a method for construction and visualization of amino acid binding motifs and sequence profiles including sequence weighting, pseudo counts and two-sided representation of amino acid enrichment and depletion</article-title>
+<source>Nucleic Acids Research</source>
+<year>2012</year>
+<volume>40</volume>
+<fpage>W281</fpage>
+<lpage>W287</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Training process for the proposed model.</title>
+<p>The initial model is cloned from pre-trained Tasks Assessing Protein Embeddings (TAPE) model, adding a classification layer at the end. The pre-trained model is fine-tuned in two rounds in a progressively specialized manner while extending the frozen layers between rounds.</p>
+</caption>
+<graphic xlink:href="EMS139966-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>The proposed model architecture.</title>
+<p>Input amino acid sequences concatenated by epitope and CDR3β sequences are first encoded into tokens using a tokenizer. Each token is then embedded into a 768-dimensional vector in the pre-trained Tasks Assessing Protein Embeddings (TAPE) model which has 12 encoding layers with 12 self-attention heads in each layer. The final classifier, a 2-layer feed forward network, is then used to predict either binder or not from the output of the TAPE model.</p>
+</caption>
+<graphic xlink:href="EMS139966-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Fine-tuning of the pre-trained model in two rounds.</title>
+<p>The final validation accuracies were 0.781 and 0.924 in two fine-tuning rounds, respectively. Progressively, the validation accuracy was increased and the difference between the training and validation accuracies was reduced, in fine-tuning rounds.</p>
+</caption>
+<graphic xlink:href="EMS139966-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>
+<bold>Receiver operating characteristic (ROC) curves</bold> for evaluating the final fine-tuned model using two external datasets containing the SARS-CoV-2 epitope (<bold>YLQPRTFLL</bold>)-specific CDR3β sequences. The area under the ROC (AUROC) scores were significantly high at 0.980 and 0.990 for the Shomuradova (A, left panel) and ImmuneCODE (B, right panel) datasets.</p>
+</caption>
+<graphic xlink:href="EMS139966-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>
+<bold>Marginalized position-wise attention weights</bold> for the <bold>YLQPRTFLL</bold>-CDR3β sequence pairs predicted as a binder from the Shomuradova (A, left panels) and ImmuneCODE (B, right panels) datasets. The CDR3β sequence lengths differ from top to bottom. The amino acid positions corresponding to the top 10% weights of each the epitope and CDR3 sequences are highlighted in red dots below x-axis ticks.</p>
+</caption>
+<graphic xlink:href="EMS139966-f005"/>
+</fig>
+</floats-group>
+</article>

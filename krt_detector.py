@@ -12,34 +12,94 @@ logger = logging.getLogger(__name__)
 class KRTDetector:
     """Detect existing KRT tables in scientific articles"""
     
-    # Common patterns for KRT table identification
+    # Enhanced patterns for different journal formats (ASAP, STAR Methods, Cell Press, etc.)
     KRT_TABLE_PATTERNS = [
+        # ASAP formats
         r'key\s+resources?\s+table',
         r'key\s+reagents?\s+table',
+        
+        # STAR Methods (Cell Press) formats
+        r'star\s*\u2605?\s+methods\s+table',
+        r'star\s+methods',
+        r'resource\s+table',
         r'materials?\s+and\s+methods?\s+table',
+        
+        # General resource tables
         r'reagents?\s+and\s+resources?\s+table',
         r'resources?\s+table',
+        r'materials\s+table',
+        r'supplies\s+table',
+        
+        # Specific resource type tables  
         r'antibodies?\s+table',
         r'primers?\s+table',
         r'reagents?\s+table',
         r'software\s+table',
         r'equipment\s+table',
+        r'plasmids?\s+table',
+        r'cell\s+lines?\s+table',
+        r'strains?\s+table',
+        
+        # Nature/Science formats
+        r'extended\s+data\s+table',
+        r'supplementary\s+table',
+        
+        # Generic patterns
+        r'table\s+\d+.*(?:resource|reagent|material)',
+        r'(?:resource|reagent|material).*table\s+\d+',
     ]
     
-    # Patterns for KRT column headers
+    # Enhanced patterns for column headers (different journal formats)
     KRT_HEADER_PATTERNS = [
+        # Standard ASAP format
         r'resource\s+type',
-        r'reagent\s+type',
         r'resource\s+name',
-        r'reagent\s+name',
         r'source',
         r'identifier',
-        r'cat\s*#',
-        r'catalog\s+number',
-        r'rrid',
         r'new\s*/\s*reuse',
         r'additional\s+information',
+        
+        # Alternative formats
+        r'reagent\s+type',
+        r'reagent\s+name',
+        r'material\s+name?',
+        r'item',
+        r'description',
+        
+        # Source/vendor patterns
+        r'vendor',
+        r'supplier',
+        r'company',
+        r'manufacturer',
+        
+        # Identifier patterns
+        r'cat\s*#?',
+        r'cat\s*no\.?',
+        r'catalog\s+number',
+        r'catalogue\s+number',
+        r'product\s+code',
+        r'order\s+number',
+        r'item\s+number',
+        r'rrid',
+        r'accession',
+        r'doi',
+        
+        # Usage patterns
+        r'application',
+        r'purpose',
+        r'use',
+        r'dilution',
+        r'concentration',
+        r'lot\s+number',
         r'comments?',
+        r'notes?',
+        r'details',
+        
+        # Cell Press STAR Methods specific
+        r'final\s+concentration',
+        r'working\s+concentration',
+        r'storage',
+        r'conditions',
     ]
     
     # Common resource types in KRT tables
@@ -236,18 +296,31 @@ class KRTDetector:
         return headers
     
     def _extract_table_data(self, table: ET.Element) -> List[Dict]:
-        """Extract data from a table that appears to be a KRT table"""
+        """Extract data from a table that appears to be a KRT table, preserving original formatting"""
         data = []
         
-        # Get all rows
-        rows = table.findall('.//tr')
+        # Get all rows (handle both with and without namespaces)
+        rows = table.findall('.//tr') + table.findall('.//{http://jats.nlm.nih.gov}tr')
         headers = self._extract_table_headers(table)
         
         # Skip header row(s) and extract data
-        data_rows = rows[1:] if len(rows) > 1 else rows
+        header_row_count = 1
+        # Check if first few rows are all headers
+        for i, row in enumerate(rows[:3]):
+            cells = row.findall('.//td') + row.findall('.//th') + \
+                   row.findall('.//{http://jats.nlm.nih.gov}td') + \
+                   row.findall('.//{http://jats.nlm.nih.gov}th')
+            if all(cell.tag.endswith('th') for cell in cells):
+                header_row_count = i + 1
+            else:
+                break
         
-        for row in data_rows[:10]:  # Limit to first 10 rows for performance
-            cells = row.findall('.//td') + row.findall('.//th')
+        data_rows = rows[header_row_count:] if len(rows) > header_row_count else rows
+        
+        for row in data_rows[:20]:  # Increased limit to capture more data
+            cells = row.findall('.//td') + row.findall('.//th') + \
+                   row.findall('.//{http://jats.nlm.nih.gov}td') + \
+                   row.findall('.//{http://jats.nlm.nih.gov}th')
             row_data = {}
             
             for i, cell in enumerate(cells):
@@ -255,7 +328,8 @@ class KRTDetector:
                 header = headers[i] if i < len(headers) else f'Column_{i+1}'
                 row_data[header] = cell_text
             
-            if row_data:
+            # Only include rows with substantial content
+            if row_data and any(len(str(v).strip()) > 1 for v in row_data.values()):
                 data.append(row_data)
         
         return data
@@ -295,7 +369,7 @@ def detect_existing_krt(xml_file_path: str) -> Dict:
 
 def format_krt_data_for_display(krt_tables: List[Dict]) -> List[Dict]:
     """
-    Format detected KRT data for display in templates.
+    Format detected KRT data for display in templates, preserving original formatting.
     
     Args:
         krt_tables: List of detected KRT tables
@@ -307,30 +381,71 @@ def format_krt_data_for_display(krt_tables: List[Dict]) -> List[Dict]:
     
     for table in krt_tables:
         if table.get('table_data'):
+            # Add table metadata
+            table_info = {
+                'table_title': table.get('title', ''),
+                'table_caption': table.get('caption', ''),
+                'confidence': table.get('confidence', 0),
+                'headers': table.get('headers', []),
+                'raw_data': table.get('table_data', []),
+            }
+            
             for row in table['table_data']:
-                # Standardize column names for display
-                formatted_row = {
+                # Preserve original structure but try to map to standard fields
+                formatted_row = dict(row)  # Start with original data
+                
+                # Add standardized fields for compatibility
+                standardized = {
                     'RESOURCE_TYPE': '',
                     'RESOURCE_NAME': '',
                     'SOURCE': '',
                     'IDENTIFIER': '',
+                    'NEW_REUSE': '',
                     'ADDITIONAL_INFO': ''
                 }
                 
-                # Map detected columns to standard KRT columns
+                # Smart mapping based on content analysis
                 for key, value in row.items():
+                    if not value or str(value).strip() in ['', '-', 'N/A', 'NA', 'n/a']:
+                        continue
+                        
                     key_lower = key.lower()
-                    if any(pattern in key_lower for pattern in ['resource type', 'reagent type', 'type']):
-                        formatted_row['RESOURCE_TYPE'] = value
-                    elif any(pattern in key_lower for pattern in ['resource name', 'reagent name', 'name']):
-                        formatted_row['RESOURCE_NAME'] = value
-                    elif any(pattern in key_lower for pattern in ['source', 'vendor', 'company']):
-                        formatted_row['SOURCE'] = value
-                    elif any(pattern in key_lower for pattern in ['identifier', 'cat', 'catalog', 'rrid']):
-                        formatted_row['IDENTIFIER'] = value
+                    value_clean = str(value).strip()
+                    
+                    # Resource type mapping
+                    if any(pattern in key_lower for pattern in ['resource type', 'reagent type', 'type', 'category']):
+                        standardized['RESOURCE_TYPE'] = value_clean
+                    
+                    # Resource name mapping (most important)
+                    elif any(pattern in key_lower for pattern in ['resource name', 'reagent name', 'name', 'item', 'material', 'description']):
+                        if len(value_clean) > 2:  # Avoid empty or very short values
+                            standardized['RESOURCE_NAME'] = value_clean
+                    
+                    # Source/vendor mapping
+                    elif any(pattern in key_lower for pattern in ['source', 'vendor', 'supplier', 'company', 'manufacturer']):
+                        standardized['SOURCE'] = value_clean
+                    
+                    # Identifier mapping
+                    elif any(pattern in key_lower for pattern in ['identifier', 'cat', 'catalog', 'rrid', 'product code', 'item number', 'accession']):
+                        standardized['IDENTIFIER'] = value_clean
+                    
+                    # New/Reuse mapping
+                    elif any(pattern in key_lower for pattern in ['new', 'reuse', 'use']):
+                        standardized['NEW_REUSE'] = value_clean
+                    
+                    # Everything else goes to additional info
                     else:
-                        formatted_row['ADDITIONAL_INFO'] += f"{key}: {value}; "
+                        if standardized['ADDITIONAL_INFO']:
+                            standardized['ADDITIONAL_INFO'] += f"; {key}: {value_clean}"
+                        else:
+                            standardized['ADDITIONAL_INFO'] = f"{key}: {value_clean}"
                 
-                formatted_data.append(formatted_row)
+                # Merge original and standardized data
+                formatted_row.update(standardized)
+                formatted_row['_table_info'] = table_info
+                
+                # Only include rows with meaningful content
+                if standardized['RESOURCE_NAME'] or any(len(str(v).strip()) > 3 for v in row.values()):
+                    formatted_data.append(formatted_row)
     
     return formatted_data

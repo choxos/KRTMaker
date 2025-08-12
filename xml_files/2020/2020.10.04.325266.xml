@@ -1,0 +1,969 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS97937</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.04.325266</article-id>
+<article-id pub-id-type="archive">PPR222269</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Reference ontology and database annotation of the COVID-19 Open Research Dataset (CORD-19)</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Giles</surname>
+<given-names>Oliver</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Huntley</surname>
+<given-names>Rachael</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Karlsson</surname>
+<given-names>Anneli</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Lomax</surname>
+<given-names>Jane</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Malone</surname>
+<given-names>James</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>SciBite, Biodata Innovation Centre, Wellcome Genome Campus, Hinxton, CB10 1SD, UK</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding authors: Oliver Giles: <email>oliver.giles@scibite.com</email>; James Malone: <email>james@scibite.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>13</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>07</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The COVID-19 Open Research Dataset (CORD-19) was released in March 2020 to allow the machine learning and wider research community to develop techniques to answer scientific questions on COVID-19. The dataset consists of a large collection of scientific literature, including over 100,000 full text papers. Annotating training data to normalise variability in biological entities can improve the performance of downstream analysis and interpretation. To facilitate and enhance the use of the CORD-19 data in these applications, in late March 2020 we performed a comprehensive annotation process using named entity recognition tool, TERMite, along with a number of large reference ontologies and vocabularies including domains of genes, proteins, drugs and virus strains. The additional annotation has identified and tagged over 45 million entities within the corpus made up of 62,746 unique biomedical entities. The latest updated version of the annotated data, as well as older versions, is made openly available under GPL-2.0 License for the community to use at: <ext-link ext-link-type="uri" xlink:href="https://github.com/SciBiteLabs/CORD19">https://github.com/SciBiteLabs/CORD19</ext-link>
+</p>
+</abstract>
+<kwd-group>
+<kwd>CORD-19</kwd>
+<kwd>COVID-19</kwd>
+<kwd>ontology annotation</kwd>
+<kwd>sentence co-occurrence</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">In March 2020 in response to the COVID-19 pandemic, a consortium including The White House, AI2, CZI, MSR, Georgetown and NIH released an open research dataset along with a call for action [<xref ref-type="bibr" rid="R1">1</xref>] to the science and technology community. They called on artificial intelligence experts to develop new text and data mining techniques that can help the science community answer high-priority scientific questions related to COVID-19. The original dataset can be accessed at Kaggle: <ext-link ext-link-type="uri" xlink:href="https://www.kaggle.com/allen-institute-for-ai/CORD-19-research-challenge">https://www.kaggle.com/allen-institute-for-ai/CORD-19-research-challenge</ext-link>
+</p>
+<p id="P3">Data normalisation is an important step in the data preparation phase of many machine learning approaches [<xref ref-type="bibr" rid="R2">2</xref>]. The use of ontologies to normalise this data has shown improvements in various machine learning applications [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R4">4</xref>]. Using ontologies to standardise descriptions of data also offers benefits in post-analysis. Using the same ontology identifiers in annotations can enable the integration of results across multiple disparate but similarly annotated datasets. The value of sharing well-annotated data has never been made clearer with the emergence of COVID-19 [<xref ref-type="bibr" rid="R5">5</xref>, <xref ref-type="bibr" rid="R6">6</xref>] and it is this challenge we are addressing here.</p>
+<p id="P4">To contribute to this call for action, in March 2020, and for the months following, we developed updated COVID-19 focused vocabularies replete with rich synonyms to identify relevant virus strain names, proteins and genes often studied with these viruses, and related entities such as gene functions and processes. These vocabularies use public identifiers where available from the likes of NCBI Taxon, Uniprot and the Gene Ontology. Using these vocabularies along with others describing indications, phenotypes, species, countries, genes, proteins and drugs, we applied our named entity recognition tool, TERMite, to annotate the entire CORD-19 dataset. This has produced a richly annotated dataset with over 45 million annotations, using 62,746 unique biomedically relevant entities. In order to facilitate the discovery of connections between entities in the corpus, we have produced a set of entity co-occurrences. This includes sentences which mention at least two entities, for instance a drug and gene. Because the vocabularies for identifying COVID-19 related terms are available, this can be used to filter for COVID-19 specific co-occurrences.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Method</title>
+<p id="P5">The CORD-19 dataset is described as “the most extensive machine-readable coronavirus literature collection available for data mining” [<xref ref-type="bibr" rid="R7">7</xref>]. As of September 2020, the dataset contains over 200,000 scientific articles, including over 100,000 with full text, focusing on COVID-19, SARS-CoV-2, and other relevant or related coronaviruses. The dataset is made available as a set of JSON documents, each document includes the title, authors, abstract, body text and detailed references (where appropriate).</p>
+<p id="P6">To identify relevant concepts, a focused set of vocabularies was required with enrichments specific to concepts pertinent to COVID-19 research. The new COVID-19 specific vocabularies, and a set of existing vocabularies, mostly aligned to public ontologies (<xref ref-type="table" rid="T1">Table 1</xref>).</p>
+<p id="P7">To create the annotations for each document, a commercial named entity recognition engine (NER), TERMite, was employed using these vocabularies. For each section of text in the CORD19 JSON (titles, abstract parts and body parts), we injected a new block containing entities identified. The JSON block for each entity consisted of: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P8">a preferred name</p>
+</list-item>
+<list-item>
+<p id="P9">a unique identifier which in most cases was a URL for the relevant entity in its respective ontology</p>
+</list-item>
+<list-item>
+<p id="P10">a count of the number of times the entity was found in the section of text</p>
+</list-item>
+<list-item>
+<p id="P11">a list of the sentences in which the entity was found in the section of text</p>
+</list-item>
+<list-item>
+<p id="P12">a list of exact string locations for the sentences in which the entity was found in the section of text</p>
+</list-item>
+</list>
+</p>
+<p id="P13">By injecting these results back into the original JSON as an additional set of objects, we aimed to prevent any compatibility issues that would have arisen for individuals and groups who had already begun work with the initial release of this data.</p>
+<p id="P14">To enable a more focused analysis, we also tabulated and transposed the annotated data (i.e. only sentences with annotations). In this case, we pivoted the data around the sentence, making the sentence the primary key, with attendant lists of entities identified in said sentence.</p>
+</sec>
+<sec id="S3" sec-type="results">
+<title>Results</title>
+<p id="P15">TERMite identified over 45 million entities within the initial CORD19 release, consisting of 62,746 unique identifiers. It should be noted that some terms are represented in multiple ontologies. This is particularly common with, for example, phenotypes from the Human Phenotype Ontology and indications from MeSH. (<xref ref-type="table" rid="T6">Table 6</xref>) summarises the annotations as a result of the NER process for each of the different vocabularies used. (<xref ref-type="fig" rid="F1">Figure 1</xref>) gives an example of a sentence in which three annotations were found from three vocabularies.</p>
+<p id="P16">The number of unique hits for each vocabulary type was many orders of magnitude less than the number of total hits found. This is very common in large, focused areas of research - in this case anything COVID-19 relevant - as the target virus will be mentioned many times in a single article.</p>
+<p id="P17">Summaries of the most frequently found entities are shown in (<xref ref-type="table" rid="T3">Tables 3</xref>, <xref ref-type="table" rid="T4">4</xref> and <xref ref-type="table" rid="T5">5</xref>). As can be observed in <xref ref-type="table" rid="T3">Table 3</xref>, many of the drugs found both in March and more recently have been heavily investigated by researchers around the world for their use as either a treatment (e.g. Hydroxychloroquine [<xref ref-type="bibr" rid="R8">8</xref>], Ribavirin [<xref ref-type="bibr" rid="R9">9</xref>]) or considering if they may play a role in poorer clinical outcome (e.g. Angiotensin [<xref ref-type="bibr" rid="R10">10</xref>]).</p>
+<p id="P18">The ontology annotated data has now seen use in, for example, generating entity graphs using sentence co-occurrences as edges (Knowledge Graph Hub, 2020) or for combining evidence from multiple publication sources (Pub Annotation, 2020).</p>
+</sec>
+<sec id="S4" sec-type="conclusions">
+<title>Conclusions</title>
+<p id="P19">The value of well-annotated and accessible data on a global scale has never been more acutely apparent. The CORD-19 dataset and call to action channeled this need for rapid and innovative action from the community to help research and development into tackling this global challenge. Within weeks of this call in March 2020, we have released to the community annotated sentences which mention entities of biomedical relevance to COVID-19 and coronaviruses broadly, along with co-occurrences within sentences. The use of this data has already helped in developing knowledge graphs and data integration portals and it is our hope it will be put to further use in the data driven approaches used in 2020 and beyond.</p>
+</sec>
+</body>
+<back>
+<ack id="S5">
+<title>Acknowledgements</title>
+<p>We would like to thank Chris Mungall for his suggestions on using the Protein Ontology and Lee Harland for his support on this work. We would also like to thank the Biohackathon community for their feedback on the data which has led to improvements in later versions.</p>
+<sec id="S6">
+<title>Grant information</title>
+<p>The authors declared that no grants were involved in supporting this work.</p>
+</sec>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P20">
+<bold>Competing interests</bold>
+</p>
+<p id="P21">All authors are employees of SciBite at time of writing. No other competing interests are declared.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="web">
+<collab>The White House</collab>
+<article-title>Call to action to the tech community on new machine readable covid-19 dataset</article-title>
+<year>2020</year>
+<date-in-citation>Accessed: 2020-03-30</date-in-citation>
+<comment>URL <ext-link ext-link-type="uri" xlink:href="https://www.whitehouse.gov/briefings-statements/call-action-tech-community-new-machine-readable-covi">https://www.whitehouse.gov/briefings-statements/call-action-tech-community-new-machine-readable-covi</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Arora</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kansal</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Character level embedding with deep convolutional neural network for text normalization of unstructured data for twitter sentiment analysis</article-title>
+<source>Social Network Analysis and Mining</source>
+<year>2019</year>
+<volume>9</volume>
+<issue>12</issue>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giles</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Karlsson</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Masiala</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cesareni</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Perfetto</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Mullen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hughes</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Harland</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Malone</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Optimising biomedical relationship extraction with biobert: Best practices for data creation</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.09.01.277277</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smaili</surname>
+<given-names>FZ</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hoehndorf</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Self-normalizing learning on biomedical ontologies using a deep siamese neural network</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.04.23.057117</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hechenbleikner</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Samarov</surname>
+<given-names>DV</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>A call for collaboration with the tech industry data scrutiny</article-title>
+<source>EClinicalMedicine</source>
+<year>2020</year>
+<volume>23</volume>
+<pub-id pub-id-type="doi">10.1016/j.eclinm.2020.100377</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mons</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>The vodan in: support of a fair-based infrastructure for covid-19</article-title>
+<source>European Journal of Human Genetics</source>
+<year>2020</year>
+<volume>28</volume>
+<fpage>724</fpage>
+<lpage>727</lpage>
+<pub-id pub-id-type="doi">10.1038/s41431-020-0635-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="web">
+<collab>Kaggle</collab>
+<article-title>Covid-19 open research dataset challenge (cord-19)</article-title>
+<year>2020</year>
+<date-in-citation>Accessed: 2020-09-24</date-in-citation>
+<comment>URL <ext-link ext-link-type="uri" xlink:href="https://www.kaggle.com/allen-institute-for-ai/CORD-19-research-challenge">https://www.kaggle.com/allen-institute-for-ai/CORD-19-research-challenge</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maisonnasse</surname>
+<given-names>Pauline</given-names>
+</name>
+<name>
+<surname>Guedj</surname>
+<given-names>Jérémie</given-names>
+</name>
+<name>
+<surname>Contreras</surname>
+<given-names>Vanessa</given-names>
+</name>
+<name>
+<surname>Behillil</surname>
+<given-names>Sylvie</given-names>
+</name>
+<name>
+<surname>Solas</surname>
+<given-names>Caroline</given-names>
+</name>
+<name>
+<surname>Marlin</surname>
+<given-names>Romain</given-names>
+</name>
+<name>
+<surname>Naninck</surname>
+<given-names>Thibaut</given-names>
+</name>
+<name>
+<surname>Pizzorno</surname>
+<given-names>Andres</given-names>
+</name>
+<name>
+<surname>Lemaitre</surname>
+<given-names>Julien</given-names>
+</name>
+<name>
+<surname>Gonçalves</surname>
+<given-names>Antonio</given-names>
+</name>
+<name>
+<surname>Kahlaoui</surname>
+<given-names>Nidhal</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Hydroxychloroquine use against sars-cov-2 infection in non-human primates</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>585</volume>
+<issue>7826</issue>
+<fpage>584</fpage>
+<lpage>587</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2558-4</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hung</surname>
+<given-names>Ivan Fan-Ngai</given-names>
+</name>
+<name>
+<surname>Lung</surname>
+<given-names>Kwok-Cheung</given-names>
+</name>
+<name>
+<surname>Tso</surname>
+<given-names>Eugene Yuk-Keung</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Raymond</given-names>
+</name>
+<name>
+<surname>Chung</surname>
+<given-names>Tom Wai-Hin</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>Man-Yee</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>Yuk-Yung</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>Jenny</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>Jacky</given-names>
+</name>
+<name>
+<surname>Tam</surname>
+<given-names>Anthony Raymond</given-names>
+</name>
+<name>
+<surname>Shum</surname>
+<given-names>Hoi-Ping</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Triple combination of interferon beta-1b, lopinavir–ritonavir, and ribavirin in the treatment of patients admitted to hospital with covid-19: an open-label, randomised, phase 2 trial</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+<month>02</month>
+<day>10</day>
+<volume>395</volume>
+<issue>10238</issue>
+<fpage>1695</fpage>
+<lpage>1704</lpage>
+<pub-id pub-id-type="doi">10.1016/S0140-6736(20)31042-4</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hippisley-Cox</surname>
+<given-names>Julia</given-names>
+</name>
+<name>
+<surname>Young</surname>
+<given-names>Duncan</given-names>
+</name>
+<name>
+<surname>Coupland</surname>
+<given-names>Carol</given-names>
+</name>
+<name>
+<surname>Channon</surname>
+<given-names>Keith M</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Pui San</given-names>
+</name>
+<name>
+<surname>Harrison</surname>
+<given-names>David A</given-names>
+</name>
+<name>
+<surname>Rowan</surname>
+<given-names>Kathryn</given-names>
+</name>
+<name>
+<surname>Aveyard</surname>
+<given-names>Paul</given-names>
+</name>
+<name>
+<surname>Pavord</surname>
+<given-names>Ian D</given-names>
+</name>
+<name>
+<surname>Watkinson</surname>
+<given-names>Peter J</given-names>
+</name>
+</person-group>
+<article-title>Risk of severe covid-19 disease with ace inhibitors and angiotensin receptor blockers: cohort study including 8.3 million people</article-title>
+<source>Heart</source>
+<year>2020</year>
+<volume>106</volume>
+<issue>19</issue>
+<fpage>1503</fpage>
+<lpage>1511</lpage>
+<pub-id pub-id-type="doi">10.1136/heartjnl-2020-317393</pub-id>
+<comment>ISSN 1355-6037. URL <ext-link ext-link-type="uri" xlink:href="https://heart.bmj.com/content/106/19/1503">https://heart.bmj.com/content/106/19/1503</ext-link>
+</comment>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Example of a sentence containing three annotations. In this example, the virus name <italic>COVID-19</italic> is found, the GO term <italic>transmission of virus</italic>, and the MeSH indication <italic>Coronavirus infection</italic>.</title>
+</caption>
+<graphic xlink:href="EMS97937-f001"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Summary of the vocabularies used to annotate the CORD-19 data in this work.</title>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Vocabulary</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Origin reference</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">SPECIES</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">NCBI Taxon</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">A curated classification and nomenclature for all of the organisms in the public sequence databases, currently representing about 10% of the described species of life on the planet.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GOONTOL</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Gene Ontology</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Concepts for describing the functions of gene products from all organisms.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">INDICATION</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">MeSH</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Hierarchically-organized vocabulary for indexing, cataloging, and searching of biomedical and health-related information.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARSCOV</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Gene Ontology, NCBI Taxon, Custom</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Coronavirus strains and viral processes.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">COUNTRY</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">ISO 3166-1</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Standard country codes.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">HPO</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Human Phenotype Ontology</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">phenotypic abnormalities and clinical features encountered in human disease.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GENE</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">HGNC</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Reference, approved human gene nomenclature.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">CORONAPROT</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Protein Ontology, UniProt, Custom</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">COVID-19 proteins and their human targets.</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">DRUG</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">ChEMBL</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Curated database of bioactive molecules with drug-like properties.</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Summary of the NER annotations across each vocab used.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Vocabulary</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Total hits</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Unique hits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">SPECIES</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">9958967</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">3502</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GOONTOL</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">6975073</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">10702</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">INDICATION</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">12998639</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">6360</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARSCOV</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">2629924</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">302</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">COUNTRY</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">2078689</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">228</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">HPO</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">3997204</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">5737</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GENE</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">4018135</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">15714</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">CORONAPROT</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">795869</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">67</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">DRUG</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">2513491</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">20134</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Most frequent annotations found for each vocabulary.</title>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Vocabulary</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Most frequent hits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">DRUG</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Hydroxychloroquine</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Ribavirin</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Chloroquine</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Remdesivir</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Benzylpenicillin</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Oseltamivir</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Oseltamivir Carboxylic Acid</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Lopinavir</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Penicillin V</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Angiotensin</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GENE</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">ACE2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IL6</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IFNG</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">TNF</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">CD4</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">CRP</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IL10</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IL1B</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IFNB1</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">IFNA2</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>Most frequent annotations found for gene and drug vocabularies.</title>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Vocabulary</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Most frequent hits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARSCOV</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Severe acute respiratory syndrome coronavirus 2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">transmission of virus</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARS Coronavirus</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">viral life cycle</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">incubation period</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">viral genome</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">viral release from host cell</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">viral nucleocapsid</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARS coronavirus NS-1</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">viral strain</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">CORONAPROT</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">Angiotensin-converting enzyme 2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">spike glycoprotein (SARS-CoV-2)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Spike glycoprotein</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Replicase polyprotein 1ab</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Replicase polyprotein 1a</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">nucleoprotein (SARS-CoV-2)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Nucleoprotein</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">3C-like proteinase (SARS-CoV-2)</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">Interleukin-6</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">RNA-directed RNA polymerase (SARS-CoV-2)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<title>Most frequent annotations found for COVID-19 specific vocabularies.</title>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Vocabulary</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Most frequent hits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">GOONTOL</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">binding</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">pathogenesis</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">behavior</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">growth</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">gene expression</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">signal transduction</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">cell death</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">immune response</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">learning</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">female pregnancy</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">HPO</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">pneumonia</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">fever</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">neoplasm</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">diarrhea</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">asthma</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">cough</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">sepsis</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">anxiety</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">depressivity</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5"/>
+<td align="left" valign="top" style="background-color:#DEDBB5">respiratory tract infection</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" position="float" orientation="portrait">
+<label>Table 6</label>
+<caption>
+<title>Example sentence level annotation.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top" style="background-color:#BDB86B">Document ID</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Sentence ID</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Ontology URIs for annotation</th>
+<th align="left" valign="top" style="background-color:#BDB86B">TERMite short ID</th>
+<th align="left" valign="top" style="background-color:#BDB86B">Sentence location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">PMC7091850.xml</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">title_1</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">
+<ext-link ext-link-type="uri" xlink:href="http://purl.obolibrary.org/obo/NCBITaxon_2697049">http://purl.obolibrary.org/obo/NCBITaxon_2697049</ext-link>| <ext-link ext-link-type="uri" xlink:href="https://id.nlm.nih.gov/mesh/D018352">https://id.nlm.nih.gov/mesh/D018352</ext-link>
+</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">SARSCOV#NCBITaxon_2697049| INDICATION#D018352</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">0-110</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">PMC7091850.xml</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">body_0_1</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">
+<ext-link ext-link-type="uri" xlink:href="https://id.nlm.nih.gov/mesh/D018380">https://id.nlm.nih.gov/mesh/D018380</ext-link>
+</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">INDICATION#D018380</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">0-239</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#DEDBB5">PMC7194468.xml</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">body_0_1</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">
+<ext-link ext-link-type="uri" xlink:href="https://id.nlm.nih.gov/mesh/D009975">https://id.nlm.nih.gov/mesh/D009975</ext-link>| <ext-link ext-link-type="uri" xlink:href="https://id.nlm.nih.gov/mesh/D007251">https://id.nlm.nih.gov/mesh/D007251</ext-link>| <ext-link ext-link-type="uri" xlink:href="https://id.nlm.nih.gov/mesh/D007251">https://id.nlm.nih.gov/mesh/D007251</ext-link>
+</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">SPECIES#D009975 | INDICATION#D007251 | INDICATION#D007251</td>
+<td align="left" valign="top" style="background-color:#DEDBB5">0-191</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

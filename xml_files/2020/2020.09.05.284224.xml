@@ -1,0 +1,1603 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS94753</article-id>
+<article-id pub-id-type="doi">10.1101/2020.09.05.284224</article-id>
+<article-id pub-id-type="archive">PPR210870</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Vapur: A Search Engine to Find Related Protein - Compound Pairs in COVID-19 Literature</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Köksal</surname>
+<given-names>Abdullatif</given-names>
+</name>
+<email>abdullatif.koksal@boun.edu.tr</email>
+<aff id="A1">Computer Engineering, Boğaziçi University, Turkey</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Dönmez</surname>
+<given-names>Hilal</given-names>
+</name>
+<email>hilal.donmez@boun.edu.tr</email>
+<aff id="A2">Computer Engineering, Boğaziçi University, Turkey</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Özçelik</surname>
+<given-names>Riza</given-names>
+</name>
+<email>riza.ozcelik@boun.edu.tr</email>
+<aff id="A3">Computer Engineering, Boğaziçi University, Turkey</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Ozkirimli</surname>
+<given-names>Elif</given-names>
+</name>
+<email>elif.ozkirimli@roche.com</email>
+<aff id="A4">Chemical Engineering, Bogazici University, Turkey, Data and Analytics Chapter, F. Hoffmann-La Roche AG, Switzerland</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Özgür</surname>
+<given-names>Arzucan</given-names>
+</name>
+<email>arzucan.ozgur@boun.edu.tr</email>
+<aff id="A5">Computer Engineering, Boğaziçi University, Turkey</aff>
+</contrib>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>05</day>
+<month>09</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Coronavirus Disease of 2019 (COVID-19) created dire consequences globally and triggered an intense scientific effort from different domains. The resulting publications created a huge text collection in which finding the studies related to a biomolecule of interest is challenging for general purpose search engines because the publications are rich in domain specific terminology. Here, we present Vapur: an online COVID-19 search engine specifically designed to find related protein - chemical pairs. Vapur is empowered with a relation-oriented inverted index that is able to retrieve and group studies for a query biomolecule with respect to its related entities. The inverted index of Vapur is automatically created with a BioNLP pipeline and integrated with an online user interface. The online interface is designed for the smooth traversal of the current literature by domain researchers and is publicly available at <ext-link ext-link-type="uri" xlink:href="https://tabilab.cmpe.boun.edu.tr/vapur/">https://tabilab.cmpe.boun.edu.tr/vapur/</ext-link>.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">Coronavirus Disease of 2019 (COVID-19) outbreak had severe impacts on human health all around the world since December 2019, but also triggered an exceptional amount of scientific work. As of September 2020, PubMed recorded over 45K articles (<xref ref-type="bibr" rid="R1">Chen et al., 2020</xref>) related to COVID-19 since its inception, including works on diagnosis (<xref ref-type="bibr" rid="R2">Dorche et al., 2020</xref>), drug repurposing (<xref ref-type="bibr" rid="R5">Gao et al., 2020</xref>), and text-mining (<xref ref-type="bibr" rid="R20">Tarasova et al., 2020</xref>). As the body of literature keeps growing in the form of unstructured text, it also becomes more and more challenging for researchers to find the relevant information they need. Furthermore, the publications include domain-specific named entities and relations that challenge the general-purpose search engines. Therefore, it is of critical importance to build a search engine that can find relevant documents in this terminology-rich and domain-specific literature.</p>
+<p id="P3">Biomedical named entity recognition (NER) and relation extraction can be utilized to semantically structure publications around the biochemically related entities. When named entities and their relations are extracted, a document can be expressed as a set of triplets of the form (<italic>Entity</italic>1, <italic>Entity</italic>2, <italic>Relation</italic>). This formulation can be converted to an inverted index from the related entities to the publications in order to enable retrieving relevant documents to a query by entity and relation matching. If the same entities are referenced with different words (e.g. ACE2, Angiotensin-converting enzyme 2, Q9BYF1), named entity normalization can be used to identify different mentions of the same entity. Enhanced with named entity normalization, the inverted index can retrieve the documents that contain biochemical relations of a free-text query, as grouped by the related biomolecules.</p>
+<p id="P4">In this work, we present Vapur, an online search engine to find related protein - compound pairs in the COVID-19 anthology. Vapur is empowered with a biochemical relation-based inverted index that is created through named entity recognition, named entity normalization, and relation extraction on CORD-19 abstracts (<xref ref-type="bibr" rid="R16">Wang et al., 2020a</xref>). Thanks to the underlying biochemical domainspecific tools and relation extraction model, Vapur identifies biochemically related entities to a free-text query and retrieves the publications that mention the relation. The design of Vapur offers a novel approach to explore COVID-19 literature with a focus on biomolecules and their relations. We present Vapur at <ext-link ext-link-type="uri" xlink:href="https://tabilab.cmpe.boun.edu.tr/vapur/">https://tabilab.cmpe.boun.edu.tr/vapur/</ext-link> and publicly share the code and models at <ext-link ext-link-type="uri" xlink:href="https://github.com/boun-tabi/vapur">https://github.com/boun-tabi/vapur</ext-link>.</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Related Work</title>
+<p id="P5">Keeping up to date with the growing body of biomedical literature is a big challenge and almost a kind of magic in scientific research. Efforts such as ChemProt (<xref ref-type="bibr" rid="R11">Krallinger et al., 2017</xref>) aim to promote research in this direction by presenting PubMed abstracts in which proteins, chemicals, and their relations are manually labeled. <xref ref-type="bibr" rid="R16">Liu et al., 2018</xref> and <xref ref-type="bibr" rid="R15">Lim and Kang, 2018</xref> developed sequential models for chemical and protein relation extraction on ChemProt, while <xref ref-type="bibr" rid="R17">Peng et al., 2018</xref> used an ensemble of deep models with SVM. However, all these models depend on the named entities to be recognized beforehand.</p>
+<p id="P6">Named entity recognition and normalization are widely studied topics in biomedical text mining to extract and link entities. Conditional Random Fields (CRF) was a popular approach in early biomedical NER studies (<xref ref-type="bibr" rid="R12">Leaman et al., 2015</xref>; <xref ref-type="bibr" rid="R24">Wei et al., 2015</xref>, <xref ref-type="bibr" rid="R26">2018</xref>) and with the rise of deep learning, sequential models were also integrated (<xref ref-type="bibr" rid="R18">Sachan et al., 2018</xref>). Recently, transformers-based NER models attracted more attention, including BERN (<xref ref-type="bibr" rid="R9">Kim et al., 2019</xref>), which is a state-of-the-art biomedical named entity recognition and normalization tool that uses BioBERT (<xref ref-type="bibr" rid="R14">Lee et al., 2020b</xref>) to identify and normalize the entities in a sentence. BERN is adopted by recent generaldomain biomedical text mining studies (<xref ref-type="bibr" rid="R7">Jang et al., 2019</xref>) as well as a model to answer COVID-19 related questions based on CORD-19 (<xref ref-type="bibr" rid="R13">Lee et al., 2020a</xref>).</p>
+<p id="P7">CORD-19 (<xref ref-type="bibr" rid="R22">Wang et al., 2020a</xref>) is a data set comprising scientific publications related to COVID-19 and it has provided a valuable resource for text mining studies (<xref ref-type="bibr" rid="R19">Su et al., 2020</xref>; <xref ref-type="bibr" rid="R4">Esteva et al., 2020</xref>; <xref ref-type="bibr" rid="R23">Wang et al., 2020b</xref>), including COVID-19 specific search engine development such as SemViz (<xref ref-type="bibr" rid="R21">Tu et al., 2020</xref>) and KD-COVID<sup>
+<xref ref-type="fn" rid="FN1">1</xref>
+</sup>.</p>
+<p id="P8">SemViz aims to present subtle relations between entities by semantic visualization of a CORD-19 based knowledge-graph. KD-COVID, on the other hand, identifies the most similar sentence in CORD-19 to a query and retrieves the corresponding publication. KD-COVID also provides links to large protein, disease, and protein-disease relation databases. Vapur is different from these approaches, since it is based on an inverted index from biochemically related entities to publications. While most other systems depend on existing knowledge bases to provide information about related entities, Vapur uses NLP techniques to automatically extract the most up-to-date information from the scientific literature.</p>
+</sec>
+<sec id="S3">
+<label>3</label>
+<title>Vapur</title>
+<sec id="S4">
+<label>3.1</label>
+<title>System Description</title>
+<p id="P9">Vapur is an online search engine with a focus on finding related proteins and chemicals in the COVID-19 literature. Vapur is able to retrieve relevant documents to a query as categorized by the biochemically related entities thanks to its relation-oriented inverted index. In order to obtain the index, Vapur first identifies and normalizes the named entities in CORD-19 abstracts using a pre-trained model, BERN (<xref ref-type="bibr" rid="R9">Kim et al., 2019</xref>). Afterward, Vapur determines if the entity pairs in the same sentence are related to each other by the binary relation ex-traction model we trained on the ChemProt data set (<xref ref-type="bibr" rid="R11">Krallinger et al., 2017</xref>). The result of the relation extraction model is a list of related entities for each abstract. This list is then used to construct the inverted index that represents biochemical relations as entity pairs and maps each relation to the documents in which the relation was mentioned. Vapur is publicly available at <ext-link ext-link-type="uri" xlink:href="https://tabilab.cmpe.boun.edu.tr/vapur/">https://tabilab.cmpe.boun.edu.tr/vapur/</ext-link> and <xref ref-type="fig" rid="F1">Figure 1</xref> illustrates its workflow.</p>
+<p id="P10">Vapur represents the entities as equivalence classes learned from the named entity recognition and normalization steps. For instance, “Interleukin-1b” is the member of the class {interleukin-1b, IL-1beta, IL1B, HGNC:5992, …, BERN:323737602} in the index and Vapur retrieves related entities and relevant documents with a mention “Interleukin-1b” even if the query is “IL1B”. The equivalence classes cover a wide range of mention types from free-text to chemical IDs and enable a flexible search experience for the search terms.</p>
+<p id="P11">Vapur represents each entity mention as a string and adopts a 3-gram based matching algorithm to search the queried entity in its index. Given a query, Vapur first creates a multi-set of all 3-grams of the query and computes the similarity of this set to all 3-gram multi-sets of the mentions in the index, which are pre-computed. Vapur measures the similarity of the query to a mention by generalized Jaccard similarity: <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>J</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>Q</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>M</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mo>∑</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mi>min</mml:mi>
+<mml:mo>⁡</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mo>∑</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+<mml:mo>⁡</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>Q</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>Q</italic> and <italic>M</italic> are query and mention vectors that store the count of each 3-gram. Generalized Jaccard similarity makes Vapur more robust in retrieving results for typos in a query.</p>
+<p id="P12">When the related entities and their abstracts are retrieved, Vapur ranks the related entities by the number of times they are co-mentioned with the queried entity. Each entity is displayed with its most frequent mention alongside the links to the papers.</p>
+<p id="P13">We also interpret the relation-oriented index of Vapur as a graph to find similar entities to the query that cannot be trivially inferred from the inverted index. We construct a graph from the index such that the nodes represent biomolecules and the edges denote biochemical relations. The resulting graph satisfies the bipartiteness property, since we identify the relations only between the proteins and chemicals during binary relation extraction. <xref ref-type="table" rid="T1">Table 1</xref> demonstrates the summary statistics of this bipartite graph computed via networkx (<xref ref-type="bibr" rid="R6">Hagberg et al., 2008</xref>).</p>
+<p id="P14">We leverage the bipartite graph structure to identify similar biomolecules of the same type. We use SimRank (<xref ref-type="bibr" rid="R8">Jeh and Widom, 2002</xref>) to compute pairwise node similarity and list the five entities most similar to the query, in addition to the search results. Our goal is to allow researchers to explore information in the literature not only for the query, but also for entities similar to the query.</p>
+</sec>
+<sec id="S5">
+<label>3.2</label>
+<title>Use Case Scenario</title>
+<p id="P15">We consulted with domain experts to build scenarios in which Vapur can help researchers. We present a use case that highlights how the relationbased index of Vapur and the similar entity prediction can extend the scope of a research. We illustrate the scenario in <xref ref-type="fig" rid="F2">Figure 2</xref>.</p>
+<sec id="S6">
+<title>Relation between Favipiravir and RdRp</title>
+<p id="P16">A medicinal chemist working on COVID-19 drug development is interested in “Favipiravir”, one of the drugs clinically used in COVID-19 therapy. She searches Favipiravir on Vapur and the results highlight RNA-dependent RNA polymerase (RdRp) enzyme as the most frequently co-mentioned protein that is identified by Vapur as being related to Favipiravir. Vapur displays sentences from the publications stating that Favipiravir inhibits RdRp and also proposes “Examorelin” as a contextually similar molecule to Favipiravir. The researcher decides to extend her research to Examorelin, another drug known to bind RdRp.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S7" sec-type="methods">
+<label>4</label>
+<title>Methods</title>
+<sec id="S8">
+<label>4.1</label>
+<title>Data sets</title>
+<sec id="S9">
+<title>CORD-19</title>
+<p id="P17">We create a relation-oriented search engine for CORD-19 abstracts. CORD-19 is a regularly updated data set that contains studies related to COVID-19 and SARS-CoV-2. We use the CORD-19 snapshot of August 23, 2020, that contains ≈ 233K documents for which ≈ 143K unique abstracts are provided. Vapur indexes these abstracts, but is also able to return the linked full-paper.</p>
+</sec>
+<sec id="S10">
+<title>ChemProt</title>
+<p id="P18">We trained a binary relation extraction model using the ChemProt data set (<xref ref-type="bibr" rid="R11">Krallinger et al., 2017</xref>), a curation of PubMed abstracts whose entities and relations are manually annotated. ChemProt consists of 2432 abstract, 62,147 entity, and 45,171 relation files. An abstract file contains a PubMed abstract ID and its text, whereas an entity file lists the chemicals and proteins in the linked abstract. Last, a relation file reports the relation type between entity pairs in the same sentence whose relation types can be inferred from the sentence.</p>
+<p id="P19">The relations in ChemProt are categorized into 11 categories, where the first 10 categories (CPR:0 to CPR:9) denote various types of biochemical relations, while the last category (CPR:10) is reserved for “not relation” (i.e., the sentence explicitly states that there is no relation between the specified pair of entities). In this work, we focus on binary relation extraction, where we aim to determine whether a sentence states that there is a relation between the specified two entities or not. Therefore, we consider the entity pairs in the first 10 categories as positive samples. We treat the CPR:10 and the “Other” categories as the negative class, since the sentences for these two categories do not state that there is a relation between the corresponding pair of entities. We describe each relation type and report their instance counts in the ChemProt data set in <xref ref-type="table" rid="T2">Table 2</xref>. We also provide summary statistics for ChemProt in <xref ref-type="table" rid="T3">Table 3</xref>.</p>
+</sec>
+</sec>
+<sec id="S11">
+<label>4.2</label>
+<title>Named Entity Recognition and Normalization</title>
+<p id="P20">We used BERN (<xref ref-type="bibr" rid="R9">Kim et al., 2019</xref>), a neural NER architecture with an integrated normalizer that can perform in a multi-type setting, to identify and normalize the entities in CORD-19 abstracts. BERN is an ensemble of existing tools and models (<xref ref-type="bibr" rid="R24">Wei et al., 2015</xref>; <xref ref-type="bibr" rid="R12">Leaman et al., 2015</xref>; <xref ref-type="bibr" rid="R3">D’Souza and Ng, 2015</xref>; <xref ref-type="bibr" rid="R25">Wei et al., 2016</xref>, <xref ref-type="bibr" rid="R26">2018</xref>; <xref ref-type="bibr" rid="R14">Lee et al., 2020b</xref>) and outputs a set of IDs for each recognized entity, given a sentence.</p>
+<p id="P21">In this study, we first tokenized the abstracts with GENIA (<xref ref-type="bibr" rid="R10">Kim et al., 2003</xref>) and identified 1.23M sentences. We used BERN to extract named enti-ties and their IDs in these sentences and recognized 1.58M entities in total, in which 171K are chemicals, 318K are proteins, and others are diseases and species. With normalization, we computed the number of unique chemicals and proteins as 20K and 70K, respectively.</p>
+</sec>
+<sec id="S12">
+<label>4.3</label>
+<title>Relation Extraction</title>
+<p id="P22">We propose a BioBERT-based model to identify related entities in CORD-19 abstracts. To this end, we first preprocessed the sentences to explicitly encode the entities in the input and then finetuned BioBERT with the preprocessed sentences in ChemProt. We used the binary labels in <xref ref-type="sec" rid="S8">Section 4.1</xref> as outputs.</p>
+<sec id="S13">
+<title>Preprocessing</title>
+<p id="P23">We surrounded the named entities in the sentences with opening and closing tags to mark their location. We tagged chemicals with &lt;e1&gt; and &lt;/e1&gt; and proteins with &lt;e2&gt; and &lt;/e2&gt; to encode entity type and location during training. When a sentence had multiple chemical - protein pairs, we considered each pair separately and created copies of the sentence with different tags. <xref ref-type="table" rid="T4">Table 4</xref> provides an example of input and its two preprocessed forms.</p>
+</sec>
+<sec id="S14">
+<title>Model</title>
+<p id="P24">We trained a binary model that decides if two entities in the same sentence are biochemically related. The goal of training a binary model instead of a multi-class one is to identify biochemical relations beyond the classes in ChemProt. By formulating the problem as binary classification, we can potentially identify the biochemically related molecules in CORD-19, whose biochemical relation type cannot be categorized under any of the ChemProt classes.</p>
+<p id="P25">We used BioBERT with the addition of a single-layer binary log-softmax classifier and trained the classifier with the inputs and outputs from the previous step using the cross-entropy loss. BioBERT creates a fixed-length relation representation for the starting tag <italic>CLS</italic> and we used this representation to vectorize the sentences. <xref ref-type="fig" rid="F3">Figure 3</xref> illustrates our relation extraction model.</p>
+</sec>
+<sec id="S15">
+<title>Experimental setup</title>
+<p id="P26">We conducted a hyperparameter search with different optimizers, learning rates, and weight decays. We trained a model 10 times per parameter combination and selected the best one based on the F-score on the development set. We found that the AdamW optimizer with a 0.00003 learning rate and 0.1 weight decay yields the best results. We selected the best setting for relation extraction and computed mean precision, recall, and F1-score as well as the standard deviation on the ChemProt development (dev) and test sets.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S16" sec-type="results | discussion">
+<label>5</label>
+<title>Results and Discussion</title>
+<p id="P27">In order to assess the performance of Vapur, we evaluated the performance of its components both as separate modules and together as an end-to-end pipeline. Since BERN, the named entity recognition and normalization module, has already been shown to be successful (<xref ref-type="bibr" rid="R9">Kim et al., 2019</xref>), we focus on automatic evaluation of the relation extraction model and expert evaluation of Vapur in this work.</p>
+<sec id="S17">
+<label>5.1</label>
+<title>Relation Extraction Model</title>
+<p id="P28">We built the relation extraction model by fine-tuning a binary classifier on BioBERT and then computed precision, recall, and F1-Score on the dev and test sets of ChemProt. We also fine-tuned the same classifier using English BERT based model and report the results in <xref ref-type="table" rid="T5">Table 5</xref>.</p>
+<p id="P29">
+<xref ref-type="table" rid="T5">Table 5</xref> demonstrates that BioBERT obtained higher scores in terms of all three metrics on both folds, indicating that BioBERT is superior to BERT as a pre-trained language model for relation extraction on ChemProt. We relate this with the fact that BioBERT is trained with a more domain-related text and BERT observed texts from a wider range.</p>
+<p id="P30">We further investigated the performance of our relation extraction model by computing the test accuracy per CPR category and illustrate the results in <xref ref-type="table" rid="T6">Table 6</xref>. We observe that the relation extraction model achieved the highest accuracy in the <italic>Other</italic> category, indicating that the model can successfully identify whether the context is sufficient to deduce a relation between the entities or not. We relate the high performance for the <italic>Other</italic> category by using a contextual model for relation representation, BioBERT. Context-awareness enables Vapur to eliminate the documents that mention the queried entity in irrelevant contexts and to retrieve a document only if it contains relation information for the query.</p>
+</sec>
+<sec id="S18">
+<label>5.2</label>
+<title>Vapur</title>
+<p id="P31">We evaluated Vapur from two different perspectives. We first analyzed 41 sample sentences in which Vapur identified a biochemical relation as a first step to discover the limitations of the complete pipeline. Then, we asked six biologists/chemists to use Vapur and rate its different aspects to demonstrate the success and usefulness of Vapur for future research.</p>
+<p id="P32">Our inspection of 41 sample sentences indicated that most of the incorrect relation labels were due to incorrect entity assignment by BERN. In some cases, parts of the protein sequence such as <italic>N-terminal, carboxyl terminal</italic> or residue names such as <italic>Asp238</italic> are recognized as compounds. <xref ref-type="table" rid="T7">Table 7</xref> illustrates sample sentences with incorrectly labeled entities. Other examples that were manually checked by a domain expert are presented in the <xref ref-type="supplementary-material" rid="SD1">Appendices</xref>.</p>
+<p id="P33">In order to evaluate the real-life usefulness of Vapur, we asked six domain experts to use Vapur for five COVID-19 related queries (totalling up to 30) of their own. They each filled in a questionnaire where for each query they indicated (i) if each of the top three search results is related to the query, (ii) if similar molecules predicted by Vapur are in fact useful, and (iii) if the extracted sentences are useful. They also rated the ease of use of Vapur between 1 (very difficult) and 5 (very easy) and assessed its usefulness for future research on COVID-19.</p>
+<p id="P34">The expert evaluations demonstrated that 27 out of 30 (90%) top search results and 76 out of 9<sup>
+<xref ref-type="fn" rid="FN1">2</xref>
+</sup> (84%) top three search results are biochemically related to the query, suggesting that Vapur successfully retrieves biochemically related entities to the query. During these experiments, Vapur retrieved at least one related document for each query. It returned only one result for two of the queries, which caused 4 of the 14 unsuccessful cases. These evaluations suggest that the inverted index of Vapur spans a comprehensive range of entities and contains sufficient number of documents to find a biochemically related result for each of the tested queries.</p>
+<p id="P35">For each of the 30 queries of the domain experts, 5 similar molecule predictions are returned, resulting in a total of 150 molecule predictions. The questionnaire results indicated that 78 out of 150 (52%) similar molecule predictions were identified as correct by the domain experts. For 14 out of 30 queries, 4 or 5 of the predicted molecules were identified as correct suggesting that Vapur was able to identify similar molecules successfully for about half of the queries. On the other hand, for 9 out of 30 queries, none of the similar molecule predictions were identified as correct by the domain experts. We should note that the definition of “similarity” may be subjective. Here, Vapur extracts similar molecules if they are contextually similar to the query molecule. Therefore, the molecules may or may not be structurally similar.</p>
+<p id="P36">The evaluation further showed that for 22 out of the 30 queries (73%) the extracted sentences are useful for research. Besides, the experts unanimously expressed that Vapur is very easy to use (5/5) and useful for future research.</p>
+<p id="P37">Overall, both manual inspection and expert evaluations showed that Vapur can successfully find biochemically related proteins and chemicals in CORD-19 and can help future research on COVID-19.</p>
+</sec>
+</sec>
+<sec id="S19" sec-type="conclusions">
+<label>6</label>
+<title>Conclusion</title>
+<p id="P38">We present Vapur, a search engine with an emphasis on identifying protein - chemical relations in the COVID-19 domain. To the best of our knowledge, Vapur is the first search engine that uses relation extraction to construct an inverted index of related biochemical entities beyond knowledge bases. Thanks to the relation extraction model, Vapur is able to categorize documents relevant to a query by biochemical entities related to it.</p>
+<p id="P39">We evaluated the relation extraction model on ChemProt and observed that BioBERT-based model has the highest performance. Expert evaluation of the sample annotated sentences from CORD-19 showed that Vapur successfully finds relations between entities when the entities are identified and normalized accurately. Finally, six domain experts used Vapur with 5 different queries and expressed that Vapur is easy to use, retrieves results that are related to the queries, and it is useful for future research.</p>
+<p id="P40">Although we focused on COVID-19 in this work, our approach can find application in any biomedical domain with a different choice of database to index. We believe that domain-specific scientific search engines will gain more interest in the future since COVID-19 is unlikely to be the last global health crisis. Consequently, we plan to improve Vapur by integrating full-papers, developing more robust named entity recognizers and normalizers, and indexing text databases on different domains. In order to help similar efforts, we make the underlying pipeline and Vapur available at <ext-link ext-link-type="uri" xlink:href="https://github.com/boun-tabi/vapur">https://github.com/boun-tabi/vapur</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://tabilab.cmpe.boun.edu.tr/vapur/">https://tabilab.cmpe. boun.edu.tr/vapur/</ext-link>, respectively.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Appendices</label>
+<media xlink:href="EMS94753-supplement-Appendices.pdf" mimetype="application" mime-subtype="pdf" id="N66303" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S20">
+<title>Acknowledgments</title>
+<p>We would like to thank our domain experts, Asu Büşra Temizer, Eren Can Ekşi, Prof. Hacer Karataş, İrem Şenman, Prof. Nilgün Karali, Serhat Beyaz, and Yğamur Ersoy for their detailed evaluation of Vapur.</p>
+<p>TUBITAK-BIDEB 2211-A Scholarship Program (to A.K. and R.Ö.), and TUBA-GEBIP Award of the Turkish Science Academy (to A.Ö.) are gratefully acknowledged. E.O. is an employee of F. Hoffman - La Roche AG, Switzerland.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P41">
+<ext-link ext-link-type="uri" xlink:href="http://kdcovid.nl/about.html">http://kdcovid.nl/about.html</ext-link>
+</p>
+</fn>
+<fn id="FN2">
+<label>2</label>
+<p id="P42">Note that for 30 queries there are a total of 30x3=90 top three search results.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Allot</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Keep up with the latest coronavirus research</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<issue>7798</issue>
+<fpage>193</fpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sharifian Dorche</surname>
+<given-names>Maryam</given-names>
+</name>
+<name>
+<surname>Huot</surname>
+<given-names>Philippe</given-names>
+</name>
+<name>
+<surname>Os-herov</surname>
+<given-names>Micheal</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>Dingke</given-names>
+</name>
+<name>
+<surname>Saveriano</surname>
+<given-names>Alexander</given-names>
+</name>
+<name>
+<surname>Gi-acomini</surname>
+<given-names>Paul</given-names>
+</name>
+<name>
+<surname>Antel</surname>
+<given-names>Jack P</given-names>
+</name>
+<name>
+<surname>Mowla</surname>
+<given-names>Ashkan</given-names>
+</name>
+</person-group>
+<article-title>Neurological complications of coronavirus infection; a comparative review and lessons learned during the COVID-19 pandemic</article-title>
+<source>Journal of the Neurological Sciences</source>
+<year>2020</year>
+<comment>117085</comment>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>D’Souza</surname>
+<given-names>Jennifer</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>Vincent</given-names>
+</name>
+</person-group>
+<article-title>Sieve-based entity linking for the biomedical domain</article-title>
+<conf-name>Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing (Volume 2: Short Papers)</conf-name>
+<year>2015</year>
+<fpage>297</fpage>
+<lpage>302</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Esteva</surname>
+<given-names>Andre</given-names>
+</name>
+<name>
+<surname>Kale</surname>
+<given-names>Anuprit</given-names>
+</name>
+<name>
+<surname>Paulus</surname>
+<given-names>Romain</given-names>
+</name>
+<name>
+<surname>Hashimoto</surname>
+<given-names>Kazuma</given-names>
+</name>
+<name>
+<surname>Yin</surname>
+<given-names>Wenpeng</given-names>
+</name>
+<name>
+<surname>Radev</surname>
+<given-names>Dragomir</given-names>
+</name>
+<name>
+<surname>Socher</surname>
+<given-names>Richard</given-names>
+</name>
+</person-group>
+<article-title>Co-search: Covid-19 in-formation retrieval with semantic search, question answering, and abstractive summarization</article-title>
+<source>arXiv preprint</source>
+<year>2020</year>
+<comment>arXiv:2006.09595</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gao</surname>
+<given-names>Kaifu</given-names>
+</name>
+<name>
+<surname>Nguyen</surname>
+<given-names>Duc Duy</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Jiahui</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Rui</given-names>
+</name>
+<name>
+<surname>Guo-Wei</surname>
+<given-names>Wei</given-names>
+</name>
+</person-group>
+<article-title>Repositioning of 8565 existing drugs for covid-19</article-title>
+<source>The Journal of Physical Chemistry Letters</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>13</issue>
+<fpage>5373</fpage>
+<lpage>5382</lpage>
+<comment>PMID: 32543196</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Hagberg</surname>
+<given-names>Aric A</given-names>
+</name>
+<name>
+<surname>Schult</surname>
+<given-names>Daniel A</given-names>
+</name>
+<name>
+<surname>Swart</surname>
+<given-names>Pieter J</given-names>
+</name>
+</person-group>
+<article-title>Exploring network structure, dynamics, and function using network</article-title>
+<conf-name>Proceedings of the 7th Python in Science Conference</conf-name>
+<conf-loc>Pasadena, CA USA</conf-loc>
+<year>2008</year>
+<fpage>11</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jang</surname>
+<given-names>Ye Eun</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>Insu</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Sunkyu</given-names>
+</name>
+<name>
+<surname>Cho</surname>
+<given-names>Subin</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Daehan</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Keonwoo</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Jaewon</given-names>
+</name>
+<name>
+<surname>Hwang</surname>
+<given-names>Jimin</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Sangok</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Jaesang</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Jae-woo</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>Byungwook</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>Sanghyuk</given-names>
+</name>
+</person-group>
+<article-title>ChimerDB 4.0: an updated and expanded database of fusion genes</article-title>
+<source>Nucleic Acids Research</source>
+<year>2019</year>
+<volume>48</volume>
+<issue>D1</issue>
+<fpage>D817</fpage>
+<lpage>D824</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Jeh</surname>
+<given-names>Glen</given-names>
+</name>
+<name>
+<surname>Widom</surname>
+<given-names>Jennifer</given-names>
+</name>
+</person-group>
+<article-title>SimRank: a measure of structural-context similarity</article-title>
+<conf-name>Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining</conf-name>
+<year>2020</year>
+<fpage>538</fpage>
+<lpage>543</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>Donghyeon</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>Jinhyuk</given-names>
+</name>
+<name>
+<surname>So</surname>
+<given-names>Chan Ho</given-names>
+</name>
+<name>
+<surname>Jeon</surname>
+<given-names>Hwisang</given-names>
+</name>
+<name>
+<surname>Jeong</surname>
+<given-names>Minbyul</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>Yonghwa</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>Wonjin</given-names>
+</name>
+<name>
+<surname>Sung</surname>
+<given-names>Mujeen</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Jaewo</given-names>
+</name>
+</person-group>
+<article-title>A neural named entity recognition and multi-type normaliza-tion tool for biomedical text mining</article-title>
+<source>IEEE Access</source>
+<year>2019</year>
+<volume>7</volume>
+<fpage>73729</fpage>
+<lpage>73740</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>J-D</given-names>
+</name>
+<name>
+<surname>Ohta</surname>
+<given-names>Tomoko</given-names>
+</name>
+<name>
+<surname>Tateisi</surname>
+<given-names>Yuka</given-names>
+</name>
+<name>
+<surname>Tsujii</surname>
+<given-names>Jun’ichi</given-names>
+</name>
+</person-group>
+<article-title>GENIA corpus—a semantically annotated corpus for bio-textmining</article-title>
+<source>Bioinformatics</source>
+<year>2003</year>
+<volume>19</volume>
+<issue>suppl_1</issue>
+<fpage>i180</fpage>
+<lpage>i182</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krallinger</surname>
+<given-names>Martin</given-names>
+</name>
+<name>
+<surname>Rabal</surname>
+<given-names>Obdulia</given-names>
+</name>
+<name>
+<surname>Akhondi</surname>
+<given-names>Saber A</given-names>
+</name>
+<name>
+<surname>Pérez</surname>
+<given-names>Martin Pérez</given-names>
+</name>
+<name>
+<surname>Santamaría</surname>
+<given-names>Jesús</given-names>
+</name>
+<name>
+<surname>Rodríguez</surname>
+<given-names>GP</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Overview of the BioCreative VI chemical-protein interaction track</article-title>
+<source>Proceedings of the sixth BioCreative challenge evaluation workshop</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>141</fpage>
+<lpage>146</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leaman</surname>
+<given-names>Robert</given-names>
+</name>
+<name>
+<surname>Chih-Hsuan</surname>
+<given-names>Wei</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Zhiyong</given-names>
+</name>
+</person-group>
+<article-title>tmChem: a high performance approach for chemical named entity recognition and normaliza-tion</article-title>
+<source>Journal of cheminformatics</source>
+<year>2015</year>
+<volume>7</volume>
+<issue>S1</issue>
+<fpage>S3</fpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>Jinhyuk</given-names>
+</name>
+<name>
+<surname>Yi</surname>
+<given-names>Sean S</given-names>
+</name>
+<name>
+<surname>Jeong</surname>
+<given-names>Minbyul</given-names>
+</name>
+<name>
+<surname>Sung</surname>
+<given-names>Mujeen</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>Wonjin</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>Yonghwa</given-names>
+</name>
+<name>
+<surname>Ko</surname>
+<given-names>Miyoung</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Jae-woo</given-names>
+</name>
+</person-group>
+<article-title>Answering questions on COVID-19 in real-time</article-title>
+<source>arXiv preprint</source>
+<year>2020a</year>
+<comment>arXiv:2006.15830</comment>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>Jinhyuk</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>Wonjin</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Sungdong</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Donghyeon</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Sunkyu</given-names>
+</name>
+<name>
+<surname>So</surname>
+<given-names>Chan Ho</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Jaewoo</given-names>
+</name>
+</person-group>
+<article-title>BioBERT: a pretrained biomedical language representation model for biomedical text mining</article-title>
+<source>Bioinformatics</source>
+<year>2020b</year>
+<volume>36</volume>
+<issue>4</issue>
+<fpage>1234</fpage>
+<lpage>1240</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lim</surname>
+<given-names>Sangrak</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>Jaewoo</given-names>
+</name>
+</person-group>
+<article-title>Chemical-gene relation extraction using recursive neural network</article-title>
+<source>Database</source>
+<year>2018</year>
+<comment>2018 Bay060</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Sijia</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>Feichen</given-names>
+</name>
+<name>
+<surname>Elayav-illi</surname>
+<given-names>Ravikumar Komandur</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Yanshan</given-names>
+</name>
+<name>
+<surname>Rastegar-Mojarad</surname>
+<given-names>Majid</given-names>
+</name>
+<name>
+<surname>Chaudhary</surname>
+<given-names>Vipin</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Hongfang</given-names>
+</name>
+</person-group>
+<article-title>Extracting chemical-protein relations using attention-based neural networks</article-title>
+<source>Database</source>
+<year>2018</year>
+<comment>2018 Bay102</comment>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peng</surname>
+<given-names>Yifan</given-names>
+</name>
+<name>
+<surname>Rios</surname>
+<given-names>Anthony</given-names>
+</name>
+<name>
+<surname>Kavuluru</surname>
+<given-names>Ramakanth</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Zhiyong</given-names>
+</name>
+</person-group>
+<article-title>Chemical-protein relation extrac-tion with ensembles of SVM, CNN, and RNN models</article-title>
+<source>arXiv preprint</source>
+<year>2018</year>
+<comment>arXiv:1802.01255</comment>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Sachan</surname>
+<given-names>Devendra Singh</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>Pengtao</given-names>
+</name>
+<name>
+<surname>Sachan</surname>
+<given-names>Mrinmaya</given-names>
+</name>
+<name>
+<surname>Xing</surname>
+<given-names>Eric P</given-names>
+</name>
+</person-group>
+<article-title>Effective use of bidirectional language modeling for transfer learning in biomedical named entity recognition</article-title>
+<conf-name>Machine Learning for Healthcare Conference</conf-name>
+<year>2018</year>
+<fpage>383</fpage>
+<lpage>402</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Su</surname>
+<given-names>Dan</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Yan</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>Tiezheng</given-names>
+</name>
+<name>
+<surname>Bin Sid-dique</surname>
+<given-names>Farhad</given-names>
+</name>
+<name>
+<surname>Barezi</surname>
+<given-names>Elham J</given-names>
+</name>
+<name>
+<surname>Fung</surname>
+<given-names>Pascale</given-names>
+</name>
+</person-group>
+<article-title>CAiRE-COVID: A question answering and multidocument summarization system for COVID-19 research</article-title>
+<source>arXiv preprint</source>
+<year>2020</year>
+<comment>arXiv:2005.03975</comment>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tarasova</surname>
+<given-names>Olga</given-names>
+</name>
+<name>
+<surname>Ivanov</surname>
+<given-names>Sergey</given-names>
+</name>
+<name>
+<surname>Filimonov</surname>
+<given-names>Dmitry A</given-names>
+</name>
+<name>
+<surname>Poroikov</surname>
+<given-names>Vladimir</given-names>
+</name>
+</person-group>
+<article-title>Data and text mining help identify key proteins involved in the molecular mechanisms shared by SARS-CoV-2 and HIV-1</article-title>
+<source>Molecules</source>
+<year>2020</year>
+<volume>25</volume>
+<issue>12</issue>
+<fpage>2944</fpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tu</surname>
+<given-names>Jingxuan</given-names>
+</name>
+<name>
+<surname>Verhagen</surname>
+<given-names>Marc</given-names>
+</name>
+<name>
+<surname>Cochran</surname>
+<given-names>Brent</given-names>
+</name>
+<name>
+<surname>Pustejovsky</surname>
+<given-names>James</given-names>
+</name>
+</person-group>
+<article-title>Exploration and discovery of the COVID-19 literature through semantic visualization</article-title>
+<source>arXiv preprint</source>
+<year>2020</year>
+<comment>arXiv:2007.01800</comment>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Lucy Lu</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>Kyle</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>Yoganand</given-names>
+</name>
+<name>
+<surname>Reas</surname>
+<given-names>Russell</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Jiangjiang</given-names>
+</name>
+<name>
+<surname>Eide</surname>
+<given-names>Darrin</given-names>
+</name>
+<name>
+<surname>Funk</surname>
+<given-names>Kathryn</given-names>
+</name>
+<name>
+<surname>Kinney</surname>
+<given-names>Rodney</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Ziyang</given-names>
+</name>
+<name>
+<surname>Merrill</surname>
+<given-names>William</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CORD-19: The Covid-19 Open Re-search Dataset</article-title>
+<source>ArXiv</source>
+<year>2020a</year>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Xuan</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Xiangchen</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Yingjun</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Bangzheng</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>Jiawei</given-names>
+</name>
+</person-group>
+<article-title>Com-prehensive named entity recognition on cord-19 with distant or weak supervision</article-title>
+<source>arXiv preprint</source>
+<year>2020b</year>
+<comment>arXiv:2003.12218</comment>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>Chih-Hsuan</given-names>
+</name>
+<name>
+<surname>Kao</surname>
+<given-names>Hung-Yu</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Zhiyong</given-names>
+</name>
+</person-group>
+<article-title>GNormPlus: an integrative approach for tagging genes, gene families, and protein domains</article-title>
+<source>BioMed research international</source>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>Chih-Hsuan</given-names>
+</name>
+<name>
+<surname>Leaman</surname>
+<given-names>Robert</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Zhiyong</given-names>
+</name>
+</person-group>
+<article-title>Beyond accuracy: creating interoperable and scalable text-mining web services</article-title>
+<source>Bioinformatics</source>
+<year>2016</year>
+<volume>32</volume>
+<issue>12</issue>
+<fpage>1907</fpage>
+<lpage>1910</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>Chih-Hsuan</given-names>
+</name>
+<name>
+<surname>Phan</surname>
+<given-names>Lon</given-names>
+</name>
+<name>
+<surname>Feltz</surname>
+<given-names>Juliana</given-names>
+</name>
+<name>
+<surname>Maiti</surname>
+<given-names>Rama</given-names>
+</name>
+<name>
+<surname>Hefferon</surname>
+<given-names>Tim</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Zhiyong</given-names>
+</name>
+</person-group>
+<article-title>tmVar 2.0: integrating genomic variant information from litera-ture with dbSNP and ClinVar for precision medicine</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<issue>1</issue>
+<fpage>80</fpage>
+<lpage>87</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>The workflow of the pipeline behind Vapur. We first split CORD-19 abstracts to sentences and use BERN to detect and normalize the entities in the text. We then identify the biochemical relations with the relation extraction model that we trained and reform the output as an inverted index of relations. Vapur leverages this inverted index to retrieve relevant publications to the query as categorized by related entities.</p>
+</caption>
+<graphic xlink:href="EMS94753-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>A search scenario on Vapur. When Favipiravir is entered as the query, Vapur shows the query and its unique ids in <bold>1</bold>. It lists contextually similar biomolecules to Favipiravir in <bold>2</bold>. It displays related biomolecules found by the relation extraction model in <bold>3</bold>. For example, the first result is RNA-dependent RNA polymerase for Favipiravir query. Finally, it shows sentences in related papers to provide information about the relations as in <bold>4</bold>.</p>
+</caption>
+<graphic xlink:href="EMS94753-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Relation Extraction Model. Our model is composed of a BioBERT and a binary classification layer. We tokenize the input sentences by BioBERT to-kenizer and enclose the biochemical entities with special tags (&lt;e1&gt; and &lt;e2&gt;). BioBERT uses special tokens: <italic>CLS</italic> and SEP tags for fixed length-relation representation and sentence separation, respectively. We use BioBERT output of <italic>CLS</italic> token to train our binary classifier.</p>
+</caption>
+<graphic xlink:href="EMS94753-f003"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Summary statistics for the bipartite graph of the inverted index. We observe that number of chemicals and proteins are comparable to each other and the number of relations is close to the number of nodes, indicating the sparsity. In addition, the graph is formed of 807 connected components but the largest one is significantly larger than the others.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Graph Property</th>
+<th align="left" valign="top">Statistic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top"># Nodes (Entities)</td>
+<td align="left" valign="top">12384</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Chemical Nodes</td>
+<td align="left" valign="top">5018</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Protein Nodes</td>
+<td align="left" valign="top">7366</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Edges (Relations)</td>
+<td align="left" valign="top">17657</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Connected Components</td>
+<td align="left" valign="top">807</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Nodes in the Largest Component</td>
+<td align="left" valign="top">10194</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Edges in the Largest Component</td>
+<td align="left" valign="top">16226</td>
+</tr>
+<tr>
+<td align="left" valign="top"># Diameter of the Largest Component</td>
+<td align="left" valign="top">18</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<p>Chemical - Protein Relations (CPR) in ChemProt. The entity pairs are annotated with 11 different relation types in ChemProt and we refer to pairs whose relation information cannot be inferred from the context as <italic>Other</italic>. We report the instance count of each category and specify the label we assign to each category for binary relation extraction.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Relation ID</th>
+<th align="left" valign="top">Description</th>
+<th align="left" valign="top">Train Count</th>
+<th align="left" valign="top">Dev Count</th>
+<th align="left" valign="top">Test Count</th>
+<th align="left" valign="top">Binary Label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">CPR:0</td>
+<td align="left" valign="top">
+<italic>No description provided by ChemProt</italic>
+</td>
+<td align="left" valign="top">1</td>
+<td align="left" valign="top">2</td>
+<td align="left" valign="top">0</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:1</td>
+<td align="left" valign="top">Part of</td>
+<td align="left" valign="top">308</td>
+<td align="left" valign="top">153</td>
+<td align="left" valign="top">215</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:2</td>
+<td align="left" valign="top">Regulator / Direct Regulator / Indirect regulator</td>
+<td align="left" valign="top">1652</td>
+<td align="left" valign="top">780</td>
+<td align="left" valign="top">1743</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:3</td>
+<td align="left" valign="top">Upregulator / Activator/ Indirect upregulator</td>
+<td align="left" valign="top">777</td>
+<td align="left" valign="top">552</td>
+<td align="left" valign="top">667</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:4</td>
+<td align="left" valign="top">Downregulator / Inhibitor / Indirect Downregulator</td>
+<td align="left" valign="top">2260</td>
+<td align="left" valign="top">1103</td>
+<td align="left" valign="top">1667</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:5</td>
+<td align="left" valign="top">Agonist / Agonist activator / Agonist inhibitor</td>
+<td align="left" valign="top">173</td>
+<td align="left" valign="top">116</td>
+<td align="left" valign="top">198</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:6</td>
+<td align="left" valign="top">Antagonist</td>
+<td align="left" valign="top">235</td>
+<td align="left" valign="top">199</td>
+<td align="left" valign="top">293</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:7</td>
+<td align="left" valign="top">Modulator / Modulator Activator / Modulator inhibitor</td>
+<td align="left" valign="top">29</td>
+<td align="left" valign="top">19</td>
+<td align="left" valign="top">25</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:8</td>
+<td align="left" valign="top">Cofactor</td>
+<td align="left" valign="top">34</td>
+<td align="left" valign="top">2</td>
+<td align="left" valign="top">25</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:9</td>
+<td align="left" valign="top">Substrate / Product of / Substrate product of</td>
+<td align="left" valign="top">727</td>
+<td align="left" valign="top">457</td>
+<td align="left" valign="top">644</td>
+<td align="left" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:10</td>
+<td align="left" valign="top">Not relation</td>
+<td align="left" valign="top">241</td>
+<td align="left" valign="top">175</td>
+<td align="left" valign="top">267</td>
+<td align="left" valign="top">0</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td align="left" valign="top">
+<italic>Other</italic>
+</td>
+<td align="left" valign="top">
+<italic>No relation information between entities in this context</italic>
+</td>
+<td align="left" valign="top">11664</td>
+<td align="left" valign="top">7780</td>
+<td align="left" valign="top">9987</td>
+<td align="left" valign="top">0</td>
+</tr>
+<tr>
+<td align="left" valign="top">Total</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">18101</td>
+<td align="left" valign="top">11338</td>
+<td align="left" valign="top">15731</td>
+<td align="left" valign="top"/>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<p>ChemProt summary statistics. We split abstracts to sentences via GENIA (<xref ref-type="bibr" rid="R10">Kim et al., 2003</xref>) and compute the statistics accordingly and therefore some relations in ChemProt that are not in a sentence are filtered out. We refer to relations in the same sentence with the same protein, chemical and relation type as duplicate relations and consider them only once during training. We observe that the number of mentions is considerably higher than the number of unique entities for both proteins and chemicals, emphasizing the need for normalization. In addition, negative entity pairs are significantly more frequent than the positive ones, but their distribution across the training, development, and test folds is similar.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Statistics</th>
+<th align="left" valign="top">Train</th>
+<th align="left" valign="top">Dev</th>
+<th align="left" valign="top">Test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top"># documents</td>
+<td align="left" valign="top">1020</td>
+<td align="left" valign="top">612</td>
+<td align="left" valign="top">800</td>
+</tr>
+<tr>
+<td align="left" valign="top"># relations</td>
+<td align="left" valign="top">18046</td>
+<td align="left" valign="top">11294</td>
+<td align="left" valign="top">15712</td>
+</tr>
+<tr>
+<td align="left" valign="top"># entities</td>
+<td align="left" valign="top">25752</td>
+<td align="left" valign="top">15567</td>
+<td align="left" valign="top">20828</td>
+</tr>
+<tr>
+<td align="left" valign="top"># chemical mentions</td>
+<td align="left" valign="top">13017</td>
+<td align="left" valign="top">8004</td>
+<td align="left" valign="top">10810</td>
+</tr>
+<tr>
+<td align="left" valign="top"># unique chemical entities</td>
+<td align="left" valign="top">3710</td>
+<td align="left" valign="top">2517</td>
+<td align="left" valign="top">3442</td>
+</tr>
+<tr>
+<td align="left" valign="top"># protein mentions</td>
+<td align="left" valign="top">12735</td>
+<td align="left" valign="top">7563</td>
+<td align="left" valign="top">10018</td>
+</tr>
+<tr>
+<td align="left" valign="top"># unique protein entities</td>
+<td align="left" valign="top">4610</td>
+<td align="left" valign="top">3018</td>
+<td align="left" valign="top">3757</td>
+</tr>
+<tr>
+<td align="left" valign="top"># duplicate relations</td>
+<td align="left" valign="top">98</td>
+<td align="left" valign="top">86</td>
+<td align="left" valign="top">158</td>
+</tr>
+<tr>
+<td align="left" valign="top"># positive labels</td>
+<td align="left" valign="top">6143</td>
+<td align="left" valign="top">3339</td>
+<td align="left" valign="top">5459</td>
+</tr>
+<tr>
+<td align="left" valign="top"># negative labels</td>
+<td align="left" valign="top">11903</td>
+<td align="left" valign="top">7955</td>
+<td align="left" valign="top">10253</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<p>An example of preprocessing. The raw sentence contains two chemicals (<italic>gefitinib, erlotinib</italic>) and one protein (EGFR), creating two protein - chemical pairs. Thus, we create two different forms of the sentence to encode each protein - chemical pair separately. We use &lt;e1&gt; and &lt;e2&gt; tags to enclose chemicals and proteins, respectively.</p>
+</caption>
+<table frame="box" rules="all">
+<tbody>
+<tr>
+<td align="left" valign="top">
+<bold>Raw Sentence</bold>
+</td>
+<td align="left" valign="top">EGFR inhibitors currently under investigation include the small molecules gefitinib and erlotinib.</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Preprocessed Form I</bold>
+</td>
+<td align="left" valign="top">&lt;e2&gt;EGFR&lt;/e2&gt; inhibitors currently under investigation include the small molecules &lt;e1&gt;gefitinib&lt;/e1&gt; and erlotinib.</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Preprocessed Form II</bold>
+</td>
+<td align="left" valign="top">&lt;e2&gt;EGFR&lt;/e2&gt; inhibitors currently under investigation include the small molecules gefitinib and &lt;e1&gt;erlotinib&lt;/e1&gt;.</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<p>BERT- and BioBERT-based fine-tuning results for binary relation extraction. We computed precision, recall, and F1 on the dev and test folds of ChemProt. The results show that BioBERT-based model outperforms BERT-based model in terms of all metrics on both folds.</p>
+</caption>
+<table frame="hsides" rules="rows">
+<thead>
+<tr>
+<th align="left" valign="top">Fold</th>
+<th align="left" valign="top">Model</th>
+<th align="left" valign="top">Precision</th>
+<th align="left" valign="top">Recall</th>
+<th align="left" valign="top">F1-Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top" rowspan="2">Dev</td>
+<td align="left" valign="top">BERT</td>
+<td align="left" valign="top">0.718±0.027</td>
+<td align="left" valign="top">0.737±0.026</td>
+<td align="left" valign="top">0.727±0.010</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>BioBERT</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.742±0.036</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.829±0.035</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.782±0.012</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" rowspan="2">Test</td>
+<td align="left" valign="top">BERT</td>
+<td align="left" valign="top">0.759±0.023</td>
+<td align="left" valign="top">0.710±0.026</td>
+<td align="left" valign="top">0.733±0.007</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>BioBERT</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.791±0.026</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.766±0.036</bold>
+</td>
+<td align="left" valign="top">
+<bold>0.777±0.010</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" position="float" orientation="portrait">
+<label>Table 6</label>
+<caption>
+<p>Test performance of the relation extraction model by CPR label. We used the best model out of 10 models trained with different random seeds to predict test set pairs and report mean and standard deviation of the test accuracy by label.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Relation ID</th>
+<th align="left" valign="top">Test Set Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">CPR:1</td>
+<td align="left" valign="top">0.661 ± 0.053</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:2</td>
+<td align="left" valign="top">0.667 ± 0.043</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:3</td>
+<td align="left" valign="top">0.855 ± 0.015</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:4</td>
+<td align="left" valign="top">0.874 ± 0.027</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:5</td>
+<td align="left" valign="top">0.850 ± 0.045</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:6</td>
+<td align="left" valign="top">0.856 ± 0.050</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:7</td>
+<td align="left" valign="top">0.890 ± 0.044</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:8</td>
+<td align="left" valign="top">0.550 ± 0.066</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:9</td>
+<td align="left" valign="top">0.617 ± 0.060</td>
+</tr>
+<tr>
+<td align="left" valign="top">CPR:10</td>
+<td align="left" valign="top">0.828 ± 0.053</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<italic>Other</italic>
+</td>
+<td align="left" valign="top">0.892 ± 0.020</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T7" position="float" orientation="portrait">
+<label>Table 7</label>
+<caption>
+<p>Sample sentences with incorrectly labeled entities. The entity types of <italic>Alanine, carboxyl</italic>, and <italic>Ben</italic> were incorrectly predicted as compounds by BERN during the named entity recognition step. Consequently, the relation extraction model incorrectly identified a biochemical relation.</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top">Sentence in CORD-19</th>
+<th align="left" valign="top">Incorrectly Labeled Entity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">&lt;e1&gt;Alanine&lt;/e1&gt; substitution of either Arg-76 or Tyr-94 in the N-terminal domain of &lt;e2&gt;IBV N protein&lt;/e2&gt; led to a significant decrease in its RNA-binding activity and a total loss of the infectivity of the viral RNA to Vero cells.</td>
+<td align="left" valign="top">
+<bold>Alanine</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top">&lt;e2&gt;Rat microsomal aldehyde dehydrogenase&lt;/e2&gt; (msALDH) has no aminoterminal signal sequence, but instead it has a characteristic hydrophobic domain at the &lt;e1&gt;carboxyl&lt;/e1&gt; terminus (Miyauehi, K., R.</td>
+<td align="left" valign="top">
+<bold>carboxyl</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top">Also, the &lt;e2&gt;protease Factor Xa&lt;/e2&gt;, a target of &lt;e1&gt;Ben&lt;/e1&gt;-HCl abundantly expressed in infected cells, was able to cleave the recombinant and pseudoviral S protein into S1 and S2 subunits, and the cleavage was inhibited by Ben-HCl.</td>
+<td align="left" valign="top">
+<bold>Ben</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

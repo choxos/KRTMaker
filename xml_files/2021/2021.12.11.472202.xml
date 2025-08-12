@@ -1,0 +1,2146 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141141</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.11.472202</article-id>
+<article-id pub-id-type="archive">PPR431930</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Epistatic models predict mutable sites in SARS-CoV-2 proteins and epitopes</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Rodriguez-Rivas</surname>
+<given-names>Juan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Croce</surname>
+<given-names>Giancarlo</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Muscat</surname>
+<given-names>Maureen</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Weigt</surname>
+<given-names>Martin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Sorbonne Université, CNRS, Institut de Biologie Paris Seine, Computational and Quantitative Biology – LCQB, Paris, France</aff>
+<aff id="A2">
+<label>2</label>Department of Oncology, Ludwig Institute for Cancer Research Lausanne, University of Lausanne, Switzerland</aff>
+<aff id="A3">
+<label>3</label>Swiss Institute of Bioinformatics (SIB), Lausanne, Switzerland</aff>
+<author-notes>
+<corresp id="CR1">Correspondence: <email>martin.weigt@sorbonne-universite.fr</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>13</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The emergence of new variants of SARS-CoV-2 is a major concern given their potential impact on the transmissibility and pathogenicity of the virus as well as the efficacy of therapeutic interventions. Here, we predict the mutability of all positions in SARS-CoV-2 protein domains to forecast the appearance of unseen variants. Using sequence data from other coronaviruses, pre-existing to SARS-CoV-2, we build statistical models that do not only capture amino-acid conservation but more complex patterns resulting from epistasis. We show that these models are notably superior to conservation profiles in estimating the already observable SARS-CoV-2 variability. In the receptor binding domain of the spike protein, we observe that the predicted mutability correlates well with experimental measures of protein stability and that both are reliable mutability predictors (ROC AUC ~0.8). Most interestingly, we observe an increasing agreement between our model and the observed variability as more data become available over time, proving the anticipatory capacity of our model. When combined with data concerning the immune response, our approach identifies positions where current variants of concern are highly overrepresented. These results could assist studies on viral evolution, future viral outbreaks and, in particular, guide the exploration and anticipation of potentially harmful future SARS-CoV-2 variants.</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>mutability</kwd>
+<kwd>data-driven models</kwd>
+<kwd>epistasis</kwd>
+<kwd>direct coupling analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">The emergence of variants of the severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) is a major global health concern. Mutations observed in circulating Variants of Interest (VOI) or Variants of Concern (VOC) have been associated with increased transmissibility (<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>), reduced efficacy of antibody treatments (<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R4">4</xref>), and lower antibody neutralization (<xref ref-type="bibr" rid="R5">5</xref>). It is currently under investigation in how far circulating or future mutants can escape the human immune response induced by vaccination or previous infection (<xref ref-type="bibr" rid="R6">6</xref>).</p>
+<p id="P3">Since the beginning of the COVID-19 pandemic, genomic surveillance of SARS-CoV-2 strains has played a pivotal role in tracking new mutations as they appear and expand. Viral sequences sampled from infected individuals from various parts of the world have been continuously deposited in the GISAID database (<xref ref-type="bibr" rid="R7">7</xref>), and - as of May 2021 - more than 1,500,000 genomes are available. Genome-wide analysis of circulating strains (<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>) has shown that mutated positions are heterogeneously distributed across SARS-CoV-2 proteins: while the vast majority of positions has remained largely invariant to date, a restricted set is accumulating diversity. According to Nextstrain (<xref ref-type="bibr" rid="R10">10</xref>) global analysis (May 2021, 3883 genomes), no mutational event has occurred for 58% of the entire proteome, while only 14% has experienced more than 2 events. In particular, the protein cores tend to be less variable as mutations in the core usually have a deleterious effect on the stability of the protein (<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R12">12</xref>). In contrast, the exposed regions of the spike protein have accumulated a large number of mutations resulting in variants with increased affinity with the human ACE2 receptor (<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R14">14</xref>), transmissibility (<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>), and reduced antibody neutralization (<xref ref-type="bibr" rid="R5">5</xref>). Each residue of the SARS-CoV-2 proteome is subjected to different selective pressures, which affect the evolution of the virus, thus constraining the variability of SARS-CoV-2 sequences. This suggests that statistical patterns in sequences could be used to distinguish mutable from constrained positions.</p>
+<p id="P4">In recent years, data-driven models trained on sequence data of patients affected by the human immunodeficiency virus (HIV) have been used in this spirit. They identify regions subject to strong selective constraints and therefore less likely to variate (<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>), guiding the immunogen design of therapeutic strategies being effective against current and future HIV strains (<xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R18">18</xref>). Such approaches are trained on large amounts of HIV sequence data, resulting from decades of study and high rates of intra-patient evolution (<xref ref-type="bibr" rid="R19">19</xref>). One of the most important lessons of these studies is the importance of epistasis, <italic>i.e</italic>. the dependence of mutational effects on other pre-existing mutations: epistatic models outperform significantly simpler non-epistatic modeling approaches based on independent conservation patterns of individual residue positions.</p>
+<p id="P5">The techniques used for studying HIV sequences are not directly applicable to SARS-CoV-2, for which less than two years of data are available, and intra-patient evolution is more limited due to the typically short duration of SARS-CoV-2 infections. We therefore use a strategy, which requires only a single SARS-CoV-2 genome to be known: this genome serves as a reference to build alignments of homologous but diverged sequences, which in our case belong mostly to other coronaviruses. These sequences are used to train statistical sequence models, which in turn can be used to predict the mutability of each position in the proteins of the reference SARS-CoV-2. The advantage of this approach is that predictions rely exclusively on data available very early in the outbreak, and predictions can be tested while more data accumulate.</p>
+<p id="P6">Current approaches predict the mutability along the SARS-CoV-2 proteome using conservation profiles built from multiple sequence alignments (MSA) of SARS-CoV-2 and other related coronaviruses (<xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R21">21</xref>). The resulting models (hereinafter independent models or IND) have few parameters and can be trained using limited sets of data. Unfortunately, they also have only limited predictive power as they assume that positions within a protein evolve independently from each other, disregarding that residues can affect each other's evolution via epistatic interactions.</p>
+<p id="P7">In this work, we construct unsupervised probabilistic models to predict SARS-CoV-2 mutable and constrained positions. We base our approach on the Direct Coupling Analysis (DCA) (<xref ref-type="bibr" rid="R22">22</xref>) that overcomes the before-mentioned limitations by explicitly including pairwise epistatic terms into our modeling. The DCA models are trained using families of homologous sequences, broadly collected from all known coronavirus genomes, allowing us to model the general selective pressures acting on the family of coronaviruses. While the use of other coronaviruses enlarges substantially the datasets making data-driven modeling more robust, we may, however, partially lose information about hostspecific constraints like the interaction with host-cell receptors (<italic>e.g</italic>. ACE2 for SARS-CoV-2) or with the host’s immune system.</p>
+<p id="P8">While models are learned from diverged homologs, the prediction of mutable sites requires a SARS-CoV-2 genome (in our case the Wuhan-Hu-1 strain) to be used as reference: our models assign a mutability score to each position in each SARS-CoV-2 protein. This score reflects the constraints acting on a position when mutating away from the reference strain. Other SARS-CoV-2 genomes are only required to test our predictions: we assess the predictive power of our approach and of IND models by validating the predictions with the mutations actually observed in SARS-CoV-2 proteomes deposited in GISAID (gisaid.org, (<xref ref-type="bibr" rid="R7">7</xref>)). We carry out a detailed study of the receptor binding domain (RBD) as it plays a pivotal role in viral attachment, fusion and entry and is the primary target for antibody therapies and vaccine development (<xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R24">24</xref>). For this specific domain, additional deep mutational scanning (DMS) data are available measuring how amino acid mutations of RBD affect protein expression (a proxy of protein stability) and binding to the human ACE2 receptor (<xref ref-type="bibr" rid="R25">25</xref>), allowing us to investigate more deeply their relationship with the DCA mutability score, and with the observed variability across SARS-CoV-2 variants.</p>
+<p id="P9">Most observed mutations are neutral and do not affect the virus phenotype (<xref ref-type="bibr" rid="R26">26</xref>), however mutations occurring in SARS-CoV-2 immunogenic regions, <italic>i.e</italic>. targets of human B and T cells, may allow the virus to evade the immune response induced by vaccination or previous infection. By combining our DCA-mutability scores with data from the Immune Epitope Database (IEDB, (<xref ref-type="bibr" rid="R27">27</xref>)), we identify a restricted set of positions in the RBD that are expected to be both mutable and highly immunogenic. Interestingly, we observe that most circulating SARS-CoV-2 VOC or VOI have mutations in a subset of those positions. This combined approach also suggests novel positions that are more likely to mutate in the future and whose mutations could induce a reduction in immune response. In this sense, our predictions may help the rational design of new immunogenic or therapeutic strategies, such as monoclonal antibodies or vaccines, to become more efficient against potential future SARS-CoV-2 strains by targeting less mutable positions.</p>
+<p id="P10">Data are highly dynamic during the ongoing pandemic. A new variant, Omicron (B.1.1.529), has recently emerged and was rapidly declared VOC during the final revision of this paper. Due to the great interest in characterizing this variant, we have included a new analysis of its RBD mutations. As compared to all pre-existing variants, Omicron increases even the number of mutable and immunogenic positions.</p>
+<p id="P11">Also, beyond the case of SARS-CoV-2, our study can be seen as a proof-of-concept study. Since we need only a single reference genome to search for distant homologs and make predictions, the approach can be applied very early in any potential viral outbreak in the future. Such predictions may be particularly valuable in situations, where observational data on newly emerging pathogens are missing.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P12">According to the Pfam protein-domain family database (<xref ref-type="bibr" rid="R28">28</xref>), the SARS-CoV-2 proteome (isolate Wuhan-Hu-1) contains 39 protein domains (see <xref ref-type="supplementary-material" rid="SD1">Table S1</xref>) covering 81% (7860 out of 9748 residues) of the entire proteome. For each of these domains, we predict the mutability using both the epistatic DCA and the independent IND models following the general scheme illustrated in <xref ref-type="fig" rid="F1">Fig. 1</xref> and detailed in <xref ref-type="sec" rid="S7">Materials and Methods</xref>: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P13">For each protein (domain), we extract MSA of homologous sequences from public sequence databases. These sequences, which belong almost exclusively to other coronaviridae, diverged during up to ~10<sup>3</sup>-10<sup>8</sup> years from their common ancestors with SARS-CoV-2 (<xref ref-type="bibr" rid="R29">29</xref>). They are used to train IND and DCA models. These models are applied to the protein sequences of the SARS-CoV-2 reference strain Wuhan-Hu-1 to predict the mutability of each site. Note that only a single SARS-CoV-2 sequence is needed in this step.</p>
+</list-item>
+<list-item>
+<p id="P14">We validate the models using deep-mutational scanning data measuring protein expression, which are currently available only for the RBD of the SARS-CoV-2 spike protein. To this aim, we compare experimentally measured mutational effects with model-based predictions.</p>
+</list-item>
+<list-item>
+<p id="P15">We use SARS-CoV-2 sequences extracted from GISAID to estimate the empirical variability among circulating SARS-CoV-2 strains and to test our predictions. Note that these data are independent from the data used in the first step.</p>
+</list-item>
+</list>
+</p>
+<p id="P16">In both approaches, IND and DCA, we thus use the MSA of distant homologs to learn a family-specific sequence landscape <italic>E</italic>(<italic>a</italic>
+<sub>1</sub>,…, <italic>a<sub>L</sub>
+</italic>), or “statistical energy”, which provides low values to good (functional), and high values to bad (non-functional) sequences. In this context, (<italic>a</italic>
+<sub>1</sub>,…, <italic>a<sub>L</sub>
+</italic>) stands for an aligned sequence, <italic>i.e</italic>. the entries may be any of the 20 natural amino acids or an alignment gap. Any variant containing one or more mutations with respect to the reference sequence in Wuhan-Hu-1, can now be characterized by the statistical-energy change <italic>ΔE</italic> = <italic>E</italic>(<italic>reference</italic>) – <italic>E</italic>(<italic>variant</italic>) assigning <italic>positive values</italic> to variants predicted to be <italic>beneficial,</italic> and <italic>negative values</italic> to variants predicted to be <italic>deleterious</italic>. To obtain a position-specific (but not amino-acid specific) mutability score, we average <italic>ΔE</italic> over all amino-acid changes in this position reachable by a single nucleotide mutation, see <xref ref-type="sec" rid="S7">Materials and Methods</xref> for the precise definition of <italic>E</italic>(<italic>a</italic>
+<sub>1</sub>,…, <italic>a<sub>L</sub>
+</italic>) and the derived mutability scores.</p>
+<p id="P17">For testing these mutability scores, we use the same 39 protein domains for extracting a second MSA with variants of SARS-CoV-2 from the GISAID database. To minimize frequency biases due to the extremely heterogeneous sequencing efforts in different countries, we decided to remove redundant amino-acid sequences and keep each distinct sequence only once. The positionspecific observed variability is now defined as the number of distinct sequences in the resulting MSA having a mutation in the position under consideration, when compared to the Wuhan-Hu-1 reference amino-acid sequences (see <xref ref-type="sec" rid="S7">Materials and Methods</xref> for more details).</p>
+<p id="P18">In the case of the RBD, these data (predicted mutability and observed variability) are complemented with the experimental measures for protein expression, used as a proxy for protein stability by Starr <italic>et al</italic>. (<xref ref-type="bibr" rid="R25">25</xref>). This type of data currently exists only for the RBD; we therefore decided to use the RBD for extensive validation of our predictions, and to report predictions for the other 38 domains only at the end of the <xref ref-type="sec" rid="S2">Results</xref> section.</p>
+<sec id="S3">
+<title>Data-driven sequence landscapes predict mutability and mutational effects in the receptor binding domain</title>
+<p id="P19">To assess our prediction framework, we proceed with the following steps. First, we show that the mutational effect predictions of single-site amino-acid mutations are correlated with the protein expression changes measured in the before-mentioned deep mutational scan. Second, we show that the RBD variants available in the GISAID database are significantly more neutral than a randomized sequence library of the same sequence divergence from the Wuhan-Hu-1 reference, the latter showing an accumulation of deleterious mutations. These two observations allow us to use predicted close-to-neutrality of a position as an indicator of its high mutability, while positions predicted to have mostly deleterious mutations are expected to be of low mutability. We use extensive comparisons with the sequence variability derived from GISAID to test this hypothesis.</p>
+<p id="P20">As a first test, we compare the agreement of the computationally predicted mutational effects with the experimental protein expression. Taking into consideration the region of the RBD domain defined by the Pfam profile <italic>bCoV_SI_RBD</italic> (PF09408, aligned length <italic>L</italic> = 178), we compare our predictions with the experimentally measured single-site mutations. We focus on the <italic>position-specific</italic> mutability, obtained by averaging both predictions and experiments over all accessible amino-acid changes in a position (<xref ref-type="sec" rid="S7">Materials and Methods</xref>). The DCA model is well correlated with experimental expression (<xref ref-type="fig" rid="F2">Fig. 2A</xref>, Spearman's ρ=0.54), clearly superior to the IND model (<xref ref-type="supplementary-material" rid="SD1">Fig. S1A</xref>, ρ=0.32). We also check that individual position and amino-acid specific predictions follow a similar trend (<xref ref-type="supplementary-material" rid="SD1">Fig. S1B</xref>, ρ=0.49 DCA; <xref ref-type="supplementary-material" rid="SD1">Fig S1C</xref>, ρ=0.29 IND). In brief, we observe that the protein expression and the epistatic model are well correlated, notably better than for the independent model. We note that the model predicts some mutations to be deleterious, which are neutral in the expression experiments. Two reasons are possible: (a) in limited datasets of functional sequences, undersampled neutral variants may appear deleterious; and (b) mutations without effect on expression may be deleterious for other phenotypes contributing to protein fitness. This observation agrees with what has been observed across other protein families (<xref ref-type="bibr" rid="R30">30</xref>–<xref ref-type="bibr" rid="R32">32</xref>), where phenotypes better describing fitness also correlate better to sequence-based predictions.</p>
+<p id="P21">Our DCA and IND models are built from MSAs of diverged species, where we explicitly remove sequences similar to the Wuhan-Hu-1 reference (<xref ref-type="sec" rid="S7">Materials and Methods</xref>) to avoid overlaps with the GISAID sequences used to estimate the local SARS-CoV-2 observed variability. We compare how fit, according to the DCA model, the natural sequences are compared to sequences having the same number of random mutations. This can be achieved by comparing the statistical-energy differences <italic>ΔE</italic> = <italic>E</italic>(<italic>reference</italic>) – <italic>E</italic>(<italic>variant</italic>) between the two sets of sequences. <xref ref-type="fig" rid="F2">Fig. 2B</xref> shows that the natural SARS-CoV-2 variants are significantly better according to the model than randomly mutated sequences, <italic>i.e</italic>. the naturally occurring mutations are, according to the model, significantly more neutral than the predominantly deleterious random mutations, as is to be expected by evolution under purifying selection. This finding indicates the capacity of DCA trained on diverged homologs to capture local constraints acting on the evolution of SARS-CoV-2 proteins.</p>
+<p id="P22">The combination of these two observations is key for our work: the epistatic model is able to capture mutational effects, and the SARS-CoV-2 variants, which emerged over the last months, are significantly more neutral than random mutations. Can we use this to predict possible new variants of SARS-CoV-2 by identifying positions with favorable mutability scores? To test this idea, we compare the currently observable SARS-CoV-2 variability with the one predicted using the modelbased mutability score, and with the mutations expectable by the experimental protein expression. As mentioned before and illustrated in <xref ref-type="fig" rid="F1">Fig. 1</xref>, we operationally assess the observable variability by the number of distinct GISAID sequences having a variant amino acid (compared to the reference Wuhan-Hu-1) in the specific position under study. We observe that the DCA model and expression are similarly correlated with variability (Spearman’s ρ=0.61 and 0.6, respectively), while the correlation is weaker for the IND model (ρ=0.34). This trend can also be observed in <xref ref-type="fig" rid="F2">Fig. 2C</xref> by looking at the distribution of mutational scores after grouping positions by their observed variability, they grow accordingly with the variability (note that the scores are not comparable between methods, but p-values indicate a higher significance for DCA and expression than for IND).</p>
+<p id="P23">We analyze in detail the performance of these different measures as a predictor of SARS-CoV-2 mutability through Receiver Operating Characteristic curves (ROC curves) and the resulting areas under curve (AUC), which range from 0.5 for random to 1.0 for perfect predictions. We perform the ROC analysis using a variability cutoff of 12, because it splits the set of positions into two balanced subsets of positions with low (≤12, n=93) or high (&gt;12, n=85) variability. The DCA model and protein expression (AUC 0.76 and 0.77) show a remarkable performance in distinguishing positions with low or high variability, clearly outperforming the IND model (AUC 0.63). This result is not dependent on the particular cutoff chosen, as a similar trend is observed for a large range of variability cutoffs (<xref ref-type="supplementary-material" rid="SD1">Fig. S2B</xref>). The protein expression and the DCA model perform similarly (see <xref ref-type="supplementary-material" rid="SD1">Fig. S2B</xref>, averaged ROC AUC of 0.83 and 0.81, respectively), followed by the IND model (0.66). The experiment-based predictor performs comparatively better at high variability while the sequence-based ones are better at low variability (<xref ref-type="supplementary-material" rid="SD1">Fig. S2B</xref>), which is probably related to the fact that highly conserved positions are usually very relevant to the function of the protein (<xref ref-type="bibr" rid="R34">34</xref>). In conclusion, we observe that the different measures have a substantial predictive power of the mutability, although the IND model is worse compared to the others. The performance of the DCA models is surprisingly competitive, with a similar performance as the experimental measurements, with an advantage for lower mutabilities and a slight disadvantage for higher mutabilities, cf. <xref ref-type="fig" rid="F2">Fig. 2B</xref>.</p>
+<p id="P24">The performance measured in the previous analysis is not only dependent on the intrinsic predictive power of each method but how well the ground truth is defined, in this case the variability estimated from GISAID data. Although only a fraction of all possible variants emerged in the short time since SARS-CoV-2 appeared, the observed variability has greatly evolved over time due to the great effort of sequencing SARS-CoV-2 genomes (<xref ref-type="supplementary-material" rid="SD1">Fig. S2A</xref>). As an example, the number of RBD positions without observed variants has shrunk from 58 out of 178 in July 2020, to only 3 in May 2021. Interestingly, we observe a great increase in predictive performance when evaluated against more recent and richer variant libraries considered in the estimation of variability. As shown in <xref ref-type="fig" rid="F2">Fig. 2E</xref>, the performance has increased from an AUC of only 0.52 considering sequences collected until July 2020 up to 0.76 with sequences until May 2021 (at each timepoint, the median variability is used to partition data into low vs. high variability, cf. <xref ref-type="supplementary-material" rid="SD1">Fig. S2B</xref> and <xref ref-type="sec" rid="S7">Materials and Methods</xref> for details). This improvement is not only evident from the ROC analysis, but also by looking at the correlation between the DCA model and the variability with Spearman correlations of ρ=0.13, 0.35 and 0.61 in July 2020, December 2020 and May 2021, respectively, cf. <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref>. This result indicates that the remarkable increase of SARS-CoV-2 genomes has led to a much better estimation of the variability. More importantly, it shows that our computational model is able to anticipate future variability; it suggests that the performance could be even higher with more data leading to an even better estimation of the variability. We have complemented this analysis also for mutability predictions done using the IND score or protein expression (<xref ref-type="supplementary-material" rid="SD1">Fig. S3</xref>), all show the tendency to improve with the increase of SARS-CoV-2 data available in the GISAID database. Only the IND-score based analysis shows no clear trend between December 2020 and May 2021.</p>
+<p id="P25">Recently deep learning has been used to improve mutational predictions in the case of large training MSA, but the accuracy for viral proteins remains rather limited (<xref ref-type="bibr" rid="R35">35</xref>). To explore this issue, we have used DeepSequence (<xref ref-type="bibr" rid="R35">35</xref>). Its predictions correlate well with the DCA model predictions (ρ=0.6, <xref ref-type="supplementary-material" rid="SD1">Fig. S5C</xref>), but the correlations with protein expression (0.31, <xref ref-type="supplementary-material" rid="SD1">Fig. S5A</xref>) and observed variability (0.35, <xref ref-type="supplementary-material" rid="SD1">Fig. S5D</xref>) are smaller than those of the DCA model (ρ=0.54 and 0.61), congruent with the prior observations for other viral proteins.</p>
+<p id="P26">To conclude the comparison of computational predictions, observed variability and experimental DMS data for the RBD, we explore how these are distributed within the three-dimensional RBD structure (<xref ref-type="fig" rid="F2">Figs. 2F and 2G</xref>). Apart from an overall agreement between the three quantities, there is a clear trend for lower values in the core of the RBD and higher in the exposed parts of the structure, probably related to the greater impact of mutations on the stability in the core, and the selective pressure for immune escape in the surface.</p>
+<p id="P27">As a summary of this Section, we conclude that the epistatic DCA prediction for the position-specific mutability of RBD positions in SARS-CoV-2 is highly informative about the observable variability across the increasing number of sequenced SARS-CoV-2 variants. The increased accuracy when compared to the most recent versions of GISAID proves the anticipatory power of our approach: the positions that are predicted as mutable by our approach are more likely to be associated with future SARS-CoV-2 variants.</p>
+</sec>
+<sec id="S4">
+<title>Combining mutability predictions with immune response frequencies identifies mutations present in several SARS-CoV-2 variants of concern</title>
+<p id="P28">Nonsynonymous mutations of SARS-CoV-2 occurring in immunogenic regions can cause the virus to (partially) escape the human B and T immune response induced by vaccination or previous infection. B and T cells target specific regions of the viral proteome, known as B/T cell epitopes. Epitope mutations can reduce the ability of the immune cells to recognize and bind epitopes, and thus the effectiveness of the immune response.</p>
+<p id="P29">Antibody-escaping mutations are already present in circulating variants (<xref ref-type="bibr" rid="R4">4</xref>, <xref ref-type="bibr" rid="R36">36</xref>). On May 18th, 2021 the WHO weekly epidemiological report on Covid-19 (available at <ext-link ext-link-type="uri" xlink:href="https://www.who.int/publications/m/item/weekly-epidemiological-update-on-covid-19---18-may-2021">https://www.who.int/publications/m/item/weekly-epidemiological-update-on-covid-19---18-may-2021</ext-link>) classified six SARS-CoV-2 variants as <italic>variants of interest</italic> (VOI) and four – posing an increased risk to global public health – as <italic>variants of concern</italic> (VOC). Both VOIs and VOCs are likely to affect transmission, diagnostics, therapeutics, or immune escape (<xref ref-type="bibr" rid="R37">37</xref>). Within the RBD domain, only 7 positions of VOIs and VOCs strains are mutated with respect to the Wuhan-Hu-1 reference strain (<xref ref-type="fig" rid="F3">Fig. 3A</xref>).</p>
+<p id="P30">The Immune Epitope Database (IEDB, (<xref ref-type="bibr" rid="R27">27</xref>)) collects experimentally validated B and T cell epitopes. Most of the SARS-CoV-2 epitopes are localized on the spike protein: a total of 913 epitopes, of which 459 B cell, and 463 T cell epitopes, as of 16 May 2021.</p>
+<p id="P31">Each position of the spike protein is associated with a site-response frequency (RF), cf. <xref ref-type="sec" rid="S7">Materials and Methods</xref>. The RF is calculated as the number of positively responding subjects relative to the total number of those tested, averaged over all epitopes mapped to that position. Nonsynonymous mutations in position with high RF typically modify multiple epitopes with the risk of negatively affecting the human immune response.</p>
+<p id="P32">In <xref ref-type="fig" rid="F3">Fig. 3B</xref>, we plot the IEDB - RF versus the DCA mutability score for each position of the SARS-CoV-2 RBD domain. Interestingly, only a restricted set of positions has high DCA and RF scores at the same time (the upper right corner of <xref ref-type="fig" rid="F3">Fig. 3B</xref>), and 4 of them are observed in circulatining VOCs and VOIs, including the well-known positions N501 and E484. <xref ref-type="supplementary-material" rid="SD1">Figs. S6</xref> shows analogous plots of the RF vs. the IND score or the expression data; the enrichment of VOC/VOI mutations becomes less pronounced as compared to the DCA score. These results highlight the potential for our approach to identify positions that are likely to mutate (high DCA score) and whose mutations may cause immune escape (high IEDB - RF). The first 20 predictions, sorted according to the DCA mutability score, are given in <xref ref-type="table" rid="T1">Table 1</xref>. Note that 9 predictions have a high RF (&gt;0.3, highlighted in bold), and several of them are not yet part of current VOCs and VOIs. Our results suggest them as potentially dangerous positions likely to mutate in future SARS-CoV-2 strains.</p>
+<p id="P33">As the virus is constantly changing through mutation, other circulating SARS-CoV-2 VOCs/VOIs have emerged during the redaction of the paper. Also, more epitopes have been tested and immunological data are rapidly accumulating, statistically more reliable IEDB RFs are now available. In Dec 2021 we repeated the same analysis using updated IEDB data (download 22 Nov 2021) and the 5 current VOCs. The results reported in the <xref ref-type="supplementary-material" rid="SD1">SI</xref> in <xref ref-type="supplementary-material" rid="SD1">Fig. S7</xref> confirm the enrichment of dangerous mutations in the upper right corner, which is particularly pronounced for the newly emerged Omicron (B.1.1.529) variant. Indeed, of the 14 RBD mutations present in Omicron, 6 (K417, N440, E484, Q493, Q498, N501) are in the first top 20 DCA predictions (<xref ref-type="table" rid="T1">Table 1</xref>). Remarkably, mutations in positions N440, Q493 and Q498 occur for the first time in Omicron; they are not shared by other VOIs and VOCs.</p>
+<p id="P34">We repeated our analysis distinguishing between T and B cell epitopes (<xref ref-type="supplementary-material" rid="SD1">Fig. S8</xref>). While for B cell epitopes it is still possible to clearly identify a subset of positions with high DCA and RF scores, this is not the case for T cell epitopes. This is expected as B cell-antibodies directly bind the pathogen, while T cell epitope must be presented by the human leukocyte antigens (HLAs) - one of the most polymorphic genes in the human genome - and have a much larger sequence variability. Limited T cell data makes it arduous to obtain a statistically reliable T cell IEDB-Response Frequency, even after restricting the analysis to a subset of T cell epitopes shared by a large fraction of the population (<xref ref-type="supplementary-material" rid="SD1">Fig. S9</xref>, (<xref ref-type="bibr" rid="R39">39</xref>)).</p>
+</sec>
+<sec id="S5">
+<title>Mutability predictions are extendable to all SARS-CoV-2 proteins</title>
+<p id="P35">Thanks to the wide availability of sequence data as compared to experimental data, a key advantage of our data-driven modeling approach is the possibility to obtain predictions for all the protein domains in the SARS-CoV-2 proteome. We extend the analysis to all 39 protein domains covering 81% of the entire proteome (8037 out of 9748 positions). First, we observed that both the mutational scores from DCA and IND models systematically grow with the observed variability (<xref ref-type="fig" rid="F4">Fig. 4A</xref>), with a more pronounced change for the DCA model reflected by smaller p-values. The performance is influenced by both the quality of the models, which depends on the available sequence data, and the definition of the ground truth, <italic>i.e</italic>. the observed variability. In accordance with previous findings for the RBD, we observe that the performance of the DCA model improves as more data is used to estimate the variability, the ROC AUC goes from 0.59 in July 2020 to 0.71 in May 2021. The increased performance observed in the RBD can be partially attributed to a better estimation of the variability, as it is one of the most variable regions of SARS-CoV-2 proteome (<xref ref-type="bibr" rid="R40">40</xref>). Another important factor is the impact of the available sequence data (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). To take into consideration this factor, we split the 39 protein domains into two sets with at least 50 or fewer than 50 effective sequences (<italic>i.e</italic>. non-redundant at 80% identity, see <xref ref-type="sec" rid="S7">Materials and Methods</xref>). As expected, the performance is greater when more sequence data is available to build the models as shown in <xref ref-type="supplementary-material" rid="SD1">Fig. S10</xref>. A systematic comparison between the models reveals that the DCA model is better than the IND in most cases, especially in those with a higher number of effective sequences (<xref ref-type="fig" rid="F4">Fig. 4C</xref>).</p>
+<p id="P36">Beyond the RBD domain, other protein domains have an important role in triggering an immune response in humans. We extend the analysis of the previous section (combining immunological data with DCA predictions) to all the protein domains of the SARS-CoV-2 proteome. The results are available on the GitHub page.</p>
+<p id="P37">Our predictions are based on individual Pfam protein domains. While we argued that epistasis is a crucial ingredient to our models, we currently do not include epistasis between distinct domains. The main reason is that multi-domain studies risk again limiting available sequence data. To get a first impression of the potential role of epistasis between distinct protein domains in SARS-CoV-2 evolution, we have used DCA to detect epistatic couplings between all 741 pairs of the 39 present domains (SI Text). As is shown in <xref ref-type="fig" rid="F4">Fig. 4D</xref>, we find a sparse network of only 12 potentially coupled domain pairs, out of the 601 pairs providing sufficient data for our analysis (SI Text). While the sparsity of this network makes it unlikely that our mutability predictions suffer from our domain-centric modeling approach, our results suggest the existence of inter-domain and inter-protein epistasis in SARS-CoV-2. This conclusion is coherent with the one of (<xref ref-type="bibr" rid="R41">41</xref>), which in difference to our analysis is based entirely on an analysis of the SARS-CoV-2 genomes deposited in GISAID. It is worth mentioning that the strongest epistatic coupling found in our analysis is between the domain Cov_NSP2_N and bCov_viroporin (<xref ref-type="supplementary-material" rid="SD1">Table S3</xref>), which is also highlighted in (<xref ref-type="bibr" rid="R41">41</xref>). However, a biological interpretation of these findings is not obvious due to the limited availability of experimental information about potential physical or functional interactions between SARS-CoV-2 proteins.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="discussion">
+<title>Discussion</title>
+<p id="P38">In this work, we propose to use statistical models to predict the mutability of individual positions in SARS-CoV-2 proteins. The models are based on MSAs coming from various coronaviruses. The inclusion of epistasis into the DCA-based modeling framework allows us to capture local evolutionary constraints specific to the SARS-CoV-2 sequence background. Using several tests for the RBD of the spike protein, for which the most extensive experimental datasets are available, we were able to establish that our computational predictions are able to anticipate position mutated in variants of SARS-CoV-2 from sequence alignments not containing SARS-CoV-2 sequences. This fact is particularly evident in <xref ref-type="fig" rid="F2">Fig. 2E</xref>, which shows that more recent and thus richer releases of the GISAID database of SARS-CoV-2 genomes follow more accurately our model predictions. The inclusion of epistasis into the modeling was found to be essential to improve the quality of the mutability predictions.</p>
+<p id="P39">The combination of our predictions with available immune response frequencies allows for identifying a relatively small group of 9 positions out of the 178 positions in the RBD, which are highly mutable and have a high potential for immune escape. Interestingly, 4 out of these 9 positions are mutated in the current VOC or VOI. The other 5 positions are predicted to potentially give similar advantages for emerging SARS-CoV-2 variants. In fact, a new variant has been declared VOI in June 2021 (lineage C.37, or Lambda). This variant has two RBD mutations in positions L452 and F490. While the first is shared with other lineages (even if substituted to another amino acid), the second one was not part of any previous VOI or VOC, but it is the third predicted position in terms of mutability and the first with high response frequency (cf. <xref ref-type="table" rid="T1">Table 1</xref>). Even more recently, in November 2021, the variant Omicron (B.1.1.529) emerged and was declared VOC; it shows new mutation in positions Q493, Q498 and N440, which were not mutated in pre-existing VOIs and VOCs but take ranks 4, 8 and 10 in <xref ref-type="table" rid="T1">Table 1</xref>, cf. also <xref ref-type="supplementary-material" rid="SD1">Fig. S7</xref>. Our approach therefore highlights the importance of monitoring these positions, which could also be taken into account when exploring potential therapeutic or vaccine targets.</p>
+<p id="P40">This can be illustrated by the following example: a monoclonal antibody was recently isolated, which has neutralizing activity against all SARS-CoV-2 VOCs identified to date (<xref ref-type="bibr" rid="R42">42</xref>). The antibody targets a region of about 600 Å<sup>2</sup> of the spike protein surface centered in residue F486. This residue is predicted to be quite mutable (rank 12 in <xref ref-type="table" rid="T1">Table 1</xref>, next to E484), and mutations might have immunological relevance as indicated by a high IEDB response frequency – so a mutation in F486 emerging in a new variant might decrease the neutralizing capacities of the antibody. However, this residue is also in contact with the ACE2 human receptor, thus a mutation might also decrease the affinity with the host protein resulting in an evolutionary disadvantage for the virus. While our model, trained on long-term evolutionary data, does not contain specific knowledge about the RDB-ACE2 interaction, it suggests that positions like F486 should be carefully studied with complementary structural and experimental approaches, and considered when designing antibodies effective against novel strains.</p>
+<p id="P41">Being based on readily available sequence data is one of the advantages of our approach over more labor-intensive experimental approaches like the deep mutational scanning data, such as the effect of mutations on RBD expression and binding to the human ACE2 receptor, allowing us to provide useful predictions of mutability for most of the SARS-CoV-2 proteome. It also has its limitations, most importantly their dependence on the availability of sufficiently large and diverged sequence ensembles. In fact, we observe that a greater number of sequences usually increases the performance of the approach (<xref ref-type="fig" rid="F4">Fig. 4C</xref> and <xref ref-type="supplementary-material" rid="SD1">S10</xref>). However, it is important to note that the inclusion of more divergent sequences might not always be the best strategy as the model might capture constraints that are not relevant for the specific SARS-CoV-2 context. This trade-off will be explored in future work.</p>
+<p id="P42">Our approach can be extended in several ways. One is to include how different domains might constrain the variability of other domains. However, according to our analysis in the previous section, inter-domain epistasis seems to play only a minor role, even if more sequence data might be needed to better estimate the influence of inter-domain or inter-protein epistasis. Another is to model constraints due to specific virus-host interaction, which is currently out of our scope, as we do not consider host sequences in the MSAs. Indeed, we observe the correlation of experimental binding to ACE2 and our predictions (Pearson’s r = 0.27) can be fully explained through the protein expression (Pearson’s r partial correlation controlled by expression = -0.02). In an attempt to explore this issue, we built co-alignments of receptor-binding domains with homologs of ACE2 present in the hosts of other coronaviruses. Since the binding mechanism between RBD and ACE2 homologs is present only in sarbecoviruses, the resulting co-alignment of RBD and ACE2 homologs contains only 7 effective sequences (non-redundant sequences at 80% identity, cf. <xref ref-type="sec" rid="S7">Materials and Methods</xref>), a number being insufficient to capture the complex virus-host interactions.</p>
+<p id="P43">Predicting evolution is an undoubtedly daunting task (<xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R44">44</xref>). While there is little, if any, hope to predict specific future evolutionary events, we have shown that data-driven approaches capturing statistical patterns in sequence data can effectively identify more general evolutionary trends, such as which positions are more likely to mutate and represent a concern to current therapeutic interventions. In this sense, our work is a step forward to a more precise characterization of the SARS-CoV-2 evolution fuelled by a huge worldwide effort of research and monitoring of the virus, whose evolution is unfolding in almost real time at an unprecedented level of detail.</p>
+<p id="P44">While the main application of our work is the insights provided on SARS-CoV-2, our study can also be seen as a proof of concept. In the case of emergence of a new viral pathogen, a single sequenced genome can be used as the reference to first extract families of homologous sequences from public databases, which allow for learning the statistical models needed for mutability predictions. These predictions can therefore be done in very early stages of a possible outbreak, before large amounts of observational or experimental data become available, forecast future variability and thereby help to direct our attention to not yet observed mutations.</p>
+</sec>
+<sec id="S7" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S8">
+<title>Sequence data</title>
+<p id="P45">Sequence data in FASTA format were downloaded from the following databases: GISAID ((<xref ref-type="bibr" rid="R7">7</xref>), release 16 May 2021), Uniref90 ((<xref ref-type="bibr" rid="R45">45</xref>), release December 2020), ViPR ((<xref ref-type="bibr" rid="R46">46</xref>), downloaded in September 2020), NCBI viral genomes ((<xref ref-type="bibr" rid="R47">47</xref>), downloaded in September 2020) and MERS coronavirus database ((<xref ref-type="bibr" rid="R48">48</xref>), downloaded in September 2020). The amino acid sequence of isolate Wuhan-Hu-1 was used as the reference proteome (genbank identifier: MN908947). Protein domains were detected using the HMMER suite ((<xref ref-type="bibr" rid="R49">49</xref>), version 3.1b2) and the HMM profiles from Pfam.</p>
+<p id="P46">A global database including distant species was built by combining Uniref90, ViPR, NCBI viral genomes and MERS coronavirus database, and used to train the DCA and IND models. We built MSAs by running <italic>jackhmmer</italic> with 5 iterations and starting both with the full-length reference protein sequence (except for the ORF1ab) and with the trimmed domain sequence (<italic>SI text</italic> for more details). For each domain, we selected the MSA with more non-redundant sequences between the two resulting MSAs for further analysis, which increases the amount of available sequence data. As quality controls, all sequences including non-standard amino acids were removed as well as repeated sequences or sequences covering less than 80% of the reference; predictions are robust when modifying this threshold, cf. <xref ref-type="supplementary-material" rid="SD1">Fig. S11A</xref>. To separate training from test data, all sequences closer than 90% sequence identity to the Wuhan-Hu-1 reference were filtered out (<italic>i.e</italic>. all SARS-CoV-2 sequences, including close relatives in non-human hosts). The exclusion of SARS-CoV-2 reference sequences has a negligible influence on the predictions, <italic>e.g</italic>. the spearman’s correlation on the RBD of the DCA scores with protein expression with and without the reference sequence is the same (ρ=0.54) as well as in the case of the observed variability (ρ=0.61).</p>
+<p id="P47">For the GISAID database, a MSA for each domain sequence was built with only 1 iteration in <italic>jackhmmer</italic> as the GISAID sequences are very similar to the reference sequences. We applied the same quality controls as before but keeping sequences closer than 90% sequence identity and removing sequences corresponding to a non-human host. The July and December 2020 subsets of sequences were collected until the 16th of the corresponding month. The alignments of GISAID sequences were used exclusively for testing our predictions.</p>
+<p id="P48">The random sequences in <xref ref-type="fig" rid="F2">Fig. 2B</xref> are generated by randomly selecting a position and variant following an uniform distribution. For each GISAID sequence, a random sequence is produced with the same number of mutations to the reference.</p>
+</sec>
+<sec id="S9">
+<title>Statistical models</title>
+<p id="P49">For each protein domain in the reference proteome, we built an independent-site model (IND) and an epistatic model (DCA) using the previously described global MSA containing a diverged set of species, but no SARS-CoV-2 sequences.</p>
+<sec id="S10">
+<title>Independent or sequence profile model</title>
+<p id="P50">Assuming statistical independence of positions, a simple probabilistic model <italic>P<sub>IND</sub>
+</italic>(<italic>a</italic>
+<sub>1</sub>, <italic>a</italic>
+<sub>2,</sub>…, <italic>a<sub>L</sub>
+</italic>), where (<italic>a</italic>
+<sub>1</sub>, <italic>a</italic>
+<sub>2,</sub>…, <italic>a<sub>L</sub>
+</italic>) represents an aligned sequence of amino acids (with the gaps “-” to accounting for insertions or deletions) of length <italic>L</italic>, for a protein family is defined by <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munderover>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>L</mml:mi>
+</mml:munderover>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P51">The factors <italic>ƒ<sub>i</sub>
+</italic>(<italic>a</italic>) equal the empirical frequencies of amino acid <italic>a</italic> in column <italic>i</italic> = 1,…, <italic>L</italic> of the global MSA (with <italic>L</italic> columns). Therefore, the probability that any sequence of length <italic>L</italic> belongs to the protein family is factorized into the individual position-specific contributions of each of its amino acids. Similar to (<xref ref-type="bibr" rid="R30">30</xref>), the effect of an amino-acid mutation <italic>a<sub>i</sub>
+</italic> → <italic>b</italic> can be computed as <disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P52">In contrast to previous work (<xref ref-type="bibr" rid="R30">30</xref>), positive values correspond to beneficial mutations while negatives correspond to deleterious mutations. Therefore, this value can be more naturally interpreted as a proxy of the selective pressure acting across coronaviruses.</p>
+</sec>
+<sec id="S11">
+<title>DCA or epistatic model</title>
+<p id="P53">It is possible to overcome the assumption of independence between positions by introducing two-site coupling terms as done in DCA models: <disp-formula id="FD3">
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>Z</mml:mi>
+</mml:mfrac>
+<mml:mi>exp</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>≤</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>≤</mml:mo>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>≤</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>&lt;</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>≤</mml:mo>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>J</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>Z</italic> is a normalization constant. The inference of model parameters is a computationally hard task and a number of approximations have been proposed (<xref ref-type="bibr" rid="R50">50</xref>–<xref ref-type="bibr" rid="R53">53</xref>). In this work, we rely on the widely used asymmetric plmDCA approach (<xref ref-type="bibr" rid="R52">52</xref>), which provides one of the best trade-offs between computational cost and performance. Following standard practice (<xref ref-type="bibr" rid="R50">50</xref>), we apply a sampling correction by counting the number of sequences with higher than 80% identity and reweighting them (results are robust to the specific value of this parameter, see <xref ref-type="supplementary-material" rid="SD1">Fig. S11B</xref>). The number of effective sequences refers to the number of sequences that are not redundant at 80% sequence identity. As before, the effect of a single mutation <italic>a<sub>i</sub>
+</italic> → <italic>b</italic> can be computed as the difference between a wildtype sequence and single mutant sequence <disp-formula id="FD4">
+<mml:math id="M4">
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P54">As we focus on the mutability of each position in the SARS-CoV-2 proteome, for each of the models IND and DCA we derive a single mutational score <italic>S<sub>IND/DCA</sub>
+</italic> for each position <italic>i</italic> as <disp-formula id="FD5">
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>q</mml:mi>
+</mml:mfrac>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mn>1</mml:mn>
+<mml:mi>q</mml:mi>
+</mml:munderover>
+<mml:mi>Δ</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>ΔE</italic>(<italic>i</italic>, <italic>b<sub>k</sub>
+</italic>) is the effect of the fcth single mutations (<italic>a</italic> → <italic>b<sub>k</sub>
+</italic>) in position <italic>i</italic>. We restrict the set of amino acids to the ones reachable by a single nucleotide missense mutation from the corresponding codon in the Wuhan-Hu-1 reference genome (<italic>i.e</italic>. the alphabet size <italic>q</italic> depends on the specific codon used in position <italic>i</italic>). To make the quantification more interpretable and comparable between distinct domains, we divide the mutational score by the average score considering all the positions in the domain <disp-formula id="FD6">
+<mml:math id="M6">
+<mml:mrow>
+<mml:mi>M</mml:mi>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:mi>D</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>/</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mn>1</mml:mn>
+<mml:mi>L</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:mi>D</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P55">This final mutational score is positive for beneficial mutations and negative for deleterious mutations. Values close to 0 can be interpreted as neutral, values in the range (-1,0) as better than average and lower than -1 as worse than average and more deleterious.</p>
+</sec>
+<sec id="S12">
+<title>Estimating variability of SARS-CoV-2 sequences from GISAID data</title>
+<p id="P56">The variability of each position was estimated by counting the number of sequences that have a different amino acid in the corresponding position compared to the reference. Only non-identical sequences were considered to avoid the strong sequencing bias due to the highly diverse number of genomes sequenced in different countries. This corresponds to the standard reweighting procedure used in DCA, but at a 100% similarity threshold adapted to the high sequence similarities between SARS-CoV-2 strains. Results are robust with respect to this procedure, since the empirical variability estimated without any reweighting shows, in the RBD, a Pearson correlation of 0.89 (Spearman correlation of 0.92) to the reweighted estimates.</p>
+</sec>
+<sec id="S13">
+<title>Deep mutational scanning data</title>
+<p id="P57">The deep mutational scanning data measuring protein expression and the binding to ACE2 obtained by Starr <italic>et al</italic>. (<xref ref-type="bibr" rid="R25">25</xref>) was collected from <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS-CoV-2-RBD_DMS">https://github.com/jbloomlab/SARS-CoV-2-RBD_DMS</ext-link> trimmed to the RBD alignment (which contains 178 Pfam positions instead of the 201 in the experiment) and merged into our framework.</p>
+</sec>
+<sec id="S14">
+<title>IEDB data</title>
+<p id="P58">B and T cells epitope data were collected from the IEDB webserver by selecting Organism SARS-CoV-2 (ID:2697049, SARS2), and restricting to B and T cells assay. For each protein of the SARS-CoV-2 proteome, a list of experimentally validated epitopes is provided. Following the definition of <ext-link ext-link-type="uri" xlink:href="https://help.iedb.org/hc/en-us/articles/114094147751">https://help.iedb.org/hc/en-us/articles/114094147751</ext-link>, it is possible to introduce a Response Frequency (RF) for each position <italic>i</italic> of the proteome. RF is defined as the number of positively responding subjects relative to the total number of those tested, averaged over all epitopes mapped to that position. Large values thus correspond to positions of high potential for immune escape.</p>
+<p id="P59">The IEDB website only reports the upper and lower bounds of the 95% confidence interval (CI) for the RF score – and not the RF score itself – to correct for the sample size. In our analysis we compute the mean RF score from the IEDB epitope data and use the 95% confidence upper and lower bounds provided by the IEDB to compute the confidence interval (CI = upperbound-lowerbound) for each position.</p>
+</sec>
+<sec id="S15">
+<title>Performance evaluation</title>
+<p id="P60">All ROC analyses were performed in R ((<xref ref-type="bibr" rid="R54">54</xref>), version 3.6.3) using the package pROC ((<xref ref-type="bibr" rid="R55">55</xref>), version 1.16.2). Controls and cases were defined by a variability cutoff parameter. Cutoffs for the variability, which define the subset of positions with low or high variability, were chosen to split into balanced subsets with the most similar number of observations possible in each subset, <italic>i.e</italic>. using the median. Positions with higher variability than the cutoff are considered positives.</p>
+</sec>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplemental Information</label>
+<media xlink:href="EMS141141-supplement-Supplemental_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67528" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgments</title>
+<p>We are grateful to Erik Aurell, Matteo Bisardi and David Gfeller for interesting discussions, to David Gfeller in particular for his help with the immunologic data, and to Richard Neher for his valuable feedback on our manuscript. Our work was partially funded by the Faculty of Science and Engineering of Sorbonne University in the context of the call SU-COVID19-FSI, by the EU H2020 Research and Innovation Programme MSCA-RISE-2016 under Grant Agreement No. 734439 InferNet, and by the H2020 Marie Sklodowska Curie Individual Fellowship (H2020-MSCA-IF-2020), No.101027973 to Giancarlo Croce.</p>
+</ack>
+<sec id="S17" sec-type="data-availability">
+<title>Availability</title>
+<p id="P61">To ensure reproducibility and access to our results we provide at <ext-link ext-link-type="uri" xlink:href="https://giancarlocroce.github.io/DCA_SARS-CoV-2/">https://giancarlocroce.github.io/DCA_SARS-CoV-2/</ext-link> the data generated in the course of this research and a jupyter-notebook to reproduce key figures and guide data analysis. This notebook will also contain data updated as compared to the datasets used in this article. The code to generate the predictions for the IND and DCA models is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/juan-rodriguez-rivas/covmut">https://github.com/juan-rodriguez-rivas/covmut</ext-link>.</p>
+</sec>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davies</surname>
+<given-names>NG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Estimated transmissibility and impact of SARS-CoV-2 lineage B.1.1.7 in England</article-title>
+<source>Science</source>
+<year>2021</year>
+<volume>372</volume>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 spike-protein D614G mutation increases virion spike density and infectivity</article-title>
+<source>Nat Commun</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>6013</fpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoffmann</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 variants B.1.351 and P.1 escape from neutralizing antibodies</article-title>
+<source>Cell</source>
+<year>2021</year>
+<volume>184</volume>
+<fpage>2384</fpage>
+<lpage>2393</lpage>
+<elocation-id>e12</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Garcia-Beltran</surname>
+<given-names>WF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Multiple SARS-CoV-2 variants escape neutralization by vaccine-induced humoral immunity</article-title>
+<source>Cell</source>
+<year>2021</year>
+<volume>184</volume>
+<fpage>2372</fpage>
+<lpage>2383</lpage>
+<elocation-id>e9</elocation-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Planas</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Reduced sensitivity of SARS-CoV-2 variant Delta to antibody neutralization</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>596</volume>
+<fpage>276</fpage>
+<lpage>280</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gupta</surname>
+<given-names>RK</given-names>
+</name>
+</person-group>
+<article-title>Will SARS-CoV-2 variants of concern affect the promise of vaccines?</article-title>
+<source>Nat Rev Immunol</source>
+<year>2021</year>
+<volume>21</volume>
+<fpage>340</fpage>
+<lpage>341</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Global Challenges</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dearlove</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 vaccine candidate would likely match all currently circulating variants</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>23652</fpage>
+<lpage>23662</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van Dorp</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence of genomic diversity and recurrent mutations in SARS-CoV-2</article-title>
+<source>Infect Genet Evol</source>
+<year>2020</year>
+<volume>83</volume>
+<elocation-id>104351</elocation-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matthews</surname>
+<given-names>BW</given-names>
+</name>
+</person-group>
+<article-title>Structural and genetic analysis of protein stability</article-title>
+<source>Annu Rev Biochem</source>
+<year>1993</year>
+<volume>62</volume>
+<fpage>139</fpage>
+<lpage>160</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shortle</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Stites</surname>
+<given-names>WE</given-names>
+</name>
+<name>
+<surname>Meeker</surname>
+<given-names>AK</given-names>
+</name>
+</person-group>
+<article-title>Contributions of the large hydrophobic amino acids to the stability of staphylococcal nuclease</article-title>
+<source>Biochemistry</source>
+<year>1990</year>
+<volume>29</volume>
+<fpage>8033</fpage>
+<lpage>8041</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ali</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Kasry</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Amin</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>The new SARS-CoV-2 strain shows a stronger binding affinity to ACE2 due to N501Y mutant</article-title>
+<source>Med Drug Discov</source>
+<year>2021</year>
+<volume>10</volume>
+<elocation-id>100086</elocation-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luan</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Huynh</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Enhanced binding of the N501Y-mutated SARS-CoV-2 spike protein to the human ACE2 receptor: insights from molecular dynamics simulations</article-title>
+<source>FEBS Lett</source>
+<year>2021</year>
+<volume>595</volume>
+<fpage>1454</fpage>
+<lpage>1461</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dahirel</surname>
+<given-names>V</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Coordinate linkage of HIV evolution reveals regions of immunological vulnerability</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2011</year>
+<volume>108</volume>
+<fpage>11530</fpage>
+<lpage>11535</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ferguson</surname>
+<given-names>AL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Translating HIV sequences into quantitative fitness landscapes predicts viral vulnerabilities for rational immunogen design</article-title>
+<source>Immunity</source>
+<year>2013</year>
+<volume>38</volume>
+<fpage>606</fpage>
+<lpage>617</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Louie</surname>
+<given-names>RHY</given-names>
+</name>
+<name>
+<surname>Kaczorowski</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<article-title>Fitness landscape of the human immunodeficiency virus envelope protein that is targeted by antibodies</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2018</year>
+<volume>115</volume>
+<fpage>E564</fpage>
+<lpage>E573</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Murakowski</surname>
+<given-names>DK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Adenovirus-vectored vaccine containing multidimensionally conserved parts of the HIV proteome is immunogenic in rhesus macaques</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2021</year>
+<volume>118</volume>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Callaway</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>The coronavirus is mutating - does it matter?</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>585</volume>
+<fpage>174</fpage>
+<lpage>177</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ahmed</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>Quadeer</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<article-title>COVIDep: a web-based platform for real-time reporting of vaccine target recommendations for SARS-CoV-2</article-title>
+<source>Nat Protoc</source>
+<year>2020</year>
+<volume>15</volume>
+<fpage>2141</fpage>
+<lpage>2142</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yarmarkovich</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Warrington</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Farrel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Maris</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>Identification of SARS-CoV-2 Vaccine Epitopes Predicted to Induce Long-Term Population-Scale Immunity</article-title>
+<source>Cell Rep Med</source>
+<year>2020</year>
+<volume>1</volume>
+<elocation-id>100036</elocation-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cocco</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Feinauer</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Figliuzzi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Monasson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Weigt</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Inverse statistical physics of protein sequences: a key issues review</article-title>
+<source>Rep Prog Phys</source>
+<year>2018</year>
+<volume>81</volume>
+<elocation-id>032601</elocation-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tai</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Characterization of the receptor-binding domain (RBD) of 2019 novel coronavirus: implication for development of RBD protein as a viral attachment inhibitor and vaccine</article-title>
+<source>Cell Mol Immunol</source>
+<year>2020</year>
+<volume>17</volume>
+<fpage>613</fpage>
+<lpage>620</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Premkumar</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The receptor binding domain of the viral spike protein is an immunodominant and highly specific target of antibodies in SARS-CoV-2 patients</article-title>
+<source>Sci Immunol</source>
+<year>2020</year>
+<volume>5</volume>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep Mutational Scanning of SARS-CoV-2 Receptor Binding Domain Reveals Constraints on Folding and ACE2 Binding</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<fpage>1295</fpage>
+<lpage>1310</lpage>
+<elocation-id>e20</elocation-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Banoun</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Evolution of SARS-CoV-2: Review of Mutations, Role of the Host Immune System</article-title>
+<source>Nephron</source>
+<year>2021</year>
+<volume>145</volume>
+<fpage>392</fpage>
+<lpage>403</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vita</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Immune Epitope Database (IEDB): 2018 update</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D339</fpage>
+<lpage>D343</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mistry</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pfam: The protein families database in 2021</article-title>
+<source>Nucleic Acids Res</source>
+<year>2021</year>
+<volume>49</volume>
+<fpage>D412</fpage>
+<lpage>D419</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wertheim</surname>
+<given-names>JO</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DKW</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>JSM</given-names>
+</name>
+<name>
+<surname>Kosakovsky Pond</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LLM</given-names>
+</name>
+</person-group>
+<article-title>A case for the ancient origin of coronaviruses</article-title>
+<source>J Virol</source>
+<year>2013</year>
+<volume>87</volume>
+<fpage>7039</fpage>
+<lpage>7045</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Figliuzzi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jacquier</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schug</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tenaillon</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Weigt</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Coevolutionary Landscape Inference and the Context-Dependence of Mutations in Beta-Lactamase TEM-1</article-title>
+<source>Mol Biol Evol</source>
+<year>2016</year>
+<volume>33</volume>
+<fpage>268</fpage>
+<lpage>280</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hopf</surname>
+<given-names>TA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Mutation effects predicted from sequence co-variation</article-title>
+<source>Nat Biotechnol</source>
+<year>2017</year>
+<volume>35</volume>
+<fpage>128</fpage>
+<lpage>135</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Trinquier</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Uguzzoni</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Pagnani</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zamponi</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Weigt</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Efficient generative modeling of protein sequences using simple autoregressive models</article-title>
+<source>Nat Commun</source>
+<year>2021</year>
+<volume>12</volume>
+<fpage>5800</fpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lan</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of the SARS-CoV-2 spike receptor-binding domain bound to the ACE2 receptor</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<fpage>215</fpage>
+<lpage>220</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eck</surname>
+<given-names>RV</given-names>
+</name>
+<name>
+<surname>Dayhoff</surname>
+<given-names>MO</given-names>
+</name>
+</person-group>
+<article-title>Evolution of the structure of ferredoxin based on living relics of primitive amino Acid sequences</article-title>
+<source>Science</source>
+<year>1966</year>
+<volume>152</volume>
+<fpage>363</fpage>
+<lpage>366</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Riesselman</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Ingraham</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Marks</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Deep generative models of genetic variation capture the effects of mutations</article-title>
+<source>Nat Methods</source>
+<year>2018</year>
+<volume>15</volume>
+<fpage>816</fpage>
+<lpage>822</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive mapping of mutations in the SARS-CoV-2 receptorbinding domain that affect recognition by polyclonal human plasma antibodies</article-title>
+<source>Cell Host Microbe</source>
+<year>2021</year>
+<volume>29</volume>
+<fpage>463</fpage>
+<lpage>476</lpage>
+<elocation-id>e6</elocation-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Konings</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Variants of Interest and Concern naming scheme conducive for global discourse</article-title>
+<source>Nat Microbiol</source>
+<year>2021</year>
+<volume>6</volume>
+<fpage>821</fpage>
+<lpage>823</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A dynamic nomenclature proposal for SARS-CoV-2 lineages to assist genomic epidemiology</article-title>
+<source>Nat Microbiol</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>1403</fpage>
+<lpage>1407</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quadeer</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Ahmed</surname>
+<given-names>SF</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>MR</given-names>
+</name>
+</person-group>
+<article-title>Landscape of epitopes targeted by T cells in 852 individuals recovered from COVID-19: Meta-analysis, immunoprevalence, and web platform</article-title>
+<source>Cell Rep Med</source>
+<year>2021</year>
+<volume>2</volume>
+<elocation-id>100312</elocation-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vilar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Isom</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>One Year of SARS-CoV-2: How Much Has the Virus Changed?</article-title>
+<source>Biology (Basel)</source>
+<year>2021</year>
+<volume>10</volume>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zeng</surname>
+<given-names>HL</given-names>
+</name>
+<name>
+<surname>Dichio</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Rodríguez Horta</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Thorell</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Aurell</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Global analysis of more than 50,000 SARS-CoV-2 genomes reveals epistasis between eight viral genes</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>31519</fpage>
+<lpage>31526</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fenwick</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A highly potent antibody effective against SARS-CoV-2 variants of concern</article-title>
+<source>Cell Rep</source>
+<year>2021</year>
+<elocation-id>109814</elocation-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nosil</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Natural selection and the predictability of evolution in Timema stick insects</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>359</volume>
+<fpage>765</fpage>
+<lpage>770</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lässig</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mustonen</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Walczak</surname>
+<given-names>AM</given-names>
+</name>
+</person-group>
+<article-title>Predicting evolution</article-title>
+<source>Nat Ecol Evol</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>77</fpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Suzek</surname>
+<given-names>BE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UniRef clusters: a comprehensive and scalable alternative for improving sequence similarity searches</article-title>
+<source>Bioinformatics</source>
+<year>2015</year>
+<volume>31</volume>
+<fpage>926</fpage>
+<lpage>932</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Phadke</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Macherla</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Scheuermann</surname>
+<given-names>RH</given-names>
+</name>
+</person-group>
+<chapter-title>Database and analytical resources for viral research community</chapter-title>
+<source>Encyclopedia of Virology</source>
+<publisher-name>Elsevier</publisher-name>
+<year>2021</year>
+<fpage>141</fpage>
+<lpage>152</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brister</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Ako-Adjei</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Blinkova</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<article-title>NCBI viral genomes resource</article-title>
+<source>Nucleic Acids Res</source>
+<year>2015</year>
+<volume>43</volume>
+<fpage>D571</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hatcher</surname>
+<given-names>EL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Virus Variation Resource - improved response to emergent viral outbreaks</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>D482</fpage>
+<lpage>D490</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>Accelerated profile HMM searches</article-title>
+<source>PLoS Comput Biol</source>
+<year>2011</year>
+<volume>7</volume>
+<elocation-id>e1002195</elocation-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morcos</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Direct-coupling analysis of residue coevolution captures native contacts across many protein families</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2011</year>
+<volume>108</volume>
+<elocation-id>E1293-301</elocation-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weigt</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Szurmant</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hoch</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Hwa</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Identification of direct residue contacts in protein-protein interaction by message passing</article-title>
+<source>Proc Natl Acad Sci USA</source>
+<year>2009</year>
+<volume>106</volume>
+<fpage>67</fpage>
+<lpage>72</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ekeberg</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hartonen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Aurell</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Fast pseudolikelihood maximization for direct-coupling analysis of protein structure from many homologous amino-acid sequences</article-title>
+<source>J Comput Phys</source>
+<year>2014</year>
+<volume>276</volume>
+<fpage>341</fpage>
+<lpage>356</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jones</surname>
+<given-names>DT</given-names>
+</name>
+<name>
+<surname>Buchan</surname>
+<given-names>DWA</given-names>
+</name>
+<name>
+<surname>Cozzetto</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pontil</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>PSICOV: precise structural contact prediction using sparse inverse covariance estimation on large multiple sequence alignments</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<fpage>184</fpage>
+<lpage>190</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<collab>Team, R. Core., "R: 2019."</collab>
+<source>A Language and Environment for Statistical Computing version 3.1</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robin</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>pROC: an open-source package for R and S+ to analyze and compare ROC curves</article-title>
+<source>BMC Bioinformatics</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>77</fpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Significance statement</title>
+</caption>
+<p>During the COVID pandemic, new SARS-CoV-2 variants emerge and spread, some being of major concern due to their increased infectivity or their capacity to reduce vaccine efficiency. Anticipating new mutations, which might give rise to new variants, would be of great interest. Here we construct sequence models predicting how mutable SARS-CoV-2 positions are, using a single SARS-CoV-2 sequence and databases of other coronaviruses. Predictions are tested against available mutagenesis data and the observed variability of SARS-CoV-2 proteins. Interestingly, our predictions agree increasingly with observations, as more SARS-CoV-2 sequences become available. Combining predictions with immunological data, we find a clear overrepresentation of mutations in current variants of concern. The approach may become relevant for potential outbreaks of future viral diseases.</p>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>Scheme of the protocol and data used in the study.</title>
+<p>The DCA (epistatic) and IND (independent) models are trained with multiple sequence alignments of diverse sequences coming from large sequence databases. For the receptor binding domain RBD, we add results of deep mutational scanning experiments (DMS) for protein expression (a proxy for stability) (<xref ref-type="bibr" rid="R25">25</xref>) which are used as a first independent validation of the models. Model-based predictions are tested against the observed variability, which is derived from SARS-CoV-2 genomes available in GISAID. The estimate on the years of evolution in MSAs of distant sequences provided here (<xref ref-type="bibr" rid="R29">29</xref>) is indicative; it can vary strongly between distinct protein domains of SARS-CoV-2.</p>
+</caption>
+<graphic xlink:href="EMS141141-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig 2</label>
+<caption>
+<p>
+<bold>A)</bold> DCA-predicted mutational scores for the 178 positions of the RBD as a function of the experimental protein expression. <bold>B)</bold> Energy of GISAID sequences and random sequences compared to the reference RBD sequence (from isolate Wuhan-Hu-1) indicating how well they fit the DCA model as a function of their Hamming distance. <bold>C)</bold> Distributions of scores from the 3 predictors for positions with low (L, cutoff: &lt;9, n=61), medium (M, [9,16], n=57) and high (H, &gt;16, n=60) observed variability in GISAID. The p-values are obtained with the Wilcoxon signed-rank test. L, M, H in the x-axis correspond to low, medium and high observed variability respectively. <bold>D)</bold> ROC curves for the DCA model for positions with low (cutoff: ≤12, n=93) vs. high (&gt;12, n=85) observed variability for the 3 predictors. <bold>E)</bold> ROC curves for positions with low versus high observed variability, where the observed variability is quantified with the SARS-CoV-2 genomes available at July 2020, December 2020 and May 2021 (<xref ref-type="supplementary-material" rid="SD1">Fig. S2A</xref>), i.e. with increasing accuracy. <bold>F+G)</bold> RBD 3D structure (PDB code: 6M0J (<xref ref-type="bibr" rid="R33">33</xref>)) colored according to 3 levels of mutational scores from the DCA model (panel F) and the protein expression (panel G). Lower mutational scores are shown in yellow, medium in blue and higher in green. The width (wider for higher variability) in both panels corresponds to 3 levels of the observed variability (same cutoffs as in panel C). In all ROC curves, the area under the curve (AUC) of the ROC is shown in the legend. Cutoffs to define positions with low and high variability in the ROC analyses were chosen to split into balanced subsets with the most similar number of observations possible in each subset (<xref ref-type="supplementary-material" rid="SD1">Fig S2A</xref>). i.e. the median is used as the cutoff. ROC curves for the other combinations of predictors and dates are shown in <xref ref-type="supplementary-material" rid="SD1">Fig S3</xref>.</p>
+</caption>
+<graphic xlink:href="EMS141141-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>
+<bold>A)</bold> SARS-CoV-2 strains classified in May 2021 as variants of concern (VOC, red, now also named Alpha (B.1.1.7), Beta (B.1.351), Gamma (P.1) and Delta (B.1.617.2)) and variants of interest (VOI, green). The figure shows the corresponding amino-acid mutations with respect to the Wuhan-Hu-1 reference in the RBD domain and the geographical area where they were first detected. The B.1.617 lineage is divided into three sub-lineages; the E484Q and T478K (with asterisks) mutations are not shared by all sub-lineages. The same is true for E484K and S477N in the B.1.526 lineage. <bold>B)</bold> The IEDB-Response Frequency and the DCA mutability score for each position of the RBD domain. The upper right corner contains potentially dangerous positions, as they are predicted to be mutable (high DCA mutability score) and are shared by multiple positively responding epitopes (high IEDB-RF). Mutated positions observed in VOCs and VOIs strains are depicted in red, and darker shades correspond to the most frequent mutations. The size of each point is inversely proportional to the IEDB 95%-confidence interval (size ~ 1/(upperbound-lowerbound)), thus larger points correspond to more statistically reliable IEDB-RF.</p>
+</caption>
+<graphic xlink:href="EMS141141-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig 4</label>
+<caption>
+<p>
+<bold>A)</bold> Distribution of DCA and IND scores as a function of the variability (L, low&lt;7, n=2757 positions; M, medium=[7,15], n=2647; H, high&gt;15, n=2554) for the entire SARS-CoV-2 proteome (p-values from the Wilcoxon signed-rank test). L, M, H in the x-axis correspond to low, medium and high observed variability respectively. <bold>B)</bold> ROC curve for the classification provided by the DCA model for positions with low (≤ 3, n=4873 in December 2020) or high (&gt;3, n=3085 in December 2020) variability, where the variability is estimated from data until May 2021, December 2020 or July 2020. <bold>C)</bold> Comparison of ROC AUC obtained by the DCA and IND models for the 39 domains in the proteome. The variability cutoff for each domain is chosen to give rise to two balanced subsets of positions. <bold>D)</bold> The nodes represent the Pfam domains in the proteome with a link between pairs of domains when they have at least one relatively strong epistatic coupling. The width of the link is proportional to the strength of the signal, or weight, which comes from the strongest coupling among all the inter-domain pairs of positions. Protein domains codified within the same ORF share the same color.</p>
+</caption>
+<graphic xlink:href="EMS141141-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>The first 20 predictions, sorted according to the DCA mutability score, with the corresponding IEDB - RF, and the VOIs and VOIs in which the position has mutated. In bold, we show positions with IEDB - RF above 0.3</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#666666">
+<th align="center" valign="top">
+<styled-content style-type="color" style="#ffffff">Position</styled-content>
+</th>
+<th align="center" valign="top">
+<styled-content style-type="color" style="#ffffff">AA Wuhan-Hu-1</styled-content>
+</th>
+<th align="center" valign="top">
+<styled-content style-type="color" style="#ffffff">DCA-Mutability Score</styled-content>
+</th>
+<th align="center" valign="top">
+<styled-content style-type="color" style="#ffffff">IEDB-Response Frequency (95% CI)</styled-content>
+</th>
+<th align="center" valign="top">
+<styled-content style-type="color" style="#ffffff">Pango lineage</styled-content>
+<styled-content style-type="color" style="#ffffff">(ref.</styled-content>
+<xref ref-type="bibr" rid="R38">38</xref>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">519</td>
+<td align="center" valign="top">H</td>
+<td align="center" valign="top">0.22</td>
+<td align="center" valign="top">0.10 (0.08:0.14)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">403</td>
+<td align="center" valign="top">R</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">0.28 (0.24:0.32)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>490</bold>
+</td>
+<td align="center" valign="top">
+<bold>F</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.05</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.41 (0.38:0.45)</bold>
+</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">
+<bold>493</bold>
+</td>
+<td align="center" valign="top">
+<bold>Q</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.04</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.43 (0.40:0.46)</bold>
+</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>372</bold>
+</td>
+<td align="center" valign="top">
+<bold>A</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.01</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.39 (0.32:0.46)</bold>
+</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">
+<bold>501</bold>
+</td>
+<td align="center" valign="top">
+<bold>N</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.04</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.44 (0.40:0.47)</bold>
+</td>
+<td align="center" valign="top">
+<bold>B.1.1.7; B.1.351; P.1; P.3</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">445</td>
+<td align="center" valign="top">V</td>
+<td align="center" valign="top">-0.06</td>
+<td align="center" valign="top">0.18 (0.15:0.21)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">498</td>
+<td align="center" valign="top">Q</td>
+<td align="center" valign="top">-0.11</td>
+<td align="center" valign="top">0.24 (0.21:0.28)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">441</td>
+<td align="center" valign="top">L</td>
+<td align="center" valign="top">-0.20</td>
+<td align="center" valign="top">0.15 (0.12:0.19)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">440</td>
+<td align="center" valign="top">N</td>
+<td align="center" valign="top">-0.21</td>
+<td align="center" valign="top">0.10 (0.08:0.14)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>484</bold>
+</td>
+<td align="center" valign="top">
+<bold>E</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.21</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.48 (0.45:0.51)</bold>
+</td>
+<td align="center" valign="top">
+<bold>B.1.351; P.1; B.1.617; B.1.525; P.2; P.3</bold>
+</td>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">
+<bold>486</bold>
+</td>
+<td align="center" valign="top">
+<bold>F</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.21</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.43 (0.40:0.47)</bold>
+</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">443</td>
+<td align="center" valign="top">S</td>
+<td align="center" valign="top">-0.31</td>
+<td align="center" valign="top">0.08 (0.05:0.11)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">
+<bold>494</bold>
+</td>
+<td align="center" valign="top">
+<bold>S</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.32</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.38 (0.35:0.42)</bold>
+</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>483</bold>
+</td>
+<td align="center" valign="top">
+<bold>V</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.32</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.39 (0.36:0.43)</bold>
+</td>
+<td align="center" valign="top">
+<bold>B.1.616</bold>
+</td>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">460</td>
+<td align="center" valign="top">N</td>
+<td align="center" valign="top">-0.37</td>
+<td align="center" valign="top">0.16 (0.13:0.19)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr>
+<td align="center" valign="top">444</td>
+<td align="center" valign="top">K</td>
+<td align="center" valign="top">-0.41</td>
+<td align="center" valign="top">0.13 (0.10:0.16)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">
+<bold>417</bold>
+</td>
+<td align="center" valign="top">
+<bold>K</bold>
+</td>
+<td align="center" valign="top">
+<bold>-0.43</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.44 (0.40:0.48)</bold>
+</td>
+<td align="center" valign="top">
+<bold>B.1.351; P.1</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">439</td>
+<td align="center" valign="top">N</td>
+<td align="center" valign="top">-0.44</td>
+<td align="center" valign="top">0.07 (0.04:0.10)</td>
+<td align="center" valign="top"/>
+</tr>
+<tr style="background-color:#f3f3f3">
+<td align="center" valign="top">402</td>
+<td align="center" valign="top">I</td>
+<td align="center" valign="top">-0.50</td>
+<td align="center" valign="top">0.08 (0.05:0.11)</td>
+<td align="center" valign="top"/>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

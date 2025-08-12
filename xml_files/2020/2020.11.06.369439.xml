@@ -1,0 +1,2137 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS103762</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.06.369439</article-id>
+<article-id pub-id-type="archive">PPR235578</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Allosteric Hotspots in the Main Protease of SARS-Cov-2</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Strömich</surname>
+<given-names>Léonie</given-names>
+</name>
+<aff id="A1">Department of Chemistry Imperial College London</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>Nan</given-names>
+</name>
+<aff id="A2">Department of Chemistry Imperial College London</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Barahona</surname>
+<given-names>Mauricio</given-names>
+</name>
+<aff id="A3">Department of Mathematics Imperial College London</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Yaliraki</surname>
+<given-names>Sophia N.</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+<aff id="A4">Department of Chemistry Imperial College London</aff>
+</contrib>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<bold>Correspondence</bold> All requests for data and code shall be directed to <email>s.yaliraki@imperial.ac.uk.</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>10</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>06</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Inhibiting the main protease of SARS-CoV-2 is of great interest in tackling the COVID-19 pandemic caused by the virus. Most efforts have been centred on inhibiting the binding site of the enzyme. However, considering allosteric sites, distant from the active or orthosteric site, broadens the search space for drug candidates and confers the advantages of allosteric drug targeting. Here, we report the allosteric communication pathways in the main protease dimer by using two novel fully atomistic graph theoretical methods: Bond-to-bond propensity analysis, which has been previously successful in identifying allosteric sites without <italic>a priori</italic> knowledge in benchmark data sets, and, Markov transient analysis, which has previously aided in finding novel drug targets in catalytic protein families. We further score the highest ranking sites against random sites in similar distances through statistical bootstrapping and identify four statistically significant putative allosteric sites as good candidates for alternative drug targeting.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">The global pandemic of COVID-19 (coronavirus disease 2019) is caused by the newly identified virus SARS-CoV-2 [<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R4">4</xref>], a member of the coronavirus family of enveloped, single-stranded ribonucleic acid (RNA) viruses that also includes the virus responsible for the severe acute respiratory syndrome (SARS) epidemic of 2003 [<xref ref-type="bibr" rid="R5">5</xref>]. Since coronaviruses have been known to infect various animal species and share phylogenetic similarity to pathogenic human coronaviruses, the potential of health emergency events had already been noted [<xref ref-type="bibr" rid="R6">6</xref>]. However, their high mutation rate similarly to other RNA viruses [<xref ref-type="bibr" rid="R7">7</xref>] made the development of long lasting drugs challenging. Developing therapeutics against coronaviruses is of renewed interest due to the ongoing global health emergency.</p>
+<p id="P3">One of the main approaches for targeting coronaviruses is to inhibit the enzymatic activity of their replication machinery. The main protease (M<sup>pro</sup>), also known as 3C-like protease (3CL<sup>pro</sup>), is the best characterised drug target owing to its crucial role in viral replication [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R10">10</xref>]. The M<sup>pro</sup> is only functional as a homodimer and the central part of the active or orthosteric site is composed of a cysteine-histidine catalytic dyad [<xref ref-type="bibr" rid="R11">11</xref>] (see <xref ref-type="supplementary-material" rid="SD1">Fig. S1B</xref>) which is responsible for processing the polyproteins translated from the viral RNA [<xref ref-type="bibr" rid="R12">12</xref>].</p>
+<p id="P4">The M<sup>pro</sup> of the new SARS-CoV-2 shares 96% sequence similarity with that of SARS-CoV, which also extends to a high structural similarity (r.m.s deviation of 0.53 Å between C↵ positions) [<xref ref-type="bibr" rid="R11">11</xref>]. Moreover, many of the residues which are important for catalytic activity, substrate binding and dimerisation are conserved between these species [<xref ref-type="bibr" rid="R13">13</xref>]. Nevertheless, focusing on the mutations from SARS-CoV to SARS-CoV-2, several are located at the dimer interface (for a full list see <xref ref-type="supplementary-material" rid="SD1">Table S1</xref>) and it has also been suggested that the mutations Thr285Ala and Ile286Leu (see <xref ref-type="supplementary-material" rid="SD1">Fig. S1</xref>) are responsible for a closer dimer packing [<xref ref-type="bibr" rid="R11">11</xref>]. Previous mutational studies on these positions in SARS-CoV M<sup>pro</sup> have revealed an impact on catalytic activity [<xref ref-type="bibr" rid="R14">14</xref>].</p>
+<p id="P5">Currently, the development of SARS-CoV-2 M<sup>pro</sup> inhibitors [<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R17">17</xref>], similarly to designing other coronavirus M<sup>pro</sup> inhibitors [<xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>], focuses on blocking the orthosteric sites to disrupt viral replication (reviewed in Ullrich &amp; Nitsche [<xref ref-type="bibr" rid="R21">21</xref>]). Targeting the active site enables high affinity of the drug molecules but could result in off-target-based toxicity when binding to proteins with similar active sites. Drug resistance is another major concern, especially when the active site may potentially alter owing to mutations. Targeting an allosteric site which is distal from the main binding site provides an alternative attractive solution by increasing both the range and selectivity of drugs to fine-tune protein activity without the aforementioned disadvantages. (For reviews and recent successes see Wenthur <italic>et al.</italic> and Cimermancic <italic>et al.</italic> [<xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R23">23</xref>]). To the best of our knowledge, there is to date no indication of such putative allosteric sites of the coronavirus M<sup>pro</sup>s in the literature other than a recent implication of potential allosteric regulation of SARS-CoV-2 M<sup>pro</sup> [<xref ref-type="bibr" rid="R24">24</xref>] and simulated binding events to distant areas of the protein [<xref ref-type="bibr" rid="R25">25</xref>]. Encouragingly, however, there have been indications of allosteric processes mediated by the extra domain in the SARS-CoV M<sup>pro</sup> [<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>, <xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R14">14</xref>].</p>
+<p id="P6">Here, we focus on investigating the allosteric properties of the protease and in particular whether there are indeed any strongly connected allosteric sites to the active site that may offer alternative ways to inhibit the virus reproduction. Despite being an attractive drug alternative approach, the identification of allosteric sites remains challenging and is still often done serendipitously. Computational prediction and description of allosteric sites has become an active field of research for allosteric drug design (for reviews see [<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>]) as it does not require the laborious and time-consuming compound screening process. For example, molecular dynamics (MD) simulations model proteins at the atomic level and the communication pathways detected can be exploited for allosteric residue and site identification [<xref ref-type="bibr" rid="R31">31</xref>, <xref ref-type="bibr" rid="R32">32</xref>]. To alleviate the substantial computational resources required by MD simulations and the inability to explore all the required scales involved, variations of normal mode analysis (NMA) of elastic network models (ENM) are widely applied and have achieved moderate accuracy in allosteric site detection when tested on known allosteric proteins [<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R34">34</xref>, <xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R36">36</xref>]. The field of methods for allosteric pathway or site prediction is continuously growing, with new methods ranging from statistical mechanical models [<xref ref-type="bibr" rid="R37">37</xref>, <xref ref-type="bibr" rid="R38">38</xref>] to methods based on graph theory [<xref ref-type="bibr" rid="R39">39</xref>]. However, even if they overcome the computational resource requirement of atomistic MD, they do so at the cost of resolution by looking at coarse-grained structure representations.</p>
+<p id="P7">To overcome these limitations, we recently introduced a range of methods based on high resolution atomistic graph analysis which are computationally efficient while at the same time provide insights into the global effects on a protein structure without <italic>a priori</italic> guidance. These computational frameworks retain key physico-chemical details through the derivation of an energy-weighted atomistic protein graph from structural information which incorporates both covalent and weak interactions which are known to be important in allosteric signalling (hydrogen bonds, electrostatics and hydrophobics) through interatomic potentials [<xref ref-type="bibr" rid="R40">40</xref>, <xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R42">42</xref>]. Based on this atomistic graph, Bond-to-bond propensity analysis quantitatively shows how an energy fluctuation in a given set of bonds significantly affects any other bond in the graph and provides a measure for instantaneous connectivity. Unlike most graph or network approaches, it is formulated on the bonds or edges of the graph and thus makes a direct link between energy and flow through bonds of the system [<xref ref-type="bibr" rid="R43">43</xref>]. It has been shown that Bond-to-bond propensities are capable of successfully predicting allosteric sites in a wide range of proteins without any <italic>a priori</italic> knowledge other than the active site [<xref ref-type="bibr" rid="R43">43</xref>]. Of particular relevance to the homodimeric protease studied here, it has been subsequently used to show how allostery and cooperativity are intertwined in multimeric enzymes such as the well studied aspartate carbamoyltransferase (ATCase) [<xref ref-type="bibr" rid="R44">44</xref>]. A complementary methodology, Markov transient analysis, further sheds light on the catalytic aspects of allostery and obtains the pathways implicated in allosteric regulation through the transients of the propagation of a random walker on the node space of the atomistic graph [<xref ref-type="bibr" rid="R41">41</xref>]. Crucially, while most methods obtain the shortest or optimal path, the method takes into account <italic>all</italic> possible pathways, as allosteric communication is known to involve multiple paths [<xref ref-type="bibr" rid="R45">45</xref>]. In doing so, Markov transient analysis has been successful in identifying allosteric paths in caspase-1 [<xref ref-type="bibr" rid="R41">41</xref>] as well as previously unknown allosteric inhibitor binding sites in p90 ribosomal s6 kinase 4 (RSK4) which complemented drug repurposing in lung cancer [<xref ref-type="bibr" rid="R46">46</xref>]. These two methods are complementary in their application as they have been shown to provide different insights based on the underlying allosteric mechanisms: Bond-to-bond propensity analysis gives insights into the structural connectivity while Markov transient analysis is better suited for the catalytic and time scale dependent aspects of a protein.</p>
+<p id="P8">We here showcase the application of these methodologies in the setting of COVID-19. We analysed the SARS-CoV-2 main protease and obtained Bond-to-bond propensities for all bonds as well as Markov transient half-times <italic>t</italic>
+<sub>1/2</sub> for all atoms. Our results shed light on the allosteric communication patterns in the M<sup>pro</sup> dimer. They further highlight the role of the interface and capture how the subtle structural changes between SARS-CoV and SARS-CoV-2 affect their dimerisation properties. By applying a rigorous scoring procedure to our results, we identify four statistically significant hotspots on the protein which are strongly connected to the active site and propose that they hold potential for allosteric regulation of the main protease. By providing guidance for allosteric drug design we hope to open a new chapter for drug targeting efforts to combat COVID-19.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<label>2</label>
+<title>Results</title>
+<p id="P9">The first step in our graph analysis approach is the construction of an atomistic graph from a protein data bank (PDB) [<xref ref-type="bibr" rid="R47">47</xref>] structure. This process takes into account strong and weak interactions like hydrogen bonds, electrostatic and hydrophobic interactions (see Methods and <xref ref-type="fig" rid="F4">Fig. 4</xref>). Additionally, we can incorporate water molecules, which in the case of the M<sup>pro</sup> are catalytically important and known to expand the catalytic dyad to a triad [<xref ref-type="bibr" rid="R11">11</xref>] (see <xref ref-type="supplementary-material" rid="SD1">Fig. S1B</xref>). In this analysis, we use the structures of the apo form of the SARS-CoV-2 and SARS-CoV main proteases which are deposited with PDB identifier 6Y2E [<xref ref-type="bibr" rid="R11">11</xref>] and 2DUC [<xref ref-type="bibr" rid="R48">48</xref>], respectively. Once the atomistic graph is constructed, we use Bond-to-bond propensities and Markov transients to complementary explore the connectivity within the proteins when sourced from relevant residues. To achieve this, Bond-to-bond propensity explores the instantaneous strength of communication of a perturbation to every bond in the protein which allows to identify allosteric sites [<xref ref-type="bibr" rid="R43">43</xref>] and investigate concepts like cooperativity in multimeric proteins [<xref ref-type="bibr" rid="R44">44</xref>]. Markov transients exploit the time evolution of a diffusion process on the atomistic graph to identify groups of atoms which are reached the fastest (i.e. allosteric sites) or form a communication pathway [<xref ref-type="bibr" rid="R41">41</xref>]. By applying quantile regression we are able to quantitatively rank all bonds, atoms and subsequently residues. This allows to score the hotspots we identified and statistically prove their significance.</p>
+<sec id="S3">
+<label>2.1</label>
+<title>Bond-to-bond propensities validate molecular mechanism of M<sup>pro</sup>
+</title>
+<p id="P10">
+<xref ref-type="fig" rid="F1">Figure 1</xref> provides detailed insights into the Bond-to-bond propensity analysis of the SARS-CoV-2 M<sup>pro</sup> when sourced from the active site residues histidine 41 and cysteine 145 in both monomers. The top scoring residues (see <xref ref-type="supplementary-material" rid="SD1">Table S2</xref>) reveal two main areas of interest in the M<sup>pro</sup>. The hotspot on the back of the monomer opposite to the active site (<xref ref-type="fig" rid="F1">Fig. 1A</xref>) is described in more detail in the paragraphs below. Hotspot two is located in the dimer interface and contains four residues which form salt bridges between the two monomers. Serine 1 and arginine 4 from one monomer connect to histidine 172 and glutamine 290 from the other one, respectively. Interestingly, these bonds have been found to be essential for dimer formation which in turn is required for M<sup>pro</sup> activity [<xref ref-type="bibr" rid="R49">49</xref>, <xref ref-type="bibr" rid="R27">27</xref>].</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Protease dimerisation is under influence of mutated residues</title>
+<p id="P11">To further clarify the interactions between the dimer halves (<xref ref-type="supplementary-material" rid="SD1">Fig. S1A</xref>) and how the dimer connectivity changed for the new SARS-CoV-2 protease, we ran Bond-to-bond propensity analysis sourced from two mutated residues. Alanine 285 and leucine 286 are involved in the dimer interface and have been shown to lead to a closer dimer packing when mutated from threonine 285 and isoleucine 286 in SARS-CoV [<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R11">11</xref>].</p>
+<p id="P12">Hence, we chose these residues as source when looking into protease dimer connectivity in comparison between SARS-CoV-2 and SARS-CoV. <xref ref-type="table" rid="T1">Table 1</xref> shows the top 20 residues in both structures when sorted by quantile score. We can report a strong connectivity towards dimer interface residues which is more apparent in the SARS-CoV-2 protease than in the SARS-CoV one. This can be attributed to a closer dimer packing due to the two smaller side chains of 285/286 in the new protease [<xref ref-type="bibr" rid="R11">11</xref>]. In a mutational study in SARS-CoV, this closer dimer packing led to an increased activity [<xref ref-type="bibr" rid="R14">14</xref>], however this could not be confirmed in the SARS-CoV-2 protease [<xref ref-type="bibr" rid="R11">11</xref>]. This was further validated when we calculated the average residue quantile score of the active site in these runs. For the active site in SARS-CoV-2 M<sup>pro</sup> the score is 0.26 which is below a randomly sampled site score of 0.48 (95% CI: 0.47-0.49) and makes the active site a coldspot in this analysis. In SARS-CoV M<sup>pro</sup> we detect a higher connectivity with a score of 0.50 for the active site which is nevertheless slightly above a random site score of 0.48 (95% CI: 0.47-0.48). Although we could not identify the direct link between the extra domain and the active site on an atomistic level here, we assume that studying the dimer interface residues in a systematic manner would help elucidate the link between domain III and the catalytic activity of the M<sup>pro</sup>.</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>Identification and scoring of putative allosteric sites</title>
+<p id="P13">Bond-to-bond propensities have been shown to successfully detect allosteric sites on proteins [<xref ref-type="bibr" rid="R43">43</xref>] and we here present the results in the SARS-CoV-2 M<sup>pro</sup> to that effect. By choosing the active site residues histidine 41 and cysteine 145 as source, we can detect areas of strong connectivity towards the active centre which allows us to reveal putative allosteric sites. We could detect two hotspots on the protease which might be targetable for allosteric regulation of the protease (<xref ref-type="fig" rid="F2">Fig. 2</xref>). Most of the residues present in the two putative sites are amongst the highest scoring residues which are listed in <xref ref-type="supplementary-material" rid="SD1">Table S2</xref>. Site 1 (<xref ref-type="fig" rid="F2">Fig. 2A</xref> shown in yellow) which is located on the back of the monomer in respect to the active site and is formed by nine residues from domain I and II (full list in <xref ref-type="supplementary-material" rid="SD1">Table S4</xref>). The second hotspot identified with Bond-to-bond propensities is located in the dimer interface and contains 6 residues (Tab. S5) which are located on both monomers (<xref ref-type="fig" rid="F2">Fig. 2B</xref> shown in pink). Two of these residues, Glu290 and Arg4 of the respective second monomer, are forming a salt bridge which is essential for dimerisation [<xref ref-type="bibr" rid="R27">27</xref>]. Quantile regression allows us to rank all residues in the protein and thus we can score both sites with an average residue quantile score as listed in <xref ref-type="table" rid="T2">Table 2</xref>. Site 1 and 2 have a high score of 0.97 and 0.96, respectively and score much higher than a randomly sampled site would score with 0.53 (95% CI: 0.53-0.54) for a a site of the size of site 1 or 0.52 (95% CI: 0.51-0.53) for a site of the size of site 2.</p>
+<p id="P14">Our methodologies further allow to investigate the reverse analysis to assess the connectivity of the predicted allosteric sites. For this purpose, we defined the source as all residues within the respective identified sites (<xref ref-type="supplementary-material" rid="SD1">Tables S4 and S5</xref>). After a full Bond-to-bond propensity analysis and quantile regression to rank all residues, we are able to score the active site to obtain a measure for the connectivity towards the catalytic center (Tab. S8). For site 1 the active site score is 0.64 which is above a randomly sampled site score of 0.47 (95% CI:0.47-0.48). However, for site 2 the active site score is 0.49 which is only marginally above a randomly sampled site score of 0.48 (95% CI:0.47-0.48). As site 2 is located in the dimer interface, this is in line with the above described suggestion that the allosteric effect is not directly conferred from the dimer interface towards the catalytic centre. Nonetheless, this site might provide scope for inhibiting the M<sup>pro</sup> by disrupting the dimer formation at these sites.</p>
+<p id="P15">Overall, this missing bi directional connectivity hints to a more complex communication pattern in the protein and gave us reason to utilize another tool which has been shown to be effective in catalytic frameworks [<xref ref-type="bibr" rid="R41">41</xref>] like the protease. Markov transients reveal fast signal propagation which happens often along allosteric communication pathways within the protein structure. The top scoring residues with a QS &gt; 0.95 in a Markov transient analysis sourced from the active site residues are shown in <xref ref-type="fig" rid="F3">Figure 3A</xref> and a full list can be found in <xref ref-type="supplementary-material" rid="SD1">Table S3</xref>. In the SARS-CoV-2 M<sup>pro</sup>, this analysis subsequently led to the discovery of two more putative sites as shown in <xref ref-type="fig" rid="F3">Figure 3C</xref>. Both hotspots are located on the back of the monomer in relation to the active site. Site 3 (shown in turquoise in <xref ref-type="fig" rid="F3">Figure 3C</xref>) is located solely in domain II and consists of ten residues as listed in <xref ref-type="supplementary-material" rid="SD1">Table S6</xref>. One of which is a cysteine at position 156 which might provide a suitable anchor point for covalent drug design. Site 4 (orange in <xref ref-type="fig" rid="F3">Figure 3C</xref>) is located further down the protein in domain I with 11 residues as listed in <xref ref-type="supplementary-material" rid="SD1">Table S7</xref>. Both sites were scored as described above and in the Methods section. Both sites have high average residue quantile scores of 0.87 (Tab. 2) which are significantly higher than the random site scores of 0.50 (95% CI: 0.49-0.50) and 0.49 (95% CI: 0.49-0.50), respectively.</p>
+<p id="P16">Following the same thought process as described for site 1 and 2, we can investigate the protein connectivity from the opposite site by sourcing our runs from the residues in site 3 and 4. We then score the active site to measure the impact of the putative sites on the catalytic centre (Tab. S8). For site 3, the active site has an average residue quantile score of 0.66 in comparison to a random site score of 0.53 (95% CI: 0.52-0.53) which indicates a significant catalytic link between site 3 and the active site. For site 4 (as for site 2) the scores are similar to a randomly sampled score, which means that we do not detect a significant connectivity from this site to the active site. Judging from previous experience in multimeric proteins this might be due to another structural or dynamic factor which we did not yet uncover between site 4 and the active site.</p>
+<p id="P17">Overall we see a similar pattern of hot and cold spots in the SARS-CoV M<sup>pro</sup> (results not shown). We find a high overlap for the identified four sites which gives us confidence, that a potential drug effort would find applications in COVID-19 as well as SARS. To provide a first indication of the druggability of the identified sites, we chose to align the fragments identified in the Diamond Light Source XChem fragment screen [<xref ref-type="bibr" rid="R50">50</xref>] with our sites. The screen identified 25 fragments which bind outside of the active site and 15 of these bind within 4 Å of any of the four putative allosteric sites. Due to the computational efficiency of our methodologies we were able to conduct a full analysis of all 15 structures and ran our methods from the fragments as source sites. We subsequently scored the active sites in each run (full data in <xref ref-type="supplementary-material" rid="SD1">Table S9</xref>) and found that the fragment deposited with the PDB identifier 5RE8 might be of particular interest as it has the highest connectivity to the active site. Moreover, one of the fragments within 4 Å of site 1 with the PDB identifier 5RGJ, has been shown to inhibit the proteolytic activity of the M<sup>pro</sup> [<xref ref-type="bibr" rid="R24">24</xref>] and possesses a relatively high connectivity to the active site.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="discussion">
+<label>3</label>
+<title>Discussion</title>
+<p id="P18">During the global pandemic of COVID-19 that has started in January 2020, we have seen an increase of research activities to develop new drugs against the disease causing virus SARS-CoV-2. A wide range of approaches from chemistry, structural biology and computational modelling have been used to identify potential protease inhibitors. However, most of these initiatives focus on investigating the active site as a drug target [<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R16">16</xref>], high-throughput docking approaches to the active site [<xref ref-type="bibr" rid="R15">15</xref>] or re-purposing approved drugs [<xref ref-type="bibr" rid="R51">51</xref>] and protease inhibitors [<xref ref-type="bibr" rid="R52">52</xref>] which bind at the active site.</p>
+<p id="P19">To increase the targetable space of the SARS-CoV-2 main protease and allow a broader approach to inhibitor discovery, we provide a full computational analysis of the protease structure which gives insights into allosteric signalling and identifies potential putative sites. Our methodologies are based on concepts from graph theory and the propagation of perturbations and fluctuations on a protein graph. We have previously demonstrated the applications of Bond-to-bond propensities and Markov transients in identifying allosteric sites and communication pathways in a range of biological settings [<xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R44">44</xref>, <xref ref-type="bibr" rid="R46">46</xref>]. Applying Bond-to-bond propensities on the SARS-CoV-2 M<sup>pro</sup> gave us important insights into connectivity of the protein and highlighted residues at the dimer interface. We further explored the interface residues in comparison with the SARS-CoV protease as dimerisation is known to be essential for the proteolytic activity [<xref ref-type="bibr" rid="R14">14</xref>] and might provide scope for inhibitor development [<xref ref-type="bibr" rid="R53">53</xref>]. Important for the dimer packing and mutated in SARS-CoV-2 are residues 285 and 286 [<xref ref-type="bibr" rid="R11">11</xref>]. When sourced from these residues, we find a higher proportion of dimer interface residues within the top 20 scoring residues for SARS-CoV-2 which confirms a stronger dimer connectivity as described in literature [<xref ref-type="bibr" rid="R11">11</xref>]. Although we could not identify the direct link between the mutated residues and the active site on an atomistic level here, we assume that further systematic studies of the residues at the dimer interface would provide clarity.</p>
+<p id="P20">This gave us confidence to further explore the SARS-CoV-2 protease with our methodologies. Using the above described approaches we have identified four allosteric binding sites on the protease. We describe the location of the sites and possible implications for the proteolytic activity of the protein. Site 1 and 2 have been identified using Bond-to-bond propensities and hence have a strong instantaneous connectivity to the active site. Sourced from both sites, we noticed that site 1 is directly connected to the active site, which is detected with a score above a randomly sampled site score (0.64 &gt; 0.47) while site 2 is indirectly connected to the active site with a active site score only slightly above that of a random site (0.49 &gt; 0.48). This suggests that site 1 might be a functional site and any perturbation at site 1 would induce a structural change of the protease thereby impacting the active site directly. Indeed, a fragment near site 1 has been shown to exhibit some inhibitory effect on the M<sup>pro</sup> in a recent study [<xref ref-type="bibr" rid="R24">24</xref>]. Notably, site 2, although not directly coupled to the active site as a functional site, is located in the dimer interface (<xref ref-type="fig" rid="F2">Fig. 2B</xref>) and provides a deep pocket for targeting the protease and maybe disrupting dimer formation. Targeting site 2 could result in a conformation change of the protease and inhibition of dimerisation.</p>
+<p id="P21">The sites identified with Markov transients are reached the fastest by a signal sourced from the active site and are both located at the back of each monomer in relation to the active site. Site 3 is assumed to be directly coupled to the active site as seen from the score of the active site (0.66 &gt; 0.53) and perturbation at site 3 would thus affect the catalytic activity of M<sup>pro</sup>. Besides, Site 3 (<xref ref-type="fig" rid="F3">Fig. 3C</xref>) contains a cysteine residue (Cys156) which provides an anchor point for covalently binding inhibitors [<xref ref-type="bibr" rid="R54">54</xref>]. Similar to site 2, site 4 is not directly connected to the active site. Effects exerted at site 4 could affect other parts of the protein which in turn lead to an altered activity of M<sup>pro</sup>.</p>
+<p id="P22">We also include the analysis of 15 structures containing small fragments from a recent Diamond Light Source XChem fragment screen [<xref ref-type="bibr" rid="R50">50</xref>] which bind in proximity to the putative sites. We scored the active site (His41 and Cys145) using these fragments as the source. The active site score is analysed rigorously with a structural bootstrap to compare the effect of each fragment on the protease. Some fragments have a direct link to the active site and have been recently investigated in experimental studies [<xref ref-type="bibr" rid="R24">24</xref>] and might provide a first starting point for rational drug design.</p>
+<p id="P23">Together our methods provide in depth insights into the global connectivity of the main protease. By taking our results into consideration we hope to broaden the horizon for targeting the main protease of SARS-CoV-2. This will aid in the development of effective medications for COVID-19.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<label>4</label>
+<title>Methods</title>
+<sec id="S8">
+<title>Protein Structures</title>
+<p id="P24">We analysed the X-ray crystal structures of the apo conformations of the SARS-CoV-2 (PDB ID: 6Y2E [<xref ref-type="bibr" rid="R11">11</xref>]) and the SARS-CoV (PDB ID: 2DUC [<xref ref-type="bibr" rid="R48">48</xref>]) main proteases (M<sup>pro</sup>). All residues of the M<sup>pro</sup> proteins that are mutated between the two viruses are listed in <xref ref-type="supplementary-material" rid="SD1">Table S1</xref>. Both structures contained a water molecule in proximity to the catalytic dyad formed by histidine 41 and cysteine 145. These water molecules were kept while all other solvent molecules were removed. Atom and residue, secondary structural names and numberings are in accordance with the original PDB files. The dimer interface was investigated using the online tool PDBePISA [<xref ref-type="bibr" rid="R55">55</xref>] (for a full list of the resulting dimer interface residues see <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.6084/m9.figshare.12815903">https://doi.org/10.6084/m9.figshare.12815903</ext-link>).</p>
+</sec>
+<sec id="S9">
+<title>Atomistic Graph Construction</title>
+<p id="P25">In contrast to most network methods for protein analysis, we derive atomistic protein graphs obtained from the three-dimensional protein structure and parameterise with physico-chemical energies, where the nodes of the graph are the atoms and the weighted edges represent interactions, both covalent bonds and weak interactions, including hydrophobic, hydrogen bonds and salt bridges (See <xref ref-type="fig" rid="F4">Fig. 4</xref>). Details of this approach can be found in Refs [<xref ref-type="bibr" rid="R40">40</xref>, <xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R43">43</xref>]. We summarise the main features below and note three additional improvements, namely, in the stand-alone detection of edges without need of third-party software, the many-body detection of hydrophobic edges across scales, and, the computational efficiency of the code. For further details for the atomistic graph construction used in this work see [<xref ref-type="bibr" rid="R56">56</xref>, <xref ref-type="bibr" rid="R42">42</xref>].</p>
+<p id="P26">
+<xref ref-type="fig" rid="F4">Figure 4</xref> gives an overview of the workflow where we start from atomistic cartesian coordinates from PDB files. Since X-ray structures do not include hydrogen atoms and NMR structures may not report all of them, we use <italic>Reduce</italic> [<xref ref-type="bibr" rid="R57">57</xref>] to add any missing hydrogens. Hydrophobic interactions and hydrogen bonds are identified with a cutoff of 8 Å and 0.01 kcal/mol respectively. The edges are weighted by their energies: covalent bond energies from their bond-dissociation energies [<xref ref-type="bibr" rid="R58">58</xref>], hydrogen bonds and salt bridges by the modified Mayo potential [<xref ref-type="bibr" rid="R59">59</xref>, <xref ref-type="bibr" rid="R60">60</xref>] and hydrophobic interactions are calculated using a hydrophobic potential of mean force [<xref ref-type="bibr" rid="R61">61</xref>].</p>
+</sec>
+<sec id="S10">
+<title>Bond-to-bond Propensities</title>
+<p id="P27">Bond-to-bond propensity analysis was first introduced in Ref. [<xref ref-type="bibr" rid="R43">43</xref>] and further discussed in Ref. [<xref ref-type="bibr" rid="R44">44</xref>], hence we only briefly summarise it here. This edge-space measure examines and exhibits the instantaneous communication of a perturbation at a source towards every bond in the protein. The edge-to-edge transfer matrix <italic>M</italic> was introduced to study non-local edge-coupling and flow redistribution in graphs [<xref ref-type="bibr" rid="R62">62</xref>] and an alternative interpretation of <italic>M</italic> as a Green function is employed to analyse the atomistic protein graph. The element <italic>M</italic>
+<sub>
+<italic>ij</italic>
+</sub> describes the effect that a perturbation at edge <italic>i</italic> has on edge <italic>j</italic>. <italic>M</italic> is given by <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>M</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mi>W</mml:mi>
+<mml:msup>
+<mml:mi>B</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:msup>
+<mml:msup>
+<mml:mi>L</mml:mi>
+<mml:mo>†</mml:mo>
+</mml:msup>
+<mml:mi>B</mml:mi>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P28">where B is the <italic>n</italic> × <italic>m</italic> incidence matrix for the atomistic protein graph with <italic>n</italic> nodes and m edges; <italic>W</italic> = diag(<italic>w</italic>
+<sub>
+<italic>ij</italic>
+</sub>) is an <italic>m</italic> × <italic>m</italic> diagonal matrix which possesses all the edge interaction energies with <italic>w</italic>
+<italic>
+<sub>ij</sub>
+</italic> as the weight of the edge connecting nodes <italic>i</italic> and <italic>j</italic>, i.e. the bond energy between the atoms; and <italic>L</italic>
+<sup>
+<italic>†</italic>
+</sup> is the pseudo-inverse of the weighted graph Laplacian matrix <italic>L</italic> [<xref ref-type="bibr" rid="R63">63</xref>] and defines the diffusion dynamics on the energy-weighted graph [<xref ref-type="bibr" rid="R64">64</xref>].</p>
+<p id="P29">To evaluate the effect of perturbations from a group of bonds <italic>b<sup>′</sup>
+</italic> (i.e., the source), on bond <italic>b</italic> of other parts of the protein, we define the bond propensity as: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>b</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mspace width="0.2em"/>
+<mml:mo>∈</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mtext>source</mml:mtext>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:msup>
+<mml:mi>b</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> and then calculate the residue propensity of a residue <italic>R</italic>: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mi>R</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mspace width="0.2em"/>
+<mml:mo>∈</mml:mo>
+<mml:mspace width="0.2em"/>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:munder>
+<mml:mrow/>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S11">
+<title>Markov Transient Analysis (MTA)</title>
+<p id="P30">A complementary, node-based method, Markov Transient analysis (MTA) identifies areas of the protein that are significantly connected to a site of interest, the source, such as the active site, and obtains the signal propagation that connects the two sites at the atomistic level. The method has been introduced and discussed in detail in Ref. [<xref ref-type="bibr" rid="R41">41</xref>] and has successfully identified allosteric hotspots and pathways without any <italic>a priori</italic> knowledge [<xref ref-type="bibr" rid="R41">41</xref>, <xref ref-type="bibr" rid="R46">46</xref>]. Importantly, it captures <italic>all</italic> paths that connect the two sites. The contribution of each atom in the communication pathway between the active site and all other sites in a protein or protein complex is measured by the characteristic transient time <italic>t</italic>
+<sub>1/2</sub>, <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mrow>
+<mml:mi>arg</mml:mi>
+<mml:mo>⁡</mml:mo>
+<mml:mi>min</mml:mi>
+<mml:mo>⁡</mml:mo>
+</mml:mrow>
+<mml:mi>t</mml:mi>
+</mml:munder>
+<mml:mo stretchy="false">[</mml:mo>
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>≥</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mo stretchy="false">]</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M5">
+<mml:msubsup>
+<mml:mi>t</mml:mi>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> is the number of time steps in which the probability of a random walker to be at node <italic>i</italic> reaches half the stationary distribution value. This provides a measure of the speed by which perturbations originating from the active site diffuse into the rest of the protein by a random walk on the above described atomistic protein graph. To obtain the transient time <italic>t</italic>
+<sub>1/2</sub> for each residue, we take the average <italic>t</italic>
+<sub>1/2</sub> over all atoms of the respective residue.</p>
+</sec>
+<sec id="S12">
+<title>Quantile Regression (QR)</title>
+<p id="P31">To determine the significant bonds with high bond-to-bond propensity and atoms with fast transient times <italic>t</italic>
+<sub>1/2</sub> at the same geometric distance from the source, we use conditional quantile regression (QR) [<xref ref-type="bibr" rid="R65">65</xref>], a robust statistical measure widely used in different areas [<xref ref-type="bibr" rid="R66">66</xref>]. In contrast to standard least squares regressions, QR provides models for conditional quantile functions. This is significant here because it allows us to identify not the "average" atom or bond but those that are outliers from all those found at the same distance from the active site and because we are looking at the tails of highly non-normal distributions.</p>
+<p id="P32">As the distribution of propensities over distance follows an exponential decay, we use a linear function of the logarithm of propensities when performing QR while in the case of transient times which do not follow a particular parametric dependence on distance, we use cubic splines to retain flexibility. From the estimated quantile regression functions, we can then compute the quantile score for each atom or bond. To obtain residue quantile scores, we use the minimum distance between each atom of a residue and those of the source. Further details of this approach for Bond-to-bond propensities can be found in Ref. [<xref ref-type="bibr" rid="R43">43</xref>] and for Markov Transient Analysis in Ref. [<xref ref-type="bibr" rid="R67">67</xref>].</p>
+</sec>
+<sec id="S13">
+<title>Site scoring with structural bootstrap sampling</title>
+<p id="P33">To allow an assessment of the statistical significance of a site of interest, we score the site against 1000 randomly sampled sites of the same size. For this purpose, the average residue quantile score of the site of interest is calculated. After sampling 1000 random sites on the protein, the average residue quantile scores are calculated. By performing a bootstrap with 10,000 resamples with replacement on the random sites average residue quantile scores, we are able to provide a confidence interval to assess the statistical significance of the site of interest score in relation to the random site score.</p>
+</sec>
+<sec id="S14">
+<title>Residues used when scoring the active site</title>
+<p id="P34">For scoring the active site as a measure of the connectivity towards the main binding site, we use all non-covalent hits bound in the active site from the XChem fragment screen against the SARS-CoV-2 M<sup>pro</sup> [<xref ref-type="bibr" rid="R50">50</xref>]. The 22 found structures were further investigated using PyMol v.2.3 [<xref ref-type="bibr" rid="R68">68</xref>] for residues which have atoms within 4Å of any of the bound fragments. These residues are Thr25, Thr26, His41, Cys44, Thr45, Ser46, Met49, Tyr54, Phe140, Leu141, Asn142, Ser144, Cys145, Met162, His163, His164, Met165, Glu166, Leu167, Pro168, Asp187, Arg188, Gln189, Thr190 and constitute the active site as a site of interest in all scoring calculations.</p>
+</sec>
+<sec id="S15">
+<title>XChem fragment screen hits selection</title>
+<p id="P35">From the above mentioned XChem fragment screen against the SARS-CoV-2 M<sup>pro</sup> [<xref ref-type="bibr" rid="R50">50</xref>], 25 hits were found at regions other than the active site. The 15 fragments which contain atoms that are within 4Å from any of the putative allosteric site residues we obtained were selected as candidates for further investigation as shown in <xref ref-type="table" rid="T3">Table 3</xref>.</p>
+<p id="P36">For each of these fragment-bound structures, we performed Bond-to-bond propensity and Markov transient analyses to evaluate the connectivity to the active site. The active site was scored as described above.</p>
+</sec>
+<sec id="S16">
+<title>Visualisation and Solvent Accessible Surface Area</title>
+<p id="P37">We use PyMol (v.2.3) [<xref ref-type="bibr" rid="R68">68</xref>] for structure visualisation and presentation of Markov transient and Bond-to-bond propensity results directly on the structure. The tool was also used to calculate the residue solvent accessible surface area (SASA) reported here, with a rolling probe radius of 1.4 and a sampling density of 2.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplemental Information</label>
+<media xlink:href="EMS103762-supplement-Supplemental_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67085" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S17">
+<title>Acknowledgements</title>
+<p>We acknowledge helpful discussions with Florian Song, Francesca Vianello, Ching Ching Lam and Jerzy Pilipczuk. This work was funded by a Wellcome Trust studentship to L.S. [grant number 215360/Z/19/Z]. M.B. and S.N.Y. acknowledge funding from the EPSRC award EP/N014529/1 supporting the EPSRC Centre for Mathematics of Precision Healthcare.</p>
+</ack>
+<sec id="S18" sec-type="data-availability">
+<title>Data availability</title>
+<p id="P38">All data presented in this study are available at figshare with DOI: 10.6084/m9.figshare.12815903.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P39">
+<bold>Author contributions</bold>
+</p>
+<p id="P40">L.S., N.W., M.B and S.N.Y. conceived the study. L.S and N.W. performed the computations, L.S. created the figures and all authors analysed the data and wrote the manuscript.</p>
+</fn>
+<fn fn-type="conflict" id="FN2">
+<p id="P41">
+<bold>Competing interests</bold>
+</p>
+<p id="P42">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>270</fpage>
+<lpage>273</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2012-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>265</fpage>
+<lpage>269</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2008-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhu</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A novel coronavirus from patients with pneumonia in China, 2019</article-title>
+<source>New England Journal of Medicine</source>
+<year>2020</year>
+<volume>382</volume>
+<fpage>727</fpage>
+<lpage>733</lpage>
+<pub-id pub-id-type="doi">10.1056/NEJMoa2001017</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gorbalenya</surname>
+<given-names>AE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The species Severe acute respiratory syndrome-related coronavirus: classifying 2019-nCoV and naming it SARS-CoV-2</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>536</fpage>
+<lpage>544</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0695-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peiris</surname>
+<given-names>JSM</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>KY</given-names>
+</name>
+</person-group>
+<article-title>The severe acute respiratory syndrome</article-title>
+<source>Nature Medicine</source>
+<year>2004</year>
+<volume>10</volume>
+<fpage>S88</fpage>
+<lpage>S97</lpage>
+<pub-id pub-id-type="doi">10.1038/nm1143</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Graham</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Donaldson</surname>
+<given-names>EF</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+</person-group>
+<article-title>A decade after SARS: strategies for controlling emerging coronaviruses</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2013</year>
+<volume>11</volume>
+<fpage>836</fpage>
+<lpage>848</lpage>
+<pub-id pub-id-type="doi">10.1038/nrmicro3143</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Steinhauer</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Holland</surname>
+<given-names>JJ</given-names>
+</name>
+</person-group>
+<article-title>Direct method for quantitation of extreme polymerase error frequencies at selected single base sites in viral RNA</article-title>
+<source>Journal of Virology</source>
+<year>1986</year>
+<volume>57</volume>
+<fpage>219</fpage>
+<lpage>228</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.57.1.219-228.1986</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Anand</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of coronavirus main proteinase reveals combination of a chymotrypsin fold with an extra alpha-helical domain</article-title>
+<source>The EMBO journal</source>
+<year>2002</year>
+<volume>21</volume>
+<fpage>3213</fpage>
+<lpage>3224</lpage>
+<pub-id pub-id-type="doi">10.1093/emboj/cdf327</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Anand</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ziebuhr</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wadhwani</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Mesters</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Hilgenfeld</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Coronavirus main proteinase (3CLpro) structure: basis for design of anti-SARS drugs</article-title>
+<source>Science</source>
+<year>2003</year>
+<volume>300</volume>
+<fpage>1763</fpage>
+<lpage>1767</lpage>
+<pub-id pub-id-type="doi">10.1126/science.1085658</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The crystal structures of severe acute respiratory syndrome virus main protease and its complex with an inhibitor</article-title>
+<conf-name>Proceedings of the National Academy of Sciences of the United States of America</conf-name>
+<year>2003</year>
+<volume>100</volume>
+<fpage>13190</fpage>
+<lpage>13195</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1835675100</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Crystal structure of SARS-CoV-2 main protease provides a basis for design of improved ↵-ketoamide inhibitors</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>368</volume>
+<fpage>409</fpage>
+<lpage>412</lpage>
+<pub-id pub-id-type="doi">10.1126/science.abb3405</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hilgenfeld</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>From SARS to MERS: crystallographic studies on coronaviral proteases enable antiviral drug design</article-title>
+<source>FEBS Journal</source>
+<year>2014</year>
+<volume>281</volume>
+<fpage>4085</fpage>
+<lpage>4096</lpage>
+<pub-id pub-id-type="doi">10.1111/febs.12936</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>YW</given-names>
+</name>
+<name>
+<surname>Yiu</surname>
+<given-names>CPB</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>KY</given-names>
+</name>
+</person-group>
+<article-title>Prediction of the SARS-CoV-2 (2019-nCoV) 3C-like protease (3CLpro) structure: Virtual screening reveals velpatasvir, ledipasvir, and other drug repurposing candidates</article-title>
+<source>F1000Research</source>
+<year>2020</year>
+<volume>9</volume>
+<pub-id pub-id-type="doi">10.12688/f1000research.22457.2</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lim</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Mu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Dynamically-driven enhancement of the catalytic machinery of the SARS 3C-like protease by the S284-T285-I286/A mutations on the extra domain</article-title>
+<source>PLoS ONE</source>
+<year>2014</year>
+<volume>9</volume>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ton</surname>
+<given-names>A-T</given-names>
+</name>
+<name>
+<surname>Gentile</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hsing</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ban</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Cherkasov</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Rapid Identification of Potential Inhibitors of SARS-CoV-2 Main Protease by Deep Docking of 1.3 Billion Compounds</article-title>
+<source>Molecular Informatics</source>
+<year>2020</year>
+<volume>39</volume>
+<pub-id pub-id-type="doi">10.1002/minf.202000028</pub-id>
+<comment>2000028</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jin</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis for the inhibition of SARS-CoV-2 main protease by antineoplastic drug carmofur</article-title>
+<source>Nature Structural &amp; Molecular Biology</source>
+<year>2020</year>
+<volume>27</volume>
+<fpage>529</fpage>
+<lpage>532</lpage>
+<pub-id pub-id-type="doi">10.1038/s41594-020-0440-6</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jin</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of M(pro) from SARS-CoV-2 and discovery of its inhibitors</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>582</volume>
+<fpage>289</fpage>
+<lpage>293</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2223-y</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Design of Wide-Spectrum Inhibitors Targeting Coronavirus Main Proteases</article-title>
+<source>PLoS Biology</source>
+<year>2005</year>
+<volume>3</volume>
+<fpage>e324</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pbio.0030324</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pillaiyar</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Manickam</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Namasivayam</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Hayashi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>S-H</given-names>
+</name>
+</person-group>
+<article-title>An Overview of Severe Acute Respiratory Syndrome–Coronavirus (SARS-CoV) 3CL Protease Inhibitors: Peptidomimetics and Small Molecule Chemotherapy</article-title>
+<source>Journal of Medicinal Chemistry</source>
+<year>2016</year>
+<volume>59</volume>
+<fpage>6595</fpage>
+<lpage>6628</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jmedchem.5b01461</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dyall</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Middle East Respiratory Syndrome and Severe Acute Respiratory Syndrome: Current Therapeutic Options and Potential Targets for Novel Therapies</article-title>
+<source>Drugs</source>
+<year>2017</year>
+<volume>77</volume>
+<fpage>1935</fpage>
+<lpage>1966</lpage>
+<pub-id pub-id-type="doi">10.1007/s40265-017-0830-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ullrich</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Nitsche</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>The SARS-CoV-2 main protease as drug target</article-title>
+<source>Bioorganic and Medicinal Chemistry Letters</source>
+<year>2020</year>
+<volume>30</volume>
+<pub-id pub-id-type="doi">10.1016/j.bmcl.2020.127377</pub-id>
+<comment>127377</comment>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wenthur</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Gentry</surname>
+<given-names>PR</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>TP</given-names>
+</name>
+<name>
+<surname>Lindsley</surname>
+<given-names>CW</given-names>
+</name>
+</person-group>
+<article-title>Drugs for Allosteric Sites on Receptors</article-title>
+<source>Annual Review of Pharmacology and Toxicology</source>
+<year>2014</year>
+<volume>54</volume>
+<fpage>165</fpage>
+<lpage>184</lpage>
+<pub-id pub-id-type="doi">10.1146/annurev-pharmtox-010611-134525</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cimermancic</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CryptoSite: Expanding the Druggable Proteome by Characterization and Prediction of Cryptic Binding Sites</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2016</year>
+<volume>428</volume>
+<fpage>709</fpage>
+<lpage>719</lpage>
+<pub-id pub-id-type="doi">10.1016/j.jmb.2016.01.029</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>El-baba</surname>
+<given-names>TJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Allosteric inhibition of the SARS-CoV-2 main protease - insights from mass spectrometry-based assays</article-title>
+<source>Angewandte Chemie International Edition</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1002/anie.202010316</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Komatsu</surname>
+<given-names>TS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Drug Binding Dynamics of the Dimeric SARS-CoV-2 Main Protease, Determined by Molecular Dynamics Simulation</article-title>
+<source>Scientific Reports</source>
+<year>2020</year>
+<volume>10</volume>
+<comment>16986</comment>
+<pub-id pub-id-type="doi">10.1038/s41598-020-74099-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Dissection study on the severe acute respiratory syndrome 3C-like protease reveals the critical role of the extra domain in dimerization of the enzyme: defining the extra domain as a new target for design of highly specific protease inhibitors</article-title>
+<source>The Journal of biological chemistry</source>
+<year>2004</year>
+<volume>279</volume>
+<fpage>24765</fpage>
+<lpage>24773</lpage>
+<pub-id pub-id-type="doi">10.1074/jbc.M311744200</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>The catalysis of the SARS 3C-like protease is under extensive regulation by its extra domain</article-title>
+<source>FEBS Journal</source>
+<year>2006</year>
+<volume>273</volume>
+<fpage>1035</fpage>
+<lpage>1045</lpage>
+<pub-id pub-id-type="doi">10.1111/j.1742-4658.2006.05130.x</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Dynamically-Driven Inactivation of the Catalytic Machinery of the SARS 3C-Like Protease by the N214A Mutation on the Extra Domain</article-title>
+<source>PLOS Computational Biology</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>e1001084</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1001084</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greener</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Sternberg</surname>
+<given-names>MJ</given-names>
+</name>
+</person-group>
+<article-title>Structure-based prediction of protein allostery</article-title>
+<source>Current Opinion in Structural Biology</source>
+<year>2018</year>
+<volume>50</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+<pub-id pub-id-type="doi">10.1016/j.sbi.2017.10.002</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ni</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Allosteric Modulator Discovery: From Serendipity to Structure-Based Design</article-title>
+<source>Journal of Medicinal Chemistry</source>
+<year>2019</year>
+<volume>62</volume>
+<pub-id pub-id-type="doi">10.1021/acs.jmedchem.8b01749</pub-id>
+<comment>acs.jmedchem.8b01749</comment>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shukla</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Meng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Roux</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Pande</surname>
+<given-names>VS</given-names>
+</name>
+</person-group>
+<article-title>Activation pathway of Src kinase reveals intermediate states as targets for drug design</article-title>
+<source>Nature Communications</source>
+<year>2014</year>
+<volume>5</volume>
+<fpage>3397</fpage>
+<pub-id pub-id-type="doi">10.1038/ncomms4397</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Penkler</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Atilgan</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Tastan Bishop, Perturbation-Response Scanning Reveals Key Residues for Allosteric Control in Hsp70</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2017</year>
+<volume>57</volume>
+<fpage>1359</fpage>
+<lpage>1374</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.6b00775</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Panjkovich</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Daura</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Exploiting protein flexibility to predict the location of allosteric sites</article-title>
+<source>BMC Bioinformatics</source>
+<year>2012</year>
+<volume>13</volume>
+<fpage>273</fpage>
+<pub-id pub-id-type="doi">10.1186/1471-2105-13-273</pub-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>[34]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Panjkovich</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Daura</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>PARS: a web server for the prediction of Protein Allosteric and Regulatory Sites</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<fpage>1314</fpage>
+<lpage>1315</lpage>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/btu002</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>[35]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greener</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Sternberg</surname>
+<given-names>MJE</given-names>
+</name>
+</person-group>
+<article-title>AlloPred: prediction of allosteric pockets on proteins using normal mode perturbation analysis</article-title>
+<source>BMC Bioinformatics</source>
+<year>2015</year>
+<volume>16</volume>
+<fpage>335</fpage>
+<pub-id pub-id-type="doi">10.1186/s12859-015-0771-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>[36]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Improved Method for the Identification and Validation of Allosteric Sites</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2017</year>
+<volume>57</volume>
+<fpage>2358</fpage>
+<lpage>2363</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jcim.7b00014</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>[37]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guarnera</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Berezovsky</surname>
+<given-names>IN</given-names>
+</name>
+</person-group>
+<article-title>Structure-Based Statistical Mechanical Model Accounts for the Causality and Energetics of Allosteric Communication</article-title>
+<source>PLoS computational biology</source>
+<year>2016</year>
+<volume>12</volume>
+<fpage>e1004678</fpage>
+<lpage>e1004678</lpage>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1004678</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>[38]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tee</surname>
+<given-names>W-V</given-names>
+</name>
+<name>
+<surname>Guarnera</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Berezovsky</surname>
+<given-names>IN</given-names>
+</name>
+</person-group>
+<article-title>Reversing allosteric communication: From detecting allosteric sites to inducing and tuning targeted allosteric response</article-title>
+<source>PLOS Computational Biology</source>
+<year>2018</year>
+<volume>14</volume>
+<fpage>e1006228</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1006228</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>[39]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Mapping allosteric communications within individual proteins</article-title>
+<source>Nature Communications</source>
+<year>2020</year>
+<fpage>3862</fpage>
+<pub-id pub-id-type="doi">10.1038/s41467-020-17618-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>[40]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Delmotte</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tate</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Protein multi-scale organization through graph partitioning and robustness analysis: application to the myosin-myosin light chain interaction</article-title>
+<source>Physical Biology</source>
+<year>2011</year>
+<volume>8</volume>
+<pub-id pub-id-type="doi">10.1088/1478-3975/8/5/055010</pub-id>
+<comment>055010</comment>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>[41]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amor</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Woscholski</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Uncovering allosteric pathways in caspase-1 using Markov transient analysis and multiscale community detection</article-title>
+<source>Molecular BioSystems</source>
+<year>2014</year>
+<volume>10</volume>
+<fpage>2247</fpage>
+<lpage>2258</lpage>
+<pub-id pub-id-type="doi">10.1039/C4MB00088A</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>[42]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+</person-group>
+<article-title>BagPyPe: A Python package for the construction of atomistic, energy-weighted graphs from biomolecular structures</article-title>
+<source>Manuscript in preparation</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>[43]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amor</surname>
+<given-names>BRC</given-names>
+</name>
+<name>
+<surname>Schaub</surname>
+<given-names>MT</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Prediction of allosteric sites and mediating interactions through bond-to-bond propensities</article-title>
+<source>Nature Communications</source>
+<year>2016</year>
+<volume>7</volume>
+<fpage>12477</fpage>
+<pub-id pub-id-type="doi">10.1038/ncomms12477</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>[44]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hodges</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+</person-group>
+<article-title>Allostery and cooperativity in multimeric proteins: bond-to-bond propensities in ATCase</article-title>
+<source>Scientific Reports</source>
+<year>2018</year>
+<volume>8</volume>
+<fpage>11079</fpage>
+<pub-id pub-id-type="doi">10.1038/s41598-018-27992-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>[45]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>del Sol</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tsai</surname>
+<given-names>C-J</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Nussinov</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>The origin of allosteric functional modulation: multiple pre-existing pathways</article-title>
+<source>Structure</source>
+<year>2009</year>
+<volume>17</volume>
+<fpage>1042</fpage>
+<lpage>1050</lpage>
+<pub-id pub-id-type="doi">10.1016/j.str.2009.06.008</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>[46]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chrysostomou</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Abstract 1775: Targeting RSK4 prevents both chemoresistance and metastasis in lung cancer</article-title>
+<source>Cancer Research</source>
+<year>2019</year>
+<volume>79</volume>
+<fpage>1775</fpage>
+<pub-id pub-id-type="doi">10.1158/1538-7445.AM2019-1775</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>[47]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berman</surname>
+<given-names>HM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Protein Data Bank</article-title>
+<source>Nucleic Acids Research</source>
+<year>2000</year>
+<volume>28</volume>
+<fpage>235</fpage>
+<lpage>242</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/28.1.235</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>[48]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Muramatsu</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV 3CL protease cleaves its C-terminal autoprocessing site by novel subsite cooperativity</article-title>
+<conf-name>Proceedings of the National Academy of Sciences of the United States of America</conf-name>
+<year>2016</year>
+<volume>113</volume>
+<fpage>12997</fpage>
+<lpage>13002</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1601327113</pub-id>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>[49]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chou</surname>
+<given-names>CY</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Quaternary structure of the severe acute respiratory syndrome (SARS) coronavirus main protease</article-title>
+<source>Biochemistry</source>
+<year>2004</year>
+<volume>43</volume>
+<fpage>14958</fpage>
+<lpage>14970</lpage>
+<pub-id pub-id-type="doi">10.1021/bi0490237</pub-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>[50]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Douangamath</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Crystallographic and electrophilic fragment screening of the SARS-CoV-2 main protease</article-title>
+<source>Nature Communications</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>5047</fpage>
+<pub-id pub-id-type="doi">10.1038/s41467-020-18709-w</pub-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>[51]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mahanta</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Potential anti-viral activity of approved repurposed drug against main protease of SARS-CoV-2: an in silico based approach</article-title>
+<source>Journal of Biomolecular Structure and Dynamics</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1080/07391102.2020.1768902</pub-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>[52]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eleftheriou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Amanatidou</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Petrou</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Geronikaki</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>In Silico Evaluation of the Effectivity of Approved Protease Inhibitors against the Main Protease of the Novel SARS-CoV-2 Virus</article-title>
+<source>Molecules</source>
+<year>2020</year>
+<volume>25</volume>
+<fpage>2529</fpage>
+<pub-id pub-id-type="doi">10.3390/molecules25112529</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>[53]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goyal</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Goyal</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Targeting the Dimerization of the Main Protease of Coronaviruses: A Potential Broad-Spectrum Therapeutic Strategy</article-title>
+<source>ACS Combinatorial Science</source>
+<year>2020</year>
+<volume>22</volume>
+<fpage>297</fpage>
+<lpage>305</lpage>
+<pub-id pub-id-type="doi">10.1021/acscombsci.0c00058</pub-id>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>[54]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hallenbeck</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Turner</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Renslo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Arkin</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Targeting Non-Catalytic Cysteine Residues Through Structure-Guided Drug Discovery</article-title>
+<source>Current Topics in Medicinal Chemistry</source>
+<year>2017</year>
+<volume>17</volume>
+<fpage>4</fpage>
+<lpage>15</lpage>
+<pub-id pub-id-type="doi">10.2174/1568026616666160719163839</pub-id>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>[55]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krissinel</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Henrick</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Inference of Macromolecular Assemblies from Crystalline State</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2007</year>
+<volume>372</volume>
+<fpage>774</fpage>
+<lpage>797</lpage>
+<pub-id pub-id-type="doi">10.1016/j.jmb.2007.05.022</pub-id>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>[56]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mersmann</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ProteinLens: a web-based application for the analysis of allosteric signalling on atomistic graphs of biomolecules</article-title>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.6084/m9.figshare.12369125.v1</pub-id>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>[57]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Word</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lovell</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Richardson</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Richardson</surname>
+<given-names>DC</given-names>
+</name>
+</person-group>
+<article-title>Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation</article-title>
+<source>Journal of Molecular Biology</source>
+<year>1999</year>
+<volume>285</volume>
+<fpage>1735</fpage>
+<lpage>1747</lpage>
+<pub-id pub-id-type="doi">10.1006/jmbi.1998.2401</pub-id>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>[58]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Huheey</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Keiter</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Keiter</surname>
+<given-names>RL</given-names>
+</name>
+</person-group>
+<source>Inorganic chemistry: principles of structure and reactivity</source>
+<publisher-loc>New York, NY</publisher-loc>
+<publisher-name>Harper-Collins College Publishers</publisher-name>
+<year>1993</year>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>[59]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mayo</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Olafson</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Goddard</surname>
+<given-names>WA</given-names>
+</name>
+</person-group>
+<article-title>DREIDING: A generic force field for molecular simulations</article-title>
+<source>Journal of Physical Chemistry</source>
+<year>1990</year>
+<volume>94</volume>
+<fpage>8897</fpage>
+<lpage>8909</lpage>
+<pub-id pub-id-type="doi">10.1021/j100389a010</pub-id>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>[60]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dahiyat</surname>
+<given-names>BI</given-names>
+</name>
+<name>
+<surname>Gordon</surname>
+<given-names>DB</given-names>
+</name>
+<name>
+<surname>Mayo</surname>
+<given-names>SL</given-names>
+</name>
+</person-group>
+<article-title>Automated design of the surface positions of protein helices</article-title>
+<source>Protein Science</source>
+<year>1997</year>
+<volume>6</volume>
+<fpage>1333</fpage>
+<lpage>1337</lpage>
+<pub-id pub-id-type="doi">10.1002/pro.5560060622</pub-id>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>[61]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Fawzi</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Head-Gordon</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Hydrophobic Potential of Mean Force as a Solvation Function for Protein Structure Prediction</article-title>
+<source>Structure</source>
+<year>2007</year>
+<volume>15</volume>
+<fpage>727</fpage>
+<lpage>740</lpage>
+<pub-id pub-id-type="doi">10.1016/j.str.2007.05.004</pub-id>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>[62]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schaub</surname>
+<given-names>MT</given-names>
+</name>
+<name>
+<surname>Lehmann</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yaliraki</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Structure of complex networks: Quantifying edge-to-edge relations by failure-induced flow redistribution</article-title>
+<source>Network Science</source>
+<year>2014</year>
+<volume>2</volume>
+<fpage>66</fpage>
+<lpage>89</lpage>
+<pub-id pub-id-type="doi">10.1017/nws.2014.4</pub-id>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>[63]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Biggs</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>Algebraic graph theory</source>
+<publisher-name>Cambridge university press</publisher-name>
+<year>1993</year>
+<volume>67</volume>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>[64]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lambiotte</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Delvenne</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Barahona</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Random Walks, Markov Processes and the Multiscale Modular Organization of Complex Networks</article-title>
+<source>IEEE Transactions on Network Science and Engineering</source>
+<year>2014</year>
+<volume>1</volume>
+<fpage>76</fpage>
+<lpage>90</lpage>
+<pub-id pub-id-type="doi">10.1109/TNSE.2015.2391998</pub-id>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>[65]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koenker</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Hallock</surname>
+<given-names>KF</given-names>
+</name>
+</person-group>
+<article-title>Quantile Regression</article-title>
+<source>Journal of Economic Perspectives</source>
+<year>2001</year>
+<volume>15</volume>
+<fpage>143</fpage>
+<lpage>156</lpage>
+<pub-id pub-id-type="doi">10.1257/jep.15.4.143</pub-id>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>[66]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koenker</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>quantreg: Quantile Regression. R package version 5.52</article-title>
+<year>2019</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/package=quantreg">https://cran.r-project.org/package=quantreg</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>[67]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Amor</surname>
+<given-names>BRC</given-names>
+</name>
+</person-group>
+<article-title>Exploring allostery in proteins with graph theory</article-title>
+<source>Ph.D. thesis</source>
+<publisher-name>Imperial College London</publisher-name>
+<year>2016</year>
+<pub-id pub-id-type="doi">10.25560/58214</pub-id>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>[68]</label>
+<element-citation publication-type="web">
+<article-title>Schrodinger/pymol-open-source</article-title>
+<source>Open-source foundation of the user-sponsored PyMOL molecular visualization system</source>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://github.com/schrodinger/pymol-open-source">https://github.com/schrodinger/pymol-open-source</ext-link>
+</comment>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Bond-to-bond propensities of M<sup>pro</sup> sourced from the orthosteric sites.</title>
+<p>The source sites have been chosen as the catalytically active residues His41 and Cys145 in both chains of the homodimer and are shown in green (front A) and top B) view). All other residues are coloured by quantile score as shown in the legend and reveal two main areas of interest with important residues labelled. C) The propensity of each residue, Π<italic>R</italic>, is plotted against the residue distance from the orthosteric site. The dashed line indicates the quantile regression estimate of the 0.95 quantile cutoff used for identifying relevant residues.</p>
+</caption>
+<graphic xlink:href="EMS103762-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Putative allosteric sites identified by Bond-to-bond propensities.</title>
+<p>Surface representation of the M<sup>pro</sup> dimer coloured by quantile score (as shown in the legend). A) Rotated front view with site 1 (yellow) which is located on the opposite of the orthosteric site (coloured in green). B) Top view with site 2 (pink) located in the dimer interface. A detailed view of both sites is provided with important residues labelled.</p>
+</caption>
+<graphic xlink:href="EMS103762-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Markov transient analysis of M<sup>pro</sup> sourced from the orthosteric sites.</title>
+<p>The orthosteric sites are shown in green and include His41 and Cys145 in both chains of the homodimer (front A) view). B) The <italic>t</italic>
+<sub>1/2</sub> values of each residue are plotted against their distance from the orthosteric site. The dashed line indicates the quantile regression estimate of the 0.95 quantile cutoff used for identifying significant residues. The quantile scores of all residues are mapped onto the surface of the M<sup>pro</sup> dimer (front A) view), coloured as shown in the legend. C) Surface representation of a rotated front view the M<sup>pro</sup> dimer coloured by quantile score. Site 3 (turquoise) and 4 (orange) are located on the opposite site of the active site (coloured in green). A detailed view of both sites is provided with important residues labelled.</p>
+</caption>
+<graphic xlink:href="EMS103762-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Atomistic Graph Construction.</title>
+<p>We showcase the general procedure here on the main protease of SARS-Cov-2: Atomic coordinates are obtained from the PDB (ID: 6Y2E [<xref ref-type="bibr" rid="R11">11</xref>] and hydrogens are added by Reduce [<xref ref-type="bibr" rid="R57">57</xref>]. Edges are identified and the weights are assigned, as described in the methods section, by taking into account covalent bonds as well as weak interactions: hydrogen bonds, electrostatic interactions and the hydrophobic effect which are coloured as indicated.</p>
+</caption>
+<graphic xlink:href="EMS103762-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Comparison of Top 20 residues between Covid-19 and SARS main protease.</title>
+<p>Highlighted in blue are residues which are in the dimer interface.</p>
+</caption>
+<table frame="void" rules="cols">
+<thead>
+<tr>
+<th align="center" valign="top" style="border-bottom: solid thin">SARS-CoV-2</th>
+<th align="center" valign="top" style="border-bottom: solid thin">SARS-CoV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER1 A</td>
+<td align="center" valign="top">ARG40 A</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">ARG4 A</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER123 A</td>
+</tr>
+<tr>
+<td align="center" valign="top">ARG40 A</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">GLU166 A</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">PRO122 A</td>
+<td align="center" valign="top">ASP187 A</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER1 B</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">PHE305 A</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">ARG4 B</td>
+<td align="center" valign="top">ARG40 B</td>
+</tr>
+<tr>
+<td align="center" valign="top">ARG40 B</td>
+<td align="center" valign="top">ASN95 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">PRO122 B</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">PRO122 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">GLN306 B</td>
+<td align="center" valign="top">ARG131 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">PHE3 A</td>
+<td align="center" valign="top">ASP187 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER10 A</td>
+<td align="center" valign="top">ILE281 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">GLU14 A</td>
+<td align="center" valign="top">TYR54 A</td>
+</tr>
+<tr>
+<td align="center" valign="top">ASN95 A</td>
+<td align="center" valign="top">ILE281 A</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">GLU166 A</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER1 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">PHE305 A</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">PHE3 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">GLN306 A</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">ARG4 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">PHE3 B</td>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER10 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#9EC2E5">SER10 B</td>
+<td align="center" valign="top">ASP56 B</td>
+</tr>
+<tr>
+<td align="center" valign="top">ASN95 B</td>
+<td align="center" valign="top">ARG60 B</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="border-bottom: hidden; background-color:#9EC2E5">GLU166 B</td>
+<td align="center" valign="top" style="border-bottom: hidden">TRP207 B</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Scoring of the 4 identified putative allosteric sites.</title>
+<p>Included is a structural bootstrap score of 1,000 randomly sampled sites with 95% confidence interval (CI).</p>
+</caption>
+<table frame="void" rules="cols">
+<thead>
+<tr>
+<th align="center" valign="top" style="border-bottom: solid thin">Site</th>
+<th align="center" valign="top" style="border-bottom: solid thin">Average Residue Quantile Score</th>
+<th align="center" valign="top" style="border-bottom: solid thin">Random Site Score [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">Site 1</td>
+<td align="center" valign="top">0.97</td>
+<td align="center" valign="top">0.53 [0.53, 0.54]</td>
+</tr>
+<tr>
+<td align="center" valign="top">Site 2</td>
+<td align="center" valign="top">0.96</td>
+<td align="center" valign="top">0.52 [0.51, 0.53]</td>
+</tr>
+<tr>
+<td align="center" valign="top">Site 3</td>
+<td align="center" valign="top">0.87</td>
+<td align="center" valign="top">0.50 [0.49, 0.51]</td>
+</tr>
+<tr>
+<td align="center" valign="top">Site 4</td>
+<td align="center" valign="top">0.87</td>
+<td align="center" valign="top">0.49 [0.49, 0.51]</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>XChem fragments in 4 Å proximity to the identified allosteric sites.</title>
+</caption>
+<table frame="void" rules="cols">
+<thead>
+<tr>
+<th align="left" valign="top" style="border-bottom: solid thin">Site</th>
+<th align="left" valign="top" style="border-bottom: solid thin">Fragment PDB ID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">Site 1</td>
+<td align="left" valign="top">5RGJ, 5RE8, 5RF4, 5RF9, 5RFD, 5RED, 5REI, 5RF5, 5RGR</td>
+</tr>
+<tr>
+<td align="left" valign="top">Site 2</td>
+<td align="left" valign="top">5RF0, 5RGQ</td>
+</tr>
+<tr>
+<td align="left" valign="top">Site 3</td>
+<td align="left" valign="top">5RF9</td>
+</tr>
+<tr>
+<td align="left" valign="top">Site 4</td>
+<td align="left" valign="top">5RGG, 5RE5, 5RE7, 5RFC, 5RE8, 5RF4, 5RFD</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

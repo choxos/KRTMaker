@@ -1,0 +1,856 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS134321</article-id>
+<article-id pub-id-type="doi">10.1101/2021.09.03.458038</article-id>
+<article-id pub-id-type="archive">PPR391297</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Rescuing Low Frequency Variants within Intra-Host Viral Populations directly from Oxford Nanopore sequencing data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Liu</surname>
+<given-names>Yunxi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Kearney</surname>
+<given-names>Joshua</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Mahmoud</surname>
+<given-names>Medhat</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Kille</surname>
+<given-names>Bryce</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Sedlazeck</surname>
+<given-names>Fritz J.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Treangen</surname>
+<given-names>Todd J.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Computer Science, Rice University, 6100 Main Street, Houston, TX 77005, USA</aff>
+<aff id="A2">
+<label>2</label>Human Genome Sequencing Center, Baylor College of Medicine, Houston, TX 77030, USA</aff>
+<pub-date pub-type="nihms-submitted">
+<day>08</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>06</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Infectious disease monitoring on Oxford Nanopore Technologies (ONT) platforms offers rapid turnaround times and low cost, exemplified by well over a half of million ONT SARS-COV-2 datasets. Tracking low frequency intra-host variants has provided important insights with respect to elucidating within host viral population dynamics and transmission. However, given the higher error rate of ONT, accurate identification of intra-host variants with low allele frequencies remains an open challenge with no viable solutions available. In response to this need, we present Variabel, a novel approach and first method designed for rescuing low frequency intra-host variants from ONT data alone. We evaluated Variabel on both within patient and across patient paired Illumina and ONT datasets; our results show that Variabel can accurately identify low frequency variants below 0.5 allele frequency, outperforming existing state-of-the-art ONT variant callers for this task. Variabel is open-source and available for download at: <ext-link ext-link-type="uri" xlink:href="http://www.gitlab.com/treangenlab/variabel">www.gitlab.com/treangenlab/variabel</ext-link>.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<p id="P2">Oxford Nanopore Technology (ONT) has become a dominant technology for rapid sequencing of COVID-19 patients due to its low cost and relatively simple preparation methods<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup>. ONT datasets have proliferated during the pandemic; there are now well over 100,000 sequenced COVID-19 samples from ONT alone in the NCBI SRA database and over a half a million SARS-CoV-2 genomes assembled from ONT<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup>. Intra-host variation of COVID-19 reveals important information about many aspects of the disease, such as future variants of concern and the response to different treatments<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. When SARS-CoV-2 infects a human host, a combination of viral and host proteins facilitates the replication of the virus <sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. Intra-host variants then arise during the expansion of the intra-host viral population and homologous recombination <sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup>, some of which may be biologically relevant <sup>
+<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. Given the ubiquity of COVID-19 ONT data, the goal of our study is to explore the use of widespread ONT data for detection of intra-host variation to elucidate currently “hidden” biology. However, due to the relatively high error rate of ONT, ranging from 5%-15%, true variation within hosts is obscured by sequencing errors contained in the raw data <sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>. Our assumption is that the allele frequency of true SNV within a sample is subject to change across samples, while those of sequencing errors are independent of the sample and thus are highly stable/similar. This is especially the case for similar bascaller and flow cells versions. Multiple studies have shown that the allele frequency of a true variant would experience a significant change over time or over samples collected from different patients <sup>
+<xref ref-type="bibr" rid="R9">9</xref>–<xref ref-type="bibr" rid="R12">12</xref>
+</sup>. Indeed, the size of the population of SARS-CoV-2 virions within a host undergoes exponential growth post infection, increasing from a handful of virions to one billion virions or more <sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>. Furthermore, the vast majority of sequencing errors in ONT data are deletions, related to homopolymer regions where the same nucleotide occurs consecutively, or low-complexity regions <sup>
+<xref ref-type="bibr" rid="R14">14</xref>–<xref ref-type="bibr" rid="R16">16</xref>
+</sup>.</p>
+<p id="P3">Current read-based error correction and polishing methods for ONT data primarily target genome assembly <sup>
+<xref ref-type="bibr" rid="R17">17</xref>,<xref ref-type="bibr" rid="R18">18</xref>
+</sup>. Raw read polishing has proven to be extremely effective in generating high quality assemblies, however, information supporting low frequency (less than 0.5) intra-host variants is almost always lost during the process. An alternative approach to preserving intra-host variation during error correction involves integrating haplotype information into the assembly step<sup>
+<xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>
+</sup>. Strainline uses a combination of local De Bruijn graph assembly and overlap extending to generate haplotype genomes<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>. CliqueSNV constructs haplotype sequences by recognizing linked SNVs that are supported by a single read<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup>. While both methods claim to assemble genomes at strain level resolution, haplotype phasing from ONT sequencing protocols for SARS-CoV-2 is challenging due to the limited read length from amplicon sequencing (250bp-500bp) <sup>
+<xref ref-type="bibr" rid="R22">22</xref>
+</sup>, uneven coverage, and susceptibility to bias from single nucleotide variation. Furthermore, sequencing error in ONT data is context dependent <sup>
+<xref ref-type="bibr" rid="R16">16</xref>,<xref ref-type="bibr" rid="R23">23</xref>
+</sup>.</p>
+<p id="P4">Here, we present Variabel, a novel variant call filtering tool that is able to recover intra-host variants from ONT data alone, for the first time, by exploiting the tendency of true variants to change in allele frequency across samples. The key concept behind Variabel is that by leveraging information from viral population dynamics, we can distinguish the true variants from sequencing errors caused by ONT by comparing samples collected across different time points or samples collected from different patients. Variabel is constructed as a series of filters that operate on the variant call format (VCF) files returned by an existing variant caller. <xref ref-type="fig" rid="F1">Figure 1</xref> illustrates the variant calling workflow and the algorithms of Variabel. It includes an allele frequency variation filter, which identifies true variants that are shared across different samples (see <xref ref-type="fig" rid="F1">Figure 1B</xref>) and an insertion/deletion (indel) filter that identifies false indel calls based on Shannon’s entropy values of the region near indel sites (see <xref ref-type="fig" rid="F1">Figure 1C</xref>).</p>
+<p id="P5">We evaluated Variabel via two ONT datasets: 1) a time-series COVID-19 dataset and 2) a cross-patient dataset <sup>
+<xref ref-type="bibr" rid="R4">4</xref>,<xref ref-type="bibr" rid="R24">24</xref>
+</sup>. Importantly, samples in both datasets are from studies sequenced with both ONT and Illumina. The time-series dataset contains samples taken from an immunocompromised COVID-19 patient over the course of three months<sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup>, where 18 pairs of Illumina and ONT sequencing runs passed quality control. The cross-patient dataset includes 154 SARS-CoV-2 positive samples collected from patients, and 103 pairs of Illumina and ONT sequencing runs passed our quality control. We selected these two experimental datasets for evaluation as: i) the time-series dataset allows us to track individual changes in allele frequencies over time for a specific patient, and ii) the cross-patient datasets allow us to explore the utility of Variabel on more readily available SARS-CoV-2 datasets. Variant calls on Illumina sequencing runs by Lofreq <sup>
+<xref ref-type="bibr" rid="R25">25</xref>
+</sup> are used as a benchmark in our calculation of precision,recall, and f-score. In the benchmark, the time series dataset contains 865 substitutions and 133 indels, and the cross patient dataset has 3,236 substitution and 990 indels. We also ran Clair3 on the same ONT sequencing runs for benchmarking purposes. While Clair3 is not explicitly designed for virus SNV calling, it represents a state-of-the-art ONT variant caller <sup>
+<xref ref-type="bibr" rid="R26">26</xref>
+</sup>.</p>
+<p id="P6">Illumina sequencing produces highly accurate reads, which are ideal for intra-host variant calling. On the other hand, while variant calling on ONT sequencing data offers faster turnaround time and is not limited to sequencing centers, it is much more challenging due to a higher error rate in both the sequencing and base calling process. Most of the previously reported intrahost variants have allele frequencies of &gt;0.02 and less than 0.15, which is well above the Illumina error rate but <italic>exactly within</italic> the expected ONT error rate, highlighting the dichotomy of using one or the other for identification of low frequency intra-host variation. Our results highlight that Variabel is able to call variants in ONT data with high precision. <xref ref-type="fig" rid="F2">Figure 2</xref> indicates the positions and minimum allele frequencies of variants called by Lofreq and Variabel. By comparing the variant calling results before and after applying Variabel on both time series dataset (<xref ref-type="fig" rid="F2">Figure 2A</xref>) and cross patient dataset (<xref ref-type="fig" rid="F2">Figure 2B</xref>), we found that Variabel is able to remove the majority of the false positive calls caused by the sequencing errors of ONT data. The number of variants that are exclusively found in ONT data (marked in green) drop dramatically, while most of the true variants which are found in both Illumina and ONT reads passed the filters.</p>
+<p id="P7">We also benchmarked Variabel with Clair3. <xref ref-type="fig" rid="F3">Figure 3A</xref> shows a Venn diagram of variant calls from Variabel and Clair3 compared to Illumina variant calls for 18 time series samples. Out of 474 variant calls made by Variabel, 405 (85.44%) of them are considered true positive calls since they are also found in the Illumina data. Clair3 had a lower number (388) of true positive calls compared to Variabel, and Clair3 had 412 false positives while Variabel only had 69.</p>
+<p id="P8">Importantly, Variabel is able to rescue true variants in the low frequency domain. <xref ref-type="fig" rid="F3">Figure 3B</xref> shows the false positive (FP) rates at different variant allele frequencies and cumulative density of FP variant calls from Variabel and Clair3 for time series dataset. First, we see that for ultra-low frequency variants (less than 0.1 allele frequency), Clair3 has a FP rate of 100% (all variants identified are false positives), while Variabel’s FP rate for these ultra-low frequency variants is less than 0.2. Next, we observed that Variabel has much lower FP rate on average for variants with allele frequency below 0.65 compared to Clair3. The peak FP rate for Variabel occurs at allele frequency between 0.15 and 0.2, which is associated with Nanopore sequencing errors. Cumulative count plot of FP variant calls shows that Variabel has a close to uniform distribution of false calls along different allele frequencies. On the other hand, more than 80% of the FP calls from Clair3 have allele frequencies less than 0.5.</p>
+<p id="P9">
+<xref ref-type="fig" rid="F3">Figure 3C</xref> shows precision, recall and f-score for variant calls generated by different methods on both time series and cross patient datasets; shown are the LoFreq default output with 0.02 minimum allele frequency filter, Variabel, and Clair3. For all 18 samples that passed quality control from the time-series dataset, applying Variabel resulted in a significant mean precision increase from 0.036 to 0.850, and a mean f-score increase from 0.065 to 0.578. When applied to the same data, Clair3 had a mean precision of 0.483 and a recall of 0.446, noticeably underperforming Variabel. Both Variabel and Clair3 had similar mean recall (0.448 for Variabel and 0.436 for Clair3). Similar results can also be found in the cross-patient dataset: for all 103 samples that passed quality control (see methods), the mean precision increased from 0.044 to 0.772 after applying Variable, which is significantly higher than the Clair3 mean precision of 0.641. The mean f-score is 0.578 for Variabel and 0.553 for Clair3. <xref ref-type="fig" rid="F4">Figure 4A</xref> shows the Venn diagram of variant calls for 103 cross patient samples: although Vairabel had 356 false positive calls on this dataset, Clair3 had twice as many (753 total).</p>
+<p id="P10">Our results highlight that it is possible to accurately identify emerging intra-host variations using ONT sequencing alone. This enables a fast and accurate variant prevalence utilizing the scalability and turnaround time of ONT that is already in place around the world. Variabel uses the variant frequency information and entropy filtering to distinguish true intra-host variants from ONT sequencing error. This is well maintained in the time-series data. Furthermore, our experiments have shown that the usage of Variabel can be extended to cross patient datasets, which strongly hints at broader applicability of our approach to the vast amount of ONT based COVID studies.</p>
+<p id="P11">One of the main limitations of Variabel for cross-patient studies is that the same variant must be observed in at least two samples to activate allele frequency variation filtering. As expected, we observed a drop in average precision in the cross patient dataset compared to time-series dataset, since samples collected from different patients are less likely to contain shared variants. Rescuing low frequency intra-host variants is far more challenging for cross patient data compared to longitudinal data, and the distribution of allele frequencies of true positive variants found by Variabel in the cross-patient dataset clustered above 0.6 while allele frequencies of true positive variants spans in much wider range in the time series dataset (see <xref ref-type="fig" rid="F2">Figure 2</xref>). Based on a simple simulation (see <xref ref-type="fig" rid="F4">Figure 4B</xref>) we calculate that approximately 10,000 samples would be required to recover most of the intra-host variants if we assume variants occur randomly along the genome of SARS-CoV-2. Similarly, we also expect a small drop in performance of Variabel if the time series data included fewer samples (e.g., 2-5). Both scenarios could be improved by leveraging a centralized data depository of low frequency SNV for SARS-Cov-2. Follow-up studies can then leverage this resource to assess and evaluate the biological importance of observed low frequency variants within and across hosts over time. However, established COVID databases such as GISAID are limited only to consensus level sequences <sup>
+<xref ref-type="bibr" rid="R27">27</xref>,<xref ref-type="bibr" rid="R28">28</xref>
+</sup>, which might be a limiting factor going forward in this or future pandemic or outbreaks.</p>
+<p id="P12">In conclusion, Variabel is the first method explicitly designed to identify low frequency intra-host variants directly from ONT data in viral populations. This represents both an important advance for the field and will facilitate the tracking of intra-host variation in COVID-19 positive patients.</p>
+<sec id="S1" sec-type="methods">
+<title>Methods</title>
+<sec id="S2">
+<title>Dataset descriptions</title>
+<p id="P13">Two datasets were used to validate the performance of Variabel. The time series dataset is a longitudinal dataset containing respiratory samples collected from a single SARS-CoV-2 positive patient with immunodeficiency at 23 different time points across a 101-day period <sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. All samples were sequenced with MinION (Oxford Nanopore Technologies). Among those samples. 20 samples were deep sequenced using the IIIumina platform. The ONT data downloaded from NCBI SRA database showed that the quality scores of the reads are corrupted. All bases were assigned with the same quality score “?”. The cross-patient dataset contains 154 SARS-CoV-2 positive samples that are collected from different patients and sequenced using both illumina and nanopore platforms <sup>
+<xref ref-type="bibr" rid="R24">24</xref>
+</sup>. All raw sequencing runs from both datasets are publically available on NCBI SRA database.</p>
+</sec>
+<sec id="S3">
+<title>Quality control and read alignment</title>
+<p id="P14">We performed pre-alignment quality control on all illumina sequencing runs using fastp (v0.20.1). <sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup> with the following command. fastp --detect_adapter_for_pe --cut_front, --cut_window_size 4 --cut_mean_quality 15 --length_required 15 --qualified_quality_phred 15 --unqualified_percent_limit 40 --n_base_limit 5 --low_complexity_filter. Read alignment for illumina sequences was done using bwa mem (v0.7.17-r1188) paired end mode with default parameters.<sup>
+<xref ref-type="bibr" rid="R30">30</xref>
+</sup> For nanopore Read alignment for nanopore sequences was done using minimap2 (2.20-r1061) with preset map-ont.<sup>
+<xref ref-type="bibr" rid="R31">31</xref>
+</sup>; Alignment files are sorted using samtools (v1.11) <sup>
+<xref ref-type="bibr" rid="R32">32</xref>
+</sup>. We also performed post alignment quality control by calculating breadth and depth of genome coverages with samtools depth. For each pair of illumina and nanopore sequencing runs which were generated from the same sample, both sequencing runs must have breadth of genome coverage no less than 0.9 and mean depth of coverage no less than 500, otherwise both sequencing runs are excluded from our experiments.</p>
+</sec>
+<sec id="S4">
+<title>Variant Calling</title>
+<p id="P15">We used lofreq (v2.1.4) to call variants for illumina samples. This is done by first inserting indel quality score into the BAM files using command “lofreq indelqual --dindel”, and then call variants including insertions or deletions (indels) with command “lofreq call --no-default-filter --call-indels”. At last, we applied the strain bias filter and removed any variants with allele frequency below 2% with command “lofreq filter --cov-min 2 --af-min 0.02 --sb-alpha 0.01 --sb-incl-indels”.<sup>
+<xref ref-type="bibr" rid="R25">25</xref>
+</sup>. Both Variabel and Clair3 were used to call variants from nanopore data. We used Clair version 3 [<ext-link ext-link-type="uri" xlink:href="https://github.com/HKU-BAL/Clair3">https://github.com/HKU-BAL/Clair3</ext-link>] <sup>
+<xref ref-type="bibr" rid="R26">26</xref>
+</sup> to identify SNVs and indels in samples using default parameters. We used the training data set specified for ONT and set the --chunk_size to 29,903.</p>
+<p id="P16">To call variants with variabel, we first stripped the quality score from the nanopore data in order to force Lofreq run with its EM algorithm. Then we insert the indel quality score into the BAM files using command “lofreq indelqual --uniform 16”. After that, we used the same command as processing illumina data to call variants and to filter variants with great strain bias or with allele frequency below 2%. The collection of VCF files is used as input for Variabel. First, Variabel performs the cross-sample allele frequency variation filtering. It examines each one of the VCF files, identifies variants that are shared between samples, and records their allele frequencies. Any variant with maximum allele frequency less than 0.65 and maximum variation of 0.05 or less across all the samples in which the variant existed is classified as false calls and is eliminated. Variabel then applies a low-entropy filter to any indels that occur in regions of low-complexity. This is designed to eliminate nanopore homopolymer errors that primarily occur in areas with short repeats. Assume a deletion is called at position i on reference genome s with length d, the filter checks the product of the Shannon entropy of the substring s[i-2d: i+1] and the Shannon entropy of the substring s[i+1: i+1+3d]. If the value of the product is less than the user defined threshold (default: 1), the variant is classified as false calls and is eliminated. The variants that pass both cross-sample allele frequency variation filter and low-entropy filter are collected and output in VCF format.</p>
+</sec>
+<sec id="S5">
+<title>Validation</title>
+<p id="P17">Since all samples we included in our analysis have both illumina and nanopore sequencing runs in high quality, we used the lofreq calls generated from the illumina data as a ground truth to evaluate precision, recall, and f-score of Variabel and Clair3.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S6">
+<title>Acknowledgements</title>
+<p>We would like to thank the contributing authors of the paired Illumina and ONT SARS-CoV-2 sequencing data which was instrumental for highlighting the benefits of Variabel on ONT data. MM and FS were supported by the National Institute of Allergy and Infectious Diseases (Grant#1U19AI144297). TT was supported in part by the National Institute of Allergy and Infectious Diseases (Grant#1P01AI152999-01). TT and YL were supported in part by the C3.ai Digital Transformation Institute COVID-19 award and Centers for Disease Control (CDC) contract 75D30121C11180.</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P18">
+<bold>Authors Contributions</bold>
+</p>
+<p id="P19">All authors conceived the experiments, analyzed the results, and reviewed the manuscript. YL, BK, JK, MM conducted the experiments. YL and JK wrote the code. FS and TT managed the project.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bull</surname>
+<given-names>RA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Analytical validity of nanopore sequencing for rapid SARS-CoV-2 genome analysis</article-title>
+<source>Nat Commun</source>
+<year>2020</year>
+<volume>11</volume>
+<elocation-id>6272</elocation-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nicholls</surname>
+<given-names>SM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CLIMB-COVID: continuous integration supporting decentralised sequencing for SARS-CoV-2 genomic surveillance</article-title>
+<source>Genome Biol</source>
+<year>2021</year>
+<volume>22</volume>
+<fpage>196</fpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sapoval</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 genomic diversity and the implications for qRT-PCR diagnostics and transmission</article-title>
+<source>Genome Res</source>
+<year>2021</year>
+<volume>31</volume>
+<fpage>635</fpage>
+<lpage>644</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kemp</surname>
+<given-names>SA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 evolution during treatment of chronic infection</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>592</volume>
+<fpage>277</fpage>
+<lpage>282</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>V’kovski</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kratzel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Steiner</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Stalder</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Thiel</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Coronavirus biology and replication: implications for SARS-CoV-2</article-title>
+<source>Nat Rev Microbiol</source>
+<year>2021</year>
+<volume>19</volume>
+<fpage>155</fpage>
+<lpage>170</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Banerjee</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mossman</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Grandvaux</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Molecular Determinants of SARS-CoV-2 Variants</article-title>
+<source>Trends Microbiol</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1016/j.tim.2021.07.002</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Intra-host variation and evolutionary dynamics of SARS-CoV-2 populations in COVID-19 patients</article-title>
+<source>Genome Med</source>
+<year>2021</year>
+<volume>13</volume>
+<fpage>30</fpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Deamer</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Akeson</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Branton</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Three decades of nanopore sequencing</article-title>
+<source>Nat Biotechnol</source>
+<year>2016</year>
+<volume>34</volume>
+<fpage>518</fpage>
+<lpage>524</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Al Khatib</surname>
+<given-names>HA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Within-Host Diversity of SARS-CoV-2 in COVID-19 Patients With Variable Disease Severities</article-title>
+<source>Front Cell Infect Microbiol</source>
+<year>2020</year>
+<volume>10</volume>
+<elocation-id>575613</elocation-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lythgoe</surname>
+<given-names>KA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 within-host diversity and transmission</article-title>
+<source>Science</source>
+<year>2021</year>
+<volume>372</volume>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tonkin-Hill</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Patterns of within-host genetic diversity in SARS-CoV-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<elocation-id>2020.12.23.424229</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.12.23.424229</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Popa</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology of superspreading events in Austria reveals mutational dynamics and transmission properties of SARS-CoV-2</article-title>
+<source>Sci Transl Med</source>
+<year>2020</year>
+<volume>12</volume>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sender</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The total number and mass of SARS-CoV-2 virions</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2021</year>
+<volume>118</volume>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O’Donnell</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Dunbar</surname>
+<given-names>WB</given-names>
+</name>
+</person-group>
+<article-title>Error analysis of idealized nanopore sequencing</article-title>
+<source>Electrophoresis</source>
+<year>2013</year>
+<volume>34</volume>
+<fpage>2137</fpage>
+<lpage>2144</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rang</surname>
+<given-names>FJ</given-names>
+</name>
+<name>
+<surname>Kloosterman</surname>
+<given-names>WP</given-names>
+</name>
+<name>
+<surname>de Ridder</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>From squiggle to basepair: computational approaches for improving nanopore sequencing read accuracy</article-title>
+<source>Genome Biol</source>
+<year>2018</year>
+<volume>19</volume>
+<fpage>90</fpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Nasrin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rahman</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Exploring Systematic Errors in Sequencing Technologies</source>
+<conf-name>2019 IEEE 19th International Conference on Bioinformatics and Bioengineering (BIBE)</conf-name>
+<year>2019</year>
+<fpage>132</fpage>
+<lpage>137</lpage>
+<pub-id pub-id-type="doi">10.1109/BIBE.2019.00032</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>Y-T</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>P-Y</given-names>
+</name>
+<name>
+<surname>Shih</surname>
+<given-names>P-W</given-names>
+</name>
+</person-group>
+<article-title>Homopolish: a method for the removal of systematic errors in nanopore sequencing by homologous polishing</article-title>
+<source>Genome Biol</source>
+<year>2021</year>
+<volume>22</volume>
+<fpage>95</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Loman</surname>
+<given-names>NJ</given-names>
+</name>
+<name>
+<surname>Quick</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Simpson</surname>
+<given-names>JT</given-names>
+</name>
+</person-group>
+<article-title>A complete bacterial genome assembled de novo using only nanopore sequencing data</article-title>
+<source>Nat Methods</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>733</fpage>
+<lpage>735</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Kang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Schönhuth</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Strainline: full-length de novo viral haplotype reconstruction from noisy long reads</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<elocation-id>2021.07.02.450893</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2021.07.02.450893</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Knyazev</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CliqueSNV: An Efficient Noise Reduction Technique for Accurate Assembly of Viral Variants from NGS Data</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<elocation-id>264242</elocation-id>
+<pub-id pub-id-type="doi">10.1101/264242</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Knyazev</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Accurate assembly of minority viral haplotypes from next-generation sequencing through efficient noise reduction</article-title>
+<source>Nucleic Acids Res</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1093/nar/gkab576</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>nCoV-2019 sequencing protocol v3 (LoCost)</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weirather</surname>
+<given-names>JL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive comparison of Pacific Biosciences and Oxford Nanopore Technologies and their applications to transcriptome analysis</article-title>
+<source>F1000Res</source>
+<year>2017</year>
+<volume>6</volume>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baker</surname>
+<given-names>DJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CoronaHiT: high-throughput sequencing of SARS-CoV-2 genomes</article-title>
+<source>Genome Med</source>
+<year>2021</year>
+<volume>13</volume>
+<fpage>21</fpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wilm</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>LoFreq: a sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets</article-title>
+<source>Nucleic Acids Res</source>
+<year>2012</year>
+<volume>40</volume>
+<fpage>11189</fpage>
+<lpage>11201</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Exploring the limit of using a deep neural network on pileup data for germline variant calling</article-title>
+<source>Nature Machine Intelligence</source>
+<year>2020</year>
+<volume>2</volume>
+<fpage>220</fpage>
+<lpage>227</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Glob Chall</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<collab>NCBI Resource Coordinators</collab>
+<article-title>Database resources of the National Center for Biotechnology Information</article-title>
+<source>Nucleic Acids Res</source>
+<year>2016</year>
+<volume>44</volume>
+<fpage>D7</fpage>
+<lpage>19</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>fastp: an ultra-fast all-in-one FASTQ preprocessor</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>i884</fpage>
+<lpage>i890</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<source>Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM</source>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Minimap2: pairwise alignment for nucleotide sequences</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>3094</fpage>
+<lpage>3100</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Sequence Alignment/Map format and SAMtools</article-title>
+<source>Bioinformatics</source>
+<year>2009</year>
+<volume>25</volume>
+<fpage>2078</fpage>
+<lpage>2079</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Illustration of Variabel algorithm and workflow.</title>
+<p>
+<bold>a)</bold> Sequencing reads from ONT are aligned to the reference genome of SARS-CoV-2 with Minimap2, then variants are called based on the alignments using Lofreq. <bold>b)</bold> Cross-sample AF variantion filter identifies variants that are shared between samples. Variant calls with maximum AF less 0.65 and maximum AF variation less than 0.05 are classified as false calls. In this example, variant A and B pass the filter while variant C fails. <bold>c)</bold> Low-entropy filter calculates the Shannon’s entropy H for subsequences (Seq A and B) of the reference genome around the position where the indel call occurs. The length of the subsequences is determined by the length of the indel. Product of two entropy of the subsequences is used to determine whether the indel is a false positive or not. <bold>d)</bold> Workflow of Variabel for detecting intra-host variants for ONT sequences.</p>
+</caption>
+<graphic xlink:href="EMS134321-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Variants called by lofreq with Illumina and ONT sequences before and after applying Variabel.</title>
+<p>In each of the subfigures, the left plot shows the variant calls before applying Variabel and the right plot shows the variant calls after applying Variabel. The x-axis shows the position of the variant on the reference genome. The y-axis shows the minimum allele frequency of the variant found in multiple samples. Variants found in the Illumina sequences only are marked in blue, and variants found in the ONT sequences only are marked in red. Variants that are shared between both Illumina and ONT data are shown in green. The size of the dot represents the number of samples supporting the variant. <bold>a)</bold> Variant calls of the time series dataset. <bold>b)</bold> Variant calls of the cross patient dataset.</p>
+</caption>
+<graphic xlink:href="EMS134321-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Intra-host variant detection on time series dataset.</title>
+<p>
+<bold>a)</bold> Venn diagram showing counts of variant calls shared between Lofreq on illumina sequencing runs and Variabel and Clair3 on nanopore sequencing runs on the same samples from time series dataset. <bold>b)</bold> False positive rates at different variant allele frequencies and cumulative count of false positive variant calls of Variabel and Clair3 for time series dataset. <bold>c)</bold> Precision. recall, and f-score comparison of Lofreq default, Clair3, and Variabel on both time series dataset and cross patient dataset. Significance between Clair3 and Variabel were calculated using the two-sided paired t-test. Significance labeling: n.s.(P&gt;0.05), *(P≤0.05), **(P≤0.01), ***(P≤0.001).</p>
+</caption>
+<graphic xlink:href="EMS134321-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Intra-host variant detection on cross patient dataset.</title>
+<p>
+<bold>a)</bold> Venn diagram showing counts of variant calls shared between Lofreq on illumina sequencing runs and Variabel and Clair3 on nanopore sequencing runs on the same samples from cross patient dataset. <bold>b)</bold> Simulation of fraction of shared variants recovered from different sizes of collections of SARS-CoV-2 samples.</p>
+</caption>
+<graphic xlink:href="EMS134321-f004"/>
+</fig>
+</floats-group>
+</article>

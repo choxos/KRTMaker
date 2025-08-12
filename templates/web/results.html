@@ -1,5 +1,6 @@
 {% extends 'web/base.html' %}
 {% load static %}
+{% load dict_extras %}
 
 {% block title %}KRT Results - {{ session.display_title|truncatechars:50 }}{% endblock %}
 
@@ -301,26 +302,30 @@
                                     {% for resource in resources %}
                                     <tr>
                                         <td>
-                                            <strong>{{ resource.RESOURCE_NAME|default:"N/A" }}</strong>
+                                            <strong>{{ resource|lookup:"RESOURCE NAME" }}</strong>
                                         </td>
-                                        <td>{{ resource.SOURCE|default:"N/A" }}</td>
+                                        <td>{{ resource|lookup:"SOURCE" }}</td>
                                         <td>
-                                            {% if resource.IDENTIFIER %}
-                                                <code class="small">{{ resource.IDENTIFIER }}</code>
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
+                                            {% with identifier=resource|lookup:"IDENTIFIER" %}
+                                                {% if identifier %}
+                                                    <code class="small">{{ identifier }}</code>
+                                                {% else %}
+                                                    <span class="text-muted">No identifier exists</span>
+                                                {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>
-                                            {% if resource.NEW_OR_REUSE|lower == 'new' %}
-                                                <span class="badge bg-success">New</span>
-                                            {% elif resource.NEW_OR_REUSE|lower == 'reuse' %}
-                                                <span class="badge bg-warning text-dark">Reuse</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">{{ resource.NEW_OR_REUSE|default:"N/A" }}</span>
-                                            {% endif %}
+                                            {% with new_reuse=resource|lookup:"NEW/REUSE"|lower %}
+                                                {% if new_reuse == 'new' %}
+                                                    <span class="badge bg-success">New</span>
+                                                {% elif new_reuse == 'reuse' %}
+                                                    <span class="badge bg-warning">Reuse</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ resource|lookup:"NEW/REUSE" }}</span>
+                                                {% endif %}
+                                            {% endwith %}
                                         </td>
-                                        <td class="small">{{ resource.ADDITIONAL_INFO|default:"" }}</td>
+                                        <td class="small">{{ resource|lookup:"ADDITIONAL INFORMATION" }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

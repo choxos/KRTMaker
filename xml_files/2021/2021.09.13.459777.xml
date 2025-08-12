@@ -1,0 +1,722 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS135007</article-id>
+<article-id pub-id-type="doi">10.1101/2021.09.13.459777</article-id>
+<article-id pub-id-type="archive">PPR394180</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Real-time monitoring and analysis of SARS-CoV-2 nanopore sequencing with minoTour</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Munro</surname>
+<given-names>Rory</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Holmes</surname>
+<given-names>Nadine</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Moore</surname>
+<given-names>Christopher</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Carlile</surname>
+<given-names>Matt</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Payne</surname>
+<given-names>Alexander</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Santos</surname>
+<given-names>Roberto</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Loose</surname>
+<given-names>Matt</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">$</xref>
+</contrib>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<label>$</label>Author for correspondence - <email>matt.loose@nottingham.ac.uk</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>15</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>13</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<sec id="S1">
+<title>Motivation</title>
+<p id="P1">The ongoing SARS-CoV-2 pandemic has demonstrated the utility of real-time analysis of sequencing data, with a wide range of databases and resources for analysis now available. Here we show how the real-time nature of Oxford Nanopore Technologies sequencers can accelerate consensus generation, lineage and variant status assignment. We exploit the fact that multiplexed viral sequencing libraries quickly generate sufficient data for the majority of samples, with diminishing returns on remaining samples as the sequencing run progresses. We demonstrate methods to determine when a sequencing run has passed this point in order to reduce the time required and cost of sequencing.</p>
+</sec>
+<sec id="S2">
+<title>Results</title>
+<p id="P2">We extended MinoTour, our real-time analysis and monitoring platform for nanopore sequencers, to provide SARS-CoV2 analysis using ARTIC network pipelines. We additionally developed an algorithm to predict which samples will achieve sufficient coverage, automatically running the ARTIC medaka informatics pipeline once specific coverage thresholds have been reached on these samples. After testing on run data, we find significant run time savings are possible, enabling flow cells to be used more efficiently and enabling higher throughput data analysis. The resultant consensus genomes are assigned both PANGO lineage and variant status as defined by Public Health England. Samples from within individual runs are used to generate phylogenetic trees incorporating optional background samples as well as summaries of individual SNPs. As minoTour uses ARTIC pipelines, new primer schemes and pathogens can be added to allow minoTour to aid in real-time analysis of pathogens in the future.</p>
+</sec>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S3" sec-type="intro">
+<title>Introduction</title>
+<p id="P3">Oxford Nanopore Technologies (ONT) range of sequencers (MinION, GridION and Promethion) have transformed sequencing from a fixed to real-time process (<xref ref-type="bibr" rid="R7">Jain <italic>et al.</italic>, 2016</xref>). By writing batches of sequenced reads to disk after DNA has finished translocating the pore, sequence data become available immediately, meaning data analysis can begin earlier, reducing the total time required to answer a specific question. The ongoing Covid-19 pandemic has provided a clear demonstration of the proposed benefits of real-time analysis of sequence data (<xref ref-type="bibr" rid="R5">Gardy and Loman, 2018</xref>; <xref ref-type="bibr" rid="R17">Quick <italic>et al.</italic>, 2016</xref>), with questions such as lineage assignment and Variant of Concern/Variant under Investigation (VoC/VuI) status potentially being time sensitive (<xref ref-type="bibr" rid="R14">O’Toole <italic>et al.</italic>, 2021</xref>). In theory this can be accelerated by incrementally analysing reads as they are created, a feature unique to ONT sequencers that we exploit here.</p>
+<p id="P4">In our work as members of the COG-UK network (<xref ref-type="bibr" rid="R2">COVID-19 Genomics UK (COG-UK) consortiumcontact@cogconsortium.uk, 2020</xref>), we generated thousands of SARS-CoV2 consensus sequences using ONT sequencers. To assess sequencing performance in real-time, we used minoTour, our real time analysis and monitoring system (<xref ref-type="bibr" rid="R12">Munro <italic>et al.</italic>, 2021</xref>) (<ext-link ext-link-type="uri" xlink:href="https://github.com/looselab/minotourapp">https://github.com/looselab/minotourapp</ext-link>), to track the performance of each sequencing run. Given that ONT flow cells, even using barcodes, can provide more data than required for an individual viral genome, it makes sense to stop sequencing once sufficient data are available for the analysis to be completed. Shorter sequencing runs preserve flow cell health, which can then be flushed and reused for other sequencing libraries and experiments. If efficiently implemented, this can reduce the cost per sample for sequencing. We therefore integrated these capabilities into minoTour.</p>
+<p id="P5">The ARTIC Network (<xref ref-type="bibr" rid="R20">Tyson <italic>et al.</italic>, 2020</xref>; <xref ref-type="bibr" rid="R16">Quick <italic>et al.</italic>, 2017</xref>) (<ext-link ext-link-type="uri" xlink:href="https://artic.network">https://artic.network</ext-link>) provides comprehensive protocols for both wet lab and downstream state-of-the-art best practice informatics analysis for SARS-CoV2. The optimal ARTIC pipeline uses Nanopolish (<xref ref-type="bibr" rid="R10">Loman <italic>et al.</italic>, 2015</xref>; <xref ref-type="bibr" rid="R16">Quick <italic>et al.</italic>, 2017</xref>) for signal level analysis of Nanopore data during variant calling. As an alternative to Nanopolish, ARTIC provides medaka, a machine learning pipeline which only requires FASTQ data (<ext-link ext-link-type="uri" xlink:href="https://github.com/nanoporetech/medaka">https://github.com/nanoporetech/medaka</ext-link>). As signal level data are unavailable within minoTour, we integrated the ARTIC medaka workflow to enable real-time generation of consensus genomes in parallel with sequence data generation. This contrasts with other web based analysis platforms which either do not exploit the real-time features of the nanopore platform or do not have access to the sequence data themselves for further analysis (<xref ref-type="bibr" rid="R4">Ferguson <italic>et al.</italic>, 2021</xref>; <xref ref-type="bibr" rid="R1">Bruno <italic>et al.</italic>, 2021</xref>). The ARTIC network provides a tool, RAMPART, which can monitor a run over time and complete analysis for individual samples, but does not provide many of the other features shown here at this time (<ext-link ext-link-type="uri" xlink:href="https://artic.network/rampart">https://artic.network/rampart</ext-link>).</p>
+<p id="P6">To enable automatic consensus generation minoTour uses a real-time predictive model for viral genome sequence coverage. Combining this with the ARTIC medaka pipeline, we can exploit the real-time features of Nanopore sequencing and demonstrate significant savings in run time, with resultant cost savings from flow cell reuse as well as faster identification of VoC/VuI’s in specific samples. MinoTour alerts the user through the Twitter API that a run can be stopped as well as providing visual feedback on the website that further sequencing may be a waste. The user can then use minoTour’s detailed breakdowns and visualisations of the ongoing sequencing run to make an informed decision on when to stop the run. Whilst this step could be automated, we have not implemented this as specific individual samples may be important enough that the user wishes for a run to continue, even with the reduction in useful data being generated.</p>
+<p id="P7">We analyse the impact that stopping runs early may have on the generation of consensus genomes for samples by comparing the consensus sequences for 454 SARS-nCoV-2 samples assembled by both the medaka and nanopolish pipelines, investigating Phylogenetic Assignment of Named Global Outbreak (PANGO) lineage assignment, VoC/VuI assignment, as well as SNP calls for each sample at relevant timepoints during the run. We find a small loss of coverage from the last sample to complete on an individual flow cell. However, PANGO lineages and VoC/VuI assignments are all concordant within our 454 samples at all time points with both Nanopolish or Medaka based pipelines. Some SNP differences are observed, but these are predominantly ambiguous no calls (i.e an N at an individual position) rather than miss-calls.</p>
+</sec>
+<sec id="S4">
+<title>Implementation</title>
+<sec id="S5">
+<title>minoTour - A real-time LIMS system</title>
+<p id="P8">MinoTour is free and open source software, written in python using the Django framework (see Munro et al). A separate command line client, minFQ (available via PyPi), uploads sequence data and sequencer metrics from the sequencing computer to the minoTour server. Once sequence data arrives, minoTour stores it in memory until it can be processed. Once processed and analysed, any sequence data are usually discarded, although they can optionally be stored in a database. Produced metrics are always stored in the database and visualised in the browser. MinoTour is compatible with Oxford Nanopore MinION and GridION sequencers and can process FASTQ files as generated by the Guppy base caller.</p>
+</sec>
+<sec id="S6">
+<title>Arctic Pipeline implementation</title>
+<p id="P9">Our ARTIC based SARS-CoV2 python pipeline is executed as a Celery (<ext-link ext-link-type="uri" xlink:href="https://docs.celeryproject.org/en/stable/">https://docs.celeryproject.org/en/stable/</ext-link>) task, processing read batches pulled from minoTours memory cache. The pipeline is asynchronous, preventing blocking of any other analyses being performed. Reads are first filtered by length, with the minimum and maximum l calculated from the mean length of all amplicons in the scheme, plus/minus 50%, respectively. Reads are also filtered by the QC score assigned by Guppy, with only passing reads (Q score &gt; 9, see Guppy release notes) being used in further analysis. The filtered reads are then mapped to an appropriate SARS-CoV-2 reference using minimap2 (<xref ref-type="bibr" rid="R9">Li, 2018</xref>). A numpy array of the length of the reference is created for each barcode as it is identified, and per base coverage is tracked using the mapped reads in real-time (<xref ref-type="bibr" rid="R21">van der Walt <italic>et al.</italic>, 2011</xref>).</p>
+<p id="P10">Coverage is tracked for each individual amplicon as defined by the primer scheme in use. Default parameters for triggering the analysis of a specific sample are at least 90% of the amplicons (completeness) covered at a median depth of at least 20x (coverage), but this can be changed by the user depending on requirements. Once this threshold has been passed, the accumulated mapped reads for that sample are passed to the ARTIC network medaka pipeline. The user can apply multiple coverage and completeness thresholds, re-triggering the analysis if more data becomes available. Varying primer schemes can be chosen, including custom schemes, simply by creating the appropriate primer scheme and reference files and uploading them to minoTour.</p>
+<p id="P11">Once a consensus genome is available for a sample, minoTour uses pangolin (<xref ref-type="bibr" rid="R14">O’Toole <italic>et al.</italic>, 2021</xref>) to assign a PANGO lineage from the most recent lineage classifications. After this step, the consensus sequence is compared with the current VoC/VuI definitions as defined by Public Health England (<ext-link ext-link-type="uri" xlink:href="https://github.com/phe-genomics/variant_definitions">https://github.com/phe-genomics/variant_definitions</ext-link>) using the Aln2Type tool (<ext-link ext-link-type="uri" xlink:href="https://github.com/connor-lab/aln2type">https://github.com/connor-lab/aln2type</ext-link>). Both PANGO lineages and VoC/VuI designations are automatically updated daily by minoTour. Together, these generate a report for each sample (see <xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1C,D</xref>) and optionally the user can be notified if a VoC/VuI has been identified via the Twitter API. Finally, the sequences within each run are globally aligned using MAFFT (<xref ref-type="bibr" rid="R8">Katoh <italic>et al.</italic>, 2002</xref>) and an illustrative tree generated using iQ-Tree (<xref ref-type="bibr" rid="R11">Minh <italic>et al.</italic>, 2020</xref>) and visualised with figtree.js or ToyTree (<xref ref-type="bibr" rid="R3">Rambaut; Eaton, 2020</xref>). Additional background sequences can be included in these trees if desired and the distribution of SNPs within consensus sequences from the run compared with the reference are displayed in a snipit plot (<ext-link ext-link-type="uri" xlink:href="https://github.com/aineniamh/snipit">https://github.com/aineniamh/snipit</ext-link>) (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1A</xref>). Links out from minoTour are provided to <ext-link ext-link-type="uri" xlink:href="http://cov-lineages.org">http://cov-lineages.org</ext-link> and <ext-link ext-link-type="uri" xlink:href="http://outbreak.info">http://outbreak.info</ext-link> for each specific variant identified as well as to the individual descriptors and data sources used to determine VoC/VuI classifications.</p>
+<p id="P12">Results from the pipeline are maintained for historical record, with files stored on disk and metrics about the ARTIC sequencing experiment stored in a SQL database. These results are then visualised in the minoTour web server (discussed below). At any point, the user can choose to fire the ARTIC pipeline on one or all samples to investigate specific samples in more detail. Once a run has completed, automatically recognised by the fact that no further data are added to the flow cell within a fixed period of time, all analyses are automatically re-run to ensure maximum coverage for consensus generation. A retention policy for sequence data is set globally for the site and all read data can be automatically scrubbed from the server after consensus generation, if desired.</p>
+</sec>
+<sec id="S7">
+<title>Amplicon coverage prediction model</title>
+<p id="P13">MinoTour predicts if individual samples are likely to result in an informative genome sequence, requiring no prior knowledge about sample numbers loaded on to an individual flow cell. MinoTour assumes the user is seeking minimal useful genome completeness (default 90% amplicons with at least 20X median “pass” read coverage). By using median depth, the impact of small insertions/deletions influencing our assessment of low coverage amplicons is reduced. The median coverage is only calculated for unique regions of each amplicon, excluding overlap to prevent artificial coverage inflation on schemes that contain amplicons with more than 50% overlap with neighbours. For making predictions, we assume that an ONT flow cell can generate at least 100,000 reads for each barcoded sample loaded and so project if each sample will reach minimal useful completeness. Our model’s algorithm is applied to each amplicon in the scheme (Equation 1). A sample is projected to finish if 90% of the amplicons have a predicted final coverage over the minimum required coverage (default 20X). All sequencing runs gather data for 1 hour before any of our strategies are used to ensure reasonable sampling of the loaded library. <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>m</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>c</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>m</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>s</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>×</mml:mo>
+<mml:mi>N</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>b</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>o</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>i</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mn>100</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>000</mml:mn>
+<mml:mo>≥</mml:mo>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>q</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mi>c</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>g</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P14">
+<bold>Equation 1</bold> - Used to predict if an amplicon will achieve the minimum required coverage during a run.</p>
+</sec>
+<sec id="S8">
+<title>ARTIC visualisations and reporting</title>
+<p id="P15">Once the pipeline is underway, a new tab is added to the respective flow cell page, containing all data and visualisations pertaining to this ARTIC run (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1</xref>). The tab contains two sections of visualisations, with the top visualisations (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1A,B</xref>) showing the performance of all samples in the run, and the bottom section visualising a detailed performance for an individual sample. The visualised metrics include a bar chart displaying the read count for all barcoded samples, a bar chart displaying the mean read length of each sample in the run and the proportion of reads in the run that are unclassified vs. classified.</p>
+<p id="P16">Below this a sortable and searchable summary table showing users metrics about each sample in the run, with average coverage, number of amplicons at &gt;20X, &gt;1X and 0X and basic statistics such as mean read length and read count displayed. If the sample has sufficient data to be run through the ARTIC pipeline, we display the assigned lineage and VoC/VoI status, and colour code the table row to indicate the sample has completed.</p>
+<p id="P17">If a sample is selected to display more information, visualisations display a per base coverage across the sample genome, with plot bands displaying the primer schemes amplicon coordinates that the sequencing library was amplified with. Assigned PANGO lineage information is provided, with links out to further information describing each lineage (<ext-link ext-link-type="uri" xlink:href="https://cov.lineages.org">htpps://cov.lineages.org</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://outbreak.info">https://outbreak.info</ext-link>). The VoC/VuI report generated by Aln2Type is visualised and the final status assigned displayed. A PDF report for each barcode and the overall run can be exported, showing all above metrics for each barcode (<xref ref-type="supplementary-material" rid="SD1">Supplementary File 1</xref>).</p>
+<p id="P18">At the completion of a sequencing run, consensus sequence, pass and fail VCF files, BAM files and pangolin lineages can be downloaded. Optionally, these features can be disabled and minoTour will remove all files that may contain identifiable information from the server. By maintaining compatibility with standard ARTIC bioinformatics pipelines, this tool can be adapted to run any ARTIC compatible pathogen analysis simply by uploading the appropriate reference files.</p>
+</sec>
+<sec id="S9">
+<title>Post Run Genome Analysis</title>
+<p id="P19">To investigate how manipulating run time affects results, we defined three timepoints of interest for a sample during a sequencing run. The full run time (FR), the run until time (RU) and the stop at time (SA). FR is defined as the time point at which the run completed with no intervention. RU is the point in a run where all samples our algorithm predicted would complete (90% completeness, 20X) had done so. Finally, SA is the point at which an individual sample in a run reached sufficient completeness and is automatically put through the ARTIC pipeline by minoTour, whilst the run continues.</p>
+<p id="P20">To create consensus genomes from time points equivalent to our ARTIC pipeline and compare the results of both medaka and nanopolish we had to identify both the signal (FAST5) and FASTQ files equivalent to those minoTour would see. We mapped all reads from each barcode across all 13 reference ARTIC runs using minimap2 (<xref ref-type="bibr" rid="R9">Li, 2018</xref>) in file creation order. Using mosdepth (<xref ref-type="bibr" rid="R15">Pedersen and Quinlan, 2018</xref>) we determined coverage at each base across the reference genome and then median coverage for each amplicon using the same approach as in minoTour. This identifies the time points when sufficient data are available to trigger minoTour to analyse the genomes. The creation time point for the FASTQ file that results in sufficient coverage to meet the appropriate thresholds identifies the time in the sequencing run when analysis would occur. Using this method, we can identify the equivalent FAST5 files enabling us to analyse the data with both medaka and nanopolish. The code to generate this analysis is available from <ext-link ext-link-type="uri" xlink:href="https://github.com/LooseLab/artic-minotour-analyses-scripts">https://github.com/LooseLab/artic-minotour-analyses-scripts</ext-link>. For each of these timepoints, we generated consensus FASTA files to calculate genome recovery, defined as the proportion of non N positions in the final sequence. Whilst this is not a direct comparison to our completeness metric, it is a close approximation, as any base that has 20X coverage going into the ARTIC medaka pipeline will most likely be called as non N.</p>
+</sec>
+</sec>
+<sec id="S10" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<sec id="S11">
+<title>Amplicon coverage prediction model performance</title>
+<p id="P21">The amplicon prediction model performed well across all runs (<xref ref-type="fig" rid="F1">Figure 1A</xref>, R<sup>2</sup>=0.991). The model is conservative and underestimates true coverage, preventing waiting for genomes to complete which would never do so. Predicted genome recovery after an hour of data collection compares well with that observed at the calculated RU times for the 13 runs (<xref ref-type="fig" rid="F1">Figure 1B</xref>). The strong correlation (R<sup>2</sup>=0.993) between predicted values and values actually recovered provides confidence in our algorithms performance. Comparing the RU stop time genome coverage with the FR coverage (<xref ref-type="fig" rid="F1">Figure 1C</xref>) shows some small further benefits in coverage (R<sup>2</sup>=0.996). This is expected as continuing the run for longer allows the missing 10% of each genome to acquire some further coverage. However the longer a run continues the more this return diminishes, so stopping earlier accelerates time to answer as well as allowing the flow cell to be reused and so reduce cost. In addition, only the last genome to complete is typically affected. This can be seen more clearly (<xref ref-type="fig" rid="F1">Figure 1D</xref>, R<sup>2</sup>=0.994) when filtering out those runs where no time is saved by our model. Genomes from these runs have the same RU and FR time, and so are identical by definition.</p>
+<p id="P22">Our model predicts if a sample will generate sufficient data to provide useful information with enough accuracy to support a decision on whether or not to continue sequencing. There is a potential small loss in data as a consequence of reducing the sequencing time. We therefore quantify the consequences of this on time saved, lineage assignment and SNP calling below.</p>
+</sec>
+<sec id="S12">
+<title>Run until time saving</title>
+<p id="P23">To quantify the time savings offered by our run until approach, we tracked metrics and predicted amplicon coverages per barcoded genome sample using minoTour for 13 sequencing runs. We plotted the time we would stop a run according to our model and the full length of the run (<xref ref-type="fig" rid="F2">Figure 2A</xref>). Runs 9 through 13 were actively monitored with minoTour and manually stopped at earlier run times in response to the model predictions. Time savings using this approach are dependent on the sample composition, but are often significant (for example, Run 4, <xref ref-type="fig" rid="F2">Figure 2A</xref>). Time savings are greater in runs with fewer samples as each has relatively more sequencing capacity available as can be seen in <xref ref-type="fig" rid="F2">Figure 2B-N</xref>.</p>
+</sec>
+<sec id="S13">
+<title>Genome recovery</title>
+<p id="P24">We next investigated the impact of stopping a run early on genome recovery. The number of genomes predicted to finish after one hour of sequencing with 20x median coverage across 90% of amplicons is very similar to those that actually do so (331/334 genomes predicted to finish do so, whilst 3/174 genomes not predicted to finish do, see <xref ref-type="fig" rid="F3">Figure 3A</xref>). Where we predict more samples finish than will do so (e.g Run 2, Run 7, Run 11) no time savings are possible as minoTour will wait for these samples to complete before recommending stopping the run. In all cases this is caused by samples reaching a completeness just short of the 90% threshold but theoretically being able to complete given more reads. These nuances are not yet fully captured in our model and so users can fine tune these parameters as they need.</p>
+<p id="P25">
+<xref ref-type="fig" rid="F3">Figure 3B</xref> shows samples recovered at RU vs FR, wth 90% genome coverage. In almost all cases, we capture as much genomic data when stopping the run early as we would have by continuing sequencing. In only one case, Run 4, two samples failed to reach the maximum possible coverage. This was an artifact of marginal gains in sample coverage from allowing the run to continue for longer. Of course, if the user varies the minimum completeness of the genome required, the behaviour changes. <xref ref-type="fig" rid="F3">Figure 3C</xref> illustrates genome recovery when specifying only 50% of amplicons are covered at a median depth of 20x. Only one run (Run 3) had a difference between samples recovered at RU and the FR timepoints.</p>
+</sec>
+<sec id="S14">
+<title>Lineage and SNP calling analysis</title>
+<sec id="S15">
+<title>Lineage assignment to consensus genomes</title>
+<p id="P26">Across all 13 sequencing runs, a total of 508 SARS-CoV-2 genomes were sequenced (including negative and positive controls). Of these, 456 produced genomes with both medaka and nanopolish ARTIC pipelines at FR, 454 produced genomes at RU and 335 genomes were produced at SA. The two additional genomes at the FR time are both extremely low completeness genomes (only 1% of the genome has consensus sequence) that failed to call at the RU time. Across all time points for any given sample in any run, we observe complete concordance in lineage assignment between either medaka or nanopolish analysed genomes (<xref ref-type="supplementary-material" rid="SD2">Supplementary File 2</xref>). Any loss of data seen by stopping sequencing early did not impact PANGO lineage assignment in a SARS-CoV-2 sequencing run. We note that these sequences are predominantly from the B.1.1.7 lineage due to the timeframe in which they were collected, but given our observations on SNP calling below do not envisage this being an issue.</p>
+</sec>
+<sec id="S16">
+<title>Comparing SNPs between medaka and nanopolish consensus genomes</title>
+<p id="P27">We compared nanopolish and medaka consensus genome sequences for each genome in our data set (1,245 genomes from 456 unique samples) constructed from all three timepoints (FR, RU and SA) (<xref ref-type="fig" rid="F4">Figure 4A-C</xref>). The SNPs were called using nextclade (<ext-link ext-link-type="uri" xlink:href="https://clades.nextstrain.org">https://clades.nextstrain.org</ext-link>) with the output data available in <xref ref-type="supplementary-material" rid="SD3">Supplementary Files 3</xref> and <xref ref-type="supplementary-material" rid="SD4">4</xref>. From all 13 runs, 456 unique samples generated a consensus genome at FR with both medaka and nanopolish (<xref ref-type="fig" rid="F4">Figure 4A</xref>). 341 of these samples were identical between the two pipelines. The remaining 115 genomes have at least one difference in the consensus sequence. The majority of these are where either medaka or nanopolish are unable to confidently call a site and so assigns an ambiguous base (N). Of more concern, there are some sites which are incorrectly assigned as a reference call by medaka. On closer inspection, the majority of these are for one single site in the genome at position 28,111 (<xref ref-type="fig" rid="F4">Figure 4I</xref>). At the RU timepoint, a similar pattern is observed with a small increase in the number of ambiguous (N) sites, most likely a consequence of the slightly lower coverage data available (<xref ref-type="fig" rid="F4">Figure 4B</xref>). At the most extreme, the SA time, the number of ambiguous sites increases further (<xref ref-type="fig" rid="F4">Figure 4C</xref>). It is worth noting that on any multiplexed run, only one sample ever finishes at this time point. All other samples, by definition, are complete at the RU timepoint and so are expected to be of higher quality. Thus the majority of SNP differences between medaka and nanopolish are differences in ambiguous calls.</p>
+</sec>
+<sec id="S17">
+<title>Comparing SNPs between timepoints with medaka and nanopolish</title>
+<p id="P28">To determine if stopping a run early was detrimental to calling SNPs using either pipeline, we compared SNP calls between the FR and RU, and FR and SA timepoints for genomes produced by both medaka and nanopolish (<xref ref-type="fig" rid="F4">Figure 4D-G</xref>). As expected, the vast majority of these differences are conservative ambiguous (N) calls when less sequencing data are available for consensus generation. Nanopolish appears more conservative in this regard resulting in more ambiguous calls than medaka. We find one site, 913, for which Nanopolish rarely can call a SNP at lower coverage, but changes to an ambiguous call at higher depth</p>
+<p id="P29">SNIPIT plots illustrating the differences between genomes (<xref ref-type="fig" rid="F4">Figure 4H,I</xref>) provide examples of the various SNP artifacts caused by changes in coverage and pipeline. Of concern are those positions where a reference site is called when a SNP is likely present (<xref ref-type="fig" rid="F4">Figure 4I</xref>). This is most common at position 28,111 (53/69 occurrences) and rare elsewhere in the genome. Overall, we find that medaka is sufficient for variant calling and lineage assignment, but in our workflows we routinely ran both pipelines for confirmation. Handling signal data in minoTour is not currently feasible, excluding the nanopolish pipeline from our analyses.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S18" sec-type="conclusions">
+<title>Conclusions</title>
+<p id="P30">The use of real-time sequencing has been proposed as a key component of pathogen surveillance during disease outbreaks (<xref ref-type="bibr" rid="R5">Gardy and Loman, 2018</xref>). The SARS-CoV2 pandemic has seen the development of new tools and enhancement of existing approaches for collating, sharing and analysing sequence data at local, national and international scales (<xref ref-type="bibr" rid="R13">Nicholls <italic>et al.</italic>, 2021</xref>; <xref ref-type="bibr" rid="R2">COVID-19 Genomics UK (COG-UK) consortiumcontact@cogconsortium.uk, 2020</xref>; <xref ref-type="bibr" rid="R19">Shu and McCauley, 2017</xref>; <xref ref-type="bibr" rid="R6">Hadfield <italic>et al.</italic>, 2018</xref>). Portable sequencers, such as those developed by Oxford Nanopore, can be readily deployed in the field and samples can be sequenced anywhere. Excellent analysis pipelines are available to generate consensus genomes, but even though well documented, can be beyond some users to apply (<xref ref-type="bibr" rid="R20">Tyson <italic>et al.</italic>, 2020</xref>). Here we show how our existing Nanopore toolset, minoTour, can be extended to include real-time analysis using the best available practices for SARS-CoV2 sequencing.</p>
+<p id="P31">By formalising a model predicting likely coverage per sample, we enable the user to predict the performance of a sequencing run and better determine when to stop sequencing. This approach leads to cost and time savings in many instances. Benefits of centralising analysis include standardisation of analysis pipelines as well as the opportunity to incorporate additional reporting such as lineage and VoC/VuI assignment as well as linking out to useful further resources. The generation of consensus sequence and lineage assignment happens during the sequencing run, enabling the potential for rapid feedback of results if required.</p>
+<p id="P32">MinoTour can be installed on a single laptop/computer running sequencing or can be run as a central hub with data uploaded by multiple devices concurrently. Docker and standard Django installation instructions are available. In our experience, a laptop powerful enough to run a nanopore sequencer with real time base-calling is sufficient to also run minoTour. The exception to this is the minIT/MK1C device which cannot be configured to run minoTour at present. However, these can be used with the minFQ client for data upload. Thus minoTour can serve as a hub for data collection from multiple sites. We have engineered the ARTIC pipeline in minoTour such that any ARTIC compatible primer scheme can be incorporated and used for analysis. As proof of principle we have tested this with multiple SARS-CoV2 schemes as well as using historical data from studies of Ebola (<xref ref-type="bibr" rid="R17">Quick <italic>et al.</italic>, 2016</xref>). A single instance of minoTour can run multiple ARTIC pipelines tailored for specific pathogens, although additional features such as PANGO lineage assignment and variant detection pipelines are pathogen specific. Uniquely, and in contrast to other tools, minoTour exploits almost all the real-time features of the Nanopore sequencing platform for maximising ARTIC sequencing speed and simplifying analysis.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary File 1</label>
+<media xlink:href="EMS135007-supplement-Supplementary_File_1.gz" mimetype="application" mime-subtype="gzip" id="N66469" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary File 2</label>
+<media xlink:href="EMS135007-supplement-Supplementary_File_2.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66478" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary File 3</label>
+<media xlink:href="EMS135007-supplement-Supplementary_File_3.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66487" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Supplementary File 4</label>
+<media xlink:href="EMS135007-supplement-Supplementary_File_4.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66496" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD5">
+<label>Supplementary Information</label>
+<media xlink:href="EMS135007-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N66505" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S19">
+<title>Acknowledgements</title>
+<p>Thanks to John Tyson and members of the COG-UK Consortium for helpful comments on early prototypes of the code presented here.</p>
+<sec id="S20">
+<title>Funding</title>
+<p>Work on minoTour has been funded by BBSRC (BB/M020061/1) as well as additional support from the Defence Science and Technology Laboratory (DSTLX-1000138444). RM is supported by a BBSRC iCASE studentship. The sequencing data used to develop the ARTIC components of minoTour were generated as part of COG-UK, itself supported by funding from the Medical Research Council (MRC) part of UK Research &amp; Innovation (UKRI), the National Institute of Health Research (NIHR) [grant code: MC_PC_19027], and Genome Research Limited, operating as the Wellcome Sanger Institute.</p>
+</sec>
+</ack>
+<sec id="S21" sec-type="data-availability">
+<title>Availability and Implementation</title>
+<p id="P33">Source code and documentation is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/LooseLab/minotourapp">https://github.com/LooseLab/minotourapp</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P34">Conflict of Interest:</p>
+<p id="P35">ML was a member of the MinION access program and has received free flow cells and sequencing reagents in the past. ML has received reimbursement for travel, accommodation and conference fees to speak at events organized by Oxford Nanopore Technologies.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bruno</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2021</year>
+<article-title>BoardION: real-time monitoring of Oxford Nanopore sequencing instruments</article-title>
+<source>BMC Bioinformatics</source>
+<volume>22</volume>
+<fpage>245</fpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<collab>COVID-19 Genomics UK (COG-UK) <email>consortiumcontact@cogconsortium.uk</email>
+</collab>
+<year>2020</year>
+<article-title>An integrated national scale SARS-CoV-2 genomic surveillance network</article-title>
+<source>Lancet Microbe</source>
+<volume>1</volume>
+<fpage>e99</fpage>
+<lpage>e100</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eaton</surname>
+<given-names>DAR</given-names>
+</name>
+</person-group>
+<year>2020</year>
+<article-title>Toytree: A minimalist tree visualization and manipulation library for Python</article-title>
+<source>Methods Ecol Evol</source>
+<volume>11</volume>
+<fpage>187</fpage>
+<lpage>191</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ferguson</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2021</year>
+<article-title>InterARTIC: an interactive web application for whole-genome nanopore sequencing analysis of SARS-CoV-2 and other viruses</article-title>
+<source>bioRxiv</source>
+<elocation-id>2021.04.21.440861</elocation-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gardy</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Loman</surname>
+<given-names>NJ</given-names>
+</name>
+</person-group>
+<year>2018</year>
+<article-title>Towards a genomics-informed, real-time, global pathogen surveillance system</article-title>
+<source>Nat Rev Genet</source>
+<volume>19</volume>
+<fpage>9</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2018</year>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<volume>34</volume>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2016</year>
+<article-title>The Oxford Nanopore MinION: delivery of nanopore sequencing to the genomics community</article-title>
+<source>Genome Biol</source>
+<volume>17</volume>
+<fpage>239</fpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2002</year>
+<article-title>MAFFT: a novel method for rapid multiple sequence alignment based on fast Fourier transform</article-title>
+<source>Nucleic Acids Res</source>
+<volume>30</volume>
+<fpage>3059</fpage>
+<lpage>3066</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<year>2018</year>
+<article-title>Minimap2: pairwise alignment for nucleotide sequences</article-title>
+<source>Bioinformatics</source>
+<volume>34</volume>
+<fpage>3094</fpage>
+<lpage>3100</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Loman</surname>
+<given-names>NJ</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2015</year>
+<article-title>A complete bacterial genome assembled de novo using only nanopore sequencing data</article-title>
+<source>Nat Methods</source>
+<volume>12</volume>
+<fpage>733</fpage>
+<lpage>735</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Minh</surname>
+<given-names>BQ</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2020</year>
+<article-title>IQ-TREE 2: New Models and Efficient Methods for Phylogenetic Inference in the Genomic Era</article-title>
+<source>Mol Biol Evol</source>
+<volume>37</volume>
+<fpage>1530</fpage>
+<lpage>1534</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Munro</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2021</year>
+<article-title>MinoTour, real-time monitoring and analysis for Nanopore Sequencers</article-title>
+<source>bioRxiv</source>
+<elocation-id>2021.09.10.459783</elocation-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nicholls</surname>
+<given-names>SM</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2021</year>
+<article-title>CLIMB-COVID: continuous integration supporting decentralised sequencing for SARS-CoV-2 genomic surveillance</article-title>
+<source>Genome Biol</source>
+<volume>22</volume>
+<fpage>196</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2021</year>
+<article-title>Assignment of epidemiological lineages in an emerging pandemic using the pangolin tool</article-title>
+<source>Virus Evolution</source>
+<fpage>veab064</fpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedersen</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>Quinlan</surname>
+<given-names>AR</given-names>
+</name>
+</person-group>
+<year>2018</year>
+<article-title>Mosdepth: quick coverage calculation for genomes and exomes</article-title>
+<source>Bioinformatics</source>
+<volume>34</volume>
+<fpage>867</fpage>
+<lpage>868</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quick</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2017</year>
+<article-title>Multiplex PCR method for MinION and Illumina sequencing of Zika and other virus genomes directly from clinical samples</article-title>
+<source>Nat Protoc</source>
+<volume>12</volume>
+<elocation-id>1261</elocation-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quick</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2016</year>
+<article-title>Real-time, portable genome sequencing for Ebola surveillance</article-title>
+<source>Nature</source>
+<volume>530</volume>
+<fpage>228</fpage>
+<lpage>232</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>figtree.js: Phylogenetic tree library for JavaScript/Node.js Github</source>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>McCauley</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<year>2017</year>
+<article-title>GISAID: Global initiative on sharing all influenza data – from vision to reality</article-title>
+<source>Euro Surveill</source>
+<volume>22</volume>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tyson</surname>
+<given-names>JR</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2020</year>
+<article-title>Improvements to the ARTIC multiplex PCR method for SARS-CoV-2 genome sequencing using nanopore</article-title>
+<source>bioRxiv</source>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van der Walt</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<year>2011</year>
+<article-title>The NumPy Array: A Structure for Efficient Numerical Computation</article-title>
+<source>Computing in Science Engineering</source>
+<volume>13</volume>
+<fpage>22</fpage>
+<lpage>30</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Genome recovery at time points throughout all 13 runs.</title>
+<p>
+<bold>A)</bold> The percentage of sample amplicons predicted to reach 20X coverage by our model using data from one hour of sequencing, compared to the percentage of the genome recovered (Non N bases) at FR by ARTICs medaka pipeline. <bold>B)</bold> The percentage of sample amplicons predicted to reach 20X coverage by our model using data from one hour of sequencing, compared to the percentage of the genome recovered (Non N bases) at the RU timepoint by ARTICs medaka pipeline. <bold>C)</bold> The percentage of the genome recovered (Non N bases) by ARTICs medaka pipeline at FR compared against the same at RU. <bold>D)</bold> The percentage of the genome recovered (Non N bases) by ARTICs medaka pipeline at FR compared against the same at RU, filtered for runs that would have saved time.</p>
+</caption>
+<graphic xlink:href="EMS135007-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>
+<bold>A)</bold> The FR time point plotted alongside the RU time point as hours since the run started. <bold>B-N)</bold> Samples across the course of 13 runs showing the percentage of amplicons at 20x. Barcodes that we project to finish are displayed with solid lines, whilst barcodes we project not to finish are dashed. 90% (Our threshold for firing) is marked on each plot. Once all barcodes that are projected to finish cross the 90% threshold, we would instruct MinKNOW to stop the run. This time is marked by a solid blue vertical line.</p>
+</caption>
+<graphic xlink:href="EMS135007-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Genome completeness across 13 runs.</title>
+<p>
+<bold>A)</bold> Genomes predicted with one hours data to achieve 20x median coverage across 90% of amplicons compared with genomes that were recovered at 90% completeness (% non N bases) at FR, as a percentage of total genomes loaded onto flow cells. <bold>B)</bold> Genomes with 90% of amplicons covered at 20x median coverage at RU compared with genomes recovered at 90% genome completeness (% non N bases) at FR, as a percentage of total genomes loaded onto flow cells. <bold>C)</bold> Genomes recovered at 50% of amplicons covered at 20x at RU stop time compared with genomes recovered at 50% genome completeness (% non N bases) at FR as a percentage of total genomes loaded onto flow cells.</p>
+</caption>
+<graphic xlink:href="EMS135007-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Comparison of SNPs called from consensus genomes generated by ARTICs nanopolish and medaka pipelines.</title>
+<p>
+<bold>A-C)</bold> Comparison of sample SNPs from consensus genomes generated by medaka and nanopolish, at FR, RU and SA. Samples are split by the number of differing SNP calls between them, with the reason for differences colour coded into bars. <bold>D-G)</bold> Comparison of sample SNPs at FR and SA, and FR and RU, for consensuses generated by either medaka or nanopolish. Samples are split by the number of differing SNP calls between them, and the reason for the difference is colour coded into bars. <bold>H).</bold> SNIPIT plot of an example pair of consensus genomes, showing the nanopolish pipeline switch from a SNP to an N at position 913 with more data. <bold>I).</bold> SNIPIT plot showing an example pair of consensus genomes with nanopolish calling a SNP at position 28111 but medaka calling reference.</p>
+</caption>
+<graphic xlink:href="EMS135007-f004"/>
+</fig>
+</floats-group>
+</article>

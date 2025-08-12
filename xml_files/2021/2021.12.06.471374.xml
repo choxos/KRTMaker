@@ -1,0 +1,2391 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141106</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.06.471374</article-id>
+<article-id pub-id-type="archive">PPR429723</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Identifying protein sites contributing to vaccine escape via statistical comparisons of short-term molecular dynamics simulations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Rajendran</surname>
+<given-names>Madhusudan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Ferran</surname>
+<given-names>Maureen C.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Babbitt</surname>
+<given-names>Gregory A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR2">**</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Thomas H. Gosnell School of Life Sciences, Rochester Institute of Technology, Rochester, NY 14623, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence: <email>madhusudan.rajendran@gmail.com</email>
+</corresp>
+<corresp id="CR2">
+<label>**</label>Correspondence: <email>gabsbi@rit.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>14</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nd/4.0/">CC BY-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The identification of viral mutations that confer escape from antibodies is crucial for understanding the interplay between immunity and viral evolution. We describe a molecular dynamics (MD) based approach that scales well to a desktop computer with a high-end modern graphics processor and enables the user to identify protein sites that are prone to vaccine escape in a viral antigen. We first implement our MD pipeline to employ site-wise calculation of Kullback-Leibler divergence in atom fluctuation over replicate sets of short-term MD production runs thus enabling a statistical comparison of the rapid motion of influenza hemagglutinin (HA) in both the presence and absence of three well-known neutralizing antibodies. Using this simple comparative method applied to motions of viral proteins, we successfully identified <italic>in silico</italic> all previously empirically confirmed sites of escape in influenza HA, predetermined via selection experiments and neutralization assays. Upon the validation of our computational approach, we then surveyed potential hot spot residues in the receptor binding domain of the SARS-CoV-2 virus in the presence of COVOX-222 and S2H97 antibodies. We identified many single sites in the antigen-antibody interface that are similarly prone to potential antibody escape and that match many of the known sites of mutations arising in the SARS-CoV-2 variants of concern. In the omicron variant, we find only minimal adaptive evolutionary shifts in the functional binding profiles of both antibodies. In summary, we provide a fast and accurate computational method to monitor hot spots of functional evolution in antibody binding footprints.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">In current attempts to prevent the spread of the Coronavirus disease 2019 (COVID-19) pandemic, caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), clinicians and scientists have focused their efforts on the development of vaccines that are hoped to induce broad, long-lasting, neutralizing antibodies. However, the selective pressures imposed by the presence of the neutralizing antibodies in the host population can also drive the evolution of viruses towards adaptations that allow them to escape neutralization. For example, in the case of influenza viruses, immunity is provided by antibodies that target the hemagglutinin (HA), responsible for viral attachment and viral fusion to the host cell. However, these antibodies drive selection for amino acid substitutions in the HA, causing the influenza virus to rapidly evolve every year (<xref ref-type="bibr" rid="R1">1</xref>). Similarly, the antibody selection by the host immune system can also drive the emergence of new SARS-CoV-2 variants. Therefore, when developing vaccines that elicit antibodies against a broad range of strains, research efforts should also be aimed at identifying potential mutations that can facilitate viral escape from the neutralization effects of specific antibodies (<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R3">3</xref>).</p>
+<p id="P3">The traditional approach to identifying these mutations is by passaging the virus in the presence of antibodies in a directed selection experiment, followed by validation of the variants that arise with neutralization assays. For example, in influenza viruses, escape mutant selection using a panel of monoclonal antibodies (mAbs) was used to identify the five major antigenic regions, Sa, Sb, Ca1, Ca2, and Cb (<xref ref-type="bibr" rid="R4">4</xref>-<xref ref-type="bibr" rid="R6">6</xref>). However, a significant drawback of this approach is that the directed selection typically only favors one of the many potential mutations that can escape a given antibody. Another approach is to test antibody binding to a panel of viral variants. In a typical 500 residue viral protein, there are about 10<sup>4</sup> potential single amino acid mutants (<xref ref-type="bibr" rid="R7">7</xref>). Creating all individual mutants and then testing the mutants against the antibodies is an impossible task, thus causing researchers to limit themselves to exploring only a small portion of protein space (e.g., examining only mutations to alanine) (<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>). Such studies cannot give a complete picture of the mutational spectra that can allow a virus to escape neutralization by a given antibody (<xref ref-type="bibr" rid="R10">10</xref>).</p>
+<p id="P4">Functional evolutionary studies of viral vaccine escape are often supplemented with protein structural determination via x-ray crystallography or cryogenic electron microscopy. While structural biology can provide a static image of how an antibody physically contacts a viral protein, it cannot provide complete information regarding which amino acid sites are more prone to single replacement mutations (i.e. hot-spot sites or residues). Prediction of hot-spot residues is crucial as these sites on the antibody-antigen complex have a strong propensity to disrupt binding interactions within the antibody-antigen interface (<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R12">12</xref>). Recently, it has been demonstrated, via site-directed selection experiments and neutralization assays, that these hot-spot regions share a common biophysical feature. They all tend to harbor single amino acid sites that have significant large affects upon binding interactions in the antibody-antigen interface (<xref ref-type="bibr" rid="R13">13</xref>). Given this common feature of hot-spot residues, we hypothesize that some simple analyses of computer-based dynamics simulations of the antibody-antigen interface might help predict potential vaccine escape mutations before they happen, allowing for important functional context to real-time sequence-based surveillance of current and future pandemics.</p>
+<p id="P5">Here we utilize a relatively simple method of comparative statistical analysis of molecular dynamic (MD) simulations developed by our lab (DROIDS - Detecting Relative Outlier Impacts in Dynamic Simulation or DROIDS 4.0) that employs a site-wise Kullback-Leibler (KL) divergence metric and a multiple test corrected two sample Kolmogorov-Smirnov (KS) test to successfully validate previously known sites of antibody escape in the influenza HA (<xref ref-type="bibr" rid="R13">13</xref>–<xref ref-type="bibr" rid="R17">17</xref>). We then utilized our site-wise comparative MD approach to identify potential sites prone to antibody escape in the spike protein of SARS-CoV-2. Specifically, in the omicron variant we were able to identify sites in the receptor binding domain (RBD) that support the binding efficiency to two general neutralizing antibodies and its competitive binding to the natural receptor, human angiotensin-converting enzyme 2 (hACE2). In summary, we present a method to accurately identify hot-spot residues that are prone to single point mutations with large functional effects upon the antibody-antigen binding interface and thus are likely pre-adapted to allow for vaccine escape. Identifying such residues <italic>in silico</italic> will be essential for pre-screening the antigenic consequences of viral genetic variations and designing better vaccines that induce long-term and broadly neutralizing antibodies against viral pathogens.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>PDB structure, glycosylation, and model preparation</title>
+<p id="P6">The protein structures used for the primary models for analyzing the molecular dynamics of antibody interactions with HA and the SARS-CoV-2-RBD are listed in <xref ref-type="fig" rid="F1">Figure 1A</xref>. Any crystallographic reflections were removed along with any other small molecules used in crystallization. Hydrogens were added, and crystallographic waters were removed using pdb4amber (AmberTools18) (<xref ref-type="bibr" rid="R18">18</xref>). Glycosylation was deleted using the swapaa function in UCSF Chimera 1.14 (<xref ref-type="bibr" rid="R19">19</xref>). Predicted glycosylation were rebuilt for the Amber force field using the glycoprotein builder on the glycam.org webserver and the GLYCAM06j-1 force field (<xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R21">21</xref>). Any missing loop structure in the files was inferred via homology modeling using the ‘refine loop’ command to Modeler within UCSF Chimera (<xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R23">23</xref>). The globular head domain of the influenza HA is stable in its monomeric form. However, the stalk domain needs to be in a trimer to be stable (<xref ref-type="bibr" rid="R24">24</xref>). Therefore, MD simulations of PDB 4GMS was performed using trimmed (residues 57-270) monomeric form of the head domain. For MD simulations of the 3ZTJ and 4HLZ, the trimeric form of the stalk domain was used. The antibodies were trimmed, and only the heavy and light chains of the fragment antigen-binding (Fab) were used. Lastly, for the Omicron (B.1.1.529) variant simulations, we used the swapaa function to model the 15 RBD mutations onto 7OR9 (<xref ref-type="fig" rid="F4">Figure 4B</xref>).</p>
+</sec>
+<sec id="S4">
+<title>Molecular dynamics simulation protocols</title>
+<p id="P7">All comparative molecular dynamics analysis via our DROIDS pipeline was based upon 100 replicate sets of 1 nanosecond accelerated MD runs (i.e., 100x1ns MD runs in each comparative state, e.g., unbound vs. bound). MD simulations were conducted using the particle mesh Ewald method via accelerated MD (pmemd.cuda) in Amber18 and the ff14SB protein and GLYCAM06j-1 force fields and implemented on two RTX 2080 Ti graphics processor units controlled via Linux Mint 19 operating system (<xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R25">25</xref>-<xref ref-type="bibr" rid="R30">30</xref>). These replicate sets were preceded by energy minimization, 300 picoseconds of heating to 300K, and ten nanoseconds of equilibration, followed by random equilibration intervals for each replicate ranging from 0-0.5 nanoseconds. All protein systems were prepared via tLeAP (Ambertools18) and explicitly solvated, and charge neutralized with Na+ and Cl- ions in a Tip3P octahedral water box set to 12 nm beyond the surface of each protein with periodic boundaries (<xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R31">31</xref>). All simulations were regulated using the Anderson thermostat at 300K and one atmospheric pressure (<xref ref-type="bibr" rid="R32">32</xref>). Root mean square atom fluctuations and atom correlations were conducted in CPPTRAJ using the atomicfluct and atomicorr commands (<xref ref-type="bibr" rid="R33">33</xref>).</p>
+</sec>
+<sec id="S5">
+<title>Comparative protein dynamics analyses with DROIDS 4.0 and statistical analyses</title>
+<p id="P8">Comparative signatures of dampened atom fluctuation during antibody binding were presented as protein site-wise divergence in atom fluctuation in the antibody-bound versus unbound states for each viral target protein. Divergences were calculated using the signed symmetric Kullback-Leibler (KL) divergence calculation in DROIDS 4.0. Significance tests and p-values for these site-wise differences were calculated in DROIDS 4.0 using two-sample Kolmogorov-Smirnov tests with the Benjamini-Hochberg multiple test correction in DROIDS 4.0. The mathematical details of DROIDS 4.0 site-wise comparative protein dynamics analysis were published previously by our group and can be found here (<xref ref-type="bibr" rid="R14">14</xref>, <xref ref-type="bibr" rid="R15">15</xref>). This code is available at our GitHub web landing: <ext-link ext-link-type="uri" xlink:href="https://gbabbitt.github.io/DROIDS-4.0-comparative-protein-dynamics/">https://gbabbitt.github.io/DROIDS-4.0-comparative-protein-dynamics/</ext-link>, is also available at our GitHub repository <ext-link ext-link-type="uri" xlink:href="https://github.com/gbabbitt/DROIDS-4.0-comparative-protein-dynamics">https://github.com/gbabbitt/DROIDS-4.0-comparative-protein-dynamics</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<p id="P9">Using our comparative MD analysis pipeline (DROIDS 4.0), we successfully identified and validated previously known antibody escape sites in the head and stalk domains of the influenza HA. We then expanded the scope of our study to identify potential mutational sites prone to antibody escape in the spike protein of SARS-CoV-2 RBD and its recent omicron genetic variant.</p>
+<p id="P10">Initially, we applied a Mann-Whitney U-test to compare KL divergence values, generated using MD simulations, to amino acid residues with significant average fraction of variants surviving and non-significant average fraction of variants surviving in the presence of S139/1, (<xref ref-type="fig" rid="F1">Figure 1C</xref>) (<xref ref-type="bibr" rid="R13">13</xref>). In our comparative analyses of MD simulations, we found significantly higher KL divergence in the average fraction of variants surviving during directed selection (p &lt; 0.001), suggesting that our KL divergence metric might prove as a useful quantitative measure in discriminating sites with mutations leading to vaccine escape. We then applied our approach to anti-HA antibodies with a wide range of breadth against different influenza strains. S139/1 is a one such monoclonal antibody known to neutralize both group 1(H1, H2, H5, H9, and H13) and group 2 (H3) influenza viruses (<xref ref-type="fig" rid="F1">Figure 1B</xref>) (<xref ref-type="bibr" rid="R34">34</xref>). Crystallization studies have revealed that the antibody targets highly conserved residues in the RBD of the head domain (<xref ref-type="bibr" rid="R35">35</xref>) (<xref ref-type="fig" rid="F1">Figure 1B</xref>). Comparative MD simulations of HA bound to S139/1 and unbound have revealed strong dampening of atom fluctuations occurring at sites K156, G158, and N193 of the HA, with-KL divergence values -4.65 (D = 0.810, p &lt; 0.001), -5.81 (D = 0.895, p &lt; 0.001), and -4.81 (D = 0.807, p &lt; 0.001), respectively (<xref ref-type="fig" rid="F1">Figure 1A</xref> and <xref ref-type="fig" rid="F2">2A</xref>). Directed selection using mAb S139/1 revealed that these three residues are sites of strong escape (<xref ref-type="fig" rid="F2">Figure 2B</xref>) (<xref ref-type="bibr" rid="R13">13</xref>). As expected, the three amino acid residues with the highest negative KL divergence in our comparison of atom fluctuations from MD simulations also fall directly in the empirically determined physical binding footprint of the antibody. And they are the same three sites where previous works have selected escape mutants in the H1, H2, and H3 HAs (<xref ref-type="bibr" rid="R34">34</xref>, <xref ref-type="bibr" rid="R35">35</xref>). Residue 156 is a part of the 150 loop of the influenza HAand forms electrostatic interactions by inserting itself into the acidic pocket in the Fab formed by residues Glu<sup>H35</sup> and Glu<sup>H50</sup>. Another 150 loop binding determinant is residue 158, which has the largest dampening of atomic fluctuations. Gly158 is closely stacked on the light chain complementarity determining region 3 (LCDR3) of S139/1 and is further stabilized by a main chain hydrogen bond between S159 and Asn<sup>L92</sup>. Any mutations at these positions will cause clashes at the antibody interface. S139/1 also recognizes members of the 190 helix. In the residues of 190 helix, Asn193 plays a significant role in antibody recognition and is buried by heavy chain complementarity determining regions (HCDR) 1-3 of S139/1 (<xref ref-type="bibr" rid="R34">34</xref>). Furthermore, it should be noted that site 193 was known to interact with the host receptor molecule (sialic acid moiety), suggesting the contribution of this residue to receptor binding of HA (<xref ref-type="bibr" rid="R36">36</xref>, <xref ref-type="bibr" rid="R37">37</xref>). Therefore, isolates with mutated residues at site 193 have reduced viral fitness due to their inability to bind to the host receptors (<xref ref-type="bibr" rid="R38">38</xref>). Selective pressure created by S139/1 on residue 193 has other secondary effects on the virus, such as the reduced binding activity of the influenza virus.</p>
+<p id="P11">Lastly, with mAb S139/1, atomic fluctuation dampening is also seen in residues 133-134 of the influenza HA (<xref ref-type="fig" rid="F2">Figure 2A</xref>). These residues are part of the 130 loop of the HA, and make a significant portion of the RBD of the influenza virus. Lastly, in addition to atomic fluctuation dampening at residues 133-134 and at residues 156/158, we also see dampening at 145-147 (<xref ref-type="fig" rid="F2">Figure 2A</xref>). Upon further examination, there lie no epitopes of S139/1 between residues 145-147. Therefore, we believe that this dampening is an artifact caused purely by the residue’s location between two epitope sites (130 loop and 150 loop) of S139/1. In summary, the three sites determined to have the largest physical effect upon antibody binding in our simulations (i.e. showing the largest negative KL divergence) are exactly the same three sites most likely to evolve antibody escape under directed selection experiments.</p>
+<p id="P12">We also chose two broad antibodies that target the stalk domain of the HA (FI6v3 and C179) to further validate our computational approach to identify potential sites of escape. FI6v3 was first isolated by high-throughput screening of immortalized antibody-secreting cells and was found to bind to both group 1 (H1, H2, H5, H6, H8, H9, and H13) and group 2 (H3, H4, H7, and H10) viruses (<xref ref-type="fig" rid="F1">Figure 1B</xref>) (<xref ref-type="bibr" rid="R39">39</xref>). Antibody C179 was first isolated from a mouse that had been immunized with the H2N2 virus and was later found to cross-neutralize H1, H2, H5, H6, and H9 subtypes (<xref ref-type="fig" rid="F1">Figure 1B</xref>) (<xref ref-type="bibr" rid="R40">40</xref>). Both FI6v3 and C179 have epitopes that lie in the stalk domain and are known to interfere with membrane fusion (<xref ref-type="fig" rid="F1">Figure 1B</xref>). Our MD simulations do not reveal dampening of atomic fluctuations in the stalk domain in the presence of FI6v3 or C179. When we look at the difference in atomic fluctuations of the stalk antibodies on the same scale as S139/1, we only see a few sites with strong dampening (<xref ref-type="fig" rid="F2">Figures 2C and 2D</xref>).</p>
+<p id="P13">Antibody selection revealed very similar results as our MD simulation, with only few sites in the stalk domain with slightly increased fraction of variants surviving mAbs C179 and (<xref ref-type="bibr" rid="R13">13</xref>). As a result, the authors concluded that the stalk domain is less capable of escaping antibodies by single mutations (<xref ref-type="bibr" rid="R13">13</xref>). In the presence of FI6v3, both directed selection and MD simulation show a small bump at site 47 (KL = -2.41, D = 0.647, p &lt; 0.001) that is of importance (<xref ref-type="fig" rid="F1">Figures 1A</xref> and <xref ref-type="fig" rid="F2">2C</xref>) (<xref ref-type="bibr" rid="R13">13</xref>). Mutational studies have demonstrated that the introduction of E47R in the stalk domain has increased the resistance to FI6v3 (<xref ref-type="bibr" rid="R41">41</xref>). Like other studies, we also conclude that the HA stalk is intolerant of mutations, and confirmed by us here due to the lack of sites with dampened fluctuations. The absence of sites with large divergences in atomic fluctuations in our comparative MD simulations would seem to confirm that the anti-stalk antibodies studied here readily target sites with high mutational tolerance as suggested by other site directed experiments (<xref ref-type="bibr" rid="R42">42</xref>). Another possible explanation could be that the binding energetics at protein-protein interfaces can be asymmetrically distributed across all sites, thus preventing us from identifying the mutational tolerant sites (<xref ref-type="bibr" rid="R11">11</xref>, <xref ref-type="bibr" rid="R12">12</xref>).</p>
+<p id="P14">We implemented our computational approach to identify potential hot spot residues in the RBD of the spike protein of SARS-CoV-2 in the presence of two recently published antibodies against the virus: COVOX-222 and S2H97 (<xref ref-type="fig" rid="F3">Figure 3A</xref>). COVOX-222 is known to bind to different residues than S2H97 and is known to neutralize strains P.1 (Gamma) from Brazil, B.1.351 (Beta) from South Africa, and B.1.1.7 (Alpha) from the United Kingdom (<xref ref-type="bibr" rid="R43">43</xref>). Termed “super-antibody,” S2H97 is known to bind with high affinity across all sarbecovirus clades and prophylactically protects hamsters from viral challenge (<xref ref-type="bibr" rid="R44">44</xref>, <xref ref-type="bibr" rid="R45">45</xref>). In the presence of COVOX-222, we see the most dampening of atomic fluctuations at residues G476 (KL = -5.50, D = 0.888, p &lt; 0.001), F486 (KL = -4.52, D = 0.800, p &lt; 0.001), and N501 (KL = -4.55, D = 0.708, p &lt; 0.001) of the RBD (<xref ref-type="fig" rid="F1">Figure 1A</xref> and <xref ref-type="fig" rid="F3">3B</xref>). We see modest amount of dampening at residues D405 (KL = -2.57, D = 0.572, p &lt; 0.001), K417 (KL = -3.27, D = 0.678, p &lt; 0.001), and K458 (KL = -3.49, D = 0.703, p &lt; 0.001) of the RBD (<xref ref-type="fig" rid="F1">Figure 1A</xref> and <xref ref-type="fig" rid="F3">3B</xref>).</p>
+<p id="P15">It should be noted that the residues picked up by our computational method are part of the epitopes of COVOX-222. Of all the residues identified by the comparison of MD simulation, the residues with the greatest dampening of atomic fluctuation have a higher chance of being classified as hot-spot residues. They are more prone to mutate, thus allowing the virus to escape COVOX-222. Residue 417, one of the residues with moderate dampening of atomic fluctuation, makes a weak salt-bridge interaction with the HCDR3 residue E99 of COVOX-222 (<xref ref-type="bibr" rid="R43">43</xref>). And residue N501, one with residues with the most dampening of atomic fluctuations, is known to interact with LCDR1 residue P30 of the antibody via a stacking interactions (<xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R46">46</xref>). In the case of the mAb S2H97, we see a moderate dampening of atomic fluctuations at sites D428 (KL = -3.81, D = 0.692, p &lt; 0.001) and K462 (KL = -3.37, D = 0.723, p &lt; 0.001). Sites N394 (KL = -4.25, D = 0.760, p &lt; 0.001), E484 (KL = -5.20, D = 0.837, p &lt; 0.001), L518 (KL = -6.56, D = 0.945, p &lt; 0.001) have the most dampening of atomic fluctuations (<xref ref-type="fig" rid="F1">Figure 1A</xref> and <xref ref-type="fig" rid="F3">3C</xref>). Four of the five sites, except E484, fall in the epitope footprint of S2H97 (<xref ref-type="bibr" rid="R44">44</xref>). Like mAb COVOX-222, we predict that the sites with the most dampening of atomic fluctuations (i.e. negative KL divergence) are more prone to functionally evolve under the selection pressure of the vaccine, thus allowing the virus to potentially escape the binding of S2H97. Even though, E484 does not fall in the S2H97 footprint, it has been shown that the mutation of this site is known to enhance immune escape form neutralizing antibodies, and also increase affinity to hACE2 (<xref ref-type="bibr" rid="R47">47</xref>).</p>
+<p id="P16">Many of the residues identified as potential sites of escape, either in the presence of COVOX-222 or S2H97, overlap with mutations seen in the variants of concern (VOC). At present, there are mainly five kinds of VOC: Alpha, Beta, Gamma, Delta, and Omicron. We employed comparative MD simulation of the SARS-CoV-2 RBD bound to hACE2 (PDB 6VW1 trimmed to only include the viral RBD) modeled with and without the recently arising VOC mutations in the alpha to delta variant strains. Three of the VOC mutations (417, 484, and 501) were identified as potential escape sites using our approach (<xref ref-type="fig" rid="F1">Figure 1A</xref>, <xref ref-type="fig" rid="F3">3B, and 3C</xref>). In addition to the three sites, we confirmed (i.e., 417, 484, and 501), we also saw significant differences in the binding atomic fluctuations at the positions 452 (KL = -0.206, D = 0.155, p &lt; 0.001) and 478 (KL = -0.129, D = 0.190, p &lt; 0.001) of RBD (<xref ref-type="fig" rid="F1">Figures 1A</xref>, <xref ref-type="fig" rid="F3">3D and 3E</xref>). Investigation with pseudoviruses possessing RBD mutations harbored by VOC demonstrated that plasma neutralizing activity of vaccinated individuals showed a one-fold to three-fold significant decreases against E484K, N501Y, or the K417N + E484K + N501Y triple mutant (<xref ref-type="bibr" rid="R48">48</xref>). These results confirm what we have observed using our comparative MD analysis (<xref ref-type="fig" rid="F1">Figures 1A</xref> and <xref ref-type="fig" rid="F3">3E</xref>). Furthermore, evidence from clinical trials on the impact of VOC on vaccine efficacy confirms what we have observed as well. For example, the ChAdOx1 nCoV-19 vaccine and the single-dose JNJ-78436735 (Johnson &amp; Johnson/Janssen) vaccine have reduced vaccine efficacy by 10.4% and 57%, respectively, against the B.1.351 variant, which contains K417N, E484K, and N501Y mutations (<xref ref-type="bibr" rid="R49">49</xref>-<xref ref-type="bibr" rid="R51">51</xref>). Therefore, when evaluating vaccine efficacy and the effect of neutralizing antibodies against the SARS-CoV-2 virus, the focus should be given to amino acid positions that are prone to mutate and escape the antibody, as these positions might cause the emergence of new VOCs.</p>
+<p id="P17">Lastly, we also modeled the most recent VOC, Omicron. The omicron RBD is known to harbor 15 different mutations, with several mutations linked to greater transmissibility, lower vaccine efficiency, and increased risk of reinfection (<xref ref-type="fig" rid="F4">Figure 4B</xref>) (<xref ref-type="bibr" rid="R52">52</xref>). To further understand the evolution of the variant, we ran comparative MD simulations with the Omicron variant bound and unbound to mAb COVOX-222. In the wildtype RBD we see a dampening of atomic fluctuation at residues that correspond to the antibody footprint (<xref ref-type="fig" rid="F4">Figure 4A, 4B</xref>). Interestingly, in the omicron RBD, we see some increase in the atomic fluctuation dampening at several of the residues that correspond to the COVOX-222 epitopes (<xref ref-type="fig" rid="F4">Figure 4</xref>). Furthermore, some of the mutations that correspond to the omicron RBD overlap with the COVOX-222 antibody footprint. These sites include K417N (KL = -2.60, D = 0.631, p &lt; 0.001), S477N (KL = -3.83, D = 0.762, p &lt; 0.001), Q493K (KL = -2.84, D = 0.762, p &lt; 0.001), N501Y (KL = -3.25, D = 0.737, p &lt; 0.001), and Y505H (KL = -3.16, D = 0.77, p &lt; 0.001) (<xref ref-type="fig" rid="F4">Figure 4</xref>, <xref ref-type="supplementary-material" rid="SD2">Supplemental figure 1</xref>). Upon closer examination, the residues that overlap between the antibody footprint and the omicron mutations, are sites where the hACE2 is known to interact with the RBD. As a result, the increase in atomic fluctuation dampening might not be because of the direct evolution of stronger binding to the antibody, but also due to the evolution of increased binding affinity to hACE2. Other studies have shown that the mutations in the omicron variant increase the number of salt bridges and hydrophobic interactions between RBD and hACE2, resulting in a higher binding efficiency to hACE2 (<xref ref-type="bibr" rid="R53">53</xref>). Additionally, it has also been shown that the structural changes in the RBD domain, caused by the mutations, reduce the antibody interactions (<xref ref-type="bibr" rid="R54">54</xref>, <xref ref-type="bibr" rid="R55">55</xref>). We present a similar analysis of the functional binding of the omicron variant with S2H97 (<xref ref-type="supplementary-material" rid="SD2">Supplemental Figure 2</xref>) which also indicates minimal overall effects of the genetic changes on potential antibody neutralization, with the exception of E484A, T478K and S477N sites, in which omicron appears to have lost interaction with S2H97. In summary, we observe that introduction of mutations sites in the omicron RBD have only slightly altered the COVOX-222 and S2H97 interactions with the viral RBD. Most importantly, our computational method appears to be an effective way to quantify these changes.</p>
+<p id="P18">Directed selection experiments followed by confirmation through neutralization assays are the classical approach for identifying the location of the hot-spot residues. Not only are the selection experiments time consuming, they only identify one of many mutations that escape an antibody (<xref ref-type="bibr" rid="R56">56</xref>). Compared to the classical method, our simple computational approach can identify the locations of sites prone to vaccine escape in a matter of days. Additionally it identifies positions of all amino acids that could mutate to escape the antibody in a single <italic>in silico</italic> experiment. And compared to other computational tools, our MD-based approach does not require large and potentially biased machine learning training data sets. Furthermore, the <italic>de novo</italic> prediction is based on a given experimental structure, which enables an unprecedented close synergy between our computational approach and existing laboratory methods for identifying potential routes of viral evolution leading to enhanced transmissibility and vaccine escape.</p>
+<p id="P19">Additionally, some of the other tools used in epitope prediction involve sequence-based methods, machine-learning methods, and structure-based methods. The epitope surface accessibility to antibody binding is generally used by the sequence-based methods (<xref ref-type="bibr" rid="R57">57</xref>). The availability of antigen sequence is crucial for the sequence-based method; however, the predicted epitope residues are not grouped into the corresponding epitopes (<xref ref-type="bibr" rid="R58">58</xref>). The machine learning (ML) based epitope prediction methods include several steps: a collection of datasets with clean and comprehensive data, extraction of antigen features of the sequence (e.g., physicochemical properties, evolutionary information, amino acid composition), and training the model using ML algorithms (<xref ref-type="bibr" rid="R59">59</xref>). Some of the commonly used ML tools for epitope prediction are ABCPred (uses artificial neural network), COBEpro (uses support vector machine), EPSVR (uses support vector regression method), and BepiPred (based on random forest algorithm) (<xref ref-type="bibr" rid="R57">57</xref>, <xref ref-type="bibr" rid="R60">60</xref>–<xref ref-type="bibr" rid="R62">62</xref>). And lastly, structure-based methods identify epitopes by antigen structure and epitope-related propensity scales, including specific physicochemical properties and geometric attributes (<xref ref-type="bibr" rid="R63">63</xref>, <xref ref-type="bibr" rid="R64">64</xref>). As the evolution of antibody-antigen interactions seem largely driven by single-site mutations with large functional effects and because antibody-antigen binding has quite obvious biophysical impacts on molecular dynamics, as would the formation of any protein complex, we offer a simple and effective alternative computational method to studying vaccine escape <italic>in silico</italic> using readily available MD simulation software combined with a classic and easily interpretable approach to the statistical comparison of distributions of local atom fluctuations on virus proteins in the presence/absence of antibodies.</p>
+<p id="P20">In summary, we have computationally identified hot-spot residues known to mutate in a viral antigen in the presence of a neutralizing antibody. We first validated our approach using the influenza spike protein and three well-characterized antibodies against the influenza HA (<xref ref-type="bibr" rid="R13">13</xref>). We then implemented our approach to identify sites in the RBD of SARS-CoV-2 that are known to mutate in the presence of neutralizing mAbs S2H97 and COVOX-222 (<xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R44">44</xref>). We further identified that residues known to mutate in the presence of the antibody overlap with the mutations seen in the VOC. And lastly, we also identified sites in the omicron variant mutations that enhance binding efficiency to hACE2. While the method described here is not a complete substitute for laboratory-based methods we believe it can greatly complement these methods by allowing time and cost-saving through the computational prescreening of the underlying biophysics that may drive outcomes of many potential lab experiments. Determining which viral mutations escape from antibodies will be crucial for designing future therapeutics and vaccines and assessing future antigenic implications of ongoing viral evolution.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplemental Data</label>
+<media xlink:href="EMS141106-supplement-Supplemental_Data.zip" mimetype="application" mime-subtype="zip" id="N66361" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Materials</label>
+<media xlink:href="EMS141106-supplement-Supplementary_Materials.pdf" mimetype="application" mime-subtype="pdf" id="N66370" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S7">
+<title>Acknowledgements</title>
+<p>We acknowledge Dr. Ernest Fokoue (School of Mathematical Sciences, Rochester Institute of Technology) for his consultation on the prior development of our method. We also acknowledge Dr. Feng Cui and Dr. André O. Hudson (Thomas H. Gosnell School of Life Sciences, Rochester Institute of Technology) for helpful comments regarding this work.</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P21">
+<bold>Author contributions</bold>
+</p>
+<p id="P22">M.R wrote the manuscript, designed, performed the experiments, and analyzed the data. G.A.B developed the code, revised and edited the manuscript, designed the experiments, and analyzed the data. M.C.F edited the manuscript and analyzed the data.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P23">
+<bold>Declaration of interests</bold>
+</p>
+<p id="P24">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Lapedes</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>de Jong</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Bestebroer</surname>
+<given-names>TM</given-names>
+</name>
+<name>
+<surname>Rimmelzwaan</surname>
+<given-names>GF</given-names>
+</name>
+<name>
+<surname>Osterhaus</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Fouchier</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Mapping the antigenic and genetic evolution of influenza virus</article-title>
+<source>Science</source>
+<year>2004</year>
+<volume>305</volume>
+<fpage>371</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luksza</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lässig</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>A predictive fitness model for influenza</article-title>
+<source>Nature</source>
+<year>2014</year>
+<volume>507</volume>
+<fpage>57</fpage>
+<lpage>61</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krammer</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Advances in the development of influenza virus vaccines</article-title>
+<source>Nat Rev Drug Discov</source>
+<year>2015</year>
+<volume>14</volume>
+<fpage>167</fpage>
+<lpage>82</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gerhard</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yewdell</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Frankel</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Webster</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Antigenic structure of influenza virus haemagglutinin defined by hybridoma antibodies</article-title>
+<source>Nature</source>
+<year>1981</year>
+<volume>290</volume>
+<fpage>713</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Caton</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Brownlee</surname>
+<given-names>GG</given-names>
+</name>
+<name>
+<surname>Yewdell</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Gerhard</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>The antigenic structure of the influenza virus A/PR/8/34 hemagglutinin (H1 subtype)</article-title>
+<source>Cell</source>
+<year>1982</year>
+<volume>31</volume>
+<fpage>417</fpage>
+<lpage>27</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Webster</surname>
+<given-names>RG</given-names>
+</name>
+<name>
+<surname>Laver</surname>
+<given-names>WG</given-names>
+</name>
+</person-group>
+<article-title>Determination of the number of nonoverlapping antigenic areas on Hong Kong (H3N2) influenza virus hemagglutinin with monoclonal antibodies and the selection of variants with potential epidemiological significance</article-title>
+<source>Virology</source>
+<year>1980</year>
+<volume>104</volume>
+<fpage>139</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Haddox</surname>
+<given-names>HK</given-names>
+</name>
+<name>
+<surname>Dingens</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>Experimental Estimation of the Effects of All Amino-Acid Mutations to HIV’s Envelope Protein on Viral Replication in Cell Culture</article-title>
+<source>PLoS Pathog</source>
+<year>2016</year>
+<volume>12</volume>
+<elocation-id>e1006114</elocation-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pierce</surname>
+<given-names>BG</given-names>
+</name>
+<name>
+<surname>Keck</surname>
+<given-names>ZY</given-names>
+</name>
+<name>
+<surname>Lau</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Fauvelle</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gowthaman</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baumert</surname>
+<given-names>TF</given-names>
+</name>
+<name>
+<surname>Fuerst</surname>
+<given-names>TR</given-names>
+</name>
+<name>
+<surname>Mariuzza</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Foung</surname>
+<given-names>SKH</given-names>
+</name>
+</person-group>
+<article-title>Global mapping of antibody recognition of the hepatitis C virus E2 glycoprotein: Implications for vaccine design</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2016</year>
+<volume>113</volume>
+<fpage>E6946</fpage>
+<lpage>E6954</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walker</surname>
+<given-names>LM</given-names>
+</name>
+<name>
+<surname>Phogat</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Chan-Hui</surname>
+<given-names>PY</given-names>
+</name>
+<name>
+<surname>Wagner</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Phung</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Goss</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Wrin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Simek</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Fling</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mitcham</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Lehrman</surname>
+<given-names>JK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Broad and potent neutralizing antibodies from an African donor reveal a new HIV-1 vaccine target</article-title>
+<source>Science</source>
+<year>2009</year>
+<volume>326</volume>
+<fpage>285</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Polonis</surname>
+<given-names>VR</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>BK</given-names>
+</name>
+<name>
+<surname>Rosa Borges</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zolla-Pazner</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dimitrov</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>MY</given-names>
+</name>
+<name>
+<surname>Barnett</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Ruprecht</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Scarlatti</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Fenyö</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Montefiori</surname>
+<given-names>DC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Recent advances in the characterization of HIV-1 neutralization assays for standardized evaluation of the antibody response to infection and vaccination</article-title>
+<source>Virology</source>
+<year>2008</year>
+<volume>375</volume>
+<fpage>315</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jin</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fendly</surname>
+<given-names>BM</given-names>
+</name>
+<name>
+<surname>Wells</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>High resolution functional analysis of antibody-antigen interactions</article-title>
+<source>J Mol Biol</source>
+<year>1992</year>
+<volume>226</volume>
+<fpage>851</fpage>
+<lpage>65</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dall’Acqua</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Goldman</surname>
+<given-names>ER</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Teng</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Tsuchiya</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ysern</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Braden</surname>
+<given-names>BC</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Smith-Gill</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Mariuzza</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>A mutational analysis of binding interactions in an antigen-antibody protein-protein complex</article-title>
+<source>Biochemistry</source>
+<year>1998</year>
+<volume>37</volume>
+<fpage>7981</fpage>
+<lpage>91</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Doud</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>How single mutations affect viral escape from broad and narrow antibodies to H1 influenza hemagglutinin</article-title>
+<source>Nat Commun</source>
+<year>2018</year>
+<volume>9</volume>
+<fpage>1386</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babbitt</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Mortensen</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Coppola</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>JK</given-names>
+</name>
+</person-group>
+<article-title>DROIDS 1.20: A GUI-Based Pipeline for GPU-Accelerated Comparative Protein Dynamics</article-title>
+<source>Biophys J</source>
+<year>2018</year>
+<volume>114</volume>
+<fpage>1009</fpage>
+<lpage>1017</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babbitt</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Fokoue</surname>
+<given-names>EP</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Diller</surname>
+<given-names>KI</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>LE</given-names>
+</name>
+</person-group>
+<article-title>DROIDS 3.0-Detecting Genetic and Drug Class Variant Impact on Conserved Protein Binding Dynamics</article-title>
+<source>Biophys J</source>
+<year>2020</year>
+<volume>118</volume>
+<fpage>541</fpage>
+<lpage>551</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babbitt</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Lynch</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>McCoy</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Fokoue</surname>
+<given-names>EP</given-names>
+</name>
+<name>
+<surname>Hudson</surname>
+<given-names>AO</given-names>
+</name>
+</person-group>
+<article-title>Function and evolution of B-Raf loop dynamics relevant to cancer recurrence under drug inhibition</article-title>
+<source>J Biomol Struct Dyn</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>16</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rynkiewicz</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Lynch</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hudson</surname>
+<given-names>AO</given-names>
+</name>
+<name>
+<surname>Babbitt</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<article-title>Functional binding dynamics relevant to the evolution of zoonotic spillovers in endemic and emergent</article-title>
+<source>J Biomol Struct Dyn</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>19</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gohlke</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Merz</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Onufriev</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>RJ</given-names>
+</name>
+</person-group>
+<article-title>The Amber biomolecular simulation programs</article-title>
+<source>J Comput Chem</source>
+<year>2005</year>
+<volume>26</volume>
+<fpage>1668</fpage>
+<lpage>88</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pettersen</surname>
+<given-names>EF</given-names>
+</name>
+<name>
+<surname>Goddard</surname>
+<given-names>TD</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Couch</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Greenblatt</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Meng</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Ferrin</surname>
+<given-names>TE</given-names>
+</name>
+</person-group>
+<article-title>UCSF Chimera--a visualization system for exploratory research and analysis</article-title>
+<source>J Comput Chem</source>
+<year>2004</year>
+<volume>25</volume>
+<fpage>1605</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="book">
+<collab>Woods-Group</collab>
+<source>GLYCAM Web, Complex Carbohydrate Research Center</source>
+<publisher-name>University of Georgia</publisher-name>
+<publisher-loc>Athens, GA</publisher-loc>
+<year>2005-2021</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http://legacy.glycam.org">http://legacy.glycam.org</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kirschner</surname>
+<given-names>KN</given-names>
+</name>
+<name>
+<surname>Yongye</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Tschampel</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>González-Outeiriño</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Daniels</surname>
+<given-names>CR</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>BL</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>RJ</given-names>
+</name>
+</person-group>
+<article-title>GLYCAM06: a generalizable biomolecular force field Carbohydrates</article-title>
+<source>J Comput Chem</source>
+<year>2008</year>
+<volume>29</volume>
+<fpage>622</fpage>
+<lpage>55</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fiser</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Do</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Sali</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Modeling of loops in protein structures</article-title>
+<source>Protein Sci</source>
+<year>2000</year>
+<volume>9</volume>
+<fpage>1753</fpage>
+<lpage>73</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sali</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Blundell</surname>
+<given-names>TL</given-names>
+</name>
+</person-group>
+<article-title>Comparative protein modelling by satisfaction of spatial restraints</article-title>
+<source>J Mol Biol</source>
+<year>1993</year>
+<volume>234</volume>
+<fpage>779</fpage>
+<lpage>815</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aartse</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Eggink</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Claireaux</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>van Leeuwen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mooij</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bogers</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Sanders</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Koopman</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>van Gils</surname>
+<given-names>MJ</given-names>
+</name>
+</person-group>
+<article-title>Influenza A Virus Hemagglutinin Trimer, Head and Stem Proteins Identify and Quantify Different Hemagglutinin-Specific B Cell Subsets in Humans</article-title>
+<source>Vaccines (Basel)</source>
+<year>2021</year>
+<fpage>9</fpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>York</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pedersen</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<source>Particle mesh Ewald: An N·log(N) method for Ewald sums in large systems</source>
+<year>1993</year>
+<volume>98</volume>
+<issue>10089-10092</issue>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ewald</surname>
+<given-names>PP</given-names>
+</name>
+</person-group>
+<article-title>Die Berechnung optischer und elektrostatischer Gitterpotentiale</article-title>
+<source>Annalen der Physik</source>
+<year>1921</year>
+<volume>369</volume>
+<fpage>253</fpage>
+<lpage>287</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Götz</surname>
+<given-names>AW</given-names>
+</name>
+<name>
+<surname>Williamson</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Poole</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Le Grand</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>Routine Microsecond Molecular Dynamics Simulations with AMBER on GPUs 1 Generalized Born</article-title>
+<source>J Chem Theory Comput</source>
+<year>2012</year>
+<volume>8</volume>
+<fpage>1542</fpage>
+<lpage>1555</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pierce</surname>
+<given-names>LC</given-names>
+</name>
+<name>
+<surname>Salomon-Ferrer</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Augusto</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>de Oliveira</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>McCammon</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>Routine Access to Millisecond Time Scale Events with Accelerated Molecular Dynamics</article-title>
+<source>J Chem Theory Comput</source>
+<year>2012</year>
+<volume>8</volume>
+<fpage>2997</fpage>
+<lpage>3002</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Salomon-Ferrer</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Götz</surname>
+<given-names>AW</given-names>
+</name>
+<name>
+<surname>Poole</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Le Grand</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Walker</surname>
+<given-names>RC</given-names>
+</name>
+</person-group>
+<article-title>Routine Microsecond Molecular Dynamics Simulations with AMBER on GPUs 2 Explicit Solvent Particle Mesh Ewald</article-title>
+<source>J Chem Theory Comput</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>3878</fpage>
+<lpage>88</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maier</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Martinez</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kasavajhala</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wickstrom</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hauser</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>ff14SB: Improving the Accuracy of Protein Side Chain and Backbone Parameters from ff99SB</article-title>
+<source>J Chem Theory Comput</source>
+<year>2015</year>
+<volume>11</volume>
+<fpage>3696</fpage>
+<lpage>713</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Kollman</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Automatic atom type and bond type perception in molecular mechanical calculations</article-title>
+<source>J Mol Graph Model</source>
+<year>2006</year>
+<volume>25</volume>
+<fpage>247</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andersen</surname>
+<given-names>HC</given-names>
+</name>
+</person-group>
+<article-title>Molecular dynamics simulations at constant pressure and/or temperature</article-title>
+<source>The Journal of Chemical Physics</source>
+<year>1980</year>
+<volume>72</volume>
+<issue>4</issue>
+<fpage>2384</fpage>
+<lpage>2393</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roe</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>TE</given-names>
+</name>
+</person-group>
+<article-title>PTRAJ and CPPTRAJ: Software for Processing and Analysis of Molecular Dynamics Trajectory Data</article-title>
+<source>J Chem Theory Comput</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>3084</fpage>
+<lpage>95</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yoshida</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Igarashi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ozaki</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kishida</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Tomabechi</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kida</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ito</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Takada</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Cross-protective potential of a novel monoclonal antibody directed against antigenic site B of the hemagglutinin of influenza A viruses</article-title>
+<source>PLoS Pathog</source>
+<year>2009</year>
+<volume>5</volume>
+<elocation-id>e1000350</elocation-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>PS</given-names>
+</name>
+<name>
+<surname>Yoshida</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ekiert</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Sakai</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Suzuki</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Takada</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>IA</given-names>
+</name>
+</person-group>
+<article-title>Heterosubtypic antibody recognition of the influenza virus hemagglutinin receptor binding site enhanced by avidity</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2012</year>
+<volume>109</volume>
+<fpage>17040</fpage>
+<lpage>5</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eisen</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Sabesan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Skehel</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Wiley</surname>
+<given-names>DC</given-names>
+</name>
+</person-group>
+<article-title>Binding of the influenza A virus to cell-surface receptors: structures of five hemagglutinin-sialyloligosaccharide complexes determined by X-ray crystallography</article-title>
+<source>Virology</source>
+<year>1997</year>
+<volume>232</volume>
+<fpage>19</fpage>
+<lpage>31</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fleury</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Barrère</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bizebard</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Daniels</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Skehel</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Knossow</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>A complex of influenza hemagglutinin with a neutralizing antibody that binds outside the virus receptor binding site</article-title>
+<source>Nat Struct Biol</source>
+<year>1999</year>
+<volume>6</volume>
+<fpage>530</fpage>
+<lpage>4</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matrosovich</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tuzikov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bovin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Gambaryan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Klimov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Castrucci</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Donatelli</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Kawaoka</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Early alterations of the receptor-binding properties of H1, H2, and H3 avian influenza virus hemagglutinins after their introduction into mammals</article-title>
+<source>J Virol</source>
+<year>2000</year>
+<volume>74</volume>
+<fpage>8502</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Corti</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Voss</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gamblin</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Codoni</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Macagno</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jarrossay</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Vachieri</surname>
+<given-names>SG</given-names>
+</name>
+<name>
+<surname>Pinna</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Minola</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Vanzetta</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Silacci</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A neutralizing antibody selected from plasma cells that binds to group 1 and group 2 influenza A hemagglutinins</article-title>
+<source>Science</source>
+<year>2011</year>
+<volume>333</volume>
+<fpage>850</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smirnov</surname>
+<given-names>YA</given-names>
+</name>
+<name>
+<surname>Lipatov</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Gitelman</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Okuno</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Van Beek</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Osterhaus</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Claas</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>An epitope shared by the hemagglutinins of H1, H2, H5, and H6 subtypes of influenza A virus</article-title>
+<source>Acta Virol</source>
+<year>1999</year>
+<volume>43</volume>
+<fpage>237</fpage>
+<lpage>44</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roubidoux</surname>
+<given-names>EK</given-names>
+</name>
+<name>
+<surname>Carreño</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>McMahon</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>van Bakel</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Krammer</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Mutations in the Hemagglutinin Stalk Domain Do Not Permit Escape from a Protective, StalkBased Vaccine-Induced Immune Response in the Mouse Model</article-title>
+<source>mBio</source>
+<year>2021</year>
+<fpage>12</fpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Heaton</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Sachs</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Hai</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Genome-wide mutagenesis of influenza virus reveals unique plasticity of the hemagglutinin and NS1 proteins</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2013</year>
+<volume>110</volume>
+<fpage>20248</fpage>
+<lpage>53</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dejnirattisai</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Supasa</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Mentzer</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Ginn</surname>
+<given-names>HM</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Duyvesteyn</surname>
+<given-names>HME</given-names>
+</name>
+<name>
+<surname>Tuekprakhon</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nutalai</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Antibody evasion by the P.1 strain of SARS-CoV-2</article-title>
+<source>Cell</source>
+<year>2021</year>
+<volume>184</volume>
+<fpage>2939</fpage>
+<lpage>2954</lpage>
+<elocation-id>e9</elocation-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Czudnochowski</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zatta</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>YJ</given-names>
+</name>
+<name>
+<surname>Addetia</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pinto</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Beltramello</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hernandez</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Marzi</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 RBD antibodies that maximize breadth and resistance to escape</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>597</volume>
+<fpage>97</fpage>
+<lpage>102</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Kwon</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<source>This ‘super antibody’ for COVID fights off multiple coronaviruses, on Nature</source>
+<year>2021</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://www.nature.com/articles/d41586-021-01917-9#correction-0">https://www.nature.com/articles/d41586-021-01917-9#correction-0</ext-link>
+</comment>
+<date-in-citation>Accessed November 19</date-in-citation>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shrestha</surname>
+<given-names>LB</given-names>
+</name>
+<name>
+<surname>Tedla</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Bull</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Broadly-Neutralizing Antibodies Against Emerging SARS-CoV-2 Variants</article-title>
+<source>Front Immunol</source>
+<year>2021</year>
+<volume>12</volume>
+<elocation-id>752003</elocation-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barton</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>MacGowan</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Kutuzov</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Dushek</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Barton</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>van der Merwe</surname>
+<given-names>PA</given-names>
+</name>
+</person-group>
+<article-title>Effects of common mutations in the SARS-CoV-2 Spike RBD and its ligand, the human ACE2 receptor on binding affinity and kinetics</article-title>
+<source>Elife</source>
+<year>2021</year>
+<fpage>10</fpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Schmidt</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Weisblum</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Muecksch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Barnes</surname>
+<given-names>CO</given-names>
+</name>
+<name>
+<surname>Finkin</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schaefer-Babajew</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cipolla</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gaebler</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Lieberman</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Oliveira</surname>
+<given-names>TY</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>mRNA vaccine-elicited antibodies to SARS-CoV-2 and circulating variants</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>592</volume>
+<fpage>616</fpage>
+<lpage>622</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mahase</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: Where are we on vaccines and variants?</article-title>
+<source>BMJ</source>
+<year>2021</year>
+<volume>372</volume>
+<elocation-id>n597</elocation-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Emary</surname>
+<given-names>KRW</given-names>
+</name>
+<name>
+<surname>Golubchik</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Aley</surname>
+<given-names>PK</given-names>
+</name>
+<name>
+<surname>Ariani</surname>
+<given-names>CV</given-names>
+</name>
+<name>
+<surname>Angus</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bibi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Blane</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bonsall</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cicconi</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Charlton</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Clutterbuck</surname>
+<given-names>EA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Efficacy of ChAdOx1 nCoV-19 (AZD1222) vaccine against SARS-CoV-2 variant of concern 202012/01 (B.1.1.7): an exploratory analysis of a randomised controlled trial</article-title>
+<source>Lancet</source>
+<year>2021</year>
+<volume>397</volume>
+<fpage>1351</fpage>
+<lpage>1362</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Madhi</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Baillie</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Cutland</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Voysey</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Koen</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Fairlie</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Padayachee</surname>
+<given-names>SD</given-names>
+</name>
+<name>
+<surname>Dheda</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Barnabas</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Bhorat</surname>
+<given-names>QE</given-names>
+</name>
+<name>
+<surname>Briner</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Efficacy of the ChAdOx1 nCoV-19 Covid-19 Vaccine against the B.1.351 Variant</article-title>
+<source>N Engl J Med</source>
+<year>2021</year>
+<volume>384</volume>
+<fpage>1885</fpage>
+<lpage>1898</lpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Torjesen</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: Omicron may be more transmissible than other variants and partly resistant to existing vaccines, scientists fear</article-title>
+<source>BMJ</source>
+<year>2021</year>
+<volume>375</volume>
+<elocation-id>n2943</elocation-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ford</surname>
+<given-names>CT</given-names>
+</name>
+<name>
+<surname>Machado</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Janies</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Predictions of the SARS-CoV-2 Omicron Variant (B.1.1.529) Spike Protein Receptor-Binding Domain Structure and Neutralizing Antibody Interactions</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kumar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Thambiraja</surname>
+<given-names>TS</given-names>
+</name>
+<name>
+<surname>Karuppanan</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Subramaniam</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<source>Omicron and Delta Variant of SARS-CoV-2: A Comparative Computational Study of Spike protein</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.12.02.470946</pub-id>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Golcuk</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yildiz</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gur</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>The Omicron Variant Increases the Interactions of SARS-CoV-2 Spike Glycoprotein with ACE2</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leon</surname>
+<given-names>PE</given-names>
+</name>
+<name>
+<surname>Wohlbold</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Henry</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Wilson</surname>
+<given-names>PC</given-names>
+</name>
+<name>
+<surname>Krammer</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>GS</given-names>
+</name>
+</person-group>
+<article-title>Generation of Escape Variants of Neutralizing Influenza Virus Monoclonal Antibodies</article-title>
+<source>J Vis Exp</source>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saha</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Raghava</surname>
+<given-names>GP</given-names>
+</name>
+</person-group>
+<article-title>Prediction of continuous B-cell epitopes in an antigen using recurrent neural network</article-title>
+<source>Proteins</source>
+<year>2006</year>
+<volume>65</volume>
+<fpage>40</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yao</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Conformational B-cell epitope prediction on antigen protein structures: a review of current algorithms and comparison with common binding site prediction methods</article-title>
+<source>PLoS One</source>
+<year>2013</year>
+<volume>8</volume>
+<elocation-id>e62249</elocation-id>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>59</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Ju</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Ning</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Bioinformatics resources and tools for conformational B-cell epitope prediction</article-title>
+<source>Comput Math Methods Med</source>
+<year>2013</year>
+<volume>2013</volume>
+<elocation-id>943636</elocation-id>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>60</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sweredoski</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Baldi</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>COBEpro: a novel system for predicting continuous B-cell epitopes</article-title>
+<source>Protein Eng Des Sel</source>
+<year>2009</year>
+<volume>22</volume>
+<fpage>113</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>61</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zacharias</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>EPSVR and EPMeta: prediction of antigenic epitopes using support vector regression and multiple server results</article-title>
+<source>BMC Bioinformatics</source>
+<year>2010</year>
+<volume>11</volume>
+<fpage>381</fpage>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>62</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jespersen</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Peters</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Marcatili</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>BepiPred-2.0: improving sequence-based B-cell epitope prediction using conformational epitopes</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>W24</fpage>
+<lpage>W29</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>63</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Saha</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Raghava</surname>
+<given-names>GPS</given-names>
+</name>
+</person-group>
+<chapter-title>BcePred: Prediction of Continuous B-Cell Epitopes in Antigenic Sequences Using Physico-chemical Properties</chapter-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Nicosia</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Cutello</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Bentley</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Timmis</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Artificial Immune Systems</source>
+<publisher-name>Springer</publisher-name>
+<publisher-loc>Italy</publisher-loc>
+<year>2004</year>
+<fpage>197</fpage>
+<lpage>204</lpage>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>64</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Negi</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Braun</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Automated detection of conformational epitopes using phage display Peptide sequences</article-title>
+<source>Bioinform Biol Insights</source>
+<year>2009</year>
+<volume>3</volume>
+<fpage>71</fpage>
+<lpage>81</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Description of PDB files and antibodies used in this study, and the comparison between KL divergence and average fraction of variants surviving.</title>
+<p>(A) Table summarizing the protein structure used for primary models for analyzing the molecular dynamics of antibody interactions with the influenza HA and SARS-CoV-2 RBD, and ACE2 interactions with wildtype and mutated SARS-CoV-2 RBD (includes VOC mutations). The table includes amino acid positions and the corresponding -KL divergence value denoting atomic fluctuations dampening for antibody-antigen/protein 1-protein 2 MD simulations. D value and the level of significance for the corresponding amino acid position are also given. (B) S139/1 (green), FI6v3 (blue), and C179 (red) epitopes are mapped onto the HA trimer, shown in grey (PDB 1RVX). Overlapping epitopes between FI6v3 and C179 are shown in cyan. Next to the HA trimer is a phylogenetic tree of HA subtypes. Circles denote reported antibody binding or neutralization against that subtype (C) Box and whisker plots showing the KL divergence values between amino acid sites that had significant average fraction of variants surviving and non-significant average fraction of variants in the presence of monoclonal antibody S139/1 (<xref ref-type="bibr" rid="R13">13</xref>). Only sites K156, G158, and N193 of the HA head domain had significant average fraction surviving viral particles.</p>
+</caption>
+<graphic xlink:href="EMS141106-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Epitope prediction and validation of hot-spot residues of the influenza hemagglutinin (HA) in the presence of neutralizing antibodies. Sequence positional plotting of dampening of atom motion on the influenza HA head domain by (A) S139/1 and on the HA stalk domain by (C) FI6v3 and (D) C179. The sequence profile of the -KL divergence between S139/1 and the head domain produces strong negative peaks in (A) at K156, G158, and N193. A modest negative peak is observed in the stalk domain in (C) at E47 in the presence of FI6v3. HA1 numbering is used to identify the amino acid positions in (A). HA2 numbering is used to identify the amino acid position in (C) and (D). The grey bar on top of the -KL divergence plots denotes the HA amino acid backbone with the location of (A) S139/1 epitopes shown in green, (C) FI6v3 epitopes in blue, and (D) C179 epitopes in red. (B) Logo plots of S139/1 show the amino acid position that has the largest effect. Letter heights are proportional to the excess fraction of virions with that mutation that survive the antibody, as indicated by scale bars. The logo plot was prepared using deep mutational scanning data from Doud, M.B. et al. (<xref ref-type="bibr" rid="R13">13</xref>).</p>
+</caption>
+<graphic xlink:href="EMS141106-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Identification of hot-spot residues that escape neutralizing antibodies and the importance of the variants of concern mutations.</title>
+<p>(A) Crystal structure of COVOX-222 (green, PDB 7OR9) and S2H97(cyan, PDB 7M7W) superimposed onto the structure of RBD of SARS-CoV-2 (grey, PDB 7M7W) (<xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R44">44</xref>). COVOX-222 epitopes with the greatest KL divergence dampening are highlighted in pink, and S2H97 epitopes with the greatest KL divergence dampening are highlighted in olive. Sequence positional plotting of dampening of atom motion on the RBD of SARS-CoV-2 by (B) COVOX-222 and (C) S2H97. Amino acid positions with moderate to modest dampening of atomic fluctuation are identified in (B) and (C). The grey bar on the top of the KL divergence plots denotes the RBD domain amino acid backbone with the location of COVOX-222 epitopes shown in pink and the S2H97 epitopes shown in olive. (D) The site-wise KL divergence profiles showing the dampening of atom motion between the wildtype and mutated RBD of the spike protein of SARS-CoV-2 in the presence of human angiotensin-converting enzyme 2 (ACE2). The wildtype RBD was computationally mutated to include mutations from the variants of concern (VOC). (E) Multiple test-corrected two sample KS tests of significance for the impact of the mutations are also shown. Amino acid positions that correspond to the VOC mutations are highlighted and show higher level significance than other positions. Mutations that correspond to the four VOC in the RBD of spike protein are noted on top of (E).</p>
+</caption>
+<graphic xlink:href="EMS141106-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>MD simulations with the Omicron variant reveal sites that promote similar binding affinity to hACE2.</title>
+<p>(A) Sequence positional plotting of the normalized dampening of atom motions on the Omicron RBD (red) and the wildtype RBD (blue) by monoclonal antibody COVOX-222. KL divergence values for normalization of the wild type RBD were obtained from <xref ref-type="fig" rid="F3">Figure 3B</xref>, and for the Omicron RBD were obtained from <xref ref-type="supplementary-material" rid="SD1">supplemental figure 1A</xref>. The omicron RBD mutations are labeled in red (<xref ref-type="bibr" rid="R1">1</xref>-<xref ref-type="bibr" rid="R15">15</xref>). The sites corresponding to the COVOX-222 epitope on the wildtype RBD on labeled in blue (I – VII). The amino acid residues that correspond to the numbers and roman numerals are listed in (B). In the omicron RBD, we see an increase in atomic fluctuation peaks at several of the epitope sites. Sites that overlap between the omicron mutations and COVOX-222 epitope (shown by *) are sites of ACE2 interaction. (B) List of omicron mutations modeled onto RBD, and the list of COVOX-222 epitopes. (C) Crystal structure of COVOX-222 Fab (green) superimposed onto the structure of the Omicron RBD (grey) (PDB 7NXA). Some of the amino acid residues that correspond to the COVOX-222 epitopes, which show an increase in atomic fluctuation dampening, are shown in blue. Several of the amino acid residue that correspond to omicron mutations with increased atomic fluctuation dampening, which are sites of ACE2 interactions, are shown in red.</p>
+</caption>
+<graphic xlink:href="EMS141106-f004"/>
+</fig>
+</floats-group>
+</article>

@@ -1,0 +1,390 @@
+{% extends 'web/base.html' %}
+{% load static %}
+
+{% block title %}Admin KRT Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'web:home' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Admin KRT Management</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-2">
+                        <i class="fas fa-crown me-2 text-warning"></i>Admin KRT Management
+                    </h1>
+                    <p class="text-muted">
+                        Manage high-quality KRT extractions generated using admin-selected LLM models.
+                    </p>
+                </div>
+                <div>
+                    <a href="/admin/web/adminkrt/" class="btn btn-primary me-2">
+                        <i class="fas fa-cog me-2"></i>Django Admin
+                    </a>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generateModal">
+                        <i class="fas fa-plus me-2"></i>Generate KRTs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="fw-bold">{{ stats.total }}</h4>
+                            <p class="mb-0">Total Admin KRTs</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-crown fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="fw-bold">{{ stats.approved }}</h4>
+                            <p class="mb-0">Approved</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="fw-bold">{{ stats.completion_rate|floatformat:1 }}%</h4>
+                            <p class="mb-0">Completion Rate</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="fw-bold">{{ xml_file_count|floatformat:0 }}</h4>
+                            <p class="mb-0">Available Papers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider/Model Statistics -->
+    {% if provider_stats %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Provider & Model Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Model</th>
+                                    <th>Count</th>
+                                    <th>Avg Resources</th>
+                                    <th>Avg Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in provider_stats %}
+                                <tr>
+                                    <td>
+                                        {% if stat.provider == 'anthropic' %}
+                                            <span class="badge bg-primary">Anthropic</span>
+                                        {% elif stat.provider == 'gemini' %}
+                                            <span class="badge bg-success">Gemini</span>
+                                        {% elif stat.provider == 'openai' %}
+                                            <span class="badge bg-warning text-dark">OpenAI</span>
+                                        {% elif stat.provider == 'openai_compatible' %}
+                                            <span class="badge bg-info">OpenAI-Compatible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ stat.model }}</code></td>
+                                    <td><strong>{{ stat.count }}</strong></td>
+                                    <td><span class="text-success">{{ stat.avg_resources }}</span></td>
+                                    <td><span class="text-muted">{{ stat.avg_time }}s</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Featured KRTs -->
+    {% if featured_krts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Featured High-Quality KRTs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for krt in featured_krts %}
+                        <div class="col-lg-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">{{ krt.doi|truncatechars:40 }}</h6>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-star"></i> Featured
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small mb-2">{{ krt.xml_file.title|truncatechars:80 }}</p>
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted">Resources</small><br>
+                                            <strong class="text-success">{{ krt.resources_found }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Quality</small><br>
+                                            <strong class="text-warning">{{ krt.get_quality_rating_display }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Model</small><br>
+                                            <small><code>{{ krt.formatted_provider_model|truncatechars:15 }}</code></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Admin KRTs -->
+    {% if recent_krts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Admin KRTs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>DOI</th>
+                                    <th>Provider/Model</th>
+                                    <th>Status</th>
+                                    <th>Quality</th>
+                                    <th>Resources</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for krt in recent_krts %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <code class="small">{{ krt.doi|truncatechars:30 }}</code>
+                                            <small class="text-muted">{{ krt.xml_file.title|truncatechars:40 }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if krt.provider == 'anthropic' %}
+                                            <span class="badge bg-primary me-1">Anthropic</span>
+                                        {% elif krt.provider == 'gemini' %}
+                                            <span class="badge bg-success me-1">Gemini</span>
+                                        {% elif krt.provider == 'openai' %}
+                                            <span class="badge bg-warning text-dark me-1">OpenAI</span>
+                                        {% elif krt.provider == 'openai_compatible' %}
+                                            <span class="badge bg-info me-1">OpenAI-Compatible</span>
+                                        {% endif %}
+                                        <br><small><code>{{ krt.model_name|truncatechars:20 }}</code></small>
+                                    </td>
+                                    <td>
+                                        {% if krt.status == 'completed' %}
+                                            <span class="badge bg-success">{{ krt.get_status_display }}</span>
+                                        {% elif krt.status == 'approved' %}
+                                            <span class="badge bg-primary">{{ krt.get_status_display }}</span>
+                                        {% elif krt.status == 'failed' %}
+                                            <span class="badge bg-danger">{{ krt.get_status_display }}</span>
+                                        {% elif krt.status == 'processing' %}
+                                            <span class="badge bg-warning">{{ krt.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ krt.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if krt.is_featured %}
+                                            <i class="fas fa-star text-warning me-1"></i>
+                                        {% endif %}
+                                        <span class="badge bg-{{ krt.quality_rating|yesno:'success,warning,secondary' }}">
+                                            {{ krt.get_quality_rating_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">{{ krt.resources_found }}</strong>
+                                        {% if krt.processing_time %}
+                                            <br><small class="text-muted">{{ krt.processing_time|floatformat:1 }}s</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ krt.created_at|date:"M j, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="/admin/web/adminkrt/{{ krt.id }}/change/" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Generation Instructions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-terminal me-2"></i>Generation Commands
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Use these Django management commands to generate admin KRTs:</p>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6>Generate 10 random KRTs with Anthropic:</h6>
+                            <div class="bg-dark text-light p-3 rounded mb-3">
+                                <code>python manage.py generate_admin_krts --provider anthropic --model claude-3-5-sonnet-20241022 --limit 10 --random</code>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6>Generate specific DOIs with Gemini:</h6>
+                            <div class="bg-dark text-light p-3 rounded mb-3">
+                                <code>python manage.py generate_admin_krts --provider gemini --model gemini-1.5-pro --dois "10.1101/2025.01.01.123456" "10.1101/2025.01.02.234567"</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tip:</strong> Use <code>--dry-run</code> to see what would be processed without actually generating KRTs. 
+                        Add <code>--auto-approve</code> to automatically approve generated KRTs if you trust the model quality.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate KRTs Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1" aria-labelledby="generateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateModalLabel">Generate Admin KRTs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">
+                    Use the Django management command to generate admin KRTs. Copy and run one of the commands below in your terminal:
+                </p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Quick Start Commands:</label>
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Generate 5 random papers (Anthropic Claude)</h6>
+                                    <p class="mb-1"><code>python manage.py generate_admin_krts --provider anthropic --limit 5 --random --auto-approve</code></p>
+                                    <small class="text-muted">Good for testing and getting started</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Generate 10 papers (Gemini Pro)</h6>
+                                    <p class="mb-1"><code>python manage.py generate_admin_krts --provider gemini --model gemini-1.5-pro --limit 10</code></p>
+                                    <small class="text-muted">Use Google's Gemini model for generation</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Dry run to see what would be processed</h6>
+                                    <p class="mb-1"><code>python manage.py generate_admin_krts --provider anthropic --limit 20 --dry-run</code></p>
+                                    <small class="text-muted">See what papers would be processed without generating KRTs</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Note:</strong> You need to run these commands in your terminal/server where the Django project is deployed. 
+                    Make sure you have activated your virtual environment and set the proper API keys.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="/admin/web/adminkrt/" class="btn btn-primary">Open Django Admin</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

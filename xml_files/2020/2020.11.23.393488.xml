@@ -1,0 +1,3719 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS107393</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.23.393488</article-id>
+<article-id pub-id-type="archive">PPR243674</article-id>
+<article-version article-version-type="publisher-id">5</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>LinearTurboFold: Linear-Time Global Prediction of Conserved Structures for RNA Homologs with Applications to SARS-CoV-2</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Sizhen</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>He</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Liang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Kaibo</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Boxiang</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Mathews</surname>
+<given-names>David H.</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+<xref ref-type="aff" rid="A3">d</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>Liang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+<xref ref-type="fn" rid="FN1">†</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>School of Electrical Engineering &amp; Computer Science, Oregon State University, Corvallis, OR</aff>
+<aff id="A2">
+<label>b</label>Baidu Research, Sunnyvale, CA</aff>
+<aff id="A3">
+<label>d</label>Department of Biochemistry &amp; Biophysics, Center for RNA Biology, and Department of Biostatistics &amp; Computational Biology, University of Rochester Medical Center, Rochester, NY</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding authors: <email>liang.huang.sh@gmail.com</email> or <email>David_Mathews@urmc.rochester.edu</email>.</corresp>
+<fn id="FN1">
+<label>†</label>
+<p id="P1">Lead contact.</p>
+</fn>
+<fn id="FN2" fn-type="con">
+<p id="P2">Author contributions</p>
+<p id="P3">L.H. and D.H.M. conceived the idea and directed the project. S.L., H.Z., L.H., and D.H.M. designed the algorithm; S.L. implemented it. D.H.M. guided the evaluation that S.L. and L.Z. carried out. S.L. and H.Z. wrote the manuscript; L.H., and D.H.M. revised it. L.K. made the webserver. H.Z., B.L., L.H., and D.H.M. guided the analysis on SARS-CoV-2.</p>
+</fn>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>01</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>24</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P4">The constant emergence of COVID-19 variants reduces the effectiveness of existing vaccines and test kits. Therefore, it is critical to identify conserved structures in SARS-CoV-2 genomes as potential targets for variant-proof diagnostics and therapeutics. However, the algorithms to predict these conserved structures, which simultaneously fold and align multiple RNA homologs, scale at best cubically with sequence length, and are thus infeasible for coronaviruses, which possess the longest genomes (~30,000 <italic>nt</italic>) among RNA viruses. As a result, existing efforts on modeling SARS-CoV-2 structures resort to single sequence folding as well as local folding methods with short window sizes, which inevitably neglect long-range interactions that are crucial in RNA functions. Here we present LinearTurboFold, an efficient algorithm for folding RNA homologs that scales <italic>linearly</italic> with sequence length, enabling unprecedented <italic>global</italic> structural analysis on SARS-CoV-2. Surprisingly, on a group of SARS-CoV-2 and SARS-related genomes, LinearTurboFold’s purely <italic>in silico</italic> prediction not only is close to experimentally-guided models for local structures, but also goes far beyond them by capturing the end-to-end pairs between 5’ and 3’ UTRs (~29,800 <italic>nt</italic> apart) that match perfectly with a purely experimental work. Furthermore, LinearTurboFold identifies novel conserved structures and conserved accessible regions as potential targets for designing efficient and mutation-insensitive small-molecule drugs, antisense oligonucleotides, siRNAs, CRISPR-Cas13 guide RNAs and RT-PCR primers. LinearTurboFold is a general technique that can also be applied to other RNA viruses and full-length genome studies, and will be a useful tool in fighting the current and future pandemics.</p>
+</abstract>
+<kwd-group>
+<kwd>RNA secondary structure</kwd>
+<kwd>homologous folding</kwd>
+<kwd>conserved structures</kwd>
+<kwd>structural alignment</kwd>
+<kwd>SARS-CoV-2</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<p id="P5">Ribonucleic acid (RNA) plays important roles in many cellular processes (<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R2">2</xref>). To maintain their functions, secondary structures of RNA homologs are conserved across evolution (<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R5">5</xref>). These conserved structures provide critical targets for diagnostics and treatments. Thus, there is a need for developing fast and accurate computational methods to identify structurally conserved regions.</p>
+<p id="P6">Commonly, conserved structures involve compensatory base pair changes, where two positions in primary sequences mutate across evolution and still conserve a base pair, for instance, an AU or a CG pair replaces a GC pair in homologous sequences. These compensatory changes provide strong evidence for evolutionarily conserved structures (<xref ref-type="bibr" rid="R6">6</xref>–<xref ref-type="bibr" rid="R10">10</xref>). Meanwhile, they make it harder to align sequences when structures are unknown. Initially, the process of determining a conserved structure, termed comparative sequence analysis, was manual and required substantial insight to identify the conserved structure. A notable early achievement was the determination of the conserved tRNA secondary structure (<xref ref-type="bibr" rid="R11">11</xref>). Comparative analysis was also demonstrated to be 97% accurate as compared to crystal structures for ribosomal RNAs, where the models were refined carefully over time (<xref ref-type="bibr" rid="R12">12</xref>).</p>
+<p id="P7">To automate comparative analysis, three distinct algorithmic approaches were developed (<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R14">14</xref>). The first, “joint fold-and-align” method, seeks to simultaneously predict structures and a structural alignment for two or more sequences. This was first proposed by Sankoff (<xref ref-type="bibr" rid="R15">15</xref>) using a dynamic programming algorithm. The major limitation of this approach is that the algorithm runs in <italic>O</italic>(<italic>n</italic>
+<sup>3<italic>k</italic>
+</sup>) against <italic>k</italic> sequences with the average sequence length <italic>n</italic>. Several software packages provide implementations of the Sankoff algorithm (<xref ref-type="bibr" rid="R16">16</xref>–<xref ref-type="bibr" rid="R21">21</xref>) that use simplifications to reduce runtime. The second, “align-then-fold” approach, is to input a sequence alignment and predict the conserved structure that can be identified across sequences in the alignment. This was described by Waterman (<xref ref-type="bibr" rid="R22">22</xref>), and was subsequently refined and popularized by RNAalifold (<xref ref-type="bibr" rid="R23">23</xref>). The third, “fold-then-align” approach, is to predict plausible structures for the sequences, and then align the structures to determine the sequence alignment and the optimal conserved structures. This was described by Waterman (<xref ref-type="bibr" rid="R24">24</xref>) and implemented in RNAforester (<xref ref-type="bibr" rid="R25">25</xref>) and MARNA (<xref ref-type="bibr" rid="R26">26</xref>) (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S1</xref>).</p>
+<p id="P8">As an alternative, TurboFold II (<xref ref-type="bibr" rid="R27">27</xref>), an extension of Turbo-Fold (<xref ref-type="bibr" rid="R28">28</xref>), provides a more computationally efficient method to align and fold sequences. Taking multiple unaligned sequences as input, TurboFold II iteratively refines alignments and structure predictions so that they conform more closely to each other and converge on conserved structures. TurboFold II is significantly more accurate than other methods (<xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R18">18</xref>, <xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>) when tested on RNA families with known structures and alignments.</p>
+<p id="P9">However, the cubic runtime and quadratic memory usage of TurboFold II prevent it from scaling to longer sequences such as full-length SARS-CoV-2 genomes, which contain ~30,000 nucleotides; in fact, no joint-align-and-fold methods can scale to these genomes, which are the longest among RNA viruses. As a (not very principled) workaround, most existing efforts for modeling SARS-CoV-2 structures (<xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R36">36</xref>) resort to local folding methods (<xref ref-type="bibr" rid="R38">38</xref>, <xref ref-type="bibr" rid="R39">39</xref>) with sliding windows plus a limited pairing distance, abandoning all long-range interactions, and only consider one SARS-CoV-2 genome (<xref ref-type="fig" rid="F1">Fig. 1B–C</xref>), ignoring signals available in multiple homologous sequences. To address this challenge, we designed a linearized version of TurboFold II, <italic>LinearTurboFold</italic> (<xref ref-type="fig" rid="F1">Fig. 1A</xref>), which is a global homologous folding algorithm that scales linearly with sequence length. This linear runtime makes it the first joint-fold-and-align algorithm to scale to full-length coronavirus genomes without any constraints on window size or pairing distance, taking about 13 hours to analyze a group of 25 SARS-CoV homologs. It also leads to significant improvement on secondary structure prediction accuracy as well as an alignment accuracy comparable to or higher than all benchmarks.</p>
+<p id="P10">Over a group of 25 SARS-CoV-2 and SARS-related homologous genomes, LinearTurboFold predictions are close to the canonical structures (<xref ref-type="bibr" rid="R40">40</xref>) and structures modeled with the aid of experimental data (<xref ref-type="bibr" rid="R32">32</xref>–<xref ref-type="bibr" rid="R34">34</xref>) for several well-studied regions. Thanks to global rather than local folding, LinearTurboFold discovers a long-range interaction involving 5’ and 3’ UTRs (~29,800 <italic>nt</italic> apart), which is consistent with recent purely experimental work (<xref ref-type="bibr" rid="R35">35</xref>), and yet is out of reach for local folding methods used by existing studies (<xref ref-type="fig" rid="F1">Fig. 1B–C</xref>). In short, our <italic>in silico</italic> method of folding multiple homologs can achieve results similar to, and sometimes more accurate than, experimentally-guided models for one genome. Moreover, LinearTurboFold identifies conserved structures supported by compensatory mutations, which are potential targets for small molecule drugs (<xref ref-type="bibr" rid="R41">41</xref>) and antisense oligonucleotides (ASOs) (<xref ref-type="bibr" rid="R36">36</xref>). We further identify regions that are (a) sequence-level conserved, (b) at least 15 <italic>nt</italic> long, and (c) accessible (i.e., likely to be completely unpaired) as potential targets for ASOs (<xref ref-type="bibr" rid="R42">42</xref>), small interfering RNA (siRNA) (<xref ref-type="bibr" rid="R43">43</xref>), CRISPR-Cas13 guide RNA (gRNA) (<xref ref-type="bibr" rid="R44">44</xref>) and reverse transcription polymerase chain reaction (RT-PCR) primers (<xref ref-type="bibr" rid="R45">45</xref>). LinearTurboFold is a general technique that can also be applied to other RNA viruses (e.g., influenza, Ebola, HIV, Zika, etc.) and full-length genome studies.</p>
+<sec id="S1" sec-type="results">
+<title>Results</title>
+<p id="P11">The framework of LinearTurboFold has two major aspects (<xref ref-type="fig" rid="F1">Fig. 1A</xref>): linearized structure-aware pairwise alignment estimation (module <bold>1</bold>); and linearized homolog-aware structure prediction (module <bold>2</bold>). LinearTurboFold iteratively refines alignments and structure predictions, specifically, updating pairwise alignment probabilities by incorporating predicted base-pairing probabilities (from module <bold>2</bold>) to form structural alignments, and modifying base-pairing probabilities for each sequence by integrating the structural information from homologous sequences via the estimated alignment probabilities (from module <bold>1</bold>) to detect conserved structures. After several iterations, LinearTurboFold generates the final multiple sequence alignment (MSA) based on the latest pairwise alignment probabilities (module <bold>3</bold>) and predicts secondary structures using the latest pairing probabilities (module <bold>4</bold>). LinearTurboFold achieves linear time regarding sequence length with two major linearized modules: our recent work LinearPartition (<xref ref-type="bibr" rid="R46">46</xref>) (<xref ref-type="fig" rid="F1">Fig. 1A</xref> module <bold>2</bold>), which approximates the RNA partition function (<xref ref-type="bibr" rid="R47">47</xref>) and base pairing probabilities in linear time, and a novel algorithm LinearAlignment (module <bold>1</bold>). LinearAlignment aligns two sequences by Hidden Markov Model (HMM) in linear time by applying the same beam search heuristic (<xref ref-type="bibr" rid="R48">48</xref>) used by LinearPartition. Finally, LinearTurboFold assembles the secondary structure from the final base pairing probabilities using an accurate and linear-time method named ThreshKnot (<xref ref-type="bibr" rid="R49">49</xref>) (module <bold>4</bold>).</p>
+<p id="P12">LinearTurboFold also integrates a linear-time stochastic sampling algorithm named LinearSampling (<xref ref-type="bibr" rid="R50">50</xref>) (module <bold>5</bold>), which independently samples structures according to the homolog-aware partition functions and then calculates the probability of being unpaired for regions, which is an important property in, for example, siRNA sequence design (<xref ref-type="bibr" rid="R43">43</xref>). Therefore, the overall end-to-end runtime of LinearTurboFold scales linearly with sequence length (<xref ref-type="sec" rid="S7">Methods §1</xref>– <xref ref-type="sec" rid="S13">7</xref>). The number of iterations and other hyperparameters were tuned on the training set. As observed previously (<xref ref-type="bibr" rid="R27">27</xref>, <xref ref-type="bibr" rid="R28">28</xref>), improvements after three iterations are negligible, therefore the best number of iterations is set to be three. On the testing set, it is observed that LinearTurboFold achieves the most substantial improvements in both structure prediction and MSA accuracy in the first iteration and continues to benefit from the next two iterations (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S5</xref>). which is consistent with the observation on the training set. After approximately three iterations, both structure prediction and MSA accuracies remain stable with small fluctuations. To better demonstrate the improvement in each iteration, we visualized both base-pairing probabilities and alignment co-incidence probabilities from LinearTurboFold for a group of five tRNAs across iterations (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S6–S7</xref>).</p>
+<sec id="S2">
+<title>Scalability and Accuracy</title>
+<p id="P13">To evaluate the efficiency of LinearTurboFold against the sequence length, we collected a dataset consisting of seven families of RNAs with sequence length ranging from 210 <italic>nt</italic> to 30,000 <italic>nt</italic>, including five families from the RNAStrAlign dataset (<xref ref-type="bibr" rid="R27">27</xref>) plus 23S ribosomal RNA, HIV genomes and SARS-CoV genomes, and the calculation for each family uses five homologous sequences (<xref ref-type="sec" rid="S14">Methods §8</xref>). <xref ref-type="fig" rid="F2">Fig. 2A</xref> compares the running times of LinearTurboFold with TurboFold II and two Sankoff-style simultaneous folding and alignment algorithms, LocARNA and MXSCARNA. Clearly, LinearTurboFold scales linearly with sequence length <italic>n</italic>, and is substantially faster than other algorithms, which scale superlinearly. The linearization in LinearTurboFold brought orders of magnitude speedup over the cubic-time TurboFold II, taking only 12 minutes on the HIV family (average length 9,686 <italic>nt</italic>) while TurboFold II takes 3.1 days (372× speedup). More importantly, LinearTurboFold takes only 40 minutes on five SARS-CoV sequences while all other benchmarks fail to scale. Regarding the memory usage (<xref ref-type="fig" rid="F2">Fig. 2B</xref>), LinearTurboFold costs linear memory space with sequence length, while other benchmarks use quadratic or more memory. In <xref ref-type="fig" rid="F2">Fig. 2C–D</xref>, we also demonstrate that the runtime and memory usage against the number of homologs using sets of 16S rRNAs about 1,500 <italic>nt</italic> in length. The apparent complexity of LinearTurboFold against the group size <italic>k</italic> is higher than that of TurboFold II because the runtime of the latter is <italic>O</italic>(<italic>kn</italic>
+<sup>3</sup> + <italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>
+<sup>2</sup>) and is dominated by the <italic>O</italic>(<italic>kn</italic>
+<sup>3</sup>) partition function calculation, thus scaling <italic>O</italic>(<italic>k</italic>
+<sup>1.4</sup>) empirically. By contrast, LinearTurboFold linearizes both partition function and alignment modules, so its overall runtime becomes <italic>O</italic>(<italic>kn</italic> + <italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>) and is instead dominated by the <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>) alignment module, therefore scaling <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>) in practice. A similar analysis holds for memory usage (<xref ref-type="fig" rid="F2">Fig. 2E</xref>).<xref ref-type="fn" rid="FN3">*</xref>
+</p>
+<p id="P14">We next compare the accuracies of secondary structure prediction and MSA between LinearTurboFold and several benchmark methods (<xref ref-type="sec" rid="S15">Methods §9</xref>). Besides Sankoff-style LocARNA and MXSCARNA, we also consider three types of negative controls: (a) single sequence folding (partition function-based): Vienna RNAfold (<xref ref-type="bibr" rid="R39">39</xref>) (-p mode) and LinearPartition; (b) sequence-only alignment: MAFFT (<xref ref-type="bibr" rid="R29">29</xref>) and LinearAlignment (a standalone version of the alignment method developed for this work but without structural information); and (c) an align-then-fold method that predicts consensus structures from MSAs (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S1</xref>): MAFFT + RNAalifold (<xref ref-type="bibr" rid="R23">23</xref>).</p>
+<p id="P15">For secondary structure prediction, LinearTurboFold, TurboFold II and LocARNA achieve higher F1 scores than single sequence folding methods (Vienna RNAfold and LinearPartition) (<xref ref-type="fig" rid="F2">Fig. 2F</xref>), which demonstrates folding with homology information performs better than folding sequences separately. Overall, LinearTurboFold performs significantly better than all the other benchmarks on structure prediction. For the accuracy of MSAs (<xref ref-type="fig" rid="F2">Fig. 2G</xref>), the structural alignments from LinearTurboFold obtain higher accuracies than sequence-only alignments (LinearAlignment and MAFFT) on all four families, especially for families with low sequence identity. On average, LinearTurboFold performs comparably with TurboFold II and significantly better than other benchmarks on alignments. We also note that the structure prediction accuracy of the align-then-fold approach (MAFFT + RNAalifold) depends heavily on the alignment accuracy, and is the worst when the sequence identity is low (e.g., SRP RNA) and the best when the sequence identity is high (e.g., 16S rRNA) (<xref ref-type="fig" rid="F2">Fig. 2F–G</xref>).</p>
+</sec>
+<sec id="S3">
+<title>Highly Conserved Structures in SARS-CoV-2 and SARS-related Betacoronaviruses</title>
+<p id="P16">RNA sequences with conserved secondary structures play vital biological roles and provide potential targets. The current COVID-19 outbreak raises an emergent requirement of identifying potential targets for diagnostics and therapeutics. Given the strong scalability and high accuracy, we used LinearTurboFold on a group of full-length SARS-CoV-2 and SARS-related (SARSr) genomes to obtain global structures and identify highly conserved structural regions.</p>
+<p id="P17">We used a greedy algorithm to select the 16 most diverse genomes from all the valid SARS-CoV-2 genomes submitted to the Global Initiative on Sharing Avian Influenza Data (GISAID) (<xref ref-type="bibr" rid="R52">52</xref>) up to December 2020 (<xref ref-type="sec" rid="S17">Methods §11</xref>). We further extended the group by adding 9 SARS-related homologous genomes (5 human SARS-CoV-1 and 4 bat coronaviruses) (<xref ref-type="bibr" rid="R53">53</xref>). In total, we built a dataset of 25 full-length genomes consisting of 16 SARS-CoV-2 and 9 SARS-related sequences (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S9</xref>).The average pairwise sequence identities of the 16 SARS-CoV-2 and the total 25 genomes are 99.9% and 89.6%, respectively. LinearTurboFold takes about 13 hours and 43 GB on the 25 genomes.</p>
+<p id="P18">To evaluate the reliability of LinearTurboFold predictions, we first compare them with the Huston <italic>et al</italic>.’s SHAPE-guided models (<xref ref-type="bibr" rid="R32">32</xref>) for regions with well-characterized structures across betacoronaviruses. For the extended 5’ and 3’ untranslated regions (UTRs), LinearTurboFold’s predictions are close to the SHAPE-guided structures (<xref ref-type="fig" rid="F3">Fig. 3A–B</xref>), i.e., both identify the stem-loops (SLs) 1–2 and 4–7 in the extended 5’ UTR, and the bulged stem-loop (BSL), SL1, and a long bulge stem for the hypervariable region (HVR) including the stem-loop II-like motif (S2M) in the 3’ UTR. Interestingly, in our model, the high unpaired probability of the stem in the SL4b indicates the possibility of being single-stranded as an alternative structure, which is supported by experimental studies (<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R36">36</xref>). In addition, the compensatory mutations LinearTurboFold found in UTRs strongly support the evolutionary conservation of structures (<xref ref-type="fig" rid="F3">Fig. 3A</xref>).</p>
+<p id="P19">The most important difference between LinearTurboFold’s prediction and Huston <italic>et al</italic>.’s experimentally-guided model is that LinearTurboFold discovers an end-to-end interaction (29.8 kilobases apart) between the 5’ UTR (SL3, 60-82 <italic>nt</italic>) and the 3’ UTR (final region, 29845-29868 <italic>nt</italic>), which fold locally by themselves in Huston <italic>et al</italic>.’s model. Interestingly, this 5’-3’ interaction matches <italic>exactly</italic> with the one discovered by the purely experimental work of Ziv <italic>et al</italic>. (<xref ref-type="bibr" rid="R37">37</xref>) using the COMRADES technique to capture long-range base-pairing interactions (<xref ref-type="fig" rid="F3">Fig. 3C</xref>). These end-to-end interactions have been well established by theoretical and experimental studies (<xref ref-type="bibr" rid="R54">54</xref>–<xref ref-type="bibr" rid="R56">56</xref>) to be common in natural RNAs, but are far beyond the reaches of local folding methods used in existing studies on SARS-CoV-2 secondary structures (<xref ref-type="bibr" rid="R32">32</xref>–<xref ref-type="bibr" rid="R35">35</xref>). By contrast, LinearTurboFold predicts secondary structures globally without any limit on window size or base-pairing distance, enabling it to discover long-distance interactions across the whole genome. The similarity between our predictions and the experimental work shows that our <italic>in silico</italic> method of folding multiple homologs can achieve results similar to, if not more accurate than, those experimentally-guided single-genome prediction.</p>
+<p id="P20">LinearTurboFold can model these end-to-end interactions thanks to three ingredients: (a) linearization, (b) LinearPartition’s better modeling power on long sequences and long-range pairs, and (c) homologous folding and soft alignment. Linearization not only enables LinearTurboFold to scale to longer sequences, but also improves the accuracy of modeling long-range interactions benefiting from LinearPartition (<xref ref-type="bibr" rid="R46">46</xref>). In addition, homologous folding is also crucial. We observed that LinearPartition can model the same end-to-end interactions detected by Ziv <italic>et al</italic>. for 8 out of 25 sequences (4 out of 16 SARS-CoV-2 and 4 out of 9 SARS-related sequences; see <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S12A</xref> and the left column of <xref ref-type="supplementary-material" rid="SD1">Fig. S13</xref>). For the other sequences, however, LinearPartition either cannot predict end-to-end interactions or predicts them in the wrong locations. On the other hand, LinearTurboFold propagates the correct structural information from those eight sequences to other homologs, resulting in all SARS-CoV-2 sequences having the same end-to-end pairs (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S12B</xref> and the right column of <xref ref-type="supplementary-material" rid="SD1">Fig. S13</xref>). By contrast, the align-then-fold approach (MAFFT + RNAalifold), which relies on the input hard alignment and predicts one single consensus structure for all homologs, fails to predict such long-range interactions (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S10B</xref>).</p>
+<p id="P21">The frameshifiting stimulation element (FSE) is another well-characterized region. For an extended FSE region, the LinearTurboFold prediction consists of two substructures (<xref ref-type="fig" rid="F4">Fig. 4A</xref>): the 5’ part includes an attenuator hairpin and a stem, which are connected by a long internal loop (16 <italic>nt</italic>) including the slippery site, and the 3’ part includes three stem loops. We observe that our predicted structure of the 5’ part is consistent with experimentally-guided models (<xref ref-type="bibr" rid="R32">32</xref>, <xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R35">35</xref>) (<xref ref-type="fig" rid="F4">Fig. 4B–D</xref>). In the attenuator hairpin, the small internal loop motif (UU) was previously selected as a small molecule binder that stabilizes the folded state of the attenuator hairpin and impairs frameshifting (<xref ref-type="bibr" rid="R41">41</xref>). For the long internal loop including the slippery site, we will show in the next section that it is both highly accessible and conserved (<xref ref-type="fig" rid="F5">Fig. 5</xref>), which makes it a perfect candidate for drug design. For the 3’ region of the FSE, LinearTurboFold successfully predicts stems 1–2 (but misses stem 3) of the canonical three-stem pseudoknot (<xref ref-type="bibr" rid="R40">40</xref>) (<xref ref-type="fig" rid="F4">Fig. 4E</xref>). Our prediction is closer to the canonical structure compared to the experimentally-guided models (<xref ref-type="bibr" rid="R32">32</xref>, <xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R35">35</xref>) (<xref ref-type="fig" rid="F4">Fig. 4B–D</xref>); one such model (<xref ref-type="fig" rid="F4">Fig. 4B</xref>) identified the pseudoknot (stem 3) but with an open stem 2. Note that all these experimentally-guided models for the FSE region were estimated for specific local regions. As a result, the models are sensitive to the context and region boundaries (<xref ref-type="bibr" rid="R32">32</xref>, <xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R57">57</xref>) (see <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">S11D–F</xref> for alternative structures of <xref ref-type="fig" rid="F4">Fig. 4B–D</xref> with different regions). LinearTurboFold, by contrast, does not suffer from this problem by virtue of global folding without local windows. Besides SARS-CoV-2, we notice that the estimated structure of the SARS-CoV-1 reference sequence (<xref ref-type="fig" rid="F4">Fig. 4F</xref>) from LinearTurboFold is similar to SARS-CoV-2 (<xref ref-type="fig" rid="F4">Fig. 4A</xref>), which is consistent with the observation that the structure of the FSE region is highly conserved among betacoronaviruses (<xref ref-type="bibr" rid="R40">40</xref>). Finally, as negative controls, both the single sequence folding algorithm (LinearPartition in <xref ref-type="fig" rid="F4">Fig. 4G</xref>) and the align-then-fold method (RNAalifold in <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S11G</xref>) predict quite different structures compared with the LinearTurboFold prediction (<xref ref-type="fig" rid="F4">Fig. 4A</xref>) (39%/61% of pairs from the LinearTurboFold model are not found by LinearPartition/RNAalifold).</p>
+<p id="P22">In addition to the well-studied UTRs and FSE regions, LinearTurboFold discovers 50 conserved structures with identical structures among 25 genomes, and 26 regions are novel compared to previous studies (<xref ref-type="bibr" rid="R31">31</xref>, <xref ref-type="bibr" rid="R32">32</xref>) (<xref ref-type="fig" rid="F4">Fig. 4H</xref>, <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3</xref>). These novel structures are potential targets for small-molecule drugs (<xref ref-type="bibr" rid="R41">41</xref>) and ASOs (<xref ref-type="bibr" rid="R36">36</xref>, <xref ref-type="bibr" rid="R58">58</xref>). LinearTurboFold also recovers fully conserved base pairs with compensatory mutations (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S2</xref>), which imply highly conserved structural regions whose functions might not have been explored. We provide the complete multiple sequence alignment and predicted structures for 25 genomes from LinearTurboFold (Dataset S1; see <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S14</xref> for the format).</p>
+</sec>
+<sec id="S4">
+<title>Highly Accessible and Conserved Regions in SARS-CoV-2 and SARS-related Betacoronaviruses</title>
+<p id="P23">Studies show that the siRNA silencing efficiency, ASO inhibitory efficacy, CRISPR-Cas13 knockdown efficiency, and RT-PCR primer binding efficiency, all correlate with the target region’s <italic>accessibility</italic> (<xref ref-type="bibr" rid="R43">43</xref>–<xref ref-type="bibr" rid="R45">45</xref>, <xref ref-type="bibr" rid="R59">59</xref>), which is the probability of a target site being fully unpaired. However, most existing work for designing siRNAs, ASOs, CRISPR-Cas13 gRNAs, and RT-PCR primers does not take this feature into consideration (<xref ref-type="bibr" rid="R60">60</xref>, <xref ref-type="bibr" rid="R61">61</xref>) (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S4</xref>). Here LinearTurboFold is able to provide more principled design candidates by identifying accessible regions of the target genome. In addition to accessibility, the emerging variants around the world reduce effectiveness of existing vaccines and test kits (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S4</xref>), which indicates sequence conservation is another critical aspect for therapeutic and diagnostic design. LinearTurboFold, being a tool for both structural alignment and homologous folding, can identify regions that are both (sequence-wise) conserved and (structurally) accessible, and it takes advantage of not only SARS-CoV-2 variants but also homologous sequences, e.g., SARS-CoV-1 and bat coronavirus genomes, to identify conserved regions from historical and evolutionary perspectives.</p>
+<p id="P24">To get unstructured regions, Rangan <italic>et al</italic>. (<xref ref-type="bibr" rid="R31">31</xref>) imposed a threshold on unpaired probability of each position, which is a crude approximation because the probabilities are not independent of each other. By contrast, the widely-used stochastic sampling algorithm (<xref ref-type="bibr" rid="R50">50</xref>, <xref ref-type="bibr" rid="R62">62</xref>) builds a representative ensemble of structures by sampling independent secondary structures according to their probabilities in the Boltzmann distribution. Thus the accessibility for a region can be approximated as the fraction of sampled structures in which the region is single-stranded. LinearTurboFold utilized LinearSampling (<xref ref-type="bibr" rid="R50">50</xref>) to generate 10,000 independent structures for each genome according to the modified partition functions after the iterative refinement (<xref ref-type="fig" rid="F1">Fig. 1A</xref> module <bold>5</bold>), and calculated accessibilities for regions at least 15 <italic>nt</italic> long. We then define <italic>accessible regions</italic> that are with at least 0.5 accessibility among all 16 SARS-CoV-2 genomes (<xref ref-type="fig" rid="F5">Fig. 5A–B</xref>). We also measure the free energy to open a target region [<italic>i, j</italic>] (<xref ref-type="bibr" rid="R63">63</xref>), notated: Δ<italic>G</italic>
+<sub>u</sub>[<italic>i</italic>, <italic>j</italic>] = −<italic>RT</italic>(log <italic>Z</italic>
+<sub>u</sub>[<italic>i</italic>, <italic>j</italic>] − log <italic>Z</italic>) = −<italic>RT</italic> log <italic>P</italic>
+<sub>u</sub>[<italic>i</italic>, <italic>j</italic>] where <italic>Z</italic> is the partition function which sums up the equilibrium constants of all possible secondary structures, <italic>Z</italic>
+<sub>u</sub>[<italic>i</italic>, <italic>j</italic>] is the partition function over all structures in which the region [<italic>i</italic>, <italic>j</italic>] is fully unpaired, <italic>R</italic> is the universal gas constant and <italic>T</italic> is the thermodynamic temperature. Therefore <italic>P</italic>
+<sub>u</sub>[<italic>i</italic>, <italic>j</italic>] is the unpaired probability of the target region and can be approximated via sampling by <italic>s</italic>
+<sub>0</sub>/<italic>s</italic>, where <italic>s</italic> is the sample size and <italic>s</italic>0 is the number of samples in which the target region is single-stranded. The regions whose free energy changes are close to zero need less free energy to open, thus more accessible to bind with siRNAs, ASOs, CRISPR-Cas13 gRNAs and RT-PCR primers.</p>
+<p id="P25">Next, to identify <italic>conserved regions</italic> that are highly conserved among both SARS-CoV-2 and SARS-related genomes, we require that these regions contain at most three mutated sites on the 9 SARS-related genomes compared to the SARS-CoV-2 reference sequence because historically conserved sites are also unlikely to change in the future (<xref ref-type="bibr" rid="R64">64</xref>), and the average sequence identity with reference sequence over a large SARS-CoV-2 dataset is at least 0.999 (here we use a dataset of 2M SARS-CoV-2 genomes submitted to GISAID up to June 30, 2021<sup>
+<xref ref-type="fn" rid="FN4">†</xref>
+</sup>; see <xref ref-type="sec" rid="S17">Methods §11</xref>). Finally, we identified 33 <italic>accessible and conserved regions</italic> (<xref ref-type="fig" rid="F5">Fig. 5G</xref> and <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S5</xref>), which are not only structurally accessible among SARS-CoV-2 genomes but also highly conserved among SARS-CoV-2 and SARS-related genomes (<xref ref-type="fig" rid="F5">Fig. 5C</xref>). Because the specificity is also a key factor influencing siRNA efficiency (<xref ref-type="bibr" rid="R65">65</xref>), we used BLAST against the human transcript dataset for these regions (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S5</xref>). Finally, we also listed the GC content of each region. Among these regions, region 16 corresponds to the internal loop containing the slippery site in the extended FSE region, and it is conserved at both structural and sequence levels (<xref ref-type="fig" rid="F5">Fig. 5D and 5H</xref>). Besides SARS-CoV-2 genomes, the SARS-related genomes such as the SARS-CoV-1 reference sequence (NC_004718.3) and a bat coronavirus (BCoV, MG772934.1) also form similar structures around the slippery site (<xref ref-type="fig" rid="F5">Fig. 5A</xref>). By removing the constraint of conservation on SARS-related genomes, we identified 38 additional candidate regions (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S6</xref>) that are accessible but only highly conserved on SARS-CoV-2 variants.</p>
+<p id="P26">We also designed a negative control by analyzing the SARS-CoV-2 reference sequence alone using LinearSampling, which can also predict accessible regions. However, these regions are not structurally conserved among the other 15 SARS-CoV-2 genomes, resulting in vastly different accessibilities, except for one region in the M gene (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S7</xref>). The reason for this difference is that, even with a high sequence identity (over 99.9%), single sequence folding algorithms still predict greatly dissimilar structures for the SARS-CoV-2 genomes (<xref ref-type="fig" rid="F5">Fig. 5E–F</xref>). Both regions (in nsp11 and N genes) are fully conserved among the 16 SARS-CoV-2 genomes, yet they still fold into vastly different structures due to mutations outside the regions; as a result, the accessibilities are either low (nsp11) or in a wide range (N) (<xref ref-type="fig" rid="F5">Fig. 5D</xref>). Conversely, addressing this by folding each sequence with proclivity of base pairing inferred from all homologous sequences, LinearTurboFold structure predictions are more consistent with each other and thus can detect conserved structures (<xref ref-type="fig" rid="F5">Fig. 5A–B</xref>).</p>
+</sec>
+</sec>
+<sec id="S5" sec-type="discussion">
+<title>Discussion</title>
+<p id="P27">The constant emergence of new SARS-CoV-2 variants is reducing the effectiveness of exiting vaccines and test kits. To cope with this issue, there is an urgent need to identify conserved structures as promising targets for therapeutics and diagnostics that would work in spite of current and future mutations. Here we presented LinearTurboFold, an end-to-end linear-time algorithm for structural alignment and conserved structure prediction of RNA homologs, which is the first joint-fold-and-align algorithm to scale to full-length SARS-CoV-2 genomes without imposing any constraints on base-pairing distance. We also demonstrate that LinearTurboFold leads to significant improvement on secondary structure prediction accuracy as well as an alignment accuracy comparable to or higher than all benchmarks.</p>
+<p id="P28">Unlike existing work on SARS-CoV-2 using local folding and single-sequence folding workarounds, LinearTurboFold enables unprecedented global structural analysis on SARS-CoV-2 genomes; in particular, it can capture long-range interactions, especially the one between 5’ and 3’ UTRs across the whole genome, which matches perfectly with a recent purely experiment work. Over a group of SARS-CoV-2 and SARS-related homologs, LinearTurboFold identifies not only conserved structures supported by compensatory mutations and experimental studies, but also accessible and conserved regions as vital targets for designing efficient small-molecule drugs, siRNAs, ASOs, CRISPR-Cas13 gRNAs and RT-PCR primers. LinearTurboFold is widely applicable to the analysis of other RNA viruses (influenza, Ebola, HIV, Zika, etc.) and full-length genome analysis.</p>
+</sec>
+<sec id="S6" sec-type="methods">
+<title>Methods</title>
+<sec id="S7">
+<label>§1</label>
+<title>Pairwise Hidden Markov Model</title>
+<p id="P29">We use a pairwise Hidden Markov Model (pair-HMM) to align two sequences (<xref ref-type="bibr" rid="R51">51</xref>, <xref ref-type="bibr" rid="R66">66</xref>). The model includes three actions (<italic>h</italic>): aligning two nucleotides from two sequences (ALN), inserting a nucleotide in the first sequence without a corresponding nucleotide in the other sequence (INS1), and a nucleotide insertion in the second sequence without a corresponding nucleotide in the first sequence (INS2). We then define &#120016;(<bold>x</bold>, <bold>y</bold>) as a set of all the possible alignments for the two sequences, and one alignment <italic>a</italic> ∊ &#120016;(<bold>x</bold>, <bold>y</bold>) as a sequence of steps (<italic>h</italic>, <italic>i</italic>, <italic>j</italic>) with <italic>m</italic> + 2 steps, where (<italic>h</italic>, <italic>i</italic>, <italic>j</italic>) means an alignment step at the position pair (<italic>i</italic>, <italic>j</italic>) by the action <italic>h</italic>. Thus, for the <italic>l</italic>th step <italic>a<sub>l</sub>
+</italic> = (<italic>h<sub>l</sub>
+</italic>, <italic>i<sub>l</sub>
+</italic>, <italic>j<sub>l</sub>
+</italic>) ∊ <italic>a</italic>, the values of <italic>i<sub>l</sub>
+</italic> and <italic>j<sub>l</sub>
+</italic> depend on the action <italic>h<sub>l</sub>
+</italic> and the positions <italic>i</italic>
+<sub>
+<italic>l</italic>−1</sub> and <italic>j</italic>
+<sub>
+<italic>l</italic>−1</sub> of <italic>a</italic>
+<sub>
+<italic>l</italic>−1</sub>: <disp-formula id="FD1">
+<mml:math id="M1">
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext> (ALN, </mml:mtext>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>i</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext> (INS </mml:mtext>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>i</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>INS</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext> (INS 2</mml:mtext>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>i</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>j</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>INS</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> with (ALN, 0, 0) as the first step, and (ALN, |<bold>x</bold>| + 1, |<bold>y</bold>| + 1) as the last one. For two sequences {ACAAGU, AACUG}, one possible alignment {−ACAAGU, AAC−−UG} can be specified as {(ALN, 0, 0) → (INS2, 0, 1) → (ALN, 1, 2) → (ALN, 2, 3) → (INS1, 3, 3) → (INS1, 4, 3) → (ALN, 5, 4) → (ALN, 6, 5) → (ALN, 7, 6)}, where a gap symbol (−) represents a nucleotide insertion in the other sequence at the corresponding position (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3</xref>). The action <italic>h<sub>l</sub>
+</italic> in each step (<italic>h<sub>l</sub>
+</italic>, <italic>i<sub>l</sub>
+</italic>, <italic>j<sub>l</sub>
+</italic>) corresponds to a line segment starting from the previous node (<italic>i</italic>
+<sub>
+<italic>l</italic>−1</sub>, <italic>j</italic>
+<sub>
+<italic>l</italic>−1</sub>) and stopping at the node (<italic>i<sub>l</sub>
+</italic>, <italic>j<sub>l</sub>
+</italic>). Thus the line segment is horizontal, vertical or diagonal towards the top-right corner when <italic>h<sub>l</sub>
+</italic> is INS1, INS2 or ALN, respectively (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3</xref>).</p>
+<p id="P30">We initialize the first step with the state ALN of probability 1, thus <italic>p<sub>π</sub>
+</italic>(ALN) = 1. <italic>p</italic>
+<sub>t</sub>(<italic>h</italic>
+<sub>2</sub> | <italic>h</italic>
+<sub>1</sub>) is the transition probability from the state <italic>h</italic>
+<sub>1</sub> to <italic>h</italic>
+<sub>2</sub>, and <italic>p</italic>
+<sub>e</sub>((<italic>c</italic>
+<sub>1</sub>, <italic>c</italic>
+<sub>2</sub>) | <italic>h</italic>
+<sub>1</sub>) is the probability of the state <italic>h</italic>
+<sub>1</sub> emitting a character pair (<italic>c</italic>
+<sub>1</sub>, <italic>c</italic>
+<sub>2</sub>) with values from {A, G, C, U, −}. Both the emission and transition probabilities were taken from TurboFold II. The function <italic>e</italic>() yields a character pair based on <italic>a<sub>l</sub>
+</italic> and the nucleotides of two sequences: <disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>y</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>i</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>−</mml:mo>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext> INS1 </mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext> INS2</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>x<sub>i</sub>
+</italic> and <italic>y<sub>i</sub>
+</italic> are the <italic>i</italic>th and <italic>j</italic>th nucleotides of sequences <bold>x</bold> and <bold>y</bold>, respectively. Note that the first step <italic>a</italic>
+<sub>0</sub> = (ALN, 0, 0) and the last <italic>a</italic>
+<sub>
+<italic>m</italic>+1</sub> = (ALN, |<bold>x</bold>| + 1, |<bold>y</bold>| + 1) do not have emissions.</p>
+<p id="P31">We denote forward probability <inline-formula>
+<mml:math id="M3">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> encompassing the probability of the partial alignments of <bold>x</bold> and <bold>y</bold> up to positions <italic>i</italic> and <italic>j</italic>, and all the alignments that go through the step (<italic>h</italic>, <italic>i</italic>, <italic>j</italic>): <disp-formula id="FD3">
+<mml:math id="M4">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi mathvariant="script">A</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mo>∃</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">[</mml:mo>
+<mml:mo>:</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo stretchy="false">]</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow/>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mi>π</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>k</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mtext>t</mml:mtext>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mtext>e</mml:mtext>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula> where <italic>a</italic>[: <italic>k</italic>] indicates the partial alignments from the starting node up to the <italic>k</italic>th step and <italic>a<sub>k</sub>
+</italic> = (<italic>h</italic>, <italic>i</italic>, <italic>j</italic>). For instance, <inline-formula>
+<mml:math id="M5">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>, <inline-formula>
+<mml:math id="M6">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS </mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M7">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> corresponds to the region circled by the blue dashed lines (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3B, C and D</xref>). Similarly, the backward probability <inline-formula>
+<mml:math id="M8">
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> assembles the probability of partial alignments <italic>a</italic>[<italic>k</italic> + 1 :] from the (<italic>k</italic> + 1)th step up to the end one: <disp-formula id="FD4">
+<mml:math id="M9">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi mathvariant="script">A</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mo>∃</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">[</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>:</mml:mo>
+<mml:mo stretchy="false">]</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow/>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>m</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mtext>t</mml:mtext>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mtext>e</mml:mtext>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mtext>t</mml:mtext>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>h</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P32">For example, <inline-formula>
+<mml:math id="M10">
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>, <inline-formula>
+<mml:math id="M11">
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS </mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M12">
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mn>3</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS2 </mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> are the regions circled by the yellow dashed line (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3B, C and D</xref>). Thus, the probability of observing two sequences <italic>p</italic>(<bold>x</bold>, <bold>y</bold>) is <inline-formula>
+<mml:math id="M13">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>|</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>|</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> or <inline-formula>
+<mml:math id="M14">
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>.</p>
+</sec>
+<sec id="S8">
+<label>§2</label>
+<title>Posterior Co-incidence Probability Computation</title>
+<p id="P33">Nucleotide positions <italic>i</italic> and <italic>j</italic> in two sequences <bold>x</bold> and <bold>y</bold> are said to be <italic>co-incident</italic> (notated as <italic>i</italic> ~ <italic>j</italic>) in an alignment <italic>a</italic> if the alignment path goes through the node (<italic>i</italic>, <italic>j</italic>) (<xref ref-type="bibr" rid="R51">51</xref>). Since the node (<italic>i</italic>, <italic>j</italic>) is reachable by three actions &#120023; = {ALN, INS1, INS2}, the co-incidence probability for a position pair (<italic>i</italic>, <italic>j</italic>) given two sequences is: <disp-formula id="FD5">
+<label>[1]</label>
+<mml:math id="M15">
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>∼</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mo>&#119964;</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mo>∃</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mn>i</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>∈</mml:mo>
+<mml:mi>a</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> where <italic>p</italic>(<bold>x</bold>, <bold>y</bold>, <italic>a</italic>) is the probability of two sequences with the alignment <italic>a</italic>, and <italic>p</italic>(<bold>x</bold>, <bold>y</bold>) is the probability of observing two sequences, which is the sum of probability of all the possible alignments: <disp-formula id="FD6">
+<mml:math id="M16">
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext mathvariant="bold">y</mml:mtext>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mo>&#119964;</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd/>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P34">The co-incidence probability for positions <italic>i</italic> and <italic>j</italic> (<xref ref-type="disp-formula" rid="FD5">Equation 1</xref>) can be computed by: <disp-formula id="FD7">
+<mml:math id="M17">
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>∼</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>β</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mi mathsize="normal" mathvariant="bold">x</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:mi mathsize="normal" mathvariant="bold">y</mml:mi>
+<mml:mo>|</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+</sec>
+<sec id="S9">
+<label>§3</label>
+<title>LinearAlignment</title>
+<p id="P35">Unlike a previous method (<xref ref-type="bibr" rid="R51">51</xref>) that fills out all the nodes in the alignment matrix by columns (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S3</xref>). LinearAlignment scans the matrix based on the <italic>step count s</italic>, which is the sum value of <italic>i</italic> and <italic>j</italic> (<italic>s</italic> = <italic>i</italic> + <italic>j</italic>) for the partial alignments of <bold>x</bold>
+<sub>[1,<italic>i</italic>]</sub> and <bold>y</bold>
+<sub>[1,<italic>j</italic>]</sub>. As shown in the pseudocode (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref>), the forward phase starts from the node (0, 0) in the state ALN of probability 1, then iterates the step count <italic>s</italic> from 0 to |<bold>x</bold>| + |<bold>y</bold>| − 1. For each step count <italic>s</italic> with a specific state <italic>h</italic> from &#120023;, we first collect all the nodes (<italic>i</italic>, <italic>j</italic>) with the step count <italic>s</italic> with <inline-formula>
+<mml:math id="M18">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> existing, which means the position pair (<italic>i</italic>, <italic>j</italic>) has been visited via the state <italic>h</italic> before. Then each node makes transitions to next nodes by there states, and updates the corresponding forward probabilities <inline-formula>
+<mml:math id="M19">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>, <inline-formula>
+<mml:math id="M20">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>INS</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M21">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>ALN</mml:mtext>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula>, respectively.</p>
+<p id="P36">The current alignment algorithm is still an exhaustive-search algorithm and costs quadratic time and space for all the |<bold>x</bold>| × |<bold>y</bold>| nodes. To reduce the runtime, LinearAlignment uses the beam search heuristic algorithm (<xref ref-type="bibr" rid="R48">48</xref>) and keeps a limited number of promising nodes at each step. For each step count <italic>s</italic> with a state <italic>h</italic>, LinearAlignment applies the beam search method first over <italic>B</italic>(<italic>s</italic>, <italic>h</italic>), which is the collection of all the nodes (<italic>i</italic>, <italic>j</italic>) with step count <italic>s</italic> and the presence of <inline-formula>
+<mml:math id="M22">
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>h</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref> line 6).This algorithm only saves the top <italic>b<sub>aln</sub>
+</italic> nodes with the highest forward scores in <italic>B</italic>(<italic>s</italic>, <italic>h</italic>), and these are subsequently allowed to make transitions to the next states. Here <italic>b<sub>aln</sub>
+</italic> is a user-specified beam size and the default value is 100. In total, <italic>O</italic>(<italic>b<sub>aln</sub>n</italic>) nodes survive because the length of <italic>s</italic> is |<bold>x</bold>| + |<bold>y</bold>| and each step count keeps <italic>b<sub>aln</sub>
+</italic> nodes. For simplicity, we show the topological order and the beam search method with alignment examples (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S3A</xref>), while the forward-backward algorithm adopts the same idea by summing the probabilities of all the possible alignments.</p>
+<p id="P37">After the forward phase, the backward phase (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref>) performs in linear time to calculate the co-incidence probabilities automatically because only a linear number of nodes in <italic>B</italic>(<italic>s</italic>, <italic>h</italic>) are stored. Thus by pruning low-scoring candidates at each step in the forward algorithm, we reduce the runtime from <italic>O</italic>(<italic>n</italic>
+<sup>2</sup>) to <italic>O</italic>(<italic>b<sub>aln</sub>n</italic>) for aligning two sequences. For <italic>k</italic> input homologous sequences, LinearTurboFold computes posterior co-incidence probabilities for each pair of sequences by LinearAlignment, which costs <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>b<sub>aln</sub>n</italic>) runtime in total.</p>
+</sec>
+<sec id="S10">
+<label>§4</label>
+<title>Match Scores Computation and Modified LinearAlignment</title>
+<p id="P38">To encourage the pairwise alignment conforming with estimated secondary structures, LinearTurboFold predicts structural alignments by incorporating the secondary structural conformation. PMcomp (<xref ref-type="bibr" rid="R67">67</xref>) first proposed the match score to measure the structural similarity for position pairs between a pair of sequences, and TurboFold II adapts it as a prior. Based on the base pair probabilities <italic>P</italic>
+<sub>
+<bold>x</bold>
+</sub>(<italic>i</italic>, <italic>j</italic>) estimated from the partition function for a sequence <bold>x</bold>, a position <italic>i</italic> could be paired with bases upstream, downstream or unpaired, with corresponding probability <italic>P</italic>
+<sub>
+<bold>x</bold>,&gt;</sub>(<italic>i</italic>) = ∑<sub>
+<italic>j</italic>&lt;<italic>i</italic>
+</sub> <italic>P</italic>
+<sub>
+<bold>x</bold>
+</sub>(<italic>i</italic>, <italic>j</italic>), <italic>P</italic>
+<sub>
+<bold>x</bold>,&lt;</sub>(<italic>i</italic>) = ∑<sub>
+<italic>j</italic>&gt;<italic>i</italic>
+</sub> <italic>P</italic>
+<sub>
+<bold>x</bold>
+</sub>(<italic>i</italic>, <italic>j</italic>) and <italic>P</italic>
+<sub>
+<bold>x</bold>,<italic>o</italic>
+</sub>(<italic>i</italic>) = 1 − <italic>P</italic>
+<sub>
+<bold>x</bold>,&gt;</sub>(<italic>i</italic>) − <italic>P</italic>
+<sub>
+<bold>x</bold>,<italic>&lt;</italic>
+</sub>(<italic>i</italic>), respectively. The match score <italic>m</italic>
+<sub>
+<bold>x</bold>,<bold>y</bold>
+</sub>(<italic>i</italic>, <italic>j</italic>) for two positions <italic>i</italic> and <italic>j</italic> from two sequences <bold>x</bold> and <bold>y</bold> is based on the probabilities of these three structural propensities from the last iteration (<italic>t</italic> − 1): <disp-formula id="FD8">
+<mml:math id="M23">
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>m</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi mathsize="normal">y</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mo>&gt;</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mo>&gt;</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msqrt>
+<mml:msqrt>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mo>&lt;</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mo>&lt;</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow/>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:msqrt>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>o</mml:mtext>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mtext>y</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mi>o</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msqrt>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mn>3</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula> where <italic>α</italic>
+<sub>1</sub>, <italic>α</italic>
+<sub>2</sub> and <italic>α</italic>
+<sub>3</sub> are weight parameters trained in TurboFold II. The forward-backward phrases integrate the match score as a prior when aligning two nucleotides (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref> line 10 and line 12).</p>
+<p id="P39">TurboFold II separately pre-computes match scores for all the <italic>O</italic>(<italic>n</italic>
+<sup>2</sup>) position pairs for pairs of sequences before the HMM alignment calculation. However, only a linear number of pairs <italic>O</italic>(<italic>b<sub>aln</sub>n</italic>) survive after applying the beam pruning in LinearAlignment. To reduce redundant time and space usage, LinearTurboFold calculates the corresponding match scores for co-incident pairs when they are first visited in LinearAlignment. Overall, for <italic>k</italic> homologous sequences, LinearTurboFold reduces the runtime of the whole module of pairwise posterior co-incidence probability computation from <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>
+<sup>2</sup>) to <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>b<sub>aln</sub>n</italic>) by applying the beam search heuristic to the pairwise HMM alignment, and only calculating the match scores for position pairs that are needed.</p>
+</sec>
+<sec id="S11">
+<label>§5</label>
+<title>Extrinsic Information Calculation</title>
+<p id="P40">To update partition functions for each sequence with the structural information from homologs, TurboFold (<xref ref-type="bibr" rid="R28">28</xref>) introduces <italic>extrinsic information</italic> to model the the proclivity for base pairing induced from the other sequences in the input set <italic>
+<bold>S</bold>
+</italic>. The extrinsic information <italic>e</italic>
+<sub>
+<bold>x</bold>
+</sub>(<italic>i</italic>, <italic>j</italic>) for a base pair (<italic>i</italic>, <italic>j</italic>) in the sequence <bold>x</bold> maps the estimated base pairing probabilities of other sequences to the target sequence via the co-incident nucleotides between each pair of sequences: <disp-formula id="FD9">
+<mml:math id="M24">
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mo>∈</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mo>∖</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>y</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>∼</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>x</mml:mi>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>∼</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M25">
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> is the base pair probability for a base pair (<italic>k</italic>, <italic>l</italic>) in the sequence <bold>y</bold> from (<italic>t</italic> − 1)th iteration. <inline-formula>
+<mml:math id="M26">
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>y</mml:mtext>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>~</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M27">
+<mml:msubsup>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mtext>x</mml:mtext>
+<mml:mo>,</mml:mo>
+<mml:mtext>y</mml:mtext>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>~</mml:mo>
+<mml:mi>l</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> are the posterior co-incidence probabilities for position pairs (<italic>i</italic>, <italic>k</italic>) and (<italic>j</italic>, <italic>l</italic>), respectively, from (<italic>t</italic>)th iteration. The extrinsic information <inline-formula>
+<mml:math id="M28">
+<mml:msubsup>
+<mml:mi>e</mml:mi>
+<mml:mtext>x</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> first sums all the base pair probabilities of alignable pairs from another one sequence with the co-incidence probabilities and then iterates over all the other sequences. <italic>s</italic>
+<sub>
+<bold>x</bold>,<bold>y</bold>
+</sub> is the sequence identity for sequences <bold>x</bold> and <bold>y</bold>. The sequences with a low identity contribute more to the extrinsic information than sequences of higher identity. The sequence identity is defined as the fraction of nucleotides that are aligned and identical in the alignment.</p>
+</sec>
+<sec id="S12">
+<label>§6</label>
+<title>LinearPartition for Base Pairing Probabilities Estimation with Extrinsic Information</title>
+<p id="P41">The classical partition function algorithm scales cubically with sequence length. The slowness limits its extension to longer sequences. To address this bottleneck, our recent LinearPartition (<xref ref-type="bibr" rid="R46">46</xref>) algorithm approximates the partition function and base paring probability matrix computation in linear time. LinearPartition is significantly faster, and correlates better with the ground truth structures than the traditional cubic partition function calculation. Thus LinearTurboFold uses LinearPartition to predict base pair probabilities instead of the traditional <italic>O</italic>(<italic>n</italic>
+<sup>3</sup>)-time partition function.</p>
+<p id="P42">TurboFold introduces the extrinsic information <inline-formula>
+<mml:math id="M29">
+<mml:msubsup>
+<mml:mi>e</mml:mi>
+<mml:mtext>x</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> in the partition function as a pseudo-free energy term for each base pair (<italic>i</italic>, <italic>j</italic>). Similarly, in LinearPartition, for each span [<italic>i</italic>, <italic>j</italic>], which is the subsequence <italic>x<sub>i</sub>
+</italic>...<italic>x<sub>j</sub>
+</italic>, and its associated partition function <italic>Q</italic>(<italic>i</italic>, <italic>j</italic>), the partition function is modified as <inline-formula>
+<mml:math id="M30">
+<mml:mover accent="true">
+<mml:mi>Q</mml:mi>
+<mml:mo>˜</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>Q</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msubsup>
+<mml:mi>e</mml:mi>
+<mml:mtext>x</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:msup>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mtext>λ</mml:mtext>
+</mml:msup>
+</mml:math>
+</inline-formula> if (<italic>x<sub>i</sub>
+</italic>, <italic>x<sub>j</sub>
+</italic>) is an allowed pair, where <italic>λ</italic> denotes the contribution of the extrinsic information relative to the intrinsic information. Specifically, at each step <italic>j</italic>, among all possible spans [<italic>i</italic>, <italic>j</italic>] where <italic>x<sub>i</sub>
+</italic> and <italic>x<sub>j</sub>
+</italic> are paired, we replace the original partition function <italic>Q</italic>(<italic>i</italic>, <italic>j</italic>) with <inline-formula>
+<mml:math id="M31">
+<mml:mi>Q</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msubsup>
+<mml:mi>e</mml:mi>
+<mml:mtext>x</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:msup>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mtext>λ</mml:mtext>
+</mml:msup>
+</mml:math>
+</inline-formula> by multiplying the extrinsic information. Then LinearTurboFold applies the beam pruning heuristic over the modified partition function <inline-formula>
+<mml:math id="M32">
+<mml:mover accent="true">
+<mml:mi>Q</mml:mi>
+<mml:mo>˜</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:math>
+</inline-formula> instead of the original.</p>
+<p id="P43">Similarly, TurboFold II obtains the extrinsic information for all the <italic>O</italic>(<italic>n</italic>
+<sup>2</sup>) base pairs before the partition function calculation of each sequence, while only a linear number of base pairs survives in LinearPartition. Thus, LinearTurboFold only requires the extrinsic information for those promising base pairs that are visited in LinearPartition. Overall, for <italic>k</italic> homologous sequences, LinearTurboFold reduces the runtime of base pair probabilities estimation for each sequence from <italic>O</italic>(<italic>kn</italic>
+<sup>3</sup> + <italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>
+<sup>2</sup>) to <inline-formula>
+<mml:math id="M33">
+<mml:mi>O</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:msubsup>
+<mml:mi>b</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mi>n</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:msup>
+<mml:mi>k</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>d</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> by applying the beam search <italic>b<sub>fld</sub>
+</italic> to the partition function calculation, and only calculating extrinsic information for the saved base pairs.</p>
+</sec>
+<sec id="S13">
+<label>§7</label>
+<title>MSA Generation and Secondary Structure Prediction</title>
+<p id="P44">After several iterations, TurboFold II builds the multiple sequence alignment using a probabilistic consistency transformation, generating a guide tree and performing progressive alignment over the pairwise posterior co-incidence probabilities (<xref ref-type="bibr" rid="R30">30</xref>). The whole procedure is accelerated in virtue of the sparse matrix by discarding alignment pairs of probability smaller than a threshold (0.01 by default). Since LinearAlignment uses the beam search method and only saves a linear number of co-incident pairs, the MSA generation in LinearTurboFold costs linear runtime against the sequence length straightforwardly.</p>
+<p id="P45">Estimated base pair probabilities are fed into downstream methods to predict secondary structures. To maintain the end-to-end linear-time property, LinearTurboFold uses ThreshKnot (<xref ref-type="bibr" rid="R49">49</xref>), which is a thresholded version of ProbKnot (<xref ref-type="bibr" rid="R68">68</xref>) and only considers base pairs of probability exceeding a threshold <italic>θ</italic> (<italic>θ</italic> = 0.3 by default). We evaluate the performance of ThreshKnot and MEA with different hyperparameters (<italic>θ</italic> and <italic>γ</italic>). On a sampled RNAStrAlign training set, ThreshKnot is closer to the upper right-hand than MEA, which indicates that ThreshKnot always has a higher Sensitivity than MEA at a given PPV (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S8B</xref>).</p>
+</sec>
+<sec id="S14">
+<label>§8</label>
+<title>Efficiency and Scalability Datasets</title>
+<p id="P46">Four datasets are built and used for measuring efficiency and scalability. To evaluate the efficiency and scalability of LinearTurboFold with sequence length, we collected groups of homologous RNA sequences with sequence length ranging from 200 <italic>nt</italic> to 29,903 <italic>nt</italic> with a fixed group size 5. Sequences are sampled from RNAStrAlign dataset (<xref ref-type="bibr" rid="R27">27</xref>), the Comparative RNA Web (CRW) Site (<xref ref-type="bibr" rid="R69">69</xref>), the Los Alamos HIV database (<ext-link ext-link-type="uri" xlink:href="http://www.hiv.lanl.gov/">http://www.hiv.lanl.gov/</ext-link>) and the SARS-related betacoronaviruses (SARS-related) (<xref ref-type="bibr" rid="R53">53</xref>). RNAStrAlign, aggregated and released with TurboFold II, is an RNA alignment and structure database. Sequences in RNAStrAlign are categorized into families, i.e. sets of homologs, and some of families are further split into subfamilies. Each subfamily or family includes a multiple sequence alignment and ground truth structures for all the sequences. 20 groups of five homologs were randomly chosen from the small subunit ribosomal RNA (Alphaproteobacteria subfamily), SRP RNA (Protozoan subfamily), RNase P RNA (bacterial type A subfamily) and telomerase RNA families. For longer sequences, we sampled five groups of 23S rRNA (of sequence length ranging from 2,700 <italic>nt</italic> to 2,926 <italic>nt</italic>) from the CRW Site, HIV-1 genetic sequences (of sequence length ranging from 9,597 <italic>nt</italic> to 9,738 <italic>nt</italic>) from the Los Alamos HIV database, and SARS-related sequences (of sequence length ranging from 29,484 <italic>nt</italic> to 29,903 <italic>nt</italic>). All the sequences in one group belong to the same subfamily or subtype. We sampled five groups for each family and obtained 35 groups in total. Due to the runtime and memory limitations, we did not run TurboFold II on SARS-CoV-2 groups (<xref ref-type="fig" rid="F2">Fig. 2, A and D</xref>).</p>
+<p id="P47">To assess the runtime and memory usage of LinearTurboFold with group size, we fixed the sequence length around 1,500 <italic>nt</italic>, and sampled 5 groups of sequences from the small subunit ribosomal RNA (Alphaproteobacteria subfamily) with group size 5, 10, 15 and 20, respectively (<xref ref-type="fig" rid="F2">Fig. 2, B and F</xref>). We used a Linux machine (CentOS 7.7.1908) with 2.30 GHz Intel Xeon E5-2695 v3 CPU and 755 GB memory, and gcc 4.8.5 for benchmarks.</p>
+<p id="P48">We built a test set from the RNAStrAlign dataset to measure and compare the performance between LinearTurboFold and other methods. 60 groups of input sequences consisting of five homologous sequences were randomly selected from the small subunit ribosomal RNA (rRNA) (Alphaproteobacteria subfamily), SRP RNA (Protozoan subfamily), RNase P RNA (bacterial type A subfamily) and telomerase RNA families from RNAStrAlign dataset. We removed sequences shorter than 1,200 <italic>nt</italic> for the small subunit rRNA to filter out subdomains, and removed sequences that are shorter than 200 <italic>nt</italic> for SRP RNA following the TurboFold II paper to filter out less reliable sequences. We resampled the test set five times and show the average PPV, Sensitivity and F1 scores over the five samples (<xref ref-type="fig" rid="F2">Fig. 2, C and F</xref>).</p>
+<p id="P49">An RNAStrAlign training set was built to compare accuracies between MEA and ThreshKnot. 40 groups of 3, 5 and 7 homologs were randomly sampled from 5S ribosomal RNA (Eubacteria subfamily), group I intron (IC1 subfamily), tmRNA, and tRNA families from RNAStrAlign dataset. We chose <italic>θ</italic> = 0.1, 0.2, 0.3, 0.4 and 0.5 for ThreshKnot, and <italic>γ</italic> = 1, 1.5, 2, 2.5, 3, 3.5, 4, 8 and 16 for MEA. We reported the average secondary structure prediction accuracies (PPV and Sensitivity) across all training families (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S8B</xref>).</p>
+</sec>
+<sec id="S15">
+<label>§9</label>
+<title>Benchmarks</title>
+<p id="P50">The Sankoff algorithm (<xref ref-type="bibr" rid="R15">15</xref>) uses dynamic programming to simultaneously fold and align two or more sequences, and it requires <italic>O</italic>(<italic>n</italic>
+<sup>3<italic>k</italic>
+</sup>) time and <italic>O</italic>(<italic>n</italic>
+<sup>2<italic>k</italic>
+</sup>) space for <italic>k</italic> input sequences with the average length <italic>n</italic>. Both LocARNA (<xref ref-type="bibr" rid="R16">16</xref>) and MXSCARNA (<xref ref-type="bibr" rid="R18">18</xref>) are Sankoff-style algorithms.</p>
+<p id="P51">LocARNA (local alignment of RNA) costs <italic>O</italic>(<italic>n</italic>
+<sup>2</sup>(<italic>n</italic>
+<sup>2</sup> + <italic>k</italic>
+<sup>2</sup>)) time and <italic>O</italic>(<italic>n</italic>
+<sup>2</sup> + <italic>k</italic>
+<sup>2</sup>) space by restricting the alignable regions. MXSCARNA progressively aligns multiple sequences as an extension of the pairwise alignment algorithm SCARNA (<xref ref-type="bibr" rid="R70">70</xref>) with improved score functions. SCARNA first aligns stem fragment candidates, then removes the inconsistent matching in the post-processing to generate the sequence alignment. MXSCARNA reduces runtime to <italic>O</italic>(<italic>k</italic>
+<sup>3</sup>
+<italic>n</italic>
+<sup>2</sup>) and space to <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>
+<sup>2</sup>) with a limited searching space of folding and alignment. Both MXSCARNA and LocARNA uses pre-computed base pair probabilities for each sequence as structural input. All the benchmarks use the default options and hyper-parameters running on the RNAStrAlign test set. TurboFold II iterates three times, then predicts secondary structures by MEA (<italic>γ</italic>=1). LinearTurboFold also runs three iterations with default beam sizes (<italic>b<sub>aln</sub>
+</italic> = <italic>b<sub>fld</sub>
+</italic> = 100) in LinearAlignment and LinearPartition, then predicts structures with ThreshKnot (<italic>θ</italic> = 0.3).</p>
+</sec>
+<sec id="S16">
+<label>§10</label>
+<title>Significance Test</title>
+<p id="P52">We use a paired, two-tailed permutation test (<xref ref-type="bibr" rid="R71">71</xref>) to measure the significant difference. Following the common practice, the repetition number is 10,000, and the significance threshold <italic>α</italic> is 0.05.</p>
+</sec>
+<sec id="S17">
+<label>§11</label>
+<title>SARS-CoV-2 Datasets</title>
+<p id="P53">We used two large SARS-CoV-2 datasets. The first dataset is used to draw a representative sample of most diverse SARS-CoV-2 genomes. We downloaded all the genomes submitted to GISAID (<xref ref-type="bibr" rid="R52">52</xref>) by December 29, 2020 (downloaded on December 29, 2020), and filtered out low-quality genomes (with more than 5% unknown characters and degenerate bases, shorter than 29,500 <italic>nt</italic>, or with framing error in the coding region), and we also discard genomes with more than 600 mutations compared with the SARS-CoV-2 reference sequence (NC_0405512.2) (<xref ref-type="bibr" rid="R72">72</xref>). After preprocessing, this dataset includes about 258,000 genomes. To identify a representative group of samples with more variable mutations, we designed a greedy algorithm to select 16 most diverse genomes genomes found at least twice in the 258,000 genomes. The general idea of the greedy algorithm is to choose genomes one by one with the most new mutations compared with the selected samples, which consists of only the reference sequence at the beginning.</p>
+<p id="P54">The second, larger, dataset is to evaluate the conservation of regions with respect to more up-to-date variants. We did the same preprocessing as the first dataset on all the genomes submitted to GISAID by June 30, 2021 (downloaded on July 25, 2021). This resulted in a dataset of ~2M genomes, which was used to evaluate conservation in <xref ref-type="fig" rid="F5">Figure 5</xref> and <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S4–S6</xref>.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplemental Material</label>
+<media xlink:href="EMS107393-supplement-Supplemental_Material.pdf" mimetype="application" mime-subtype="pdf" id="N70986" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S18">
+<title>Acknowledgments</title>
+<p>This work is supported in part by National Institutes of Health (R01 GM132185 to D.H.M.) and National Science Foundation (IIS-1817231 to L.H.).</p>
+</ack>
+<sec id="S19" sec-type="data-availability">
+<label>§12</label>
+<title>Data Availability</title>
+<p id="P55">Our code, data and complete results for 25 SARS-CoV-2 and SARS-related genomes are released at: <ext-link ext-link-type="uri" xlink:href="https://github.com/LinearFold/LinearTurboFold">https://github.com/LinearFold/LinearTurboFold</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN3">
+<label>*</label>
+<p id="P56">Theoretically, the alignment part takes <italic>O</italic>(<italic>k</italic>
+<sup>2</sup>
+<italic>n</italic>
+<sup>2</sup>) space. However, in practice, TurboFold II discards positions whose alignment co-incidence probabilities less than thresholds and only keeps a linear number of positions. (<xref ref-type="bibr" rid="R51">51</xref>)</p>
+</fn>
+<fn id="FN4">
+<label>†</label>
+<p id="P57">The average sequence identity is 0.9987 on that ~2M dataset (downloaded on July 25, 2021).</p>
+</fn>
+<fn id="FN5" fn-type="conflict">
+<p id="P58">The authors declare no conflict of interest.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>Non-coding RNA genes and the modern RNA world</article-title>
+<source>Nat Rev Genet</source>
+<year>2001</year>
+<volume>2</volume>
+<fpage>919</fpage>
+<lpage>929</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Doudna</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Cech</surname>
+<given-names>TR</given-names>
+</name>
+</person-group>
+<article-title>The chemical repertoire of natural ribozymes</article-title>
+<source>Nature</source>
+<year>2002</year>
+<volume>418</volume>
+<fpage>222</fpage>
+<lpage>228</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nawrocki</surname>
+<given-names>EP</given-names>
+</name>
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>Infernal 1.1: 100-fold faster RNA homology searches</article-title>
+<source>Bioinformatics</source>
+<year>2013</year>
+<volume>29</volume>
+<fpage>2933</fpage>
+<lpage>2935</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ping</surname>
+<given-names>LH</given-names>
+</name>
+<name>
+<surname>Lemon</surname>
+<given-names>SM</given-names>
+</name>
+</person-group>
+<article-title>Secondary structure of the 5’ nontranslated regions of hepatitis C virus and pestivirus genomic RNAs</article-title>
+<source>Nucleic Acids Res</source>
+<year>1992</year>
+<volume>20</volume>
+<fpage>5041</fpage>
+<lpage>5045</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ritz</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Laederach</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary evidence for alternative structure in RNA sequence co-variation</article-title>
+<source>PLoS Comput Biol</source>
+<year>2013</year>
+<volume>9</volume>
+<elocation-id>e1003152</elocation-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rivas</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Clements</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+</person-group>
+<article-title>Estimating the power of sequence covariation for detecting conserved RNA structure</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>3072</fpage>
+<lpage>3076</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holley</surname>
+<given-names>RW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of a ribonucleic acid</article-title>
+<source>Science</source>
+<year>1965</year>
+<fpage>1462</fpage>
+<lpage>1465</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Noller</surname>
+<given-names>HF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Secondary structure model for 23S ribosomal RNA</article-title>
+<source>Nucleic Acids Res</source>
+<year>1981</year>
+<volume>9</volume>
+<fpage>6167</fpage>
+<lpage>6189</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pace</surname>
+<given-names>NR</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Olsen</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>James</surname>
+<given-names>BD</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic comparative analysis and the secondary structure of ribonuclease P RNA—a review</article-title>
+<source>Gene</source>
+<year>1989</year>
+<volume>82</volume>
+<fpage>65</fpage>
+<lpage>75</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Williams</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Bartel</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic analysis of tmRNA secondary structure</article-title>
+<source>RNA</source>
+<year>1996</year>
+<volume>2</volume>
+<fpage>1306</fpage>
+<lpage>1310</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Levitt</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Detailed molecular model for transfer ribonucleic acid</article-title>
+<source>Nature</source>
+<year>1969</year>
+<volume>224</volume>
+<fpage>759</fpage>
+<lpage>763</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gutell</surname>
+<given-names>RR</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Cannone</surname>
+<given-names>JJ</given-names>
+</name>
+</person-group>
+<article-title>The accuracy of ribosomal RNA comparative structure models</article-title>
+<source>Curr opinion structural biology</source>
+<year>2002</year>
+<volume>12</volume>
+<fpage>301</fpage>
+<lpage>310</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Havgaard</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Gorodkin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>RNA structural alignments, part I: Sankoff-based approaches for structural alignments</article-title>
+<source>RNA Sequence, Structure, and Function: Computational and Bioin-formatic Methods</source>
+<publisher-name>Springer</publisher-name>
+<year>2014</year>
+<fpage>275</fpage>
+<lpage>290</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Asai</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Hamada</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>RNA structural alignments, part II: non-Sankoff approaches for structural alignments</article-title>
+<source>RNA Sequence, Structure, and Function: Computational and Bioinformatic Methods</source>
+<publisher-name>Springer</publisher-name>
+<year>2014</year>
+<fpage>291</fpage>
+<lpage>301</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sankoff</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Simultaneous solution of the RNA folding, alignment and protosequence problems</article-title>
+<source>SIAM J on Appl Math</source>
+<year>1985</year>
+<volume>45</volume>
+<fpage>810</fpage>
+<lpage>825</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Will</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Reiche</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Hofacker</surname>
+<given-names>IL</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>PF</given-names>
+</name>
+<name>
+<surname>Backofen</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Inferring noncoding RNA families and classes by means of genome-scale structure-based clustering</article-title>
+<source>PLoS Comput Biol</source>
+<year>2007</year>
+<volume>3</volume>
+<fpage>e65</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Havgaard</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Torarinsson</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Gorodkin</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Fast pairwise structural RNA alignments by pruning of the dynamical programming matrix</article-title>
+<source>PLoS Comput Biol</source>
+<year>2007</year>
+<volume>3</volume>
+<fpage>1896</fpage>
+<lpage>1908</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tabei</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kiryu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Kin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Asai</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>A fast structural multiple alignment method for long RNA sequences</article-title>
+<source>BMC Bioinforma</source>
+<year>2008</year>
+<volume>9</volume>
+<fpage>33</fpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>Multilign: an algorithm to predict secondary structures conserved in multiple RNA sequences</article-title>
+<source>Bioinformatics</source>
+<year>2011</year>
+<volume>27</volume>
+<fpage>626</fpage>
+<lpage>632</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Turner</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>Dynalign: an algorithm for finding the secondary structure common to two RNA sequences</article-title>
+<source>J Mol Biol</source>
+<year>2002</year>
+<volume>317</volume>
+<fpage>191</fpage>
+<lpage>203</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sato</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kato</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Akutsu</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Asai</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Sakakibara</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>DAFS: simultaneous aligning and folding of RNA sequences via dual decomposition</article-title>
+<source>Bioinformatics</source>
+<year>2012</year>
+<volume>28</volume>
+<fpage>3218</fpage>
+<lpage>3224</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Waterman</surname>
+<given-names>MS</given-names>
+</name>
+</person-group>
+<article-title>Computer analysis of nucleic acid sequences</article-title>
+<source>Methods in enzymology</source>
+<publisher-name>Elsevier</publisher-name>
+<year>1988</year>
+<volume>164</volume>
+<fpage>765</fpage>
+<lpage>793</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bernhart</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Hofacker</surname>
+<given-names>IL</given-names>
+</name>
+<name>
+<surname>Will</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gruber</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>PF</given-names>
+</name>
+</person-group>
+<article-title>RNAalifold: improved consensus structure prediction for RNA alignments</article-title>
+<source>BMC Bioinforma</source>
+<year>2008</year>
+<volume>9</volume>
+<fpage>1</fpage>
+<lpage>13</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Waterman</surname>
+<given-names>MS</given-names>
+</name>
+</person-group>
+<article-title>Consensus methods for folding single-stranded nucleic acids</article-title>
+<source>Math methods or DNA sequences/editor, Michael S. Waterman</source>
+<year>1989</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Hochsmann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Toller</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Giegerich</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Kurtz</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>Local similarity in RNA secondary structures in Computational Systems Bioinformatics CSB2003</source>
+<conf-name>Proceedings of the 2003 IEEE Bioinformatics Conference. CSB2003</conf-name>
+<conf-sponsor>IEEE</conf-sponsor>
+<year>2003</year>
+<fpage>159</fpage>
+<lpage>168</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Siebert</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Backofen</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>MARNA: A server for multiple alignment of RNAs</source>
+<conf-name>German Conference on Bioinformatics</conf-name>
+<year>2003</year>
+<fpage>135</fpage>
+<lpage>140</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tan</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Fu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>TurboFold II: RNA structural alignment and secondary structure prediction informed by multiple homologs</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>11570</fpage>
+<lpage>11581</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Harmanci</surname>
+<given-names>AO</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>TurboFold: iterative probabilistic estimation of secondary structures for multiple RNA sequences</article-title>
+<source>BMC Bioinforma</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>108</fpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<article-title>MAFFT multiple sequence alignment software version 7: improvements in performance and usability</article-title>
+<source>Mol Biol Evol</source>
+<year>2013</year>
+<volume>30</volume>
+<fpage>772</fpage>
+<lpage>780</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Do</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Mahabhashyam</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Brudno</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Batzoglou</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>ProbCons: Probabilistic consistencybased multiple sequence alignment</article-title>
+<source>Genome Res</source>
+<year>2005</year>
+<volume>15</volume>
+<fpage>330</fpage>
+<lpage>340</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rangan</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RNA genome conservation and secondary structure in SARS-CoV-2 and SARS-related viruses: a first look</article-title>
+<source>RNA</source>
+<year>2020</year>
+<volume>26</volume>
+<fpage>937</fpage>
+<lpage>959</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huston</surname>
+<given-names>NC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive in vivo secondary structure of the SARS-CoV-2 genome reveals novel regulatory motifs and mechanisms</article-title>
+<source>Mol cell</source>
+<year>2021</year>
+<volume>81</volume>
+<fpage>584</fpage>
+<lpage>598</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Manfredonia</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genome-wide mapping of SARS-CoV-2 RNA structures identifies therapeutically-relevant elements</article-title>
+<source>Nucleic Acids Res</source>
+<year>2020</year>
+<volume>48</volume>
+<fpage>12436</fpage>
+<lpage>12452</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Iserman</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic RNA elements drive phase separation of the SARS-CoV-2 nucle-ocapsid</article-title>
+<source>Mol cell</source>
+<year>2020</year>
+<volume>80</volume>
+<fpage>1078</fpage>
+<lpage>1091</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lan</surname>
+<given-names>TC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of the full SARS-CoV-2 RNA genome in infected cells</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>In vivo structural characterization of the SARS-CoV-2 rna genome identifies host proteins vulnerable to repurposed drugs</article-title>
+<source>Cell</source>
+<year>2021</year>
+<volume>184</volume>
+<fpage>1865</fpage>
+<lpage>1883</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ziv</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The short- and long-range RNA-RNA interactome of SARS-CoV-2</article-title>
+<source>Mol cell</source>
+<year>2020</year>
+<volume>80</volume>
+<fpage>1067</fpage>
+<lpage>1077</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reuter</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>RNAstructure: software for RNA secondary structure prediction and analysis</article-title>
+<source>BMC Bioinforma</source>
+<year>2010</year>
+<volume>11</volume>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lorenz</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ViennaRNA package 2.0</article-title>
+<source>Algorithms for Mol Biol</source>
+<year>2011</year>
+<volume>6</volume>
+<fpage>1</fpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kelly</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural and functional conservation of the programmed-1 ribosomal frameshift signal of sars coronavirus 2 (sars-cov-2)</article-title>
+<source>J Biol Chem</source>
+<year>2020</year>
+<volume>295</volume>
+<fpage>10741</fpage>
+<lpage>10748</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Haniff</surname>
+<given-names>HS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Targeting the SARS-CoV-2 RNA genome with small molecule binders and ribonuclease targeting chimera (RIBOTAC) degraders</article-title>
+<source>ACS Cent Sci</source>
+<year>2020</year>
+<volume>6</volume>
+<fpage>1713</fpage>
+<lpage>1721</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>ZJ</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>Fundamental differences in the equilibrium considerations for siRNA and antisense oligodeoxynucleotide design</article-title>
+<source>Nucleic Acids Res</source>
+<year>2008</year>
+<volume>36</volume>
+<fpage>3738</fpage>
+<lpage>3745</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schubert</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Grünweller</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Erdmann</surname>
+<given-names>VA</given-names>
+</name>
+<name>
+<surname>Kurreck</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Local RNA target structure influences siRNA efficacy: systematic analysis of intentionally designed binding regions</article-title>
+<source>J Mol Biol</source>
+<year>2005</year>
+<volume>348</volume>
+<fpage>883</fpage>
+<lpage>893</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abudayyeh</surname>
+<given-names>OO</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RNA targeting with CRISPR–Cas13</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>550</volume>
+<fpage>280</fpage>
+<lpage>284</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bustin</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Nolan</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Pitfalls of quantitative real-time reverse-transcription polymerase chain reaction</article-title>
+<source>J Biomol Tech JBT</source>
+<year>2004</year>
+<volume>15</volume>
+<fpage>155</fpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>LinearPartition: linear-time approximation of RNA folding partition function and base-pairing probabilities</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>i258</fpage>
+<lpage>i267</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McCaskill</surname>
+<given-names>JS</given-names>
+</name>
+</person-group>
+<article-title>The equilibrium partition function and base pair probabilities for RNA secondary structure</article-title>
+<source>Biopolymers</source>
+<year>1990</year>
+<volume>29</volume>
+<fpage>11105</fpage>
+<lpage>1119</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Sagae</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Dynamic programming for linear-time incremental parsing</source>
+<conf-name>Proceedings of ACL 2010</conf-name>
+<conf-sponsor>ACL</conf-sponsor>
+<conf-loc>Uppsala, Sweden</conf-loc>
+<year>2010</year>
+<fpage>1077</fpage>
+<lpage>1086</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>ThreshKnot: Thresholded probknot for improved RNA secondary structure prediction</article-title>
+<source>BioRxiv</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>LinearSampling: Linear-time stochastic sampling of RNA secondary structure with applications to SARS-CoV-2</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Harmanci</surname>
+<given-names>AO</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>Efficient pairwise RNA structure prediction using probabilistic alignment constraints in Dynalign</article-title>
+<source>BMC Bioinforma</source>
+<year>2007</year>
+<volume>8</volume>
+<fpage>130</fpage>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Glob Challenges</source>
+<year>2017</year>
+<volume>1</volume>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ceraolo</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Giorgi</surname>
+<given-names>FM</given-names>
+</name>
+</person-group>
+<article-title>Genomic variance of the 2019-nCoV coronavirus</article-title>
+<source>J Med Virol</source>
+<year>2020</year>
+<volume>92</volume>
+<fpage>522</fpage>
+<lpage>528</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Seetin</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>RNA structure prediction: an overview of methods</article-title>
+<source>Bacterial Regulatory RNA</source>
+<publisher-name>Springer</publisher-name>
+<year>2012</year>
+<fpage>99</fpage>
+<lpage>122</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Reidys</surname>
+<given-names>CM</given-names>
+</name>
+</person-group>
+<article-title>The rainbow spectrum of RNA secondary structures</article-title>
+<source>Bull Math Biol</source>
+<year>2018</year>
+<volume>80</volume>
+<fpage>1514</fpage>
+<lpage>1538</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lai</surname>
+<given-names>WJC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>mRNAs and lncRNAs intrinsically form secondary structures with short end-to-end distances</article-title>
+<source>Nat Commun</source>
+<year>2018</year>
+<volume>9</volume>
+<elocation-id>4328</elocation-id>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rangan</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>De novo 3D models of SARS-CoV-2 RNA elements from consensus experimental secondary structures</article-title>
+<source>Nucleic Acids Res</source>
+<year>2021</year>
+<volume>49</volume>
+<fpage>3092</fpage>
+<lpage>3108</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lulla</surname>
+<given-names>V</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The stem loop 2 motif is a site of vulnerability for SARS-CoV-2</article-title>
+<source>BioRxiv</source>
+<year>2021</year>
+<fpage>2020</fpage>
+<lpage>09</lpage>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>59</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>ZJ</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>Efficient siRNA selection using hybridization thermodynamics</article-title>
+<source>Nucleic Acids Res</source>
+<year>2008</year>
+<volume>36</volume>
+<fpage>640</fpage>
+<lpage>647</lpage>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>60</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bustin</surname>
+<given-names>SA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The MIQE guidelines: Minimum information for publication of quantitative real-time pcr experiments</article-title>
+<source>Clin Chem</source>
+<year>2009</year>
+<volume>55</volume>
+<fpage>611</fpage>
+<lpage>622</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>61</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Won</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>BY</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>CJ</given-names>
+</name>
+</person-group>
+<article-title>Optimization of primer sets and detection protocols for SARS-CoV-2 of coronavirus disease 2019 (COVID-19) using PCR and real-time PCR</article-title>
+<source>Exp &amp; Mol Medicine</source>
+<year>2020</year>
+<volume>52</volume>
+<fpage>963</fpage>
+<lpage>977</lpage>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>62</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ding</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Lawrence</surname>
+<given-names>CE</given-names>
+</name>
+</person-group>
+<article-title>A statistical sampling algorithm for RNA secondary structure prediction</article-title>
+<source>Nucleic Acids Res</source>
+<year>2003</year>
+<volume>31</volume>
+<fpage>7280</fpage>
+<lpage>7301</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>63</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mückstein</surname>
+<given-names>U</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Thermodynamics of RNA-RNA binding</article-title>
+<source>Bioinformatics</source>
+<year>2006</year>
+<volume>22</volume>
+<fpage>1177</fpage>
+<lpage>1182</lpage>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>64</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eddy</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>RNA sequence analysis using covariance models</article-title>
+<source>Nucleic Acids Res</source>
+<year>1994</year>
+<volume>22</volume>
+<fpage>2079</fpage>
+<lpage>2088</lpage>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>65</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fakhr</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Zare</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>L Teimoori-Toolabi, Precise and efficient siRNA design: a key point in competent gene silencing</article-title>
+<source>Cancer Gene Ther</source>
+<year>2016</year>
+<volume>23</volume>
+<fpage>73</fpage>
+<lpage>82</lpage>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>66</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Eddy</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Krogh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mitchison</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<source>Biological Sequence Analysis: Probabilistic Models of Proteins and Nucleic Acids</source>
+<publisher-name>Cambridge University Press</publisher-name>
+<publisher-loc>Cambridge, UK</publisher-loc>
+<year>1998</year>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>67</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hofacker</surname>
+<given-names>IL</given-names>
+</name>
+<name>
+<surname>Bernhart</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>PF</given-names>
+</name>
+</person-group>
+<article-title>Alignment of RNA base pairing probability matrices</article-title>
+<source>Bioinformatics</source>
+<year>2004</year>
+<volume>20</volume>
+<fpage>2222</fpage>
+<lpage>2227</lpage>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>68</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bellaousov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mathews</surname>
+<given-names>DH</given-names>
+</name>
+</person-group>
+<article-title>ProbKnot: fast prediction of RNA secondary structure including pseudoknots</article-title>
+<source>RNA</source>
+<year>2010</year>
+<volume>16</volume>
+<fpage>1870</fpage>
+<lpage>1880</lpage>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>69</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cannone</surname>
+<given-names>JJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The comparative RNA web (CRW) site: An online database of comparative sequence and structure information for ribosomal, intron, and other RNAs</article-title>
+<source>BioMed Cent Bioinforma</source>
+<year>2002</year>
+<volume>3</volume>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>70</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tabei</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tsuda</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kin</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Asai</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>SCARNA: fast and accurate structural alignment of RNA sequences by matching fixed-length stem fragments</article-title>
+<source>Bioinformatics</source>
+<year>2006</year>
+<volume>22</volume>
+<fpage>1723</fpage>
+<lpage>1729</lpage>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>71</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aghaeepour</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Hoos</surname>
+<given-names>HH</given-names>
+</name>
+</person-group>
+<article-title>Ensemble-based prediction of RNA secondary structures</article-title>
+<source>BMC Bioinforma</source>
+<year>2013</year>
+<volume>14</volume>
+</element-citation>
+</ref>
+<ref id="R72">
+<label>72</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>265</fpage>
+<lpage>269</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Significance Statement</title>
+</caption>
+<p>Conserved RNA structures are critical for designing diagnostic and therapeutic tools for many diseases including COVID-19. However, existing algorithms are much too slow to model the global structures of full-length RNA viral genomes. We present LinearTurboFold, a linear-time algorithm that is orders of magnitude faster, making it the first method to simultaneously fold and align whole genomes of SARS-CoV-2 variants, the longest known RNA virus (~30 kilobases). Our work enables unprecedented global structural analysis and captures long-range interactions that are out of reach for existing algorithms but crucial for RNA functions. LinearTurboFold is a general technique for full-length genome studies and can help fight the current and future pandemics.</p>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>
+<bold>A</bold>: The LinearTurboFold framework. Like TurboFold II, LinearTurboFold takes multiple unaligned homologous sequences as input and outputs a secondary structures for each sequence, and a multiple sequence alignment (MSA). But unlike TurboFold II, LinearTurboFold employs two linearizations to ensure linear runtime: a <italic>linearized</italic> alignment computation (module <bold>1</bold>) to predict posterior co-incidence probabilities (red squares) for all pairs of sequences (see <xref ref-type="sec" rid="S7">Methods §1</xref>–<xref ref-type="sec" rid="S10">4</xref>), and a <italic>linearized</italic> partition function computation (module <bold>2</bold>) to estimate base-pairing probabilities (yellow triangles) for all the sequences (see <xref ref-type="sec" rid="S11">Methods §5</xref>–<xref ref-type="sec" rid="S12">6</xref>). These two modules take advantage of information from each other and iteratively refine predictions (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S2</xref>). After several iterations, module <bold>3</bold> generates the final multiple sequence alignments (see <xref ref-type="sec" rid="S13">Methods §7</xref>), and module <bold>4</bold> predicts secondary structures. Module <bold>5</bold> can stochastically sample structures. <bold>B–C</bold>: Prior studies (<xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R36">36</xref>) (except for the purely experimental work by Ziv <italic>et al</italic>. (<xref ref-type="bibr" rid="R37">37</xref>)) used local folding methods with limited window size and maximum pairing distance. <bold>B</bold> shows the local folding of the SARS-CoV-2 genome by Huston <italic>et al</italic>., which used a window of 3,000 <italic>nt</italic> that was advanced 300 <italic>nt</italic>. It also limited the distance between nucleotides that can base pair at 500. Some work also used homologous sequences to identify conserved structures, but they only predicted structures for one genome and utilized sequence alignments to identify mutations. By contrast, LinearTurboFold is a global folding method without any limitations on sequence length or paring distance, and it jointly folds and aligns homologs to obtain conserved structures. Consequently, LinearTurboFold can capture long-range interactions even across the whole genome (the long arc in <bold>B</bold> and <xref ref-type="fig" rid="F3">Fig. 3</xref>).</p>
+</caption>
+<graphic xlink:href="EMS107393-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>End-to-end Scalability and Accuracy Comparisons.</title>
+<p>
+<bold>A–B</bold>: End-to-end runtime and memory usage comparisons between benchmarks and LinearTurboFold against the sequence length. LinearTurboFold uses beam size 100 in both partition function and HMM alignment calculation with three iterations to run all groups of data. <bold>C–D</bold>: End-to-end runtime and memory usage comparisons against the group size. LinearTurboFold is the first joint-fold-and-align algorithm to scale to full-length coronavirus genomes (~30,000 <italic>nt</italic>) due to its linear runtime. <bold>E</bold>: The runtime and space complexity comparisons between TurboFold II and LinearTurboFold. The dominating terms are in bold. <bold>F–G</bold>: The F1 accuracy scores of the structure prediction and multiple sequence alignment (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S1</xref>). LocARNA and MXSCARNA are Sankoff-style simultaneous folding and alignment algorithms for homologous sequences. As negative controls, LinearPartition and Vienna RNAfold-predicted structures for each sequence separately; LinearAlignment and MAFFT generated sequence-level alignments; RNAalifold folded pre-aligned sequences (e.g., from MAFFT) and predicted conserved structures. Statistical significances (two-tailed permutation test) between the benchmarks and LinearTurboFold are marked with one star (⋆) on the top of the corresponding bars if <italic>p</italic> &lt; 0.05 or two stars <inline-formula>
+<mml:math id="M34">
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mo>⋆</mml:mo>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mo>⋆</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> if <italic>p</italic> &lt; 0.01. The benchmarks whose accuracies are significantly lower than LinearTurboFold are annotated with black stars, while benchmarks higher than LinearTurboFold are marked with dark red stars. Overall, on structure prediction, LinearTurboFold achieves significantly higher accuracy than all evaluated benchmarks, and on multiple sequence alignment, it achieves accuracies comparable to TurboFold II and significantly higher than other methods (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S1</xref>).</p>
+</caption>
+<graphic xlink:href="EMS107393-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>Secondary structures predictions of SARS-CoV-2 extended 5’ and 3’ UTRs.</title>
+<p>
+<bold>A</bold>: LinearTurboFold prediction.The nucleotides and base pairs are colored by unpaired probabilities and base-pairing probabilities, respectively. The compensatory mutations extracted by LinearTurboFold are annotated with alternative pairs in red boxes (see <italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S2</xref> for more fully conserved pairs with co-variational changes). <bold>B</bold>: SHAPE-guided model by Huston <italic>et al</italic>. (<xref ref-type="bibr" rid="R32">32</xref>) (window size 3000 <italic>nt</italic> sliding by 300 <italic>nt</italic> with maximum pairing distance 500 <italic>nt</italic>). The nucleotides are colored by SHAPE reactivities. Dashed boxes enclose the different structures between <bold>A</bold> and <bold>B</bold>. Our model is close to Huston <italic>et al</italic>.’s, but the major difference is that LinearTurboFold predicts the end-to-end pairs involving 5’ and 3’ UTRs (solid box in <bold>A</bold>), which is <italic>exactly</italic> the same interaction detected by Ziv <italic>et al</italic>. using the COMRADES experimental technique (<xref ref-type="bibr" rid="R37">37</xref>) (<bold>C</bold>). Such long-range interactions cannot be captured by the local folding methods used by prior experimentally-guided models (<xref ref-type="fig" rid="F1">Fig. 1B</xref>). The similarity between models A and B as well as the exact agreement between A and C show that our <italic>in silico</italic> method of folding multiple homologs can achieve results similar to, if not more accurate than, experimentally-guided single-genome prediction. As negative controls (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S10</xref>), the align-then-fold (RNAalifold) method cannot predict such long-range interactions. Although the single sequence folding algorithm (LinearPartition) predicts a long-range 5’-3’ interaction, the positions are not the same as the LinearTurboFold model and Ziv <italic>et al</italic>.’s experimental result.</p>
+</caption>
+<graphic xlink:href="EMS107393-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>
+<bold>A–D</bold>: Secondary structure predictions of SARS-CoV-2 extended frameshifting stimulation element (FSE) region (13425–13545 <italic>nt</italic>). <bold>A</bold>: LinearTurboFold prediction. <bold>B–D</bold>: Experimentally-guided predictions from the literature (<xref ref-type="bibr" rid="R32">32</xref>, <xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R35">35</xref>), which are sensitive to the context and region boundaries due to the use of local folding methods (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S11</xref>). <bold>E</bold>: The canonical pseudoknot structure by the comparative analysis between SARS-CoV-1 and SARS-CoV-2 genomes (<xref ref-type="bibr" rid="R40">40</xref>). For the 5’ region of the FSE shown in dotted boxes (attenuator hairpin, internal loop with slippery site, and a stem), the LinearTurboFold prediction (A) is consistent with B–D; for the 3’ region of the FSE shown in dashed boxes, our prediction (predicting stems 1–2 but missing 3) is closer to the canonical structure in E compared to B–D. <bold>F</bold>: LinearTurboFold prediction on SARS-CoV-1. <bold>G</bold>: Single sequence folding algorithm (LinearPartition) prediction on SARS-CoV-2, which is quite different from LinearTurboFold’s. As another negative control, the align-then-fold method (RNAalifold) predicts a rather dissimilar structure (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Fig. S11G</xref>). <bold>H</bold>: Five examples from 59 fully conserved structures among 25 genomes (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S3</xref>), 26 of which are novel compared with prior work (<xref ref-type="bibr" rid="R31">31</xref>, <xref ref-type="bibr" rid="R32">32</xref>).</p>
+</caption>
+<graphic xlink:href="EMS107393-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<title>An illustration of accessible and conserved regions that LinearTurboFold identifies.</title>
+<p>
+<bold>A–B</bold>: Identified structurally-conserved accessible regions by LinearTurboFold with the help of considering alignment and folding simultaneously. The regions at least 15 <italic>nt</italic> long with accessibility of at least 0.5 among all the 16 SARS-CoV-2 genomes are shaded on blue background. Structures are encoded in dot-bracket notation. “(“ and “)” indicates nucleotides pairing in the 3’ and 5’ direction, respectively. “.” indicates an unpaired nucleotide. The positions with mutations compared to the SARS-CoV-2 reference sequence among three different subfamilies (SARS-CoV-2, SARS-CoV-1 and BCoV) are underlined. <bold>C</bold>: Accessible and conserved regions are not only <italic>accessible</italic> among SARS-CoV-2 genomes (pink circle) but also <italic>conserved</italic> (at sequence level) among both SARS-CoV-2 and SARS-related genomes (green circle). <bold>D</bold>: Two examples out of 33 accessible and conserved regions found by LinearTurboFold. Region 16 and Region 29 correspond to the accessible regions in <bold>A</bold> and <bold>B</bold>, respectively. Region 16 is also the long internal loop including the slippery site in the FSE region (<bold>H</bold>). The conservation of these regions on 9 SARS-related genomes is the number of mutated sites. The conservation on the ~2M SARS-CoV-2 dataset is shown in both average sequence identity with the reference sequence and the percentage of exact matches, respectively. <bold>E–F</bold>: Single sequence folding algorithms predict greatly different structures even if the sequence identities are high (grey boxes). These two regions, fully conserved among SARS-CoV-2 genomes, still fold into different structures due to mutations outside the regions. <bold>G</bold>: The positions of these 33 regions (red bars) across the whole genome (<italic>SI Appendix</italic>, <xref ref-type="supplementary-material" rid="SD1">Tab. S5</xref>). All the accessible and conserved regions are potential targets for siRNAs, ASOs, CRISPR-Cas13 gRNAs and RT-PCR primers.</p>
+</caption>
+<graphic xlink:href="EMS107393-f005"/>
+</fig>
+</floats-group>
+</article>

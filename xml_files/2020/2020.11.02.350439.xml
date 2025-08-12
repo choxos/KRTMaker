@@ -1,0 +1,2733 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS103446</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.02.350439</article-id>
+<article-id pub-id-type="archive">PPR233573</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Predicting the animal hosts of coronaviruses from compositional biases of spike protein and whole genome sequences through machine learning</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Brierley</surname>
+<given-names>Liam</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Fowler</surname>
+<given-names>Anna</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Health Data Science, University of Liverpool, Brownlow Street, Liverpool, L69 3GL, UK</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence: <email>liam.brierley@liverpool.ac.uk</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>04</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>02</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The COVID-19 pandemic has demonstrated the serious potential for novel zoonotic coronaviruses to emerge and cause major outbreaks. The immediate animal origin of the causative virus, SARS-CoV-2, remains unknown, a notoriously challenging task for emerging disease investigations. Coevolution with hosts leads to specific evolutionary signatures within viral genomes that can inform likely animal origins. We obtained a set of 650 spike protein and 511 whole genome nucleotide sequences from 225 and 187 viruses belonging to the family <italic>Coronaviridae</italic>, respectively. We then trained random forest models independently on genome composition biases of spike protein and whole genome sequences, including dinucleotide and codon usage biases in order to predict animal host (of nine possible categories, including human). In hold-one-out cross-validation, predictive accuracy on unseen coronaviruses consistently reached ~73%, indicating evolutionary signal in spike proteins to be just as informative as whole genome sequences. However, different composition biases were informative in each case. Applying optimised random forest models to classify human sequences of MERS-CoV and SARS-CoV revealed evolutionary signatures consistent with their recognised intermediate hosts (camelids, carnivores), while human sequences of SARS-CoV-2 were predicted as having bat hosts (suborder Yinpterochiroptera), supporting bats as the suspected origins of the current pandemic. In addition to phylogeny, variation in genome composition can act as an informative approach to predict emerging virus traits as soon as sequences are available. More widely, this work demonstrates the potential in combining genetic resources with machine learning algorithms to address long-standing challenges in emerging infectious diseases.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Background</title>
+<p id="P2">The ongoing COVID-19 pandemic remains a significant public health emergency. Since the first identified cases in China in December 2019, this outbreak of respiratory disease has developed into a global crisis, with over 43 million cases worldwide to date (WHO, 2020). The causative virus was termed ‘severe acute respiratory syndrome-related coronavirus 2’(SARS-CoV-2) (<xref ref-type="bibr" rid="R17">Gorbalenya et al., 2020</xref>) and is a previously unknown betacoronavirus that likely emerged through zoonotic transmission from contact with non-human animals (<xref ref-type="bibr" rid="R2">Andersen et al., 2020</xref>; <xref ref-type="bibr" rid="R65">Zhou et al., 2020</xref>). However, the precise origins of the current pandemic remain inconclusive at present (<xref ref-type="bibr" rid="R63">Zhang and Holmes, 2020</xref>).</p>
+<p id="P3">Two other betacoronaviruses have zoonotically emerged to cause significant human epidemics. Severe acute respiratory syndrome-related coronavirus (SARS-CoV) emerged in China in 2002 via an intermediate host of masked palm civets <italic>(Paguma larvata)</italic> in live animal markets (<xref ref-type="bibr" rid="R21">Guan et al., 2003</xref>; <xref ref-type="bibr" rid="R47">Song et al., 2005</xref>), and Middle East respiratory syndrome related coronavirus (MERS-CoV) emerged in Saudi Arabia in 2012 via an intermediate host of dromedary camels (<xref ref-type="bibr" rid="R1">Alagaili et al., 2014</xref>; <xref ref-type="bibr" rid="R12">Chu et al., 2014</xref>), with considerable evidence that both originated in bats (<xref ref-type="bibr" rid="R3">Anthony et al., 2017</xref>; <xref ref-type="bibr" rid="R13">Cui et al., 2007</xref>; <xref ref-type="bibr" rid="R25">Hu et al., 2015</xref>; <xref ref-type="bibr" rid="R30">Lau et al., 2005</xref>). Four additional coronaviruses are known to be endemic within humans, causing mild common cold like illness (<italic>Alphacoronavirus</italic>:Human coronaviruses 229E and NL63; <italic>iBetacoronavirus</italic>: Human coronaviruses HKU1 and OC43).</p>
+<p id="P4">All viruses in the family <italic>Coronaviridae</italic> feature similar structural proteins, including a spike glycoprotein on the outer viral suace. This protein attaches to host cell receptors and subsequently initiates cell entry. While SARS-CoV-2 shows high genetic similarity to bat coronaviruses, particularly bat coronavirus RaTG13 (matching 96% sequence identity) (<xref ref-type="bibr" rid="R66">Zhou et al., 2020</xref>), its spike protein instead exhibits differences among key amino acid residues of the receptor binding domain (RBD) (<xref ref-type="bibr" rid="R2">Andersen et al., 2020</xref>; <xref ref-type="bibr" rid="R54">Wan et al., 2020</xref>), the region which directly interacts with host receptors. Based on this region, SARS-CoV-2 is predicted through structural (<xref ref-type="bibr" rid="R54">Wan et al., 2020</xref>; <xref ref-type="bibr" rid="R56">Wrapp et al., 2020</xref>) and in vitro experimental models (<xref ref-type="bibr" rid="R24">Hoffmann et al., 2020</xref>; <xref ref-type="bibr" rid="R31">Letko and Munster, 2020</xref>) to have highly efficient binding to the human angiotensin-converting enzyme 2 (ACE2) receptor, a feature that has likely contributed to its efficient human-to-human transmissibility. As the key molecular determinant of host range (<xref ref-type="bibr" rid="R18">Graham and Baric, 2010</xref>), adaptation of coronavirus spike proteins therefore represents a key opportunity to further understand their host range constraints.</p>
+<p id="P5">Beyond selection acting at specific loci, viral adaptation can also manifest through broad-scale genomic signatures. Viruses exhibit biased genome composition, for example, in non-uniform use of synonymous codons (<xref ref-type="bibr" rid="R27">Jenkins and Holmes, 2003</xref>). Furthermore, coevolution within different hosts may indirectly lead to selection for particular compositions, as reported for nucleotide and dinucleotide usage within avian and human influenzaviruses (<xref ref-type="bibr" rid="R19">Greenbaum et al., 2008</xref>; <xref ref-type="bibr" rid="R42">Rabadan et al., 2006</xref>) and codon pair usage of arboviruses within their insect vectors and mammalian hosts (<xref ref-type="bibr" rid="R46">Shen et al., 2015</xref>). The <italic>Coronaviridae</italic> are no exception - different coronaviruses (including SARS-CoV-2) vary in their genome composition, with particularly complex patterns of codon usage in spike protein coding sequences (<xref ref-type="bibr" rid="R15">Dilucca et al., 2020</xref>; <xref ref-type="bibr" rid="R21">Gu et al., 2020</xref>), which could potentially contain important evolutionary signal regarding host origin.</p>
+<p id="P6">Machine learning has recently gained substantial attention as a methodology in comparative modelling of emerging diseases. These methods are capable of decomposing signal in high-dimensional genomic information (a limitation of regression frameworks) without the need for sequence alignment. Genomic machine learning analyses have demonstrated the ability to not only classify viruses from recurring viral genome motifs (<xref ref-type="bibr" rid="R43">Randhawa et al., 2020</xref>), but also classify their broad host origins (<xref ref-type="bibr" rid="R4">Babayan et al., 2018</xref>; <xref ref-type="bibr" rid="R6">Bartoszewicz et al., 2020</xref>; <xref ref-type="bibr" rid="R62">Young et al., 2020</xref>; <xref ref-type="bibr" rid="R64">Zhang et al., 2019</xref>). Specifically considering coronaviruses, support vector machines and random forests have been trained on various genomic features to predict host group, including nucleotide and dinucleotide biases (<xref ref-type="bibr" rid="R48">Tang et al., 2015</xref>), amino acid composition (<xref ref-type="bibr" rid="R40">Qiang et al., 2020</xref>) or sequence k-mers (<xref ref-type="bibr" rid="R32">Li and Sun, 2018</xref>). However, previous model predictions are mostly concentrated upon bats or humans, and few analyses explicitly address the spike protein (but see <xref ref-type="bibr" rid="R32">Li and Sun, 2018</xref>). The exact potential of genome composition to predict host origin therefore remains unclear.</p>
+<p id="P7">We aimed to use machine learning to understand how the complex genomic signatures of coronaviruses might predict their hosts and determine the importance of such signature in the spike protein. Specifically, we trained random forest models on compositional biases for spike protein and whole genome nucleotide sequences and compared their peormance. A limitation of these approaches is that model predictions can be strongly influenced by viral sampling biases and reflect virus lineage rather than host (<xref ref-type="bibr" rid="R14">Di Giallonardo et al., 2017</xref>). Therefore, we undersample sequences to create balanced training data and control for similarity between related sequences during hold-one-out validation. We demonstrate the use of machine learning as a reliable method to estimate host origins of future novel coronaviruses in humans and livestock.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Data extraction and processing</title>
+<p id="P8">Spike protein or whole genome sequence data for coronaviruses were identified within GenBank, using search terms
+<disp-quote id="Q1">
+<p id="P9">‘txid###[Organism:noexp] AND (spike[Title] OR “S gene ”[Title] OR “S protein”[Title] OR “S glycoprotein”[Title] OR “S1 gene”[Title] OR “S1 protein”[Title] OR “S1 glycoprotein”[Title] OR peplomer[Title] OR peplomeric[Title] OR peplomers[Title] OR “complete genome”[Title]) NOT (patent[Title] OR vaccine OR artificial OR construct OR recombinant[Title])’</p>
+</disp-quote>
+</p>
+<p id="P10">where successive searches were conducted replacing ### with taxonomic identifiers for each species and unranked sub-species belonging to the family <italic>Coronaviridae</italic> within the NCBI taxonomy database (<xref ref-type="bibr" rid="R16">Federhen, 2012</xref>) (n = 1585 taxonomic ids total). Matching sequences were then extracted and further filtered to exclude incomplete or truncated sequences based on a) metadata labels and b) length restrictions, discarding any spike protein sequences &lt; 2 kilobases (kb) and any whole genome sequences outside a range of 20kb – 32kb. We accepted both spike protein coding sequences within whole genome sequences and standalone complete spike protein sequences, excluding those only covering individual S1 or S2 subunits. All sequence data searching, filtering and extraction was conducted with R package ‘rentrez’ v1.2.2 (<xref ref-type="bibr" rid="R55">Winter, 2017</xref>; see also <xref ref-type="bibr" rid="R9">Brierley, 2020</xref>).</p>
+</sec>
+<sec id="S4">
+<title>Host classification</title>
+<p id="P11">For each spike protein or whole genome sequence, host names were extracted from the host organism metadata field before being resolved to the standard NCBI taxonomy using the R package ‘taxizedb’ v0.1.9.93 (<xref ref-type="bibr" rid="R13">Chamberlain and Arendsee, 2020</xref>; see also <xref ref-type="bibr" rid="R11">Brierley, 2020</xref>). Host names were automatically resolved to the highest taxonomic resolution possible and any unmatched host names were resolved manually, discarding sequences with missing/unresolvable names.</p>
+<p id="P12">We then constructed a new variable broadly describing host category of each sequence, defined at various taxonomic levels: human (species <italic>Homo</italic> sapiens), camelid (family <italic>Camelidae</italic>), swine (family <italic>Suidae</italic>), carnivore (order <italic>Carnivora</italic>), rodent (order <italic>Rodentia</italic>), and bird (class <italic>Aves</italic>). Following a previous analysis (<xref ref-type="bibr" rid="R4">Babayan et al., 2018</xref>), we included two categories to represent bats (order Chiroptera): suborder Yinpterochiroptera (families <italic>Craseonycteridae, Hipposideridae, Megadermatidae, Pteropodidae, Rhinolophidae, and Rhinopomatidae</italic>) and suborder Yangochiroptera (all other families), based on their evolutionary divergence (<xref ref-type="bibr" rid="R50">Tsagkogeorga et al., 2013</xref>) and differences in ecology and hosted viruses (<xref ref-type="bibr" rid="R36">Moratelli et al., 2015</xref>; <xref ref-type="bibr" rid="R60">Young and Olival, 2016</xref>). Sequences not conforming to any of the above host categories were excluded from further analysis.</p>
+</sec>
+<sec id="S5">
+<title>Genomic feature calculation</title>
+<p id="P13">We then calculated several features describing genome composition biases of each spike protein and whole genome coding sequence at nucleotide, dinucleotide or codon level. Firstly, nucleotide biases were calculated as simple proportion of A, C, G or U content. Dinucleotide biases were calculated as the ratio of observed dinucleotide frequency to expected based on nucleotide frequency, following (<xref ref-type="bibr" rid="R4">Babayan et al., 2018</xref>):</p>
+<disp-formula id="FD1">
+<mml:math id="M1">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>x</mml:mi>
+<mml:mi>y</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mi>D</mml:mi>
+</mml:mfrac>
+</mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mi>x</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mi>y</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+<p id="P14">where d<sub>
+<italic>xy</italic>
+</sub> denotes frequency of dinucleotide <italic>xy</italic>, <italic>n<sub>x</sub> and n<sub>y</sub>
+</italic> denote frequency of individual nucleotides <italic>x</italic> and <italic>y</italic>, and <italic>D</italic> denotes total dinucleotides and <italic>N</italic> total nucleotides for length of the given sequence. Biases were calculated separately for each dinucleotide at each position within codon reading frames (i.e. at positions 1-2, 2-3 or 3-1) as dinucleotides spanning adjacent codons may be subject to more extreme biases (<xref ref-type="bibr" rid="R28">Kunec and Osterrieder, 2016</xref>; <xref ref-type="bibr" rid="R51">Tulloch et al., 2014</xref>). Finally, Relative Synonymous Codon Usage (RSCU) was also calculated for each codon including stop codons, following (<xref ref-type="bibr" rid="R45">Sharp and Li, 1987</xref>):</p>
+<disp-formula id="FD2">
+<mml:math id="M2">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>n</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+<p id="P15">where <italic>n<sub>i</sub>
+</italic> denotes number of codons synonymous for amino acid <italic>i</italic> and <italic>c<sub>ij</sub>
+</italic> denotes frequency of <italic>j<sup>th</sup>
+</italic> codon encoding for such amino acid. In total, this gave 116 genomic features for use in predictive models. The Effective Number of codons (ENc) (<xref ref-type="bibr" rid="R57">Wright, 1990</xref>) was also calculated for each sequence as a summative metric of magnitude of codon bias. All calculations for whole genomes considered nucleotide sequences as-is rather than as-read; sequence strings duplicated by frameshifting among ORF1a and ORF1b replicase protein were discarded to avoid disproportionate weighting in modelling analyses.</p>
+</sec>
+<sec id="S6">
+<title>Machine learning analysis</title>
+<p id="P16">To quantify the potential for genome composition biases to predict coronavirus host category, we used random forests, an ensemble machine learning approach that aggregates over a large number of individual classification tree models (<xref ref-type="bibr" rid="R8">Breiman, 2001</xref>). Such predictive modelling methods are often sensitive to class imbalances in outcome variables (<xref ref-type="bibr" rid="R24">He and Garcia, 2009</xref>), as well as training data composition. As several viruses (e.g. Porcine epidemic diarrhea virus) and host categories (e.g. human) appeared highly over-represented, we therefore conducted stratified random undersampling prior to modelling, retaining a maximum of 20 sequences per host category per virus (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S1</xref>).</p>
+<p id="P17">Zoonotic or epizootic coronavirus sequences from their novel host (i.e. SARS-CoV, SARS-CoV-2, MERS-CoV in humans, totaling m = 9 taxonomic identifiers, full list in Supplementary Data Files; swine acute diarrhea syndrome coronavirus in swine) were held out from model training as their evolutionary signature in genome composition is much more likely to instead reflect the original or donor host, having experienced comparatively little coevolution within the novel host following cross-species transmission. We also excluded human enteric coronavirus, the zoonotic potential of which remains unclear.</p>
+<p id="P18">All random forests were constructed using 1000 trees and implemented using R package `ranger`, v0.12.1 (Wright and Ziegler, 2017). Model parameters were optimized within an inner loop of 10-fold cross-validation (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S1</xref>), retaining the parameter set yielding the highest prediction accuracy. This approach was repeated in an outer loop through hold-one-out validation applied to coronaviruses (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S1</xref>), i.e., rather exclude a single sequence in each instance, we exclude all sequences from a single virus to control for the similarity of genome composition within-virus. This allows host predictions for novel viruses based on values of compositional bias, rather than indirectly predicting host by the proxy of viral identity.</p>
+<p id="P19">Model performance was then assessed by applying each random forest to its respective held-out coronavirus sequences as a test set. Probabilities of host categories were obtained by dropping sequences down each individual tree model within the random forest and averaging host category prevalence of resulting terminal nodes (see <xref ref-type="bibr" rid="R35">Malley et al., 2012</xref>)). To investigate explanatory relationships between genomic biases and hosts of coronaviruses, variable importance (calculated as relative mean decrease in Gini impurity) and partial dependence (calculated as marginal probability of each host category) associated with each genomic feature were averaged across all random forests. Host category predictions were also generated for each zoonotic coronavirus sequence by averaging predicted probabilities across all random forests to investigate model utility in application to a newly-identified human epidemic coronavirus.</p>
+<p id="P20">All data processing and modelling were conducted within R v4.0.0 (<xref ref-type="bibr" rid="R41">R Development Core Team, 2020</xref>).</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="results">
+<title>Results</title>
+<sec id="S8">
+<title>Genome composition across the Coronaviridae</title>
+<p id="P21">In total, we identified n = 4960 nucleotide sequences for coronavirus spike proteins and n = 2987 whole genome sequences that met inclusion criteria. These were undersampled to n = 650 spike protein sequences from m = 225 coronaviruses and n = 511 whole genome sequences from m = 187 coronaviruses for use in further analysis (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S1, Supplementary Table S1</xref>), spanning 40 identified host genera and 58 identified host species (<xref ref-type="supplementary-material" rid="SD1">Supplementary Data Files 1</xref> &amp; <xref ref-type="supplementary-material" rid="SD2">2</xref>).</p>
+<p id="P22">Broadly consistent genome composition biases were observed across the diversity of all coronavirus sequences examined. Specifically, ACU, AGA, GGU and GUU codons were over-represented among both coronavirus spike protein sequences and whole genomes (<xref ref-type="fig" rid="F1">Figure 1</xref>). Hierarchical clustering based on RSCU values suggested codon usage was less distinct between genera within spike protein sequences (<xref ref-type="fig" rid="F1">Figure 1A</xref>) than within whole genomes (<xref ref-type="fig" rid="F1">Figure 1B</xref>). However, clear separation of deltacoronaviruses was observed for both cases, as these appeared to have less extreme biases in codon usage. This was confirmed by ENc calculation; deltacoronaviruses had higher ENc values than other coronavirus genera (<xref ref-type="table" rid="T1">Table 1</xref>). Considering dinucleotide biases, compositional bias was typically more extreme for dinucleotides spanning adjacent codons, i.e. position 3-1 (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S2</xref>), and the characteristic coronavirus CpG suppression was also observed.</p>
+</sec>
+<sec id="S9">
+<title>Host predictions of random forest models</title>
+<p id="P23">Random forest models trained on nucleotide, dinucleotide and codon bias features of spike protein sequences predicted coronavirus hosts with 73% accuracy during hold-one-out cross-validation (<xref ref-type="table" rid="T2">Table 2</xref>). Genome composition of spike proteins appeared just as informative as whole genomes despite being much smaller in sequence length, as both models achieved very similar performance in all diagnostic measures (<xref ref-type="table" rid="T2">Table 2</xref>).</p>
+<p id="P24">Patterns of host-specific predictive performance were evident during hold-one-out cross-validation. Random forests trained on both spike protein and whole genome sequence compositional features most easily distinguished bird, carnivore and rodent host categories (<xref ref-type="fig" rid="F2">Figure 2</xref>, see also <xref ref-type="supplementary-material" rid="SD5">Supplementary Tables S2 &amp; S3</xref>). Less powerful predictive performance was obtained for livestock (i.e., swine and camelid) host categories with these sequences often predicted as having bat (suborder Yangochiroptera) hosts, including all MERS-CoV sequences sampled from camels.</p>
+<p id="P25">Human host origins appeared particularly difficult to characterise, with model-predicted hosts appearing more uncertain using spike protein features than whole genome features (Figure 2); while human coronaviruses HKU1 and NL63 were more confidently correctly classified based on whole genomes, human coronaviruses OC43 and 229E were more confidently misclassified as having camelid or Yinpterochiroptera hosts. The reciprocal also only occurred using whole genomes, i.e. several camel coronaviruses were predicted to have human hosts.</p>
+<p id="P26">We then applied random forests to those sequences of zoonotic viruses sampled from humans and excluded from model training: SARS-CoV, SARS-CoV-2, and MERS-CoV (<xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S1</xref>, <xref ref-type="supplementary-material" rid="SD3">Supplementary Data Files 3</xref> &amp; <xref ref-type="supplementary-material" rid="SD4">4</xref>). As these viruses have experienced little coevolution following zoonotic spillover, their genome composition signal likely gives indications about their ultimate or proximate animal host origins. MERS-CoV was overwhelmingly predicted to have camelid hosts (<xref ref-type="fig" rid="F2">Figure 3</xref>) and SARS-CoV was predicted with less certainty as having carnivore hosts, consistent with the respective known intermediate hosts of camels and palm civets (order <italic>Carnivora</italic>). Contrastingly, SARS-CoV-2 was predicted mostly strongly to have a bat (suborder Yinpterochiroptera) host. Host predictions for zoonotic viruses were consistent between models using spike protein and whole genome features (<xref ref-type="fig" rid="F3">Figure 3</xref>).</p>
+</sec>
+<sec id="S10">
+<title>Variable importance of random forest models</title>
+<p id="P27">The most informative genomic features towards predicting coronavirus hosts were a mixture of dinucleotide and codon biases (<xref ref-type="fig" rid="F4">Figure 4</xref>), with dinucleotide biases appearing slightly more informative for spike protein sequences and codon biases appearing slightly more informative for whole genome sequence. However, predictive power of individual genomic features did not hold between spike protein and whole genome sequences; only weak correlation was observed between ranked variable importance from both analyses (Spearman’s rank, p = 0.191, p = 0.042; <xref ref-type="fig" rid="F4">Figure 4</xref>, see also <xref ref-type="supplementary-material" rid="SD3">Supplementary Figures S4 &amp; S5</xref>). Partial dependence plots suggested the strongest individual discriminating feature to be GG dinucleotides at positions 1-2; an overrepresentation of this dinucleotide within the spike protein sequence clearly distinguished bird hosts from mammalian hosts (Supplementary Figure S4), consistent with the greatest predictive performance for bird coronaviruses ( <xref ref-type="supplementary-material" rid="SD5">Supplementary Table S2</xref>).</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="discussion">
+<title>Discussion</title>
+<p id="P28">We observe biased dinucleotide and nucleotide usage across the family <italic>Coronaviridae</italic>, and demonstrate that these genome composition biases contain sufficient evolutionary signal such that they can predict animal host origin. We show that training random forests on these features of spike proteins is equally as informative as using whole genome sequences in predicting hosts of novel (i.e., unseen) coronaviruses, with bird, carnivore and rodent viruses having the highest prediction accuracy. When applied to human coronavirus sequences from previous epidemics (SARS-CoV, MERS-CoV), random forest model predictions consistently represented the intermediate hosts. In the case of SARS-CoV-2, where the exact transmission pathway remains unknown, models predicted sequences to have a bat host (suborder Yinpterochiroptera).</p>
+<sec id="S12">
+<title>Variability in genome composition</title>
+<p id="P29">Among our dataset of 225 coronaviruses, we observed A- and U-ending codons to be overrepresented and G- and C- ending codons to be underrepresented ( <xref ref-type="fig" rid="F1">Figure 1</xref>), a commonly noted trait in other studies (<xref ref-type="bibr" rid="R15">Dilucca et al., 2020</xref>; <xref ref-type="bibr" rid="R49">Tort et al., 2020</xref>). Elsewhere, CpG dinucleotide bias has been proposed as a specific determinant of host (and tissue) range of coronaviruses (<xref ref-type="bibr" rid="R59">Xia, 2020</xref>), on the basis that CpG dinucleotides are targeted by zinc finger antiviral proteins and their suppression is therefore linked to immune evasion. We observed consistent CpG suppression ( <xref ref-type="supplementary-material" rid="SD5">Supplementary Figure S2</xref>) and CG dinucleotides (positions 1-2) ranked 6<sup>th</sup> and 8<sup>th</sup> in feature importance for spike proteins and whole genomes (<xref ref-type="fig" rid="F4">Figure 4</xref>), respectively.</p>
+<p id="P30">However, spike proteins display different patterns of codon usage from other viral proteins (<xref ref-type="bibr" rid="R21">Gu et al., 2020</xref>), reflected in the lack of correlation between genome composition feature importance in random forests trained on spike proteins versus whole genomes (<xref ref-type="fig" rid="F3">Figure 3</xref>, see also <xref ref-type="supplementary-material" rid="SD5">Supplementary Figures S4 &amp; S5</xref>). This indicates spike proteins contain complex and distinct evolutionary signatures indicative of host-virus coevolution, supporting our approach in using many features beyond single dinucleotides (<xref ref-type="bibr" rid="R39">Pollock et al., 2020</xref>).</p>
+</sec>
+<sec id="S13">
+<title>Model predictions of human coronaviruses</title>
+<p id="P31">During model validation, human hosts appeared more challenging to correctly predict than other host types. Although the endemic human coronaviruses are common, they are also thought to have their ultimate evolutionary origins within non-human animals (<xref ref-type="bibr" rid="R13">Cui et al., 2007</xref>), which may explain this difficulty. In particular, human coronaviruses NL63 and HKU1 were more consistently predicted as having human hosts than human coronaviruses OC43 and 229E, especially when using whole genome sequences (<xref ref-type="fig" rid="F2">Figure 2</xref>). Human coronavirus NL63 is estimated to have a more ancient common ancestor with bat coronaviruses than 229E (<xref ref-type="bibr" rid="R26">Huynh et al., 2012</xref>; <xref ref-type="bibr" rid="R38">Pfefferle et al., 2009</xref>), implying longer coevolutionary history within human hosts has resulted in a more consistently identifiable genomic signature.</p>
+<p id="P32">Although several mutations of SARS-CoV-2 are becoming fixed in the population, e.g. D614G in the spike protein (<xref ref-type="bibr" rid="R20">Grubaugh et al., 2020</xref>), the virus has experienced only weak purifying selection (<xref ref-type="bibr" rid="R34">MacLean et al., 2020</xref>) and sequences remain extremely similar over the course of the pandemic. As such, our approach cannot identify host adaptation “in real-time”; rather, we examine variation generated over much longer macroevolutionary histories.</p>
+<p id="P33">Instead, we would expect viruses that have transmitted cross-species more recently to retain the genome composition signature of their previous hosts, having experienced little coevolution within the novel host. Applying our finalised models to zoonotic human virus sequences may therefore give an indication of their proximate or ultimate animal host origin (<xref ref-type="fig" rid="F3">Figure 3</xref>).</p>
+<p id="P34">Human sequences of SARS-CoV were predicted to have a carnivore host, consistent with the known intermediate host of palm civets (Paguma larvata). Much previous work has shown human and civet SARS-CoV sequences to have high similarity, with adaptive mutations concentrated within the spike protein (specifically, the receptor binding domain) (<xref ref-type="bibr" rid="R18">Graham and Baric, 2010</xref>; <xref ref-type="bibr" rid="R22">Guan et al., 2003</xref>; <xref ref-type="bibr" rid="R47">Song et al., 2005</xref>), which may explain the stronger prediction of carnivore hosts when using spike protein sequences. Similarly, human sequences of MERS-CoV were strongly predicted as having camelid hosts, consistent with the intermediate host of dromedary camels. The detection of evolutionary signatures corresponding to these intermediate hosts implies that these coronaviruses circulated in those hosts for sufficient time for coevolution to shape genome composition before cross-species transmission to humans. For MERS-CoV, camel infections have been recognised as far back as at least the 1980s (<xref ref-type="bibr" rid="R37">Müller et al., 2014</xref>; <xref ref-type="bibr" rid="R43">Sabir et al., 2016</xref>).</p>
+<p id="P35">The origins of SARS-CoV-2 have been heavily speculated upon since its discovery, though there remains no compelling evidence towards the animal source of the first human infections. Our random forest models trained on genome composition of both spike protein and whole genome sequences predicted SARS-CoV-2 as having a bat host (suborder Yinpterochiroptera). Alignment-based and phylogenetic approaches showed the most closely related virus to be bat coronavirus RaTG13, a virus sampled from a horseshoe bat (<italic>Rhinolophus affinis</italic>) belonging to this suborder (Zhou et al., 2020), and more widely, the Rhinolophidae family are the most likely ancestral hosts of the <italic>Sarbecovirus</italic> genus (<xref ref-type="bibr" rid="R29">Latinne et al., 2020</xref>).</p>
+<p id="P36">While our model predictions support bats as the ultimate origin of SARS-CoV-2, the involvement of intermediate hosts remains unclear. Although the Malayan pangolin (Manis javanica) was proposed early in the pandemic (<xref ref-type="bibr" rid="R33">Liu et al., 2020</xref>; <xref ref-type="bibr" rid="R59">Xiao et al., 2020</xref>), recent analyses have argued there is absence of evidence for this (<xref ref-type="bibr" rid="R7">Boni et al., 2020</xref>; <xref ref-type="bibr" rid="R61">Zhan et al., 2020</xref>). The methods used here are unable to identify intermediate hosts without sufficient sequence availability, and lack of such from pangolins (order <italic>Pholidota</italic>) preclude us from directly testing this hypothesis. However, selection analyses indicate SARS-CoV-2 could reasonably have exhibited efficient human infectivity and human-to-human transmissibility following direct transmission from bats (<xref ref-type="bibr" rid="R34">MacLean et al., 2020</xref>; <xref ref-type="bibr" rid="R62">Zhan et al., 2020</xref>), i.e., without strict need for prolonged selection within an intermediate host.</p>
+</sec>
+<sec id="S14">
+<title>Future directions</title>
+<p id="P37">A natural comparison to these methods is phylogenetic analyses, which can estimate traits such as host type from reconstructing viral ancestry based on sequence similarity. There is challenging confounding between molecular characteristics and sequence similarity, i.e., variation in genome composition may actually be predictive of viral lineage rather than host type (<xref ref-type="bibr" rid="R14">Di Giallonardo et al., 2017</xref>), essentially acting as a proxy for phylogenetic relatedness. To separate these signals, phylogeny needs to be considered in model construction (<xref ref-type="bibr" rid="R62">Young et al., 2020</xref>); by using a cross-validation procedure holding out individual coronaviruses rather than individual sequences, we attempt to distinguish genomic signatures arising from convergent evolution within specific hosts, rather than from viral similarity. A more generalised scope of study across multiple viral families would allow holdout of entire families during cross-validation (<xref ref-type="bibr" rid="R62">Young et al., 2020</xref>), further removing any phylogenetic proxy effects.</p>
+<p id="P38">Additional challenges are created by the unavoidable, systematic gaps in sampling coverage. For example, disproportionate sampling to identify viruses in wildlife similar to those already known to affect humans or livestock may introduce bias to predictive models. Although we address this by undersampling, our model predictions, particularly for zoonotic coronaviruses, are likely influenced by the range of known viruses with available sequence data. These issues highlight the need for a careful choice of training dataset in modelling studies, but also for wider sampling and surveillance of coronaviruses among the wild virome (<xref ref-type="bibr" rid="R10">Carroll et al., 2018</xref>), especially considering their high public health risks.</p>
+<p id="P39">Although we focus on compositional features, predictive approaches using other sequence properties may improve more mechanistic understanding of host range. For example, amino acid composition and physiochemical similarity between contiguous amino acid residues can predict human origin of coronavirus spike sequences (<xref ref-type="bibr" rid="R40">Qiang et al., 2020</xref>). Similarly, <xref ref-type="bibr" rid="R61">Young et al. (2020</xref>) have recently demonstrated the use of multiple types of genomic features in combination to predict infected hosts and found physicochemical classification of amino acid k-mers to achieve similar predictive power to nucleotide k-mers. More widely, hydrophobic and hydrophilic composition of host receptors shows some predictive signal towards virus sharing (<xref ref-type="bibr" rid="R5">Bae and Son, 2011</xref>), hydropathy being of mechanistic importance during virus-receptor binding, e.g. for murine coronavirus (<xref ref-type="bibr" rid="R49">Thackray et al., 2005</xref>). These properties could be used as additional features and improve machine learning model-derived predictions.</p>
+<p id="P40">This emphasises an additional key question for future modelling studies distinct from host origin - whether genomic traits can predict the zoonotic potential of newly discovered animal coronaviruses. As this is strongly determined by molecular mechanisms of virus-host receptor interactions (<xref ref-type="bibr" rid="R18">Graham and Baric, 2010</xref>), these predictions may be best inferred by model frameworks combining genomic features of both spike proteins and host receptors.</p>
+</sec>
+</sec>
+<sec id="S15" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P41">By training machine learning models on genome composition across the <italic>Coronaviridae</italic>, we demonstrate a detectable evolutionary signature predictive of host type rooted in a region of the genome that is key to host shifts. Our random forest predictions add to the growing evidence COVID-19 ultimately originated within bats, though further work is needed to understand the potential for intermediate hosts. Characterising spike proteins (and by extension, their interaction with host receptors) may provide a fruitful path to further understanding zoonosis risk among coronaviruses.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Data File 1</label>
+<media xlink:href="EMS103446-supplement-Supplementary_Data_File_1.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66634" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Data File 2</label>
+<media xlink:href="EMS103446-supplement-Supplementary_Data_File_2.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66643" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD3">
+<label>Supplementary Data File 3</label>
+<media xlink:href="EMS103446-supplement-Supplementary_Data_File_3.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66652" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD4">
+<label>Supplementary Data File 4</label>
+<media xlink:href="EMS103446-supplement-Supplementary_Data_File_4.csv" mimetype="text" mime-subtype="csv; charset=utf-8" id="N66661" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD5">
+<label>Supplementary Material (Data Captions, Tables, Figures)</label>
+<media xlink:href="EMS103446-supplement-Supplementary_Material__Data_Captions__Tables__Figures_.docx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.wordprocessingml.document" id="N66670" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgements</title>
+<p id="P42">We thank Cillian Courtney, Maya Wardeh, and Matthew Baylis for helpful support and commentary on this work. LB acknowledges funding from a Medical Research Council Skills Development Fellowship award, grant number MR/T027355/1.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alagaili</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Briese</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Mishra</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Kapoor</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Sameroff</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Wit</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>de Munster</surname>
+<given-names>VJ</given-names>
+</name>
+<name>
+<surname>Hensley</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Zalmout</surname>
+<given-names>IS</given-names>
+</name>
+<name>
+<surname>Kapoor</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Epstein</surname>
+<given-names>JH</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Middle East Respiratory Syndrome Coronavirus Infection in Dromedary Camels in Saudi Arabia</article-title>
+<source>mBio</source>
+<year>2014</year>
+<volume>5</volume>
+<pub-id pub-id-type="doi">10.1128/mBio.00884-14</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lipkin</surname>
+<given-names>WI</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Garry</surname>
+<given-names>RF</given-names>
+</name>
+</person-group>
+<article-title>The proximal origin of SARS-CoV-2</article-title>
+<source>Nat Med</source>
+<year>2020</year>
+<volume>26</volume>
+<fpage>450</fpage>
+<lpage>452</lpage>
+<pub-id pub-id-type="doi">10.1038/s41591-020-0820-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Anthony</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Gilardi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Menachery</surname>
+<given-names>VD</given-names>
+</name>
+<name>
+<surname>Goldstein</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ssebide</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Mbabazi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Navarrete-Macias</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Wells</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hicks</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Petrosov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Debbink</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Further Evidence for Bats as the Evolutionary Source of Middle East Respiratory Syndrome Coronavirus</article-title>
+<source>mBio</source>
+<year>2017</year>
+<volume>8</volume>
+<pub-id pub-id-type="doi">10.1128/mBio.00373-17</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babayan</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Orton</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>Predicting reservoir hosts and arthropod vectors from evolutionary signatures in RNA virus genomes</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>362</volume>
+<fpage>577</fpage>
+<lpage>580</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aap9072</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bae</surname>
+<given-names>SE</given-names>
+</name>
+<name>
+<surname>Son</surname>
+<given-names>HS</given-names>
+</name>
+</person-group>
+<article-title>Classification of viral zoonosis through receptor pattern analysis</article-title>
+<source>BMC Bioinformatics</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>96</fpage>
+<pub-id pub-id-type="doi">10.1186/1471-2105-12-96</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bartoszewicz</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Seidel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Renard</surname>
+<given-names>BY</given-names>
+</name>
+</person-group>
+<article-title>Interpretable detection of novel human viruses from genome sequencing data</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.01.29.9253546</pub-id>
+<comment>01.29.925354</comment>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>TTY</given-names>
+</name>
+<name>
+<surname>Perry</surname>
+<given-names>BW</given-names>
+</name>
+<name>
+<surname>Castoe</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary origins of the SARS-CoV-2 sarbecovirus lineage responsible for the COVID-19 pandemic</article-title>
+<source>Nat Microbiol</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>10</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0771-4</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Breiman</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Random forests</article-title>
+<source>Mach Learn</source>
+<year>2001</year>
+<volume>45</volume>
+<fpage>5</fpage>
+<lpage>32</lpage>
+<pub-id pub-id-type="doi">10.1023/A:1010933404324</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Brierley</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Using Open-access Tools (taxize, rentrez) to Find Coronaviruses, Their Genetic Sequences, and Their Hosts</article-title>
+<source>ROpenSci Blog</source>
+<year>2020</year>
+<comment>URL <ext-link ext-link-type="uri" xlink:href="https://ropensci.org/blog/2020/11/10/coronaviruses-and-hosts/">https://ropensci.org/blog/2020/11/10/coronaviruses-and-hosts/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Carroll</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Daszak</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wolfe</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>GF</given-names>
+</name>
+<name>
+<surname>Morel</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Morzaria</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pablos-Méndez</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tomori</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Mazet</surname>
+<given-names>JAK</given-names>
+</name>
+</person-group>
+<article-title>The Global Virome Project</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>359</volume>
+<fpage>872</fpage>
+<lpage>874</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aap7463</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chamberlain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Arendsee</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<source>taxizedb: Tools for Working with “Taxonomic” Databases</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chu</surname>
+<given-names>DKW</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LLM</given-names>
+</name>
+<name>
+<surname>Gomaa</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Shehata</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>RAPM</given-names>
+</name>
+<name>
+<surname>Abu-Zeid</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>El-Rifa</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Siu</surname>
+<given-names>LY</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Webby</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Ali</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<article-title>MERS coronaviruses in dromedary camels, Egypt</article-title>
+<source>Emerg Infect Dis</source>
+<year>2014</year>
+<volume>20</volume>
+<fpage>1049</fpage>
+<lpage>1053</lpage>
+<pub-id pub-id-type="doi">10.3201/eid2006.140299</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cui</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Fontanet</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary relationships between bat coronaviruses and their hosts</article-title>
+<source>Emerg Infect Dis</source>
+<year>2007</year>
+<volume>13</volume>
+<fpage>1526</fpage>
+<lpage>1532</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Di-Giallonardo</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Schlub</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>Dinucleotide Composition in Animal RNA Viruses Is Shaped More by Virus Family than by Host Species</article-title>
+<source>J Virol</source>
+<year>2017</year>
+<volume>91</volume>
+<pub-id pub-id-type="doi">10.1128/JVI.02381-16</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dilucca</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Forcelloni</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pavlopoulou</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Georgakilas</surname>
+<given-names>AG</given-names>
+</name>
+<name>
+<surname>Giansanti</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Codon usage and evolutionary rates of the 2019-nCoV genes</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.03.25.006569</pub-id>
+<comment>2020.03.25.0065691</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Federhen</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>The NCBI Taxonomy database</article-title>
+<source>Nucleic Acids Res</source>
+<year>2012</year>
+<volume>40</volume>
+<fpage>D136</fpage>
+<lpage>D143</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkr1178</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gorbalenya</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Groot</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>de Drosten</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gulyaeva</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Haagmans</surname>
+<given-names>BL</given-names>
+</name>
+<name>
+<surname>Lauber</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Leontovich</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Neuman</surname>
+<given-names>BW</given-names>
+</name>
+<name>
+<surname>Penzar</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The species Severe acute respiratory syndrome-related coronavirus: classifying 2019-nCoV and naming it SARS-CoV-2</article-title>
+<source>Nat Microbiol</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>536</fpage>
+<lpage>544</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0695-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Graham</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+</person-group>
+<article-title>Recombination, Reservoirs, and the Modular Spike: Mechanismsn of Coronavirus Cross-Species Transmission</article-title>
+<source>J Virol</source>
+<year>2010</year>
+<volume>84</volume>
+<fpage>3134</fpage>
+<lpage>3146</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.01394-0919</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greenbaum</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Levine</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Bhanot</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Rabadan</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Patterns of evolution and host gene mimicry in influenza and other RNA viruses</article-title>
+<source>PLoS Pathog</source>
+<year>2008</year>
+<volume>4</volume>
+<fpage>e1000079</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1000079</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grubaugh</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Hanage</surname>
+<given-names>WP</given-names>
+</name>
+<name>
+<surname>Rasmussen</surname>
+<given-names>AL</given-names>
+</name>
+</person-group>
+<article-title>Making Sense of Mutation: What D614G Means for the COVID-19 Pandemic Remains Unclear</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<fpage>794</fpage>
+<lpage>795</lpage>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.06.040</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DKW</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>JSM</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LLM</given-names>
+</name>
+</person-group>
+<article-title>Multivariate Analyses of Codon Usage of SARS-CoV- 2 and other betacoronaviruses</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.02.15.950568</pub-id>
+<comment>2020.02.15.950568</comment>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>YQ</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>XL</given-names>
+</name>
+<name>
+<surname>Zhuang</surname>
+<given-names>ZX</given-names>
+</name>
+<name>
+<surname>Cheung</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>PH</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>YJ</given-names>
+</name>
+</person-group>
+<article-title>Isolation and characterization of viruses related to the SARS coronavirus from animals in southern China</article-title>
+<source>Science</source>
+<year>2003</year>
+<volume>302</volume>
+<fpage>276</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>He</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Garcia</surname>
+<given-names>EA</given-names>
+</name>
+</person-group>
+<article-title>Learning from Imbalanced Data</article-title>
+<source>IEEE Trans Knowl Data Eng</source>
+<year>2009</year>
+<volume>21</volume>
+<fpage>1263</fpage>
+<lpage>1284</lpage>
+<pub-id pub-id-type="doi">10.1109/TKDE.2008.239</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoffmann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kleine-Weber</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Krüger</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Müller</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Drosten</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>PÖhlmann</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>The novel coronavirus 2019 (2019-nCoV) uses the SARS-coronavirus receptor ACE2 and the cellular protease TMPRSS2 for entry into target cells</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.01.31.929042</pub-id>
+<comment>2020.01.31.929042</comment>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Ge</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>LF</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Bat origin of human coronaviruses</article-title>
+<source>Virol J</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>221</fpage>
+<pub-id pub-id-type="doi">10.1186/s12985-015-0422-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huynh</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yount</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Sturges</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Olsen</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Nagel</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Agnihothram</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gates</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Frieman</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Donaldson</surname>
+<given-names>EF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Evidence Supporting a Zoonotic Origin of Human Coronavirus Strain NL63</article-title>
+<source>J Virol</source>
+<year>2012</year>
+<volume>86</volume>
+<fpage>12816</fpage>
+<lpage>12825</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.00906-12</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jenkins</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>The extent of codon usage bias in human RNA viruses and its evolutionary origin</article-title>
+<source>Virus Res</source>
+<year>2003</year>
+<volume>92</volume>
+<fpage>1</fpage>
+<lpage>7</lpage>
+<pub-id pub-id-type="doi">10.1016/S0168-1702(02)00309-X</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kunec</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Osterrieder</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>Codon Pair Bias Is a Direct Consequence of Dinucleotide Bias</article-title>
+<source>Cell Rep</source>
+<year>2016</year>
+<volume>14</volume>
+<fpage>55</fpage>
+<lpage>67</lpage>
+<pub-id pub-id-type="doi">10.1016/j.celrep.2015.12.011</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Latinne</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Olival</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chmura</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Field</surname>
+<given-names>HE</given-names>
+</name>
+<name>
+<surname>Zambrana-Torrelio</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Epstein</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>LF</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>ZL</given-names>
+</name>
+<name>
+<surname>Daszak</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Origin and cross-species transmission of bat coronaviruses in China</article-title>
+<source>Nat Commun</source>
+<year>2020</year>
+<volume>11</volume>
+<fpage>4235</fpage>
+<pub-id pub-id-type="doi">10.1038/s41467-020-17687-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lau</surname>
+<given-names>SKP</given-names>
+</name>
+<name>
+<surname>Woo</surname>
+<given-names>PCY</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>KSM</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tsoi</surname>
+<given-names>HW</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>BHL</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>SSY</given-names>
+</name>
+<name>
+<surname>Leung</surname>
+<given-names>SY</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>KY</given-names>
+</name>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus-like virus in Chinese horseshoe bats</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2005</year>
+<volume>102</volume>
+<fpage>14040</fpage>
+<lpage>14045</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.0506735102</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Letko</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Functional assessment of cell entry and receptor usage for lineae B β-coronaviruses, including 2019-nCoV</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<comment>2020.01.22.915660</comment>
+<pub-id pub-id-type="doi">10.1101/2020.01.22.915660</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Comparative studies of alignment, alignment-free and SVM based approaches for predicting the hosts of viruses based on viral sequences</article-title>
+<source>Sci Rep</source>
+<year>2018</year>
+<volume>8</volume>
+<fpage>10032</fpage>
+<pub-id pub-id-type="doi">10.1038/s41598-018-28308-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>XF</given-names>
+</name>
+<name>
+<surname>Hua</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chen Jing Zou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Jinping</surname>
+<given-names>Chen</given-names>
+</name>
+</person-group>
+<article-title>Are pangolins the intermediate host of the 2019 novel coronavirus (SARS-CoV-2)</article-title>
+<source>PLOS Pathog</source>
+<year>2020</year>
+<volume>16</volume>
+<fpage>e1008421</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1008421</pub-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>MacLean</surname>
+<given-names>OA</given-names>
+</name>
+<name>
+<surname>Lytras</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Weaver</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Singer</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kosakovsky Pond</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Natural selection in the evolution of SARS-CoV-2 in bats, not humans, created a highly capable human pathogen</article-title>
+<source>bioRxi</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.05.28.122366</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malley</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Kruppa</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Dasgupta</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Malley</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Ziegler</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Probability Machines:Consistent Probability Estimation Using Nonparametric Learning Machines</article-title>
+<source>Methods Inf Med</source>
+<year>2012</year>
+<volume>51</volume>
+<fpage>74</fpage>
+<lpage>81</lpage>
+<pub-id pub-id-type="doi">10.3414/ME00-01-0052</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Moratelli</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Calisher</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Moratelli</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Calisher</surname>
+<given-names>CH</given-names>
+</name>
+</person-group>
+<article-title>Bats and zoonotic viruses:can we confidently link bats with emerging deadly viruses?</article-title>
+<source>Mem Inst Oswaldo Cruz</source>
+<year>2015</year>
+<volume>110</volume>
+<fpage>1</fpage>
+<lpage>22</lpage>
+<pub-id pub-id-type="doi">10.1590/0074-02760150048</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Müller</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Corman</surname>
+<given-names>VM</given-names>
+</name>
+<name>
+<surname>Jores</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Meyer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Younan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liljander</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bosch</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Lattwein</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Hilali</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Musa</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Bornstein</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Drosten</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>MERS coronavirus neutralizing antibodies in camels, Eastern Africa, 1983-1997</article-title>
+<source>Emerg Infect Dis</source>
+<year>2014</year>
+<volume>20</volume>
+<fpage>2093</fpage>
+<lpage>2095</lpage>
+<pub-id pub-id-type="doi">10.3201/eid2012.141026</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pfefferle</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Oppong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Drexler</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Gloza-Rausch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ipsen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Seebens</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Müller</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Annan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Vallo</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Adu-Sarkodie</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Kruppa</surname>
+<given-names>TF</given-names>
+</name>
+<name>
+<surname>Drosten</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Distant Relatives of Severe Acute Respiratory Syndrome Coronavirus and Close Relatives of Human Coronavirus 229E in Bats, Ghana</article-title>
+<source>Emerg Infect Dis</source>
+<year>2009</year>
+<volume>15</volume>
+<fpage>1377</fpage>
+<lpage>1384</lpage>
+<pub-id pub-id-type="doi">10.3201/eid1509.090224</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pollock</surname>
+<given-names>DD</given-names>
+</name>
+<name>
+<surname>Castoe</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Perry</surname>
+<given-names>BW</given-names>
+</name>
+<name>
+<surname>Lytras</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wade</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Kosakovsky Pond</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Parry</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Carlton</surname>
+<given-names>EJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Viral CpG Deficiency Provides No Evidence That Dogs Were Intermediate Hosts for SARS-CoV-2</article-title>
+<source>Mol Biol Evol</source>
+<year>2020</year>
+<volume>37</volume>
+<fpage>2706</fpage>
+<lpage>2710</lpage>
+<pub-id pub-id-type="doi">10.1093/molbev/msaa178</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Qiang</surname>
+<given-names>XL</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>WB</given-names>
+</name>
+<name>
+<surname>Kou</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Using the spike protein feature to predict infection risk and monitor the evolutionary dynamic of coronavirus</article-title>
+<source>Infect Dis Poverty</source>
+<year>2020</year>
+<volume>9</volume>
+<fpage>33</fpage>
+<pub-id pub-id-type="doi">10.1186/s40249-020-00649-8</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="book">
+<collab>R Development Core Team</collab>
+<article-title>R: A language and environment for statistical computing</article-title>
+<source>R Foundation for Statistical Computing</source>
+<year>2020</year>
+<publisher-loc>Vienna, Austria</publisher-loc>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http://www.R-project.org">http://www. R-project.org</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R42">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rabadan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Levine</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Robins</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Comparison of avian and human influenza A viruses reveals a mutational bias on the viral genomes</article-title>
+<source>J Virol</source>
+<year>2006</year>
+<volume>80</volume>
+<fpage>11887</fpage>
+<lpage>11891</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.01414-06</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Randhawa</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Soltysiak</surname>
+<given-names>MPM</given-names>
+</name>
+<name>
+<surname>Roz</surname>
+<given-names>HE</given-names>
+</name>
+<name>
+<surname>Souza</surname>
+<given-names>CPE</given-names>
+</name>
+<name>
+<surname>de Hill</surname>
+<given-names>KA</given-names>
+</name>
+<name>
+<surname>Kari</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Machine learning using intrinsic genomic signatures for rapid classification of novel pathogens:COVID-19 case study</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.02.03.932350</pub-id>
+<comment>2020.02.03.932350</comment>
+</element-citation>
+</ref>
+<ref id="R44">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sabir</surname>
+<given-names>JSM</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>TTY</given-names>
+</name>
+<name>
+<surname>Ahmed</surname>
+<given-names>MMM</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Abo-Aba</surname>
+<given-names>SEM</given-names>
+</name>
+<name>
+<surname>Qureshi</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Abu-Zeid</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Khiyami</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Alharbi</surname>
+<given-names>NS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Co-circulation of three camel coronavirus species and recombination of MERS-CoVs in Saudi Arabia</article-title>
+<source>Science</source>
+<year>2016</year>
+<volume>351</volume>
+<fpage>81</fpage>
+<lpage>84</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aac8608</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sharp</surname>
+<given-names>PM</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>WH</given-names>
+</name>
+</person-group>
+<article-title>The codon Adaptation Index--a measure of directional synonymous Codon usage bias, and its potential applications</article-title>
+<source>Nucleic Acids Res</source>
+<year>1987</year>
+<volume>15</volume>
+<fpage>1281</fpage>
+<lpage>1295</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/15.3.1281</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Stauft</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Gorbatsevych</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ward</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Yurovsky</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mueller</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Futcher</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wimmer</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Large-scale recoding of an arbovirus genome to rebalance its insect versus mammalian preference</article-title>
+<source>Proc Natl Acad Sci</source>
+<year>2015</year>
+<volume>112</volume>
+<fpage>4749</fpage>
+<lpage>4754</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1502864112</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>HD</given-names>
+</name>
+<name>
+<surname>Tu</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>GW</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>SY</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Lei</surname>
+<given-names>LC</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>QX</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>YW</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>HQ</given-names>
+</name>
+<name>
+<surname>Xiang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>HJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cross-host evolution of severe acute respiratory syndrome coronavirus in palm civet and human</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2005</year>
+<volume>102</volume>
+<fpage>2430</fpage>
+<lpage>2435</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.0409608102</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>XQ</given-names>
+</name>
+</person-group>
+<article-title>Inferring the hosts of coronavirus using dual statistical models based on nucleotide composition</article-title>
+<source>Sci Rep</source>
+<year>2015</year>
+<volume>5</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+<pub-id pub-id-type="doi">10.1038/srep17155</pub-id>
+</element-citation>
+</ref>
+<ref id="R49">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thackray</surname>
+<given-names>LB</given-names>
+</name>
+<name>
+<surname>Turner</surname>
+<given-names>BC</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>KV</given-names>
+</name>
+</person-group>
+<article-title>Substitutions of conserved amino acids in the receptor- binding domain of the spike glycoprotein affect utilization of murine CEACAM1a by the murine coronavirus MHV-A59</article-title>
+<source>Virology</source>
+<year>2005</year>
+<volume>334</volume>
+<fpage>98</fpage>
+<lpage>110</lpage>
+<pub-id pub-id-type="doi">10.1016/j.virol.2005.0.016</pub-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tort</surname>
+<given-names>FL</given-names>
+</name>
+<name>
+<surname>Castells</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cristina</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>A comprehensive analysis of genome composition and codon usage patterns of emerging coronaviruses</article-title>
+<source>Virus Res</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1016/j.virusres.2020.197976</pub-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tsagkogeorga</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Parker</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Stupka</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Cotton</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Rossiter</surname>
+<given-names>SJ</given-names>
+</name>
+</person-group>
+<article-title>Phylogenomic Analyses Elucidate the Evolutionary Relationships of Bats</article-title>
+<source>Curr Biol</source>
+<year>2013</year>
+<volume>23</volume>
+<fpage>2262</fpage>
+<lpage>2267</lpage>
+<pub-id pub-id-type="doi">10.1016/j.cub.2013.09.014</pub-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tulloch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Atkinson</surname>
+<given-names>NJ</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Ryan</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Simmonds</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>RNA virus attenuation by codon pair deoptimisation is an artefact of increases in CpG/UpA dinucleotide frequencies</article-title>
+<source>eLife 3</source>
+<year>2014</year>
+<fpage>e04531</fpage>
+<pub-id pub-id-type="doi">10.7554/eLife.04531</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Receptor recognition by novel coronavirus from Wuhan: An analysis based on decade-long structural studies of SARS</article-title>
+<source>J Virol</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1128/JVI.00127-20</pub-id>
+</element-citation>
+</ref>
+<ref id="R54">
+<element-citation publication-type="web">
+<collab>WHO</collab>
+<article-title>Coronavirus disease (COVID-19) Weekly Epidemiological Update - 11. WHO, Geneva</article-title>
+<source>[WWW Document]</source>
+<year>2020</year>
+<date-in-citation>accessed 10.28.20</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://www.who.int/docs/default-source/coronaviruse/situation-reports/weekly-epi-update-11.pdf">https://www.who.int/docs/default-source/coronaviruse/situation-reports/weekly-epi-update-11.pdf</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R55">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Winter</surname>
+<given-names>DJ</given-names>
+</name>
+</person-group>
+<article-title>rentrez: An R package for the NCBI eUtils API</article-title>
+<source>R J</source>
+<year>2017</year>
+<volume>9</volume>
+<fpage>520</fpage>
+<lpage>526</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wrapp</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Corbett</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Goldsmith</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Hsieh</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Abiona</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Graham</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>McLellan</surname>
+<given-names>JS</given-names>
+</name>
+</person-group>
+<article-title>Cryo-EM structure of the 2019-nCoV spike in the prefusion conformation</article-title>
+<source>Science</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1126/science.abb2507</pub-id>
+</element-citation>
+</ref>
+<ref id="R57">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wright</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>The ‘effective number of codons’ used in a gene</article-title>
+<source>Gene 87</source>
+<year>1990</year>
+<fpage>23</fpage>
+<lpage>29</lpage>
+<pub-id pub-id-type="doi">10.1016/0378-1119(90)90491-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R58">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wright</surname>
+<given-names>MN</given-names>
+</name>
+<name>
+<surname>Ziegler</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. J</article-title>
+<source>Stat Softw</source>
+<year>2017</year>
+<volume>77</volume>
+<fpage>1</fpage>
+<lpage>17</lpage>
+<pub-id pub-id-type="doi">10.18637/jss.v077.i01</pub-id>
+</element-citation>
+</ref>
+<ref id="R59">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xia</surname>
+<given-names>X</given-names>
+</name>
+</person-group>
+<article-title>Extreme Genomic CpG Deficiency in SARS-CoV-2 and Evasion of Host Antiviral Defense</article-title>
+<source>Mol Biol Evol</source>
+<year>2020</year>
+<volume>37</volume>
+<fpage>2699</fpage>
+<lpage>2705</lpage>
+<pub-id pub-id-type="doi">10.1093/molbev/msaa094</pub-id>
+</element-citation>
+</ref>
+<ref id="R60">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xiao</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhai</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhang Zhipeng Shu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Isolation of SARS-CoV-2-related coronavirus from Malayan pangolins</article-title>
+<source>Nature 583</source>
+<year>2020</year>
+<fpage>286</fpage>
+<lpage>289</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2313-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R61">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Young</surname>
+<given-names>CCW</given-names>
+</name>
+<name>
+<surname>Olival</surname>
+<given-names>KJ</given-names>
+</name>
+</person-group>
+<article-title>Optimizing viral discovery in bats</article-title>
+<source>PLoS ONE 11</source>
+<year>2016</year>
+<fpage>e0149237</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0149237</pub-id>
+</element-citation>
+</ref>
+<ref id="R62">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Young</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Rogers</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Predicting host taxonomic information from viral genomes: A comparison of feature representations</article-title>
+<source>PLOS Comput Biol</source>
+<year>2020</year>
+<volume>16</volume>
+<fpage>e1007894</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1007894</pub-id>
+</element-citation>
+</ref>
+<ref id="R63">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhan</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Deverman</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>YA</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 is well adapted for humans. What does this mean for re-emergence</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.05.01.073262</pub-id>
+<comment>2020.05.01.073262</comment>
+</element-citation>
+</ref>
+<ref id="R64">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>YZ</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>A Genomic Perspective on the Origin and Emergence of SARS-CoV-2</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>223</fpage>
+<lpage>227</lpage>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.03.035</pub-id>
+</element-citation>
+</ref>
+<ref id="R65">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Cai</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Rapid identification of human-infecting viruses. Transbound</article-title>
+<source>Emerg Dis</source>
+<year>2019</year>
+<volume>66</volume>
+<fpage>2517</fpage>
+<lpage>2522</lpage>
+<pub-id pub-id-type="doi">10.1111/tbed.13314</pub-id>
+</element-citation>
+</ref>
+<ref id="R66">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>XL</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>XG</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Si</surname>
+<given-names>HR</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>HD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature 579</source>
+<year>2020</year>
+<fpage>270</fpage>
+<lpage>273</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2012-7</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Codon biases (RSCU) across coronavirus genome sequences examined</title>
+<p>Heatmaps of coronavirus codon usage bias (RSCU) associated with each codon in each A) spike protein sequence (n = 650) and B) whole genome sequence (n = 511). Main colour scale denotes RSCU value, a null value of 1 (black) indicating no difference in codon usage from expectation, with blue and red representing under- or over-representation respectively. Dendrogram colour bar denotes taxonomic genus.</p>
+</caption>
+<graphic xlink:href="EMS103446-f001"/>
+<graphic xlink:href="EMS103446-f002"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Random forest host predictions based on coronavirus genome composition</title>
+<p>Stacked bar plots of predicted probabilities of each host category for coronavirus sequences. Predictions were obtained from ensemble random forest models trained on A) spike protein and B) whole genome composition features. Panels depict sequences from each metadata-derived host category and colour coding denotes model-predicted host category. Stacks represent individual coronavirus sequences, ordered from largest to smallest probability of the correct host, i.e. greater panel area matching the correct host category indicates better overall model performance. Non-zoonotic coronavirus sequences originating from humans (human coronaviruses HKU1, NL63, OC43, 229E) are labelled for clarity.</p>
+</caption>
+<graphic xlink:href="EMS103446-f003"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Random forest predictions based on zoonotic coronavirus genome composition</title>
+<p>Stacked bar plots of predicted probabilities of each host category for zoonotic coronavirus sequences sampled from humans. Predictions were obtained from ensemble random forest models trained on A) spike protein and B) whole genome composition features. Colour coding denotes model-predicted host category. Stacks represent individual coronavirus sequences.</p>
+</caption>
+<graphic xlink:href="EMS103446-f004"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Variable importance of genomic features</title>
+<p>Variable importance of genome composition features in ensemble random forest models predicting coronavirus host category from whole genome sequences (x axis) and spike protein sequences (y axis), with labelling of top ten most informative features from both analyses. Points denote mean values of relative decrease in Gini impurity associated with each feature across A) m = 225 and B) m = 187 random forests during hold-one-out validation. Colour key denotes genomic feature type.</p>
+</caption>
+<graphic xlink:href="EMS103446-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>ENc values across coronavirus genera.</title>
+<p>Effective Number of Codons (ENc) for coronaviruses, stratified by genus and genome sequence type. ENc values are calculated as grand means, i.e. mean ENc was calculated per coronavirus by averaging sequences before means of means were calculated per genus by averaging coronaviruses. SD denotes standard deviation.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col span="2"/>
+</colgroup>
+<colgroup>
+<col span="2"/>
+</colgroup>
+<thead>
+<tr>
+<th align="left" valign="top"/>
+<th align="center" valign="top" colspan="2">Spike protein sequences</th>
+<th align="center" valign="top" colspan="2">Whole genome sequences</th>
+</tr>
+<tr style="border-top: solid thin">
+<th align="left" valign="top">Genus</th>
+<th align="left" valign="top">Mean</th>
+<th align="left" valign="top">SD</th>
+<th align="left" valign="top">Mean</th>
+<th align="left" valign="top">SD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<italic>Alphacoronavirus</italic>
+</td>
+<td align="left" valign="top">48.65</td>
+<td align="left" valign="top">3.12</td>
+<td align="left" valign="top">45.02</td>
+<td align="left" valign="top">3.00</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<italic>Betacoronavirus</italic>
+</td>
+<td align="left" valign="top">47.77</td>
+<td align="left" valign="top">5.04</td>
+<td align="left" valign="top">47.03</td>
+<td align="left" valign="top">4.79</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<italic>Gammacoronavirus</italic>
+</td>
+<td align="left" valign="top">46.36</td>
+<td align="left" valign="top">1.83</td>
+<td align="left" valign="top">46.11</td>
+<td align="left" valign="top">0.74</td>
+</tr>
+<tr>
+<td align="left" valign="top">Deltacoronavirus</td>
+<td align="left" valign="top">54.79</td>
+<td align="left" valign="top">3.43</td>
+<td align="left" valign="top">51.75</td>
+<td align="left" valign="top">3.22</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<italic>(unclassified)</italic>
+</td>
+<td align="left" valign="top">47.89</td>
+<td align="left" valign="top">3.41</td>
+<td align="left" valign="top">48.56</td>
+<td align="left" valign="top">3.04</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>total</bold>
+</td>
+<td align="left" valign="top">48.77</td>
+<td align="left" valign="top">4.36</td>
+<td align="left" valign="top">46.81</td>
+<td align="left" valign="top">4.22</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Predictive performance of random forest models.</title>
+<p>Model diagnostics describing overall performance when applied to predict host category of held-out coronaviruses. CI denotes confidence interval, Kappa denotes Cohen’s Kappa statistic, mAUC denotes multiclass area-under-curve statistic. F1micro and F1macro denote F1 scores calculated using micro-averaging (performance on each host category weighted proportionally) and macro-averaging (performance on each host category weighted equally), respectively.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Predictor features</th>
+<th align="left" valign="top">Accuracy (95% CI)</th>
+<th align="left" valign="top">Kappa</th>
+<th align="left" valign="top">mAUC</th>
+<th align="left" valign="top">F1<sub>micro</sub>
+</th>
+<th align="left" valign="top">F1<sub>macro</sub>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">Spike protein</td>
+<td align="center" valign="top">0.735 (0.700, 0.769)</td>
+<td align="center" valign="top">0.696</td>
+<td align="center" valign="top">0.898</td>
+<td align="center" valign="top">0.848</td>
+<td align="center" valign="top">0.757</td>
+</tr>
+<tr>
+<td align="left" valign="top">Whole genome</td>
+<td align="center" valign="top">0.728 (0.687, 0.766)</td>
+<td align="center" valign="top">0.688</td>
+<td align="center" valign="top">0.902</td>
+<td align="center" valign="top">0.843</td>
+<td align="center" valign="top">0.758</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,1352 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<front>
+<?origin ukpmcpa?>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141102</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.04.471236</article-id>
+<article-id pub-id-type="archive">PPR429544</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>An antibody-escape calculator for mutations to the SARS-CoV-2 receptor-binding domain</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>Allison J.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>Tyler N.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Bloom</surname>
+<given-names>Jesse D.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<aff id="A1">
+<label>1</label>Basic Sciences and Computational Biology, Fred Hutchinson Cancer Center, Seattle, WA, USA</aff>
+<aff id="A2">
+<label>2</label>Department of Genome Sciences, University of Washington, Seattle, WA, USA</aff>
+<aff id="A3">
+<label>3</label>Medical Scientist Training Program, University of Washington, Seattle, WA, USA</aff>
+<aff id="A4">
+<label>4</label>Howard Hughes Medical Institute, Seattle, WA, USA</aff>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>jbloom@fredhutch.org</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>07</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">A key goal of SARS-CoV-2 surveillance is to rapidly identify viral variants with mutations that reduce neutralization by polyclonal antibodies elicited by vaccination or infection. Unfortunately, direct experimental characterization of new viral variants lags their sequence-based identification. Here we help address this challenge by aggregating deep mutational scanning data into an “escape calculator” that estimates the antigenic effects of arbitrary combinations of mutations to the virus’s spike receptor-binding domain (RBD). The calculator can be used to intuitively visualize how mutations impact polyclonal antibody recognition, and score the expected antigenic effect of combinations of mutations. These scores correlate with neutralization assays performed on SARS-CoV-2 variants, and emphasize the ominous antigenic properties of the recently described Omicron variant. An interactive version of the calculator is at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link>, and we provide a Python module for batch processing.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<p id="P2">
+<bold>H</bold>uman coronaviruses undergo antigenic evolution that erodes antibody-based neutralization (<xref ref-type="bibr" rid="R6">Eguia <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R14">Kistler and Bedford 2021</xref>). This antigenic evolution is already apparent for SARS-CoV-2, as new viral variants with reduced antibody neutralization have emerged only ~2 years since the virus first started to spread in humans. A tremendous amount of experimental effort has been expended to characterize these SARS-CoV-2 variants in neutralization assays (<xref ref-type="bibr" rid="R28">Wang <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R26">Uriu <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R15">Lucas <italic>et al</italic>. 2021</xref>). Unfortunately, the rate at which new variants arise outstrips the speed at which these experiments can be performed.</p>
+<p id="P3">A partial solution is to use deep mutational scanning experiments to <italic>prospectively</italic> measure how viral mutations impact antibody binding or neutralization. Deep mutational scanning can systematically measure the antigenic impacts of all possible amino-acid mutations in key regions of spike on monoclonal antibodies (<xref ref-type="bibr" rid="R23">Starr <italic>et al</italic>. 2021b</xref>; <xref ref-type="bibr" rid="R11">Greaney <italic>et al</italic>. 2021d</xref>) or sera (<xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. 2021a</xref>). However, SARS-CoV-2 variants of concern typically have multiple mutations, and it is not feasible to experimentally characterize all combinations of mutations even via high-throughput approaches such as deep mutational scanning.</p>
+<p id="P4">Here we take a step towards addressing this challenge by aggregating deep mutational scanning data across many antibodies to assess the impacts of mutations in the spike receptor-binding domain (RBD), which is the primary target of neutralizing antibodies to SARS-CoV-2 (<xref ref-type="bibr" rid="R17">Piccoli <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. 2021a</xref>; <xref ref-type="bibr" rid="R20">Schmidt <italic>et al</italic>. 2021</xref>). The resulting “escape calculator” enables qualitative visualization and quantitative scoring of the antigenic effects of arbitrary combinations of mutations. Importantly, the escape calculator is based on simple transformations of direct experimental measurements, and does not involve complex black-box computational methods.</p>
+<sec id="S1" sec-type="results">
+<title>Results</title>
+<sec id="S2">
+<title>Combining monoclonal antibody escape maps reveals correlated and independent viral antigenic mutations</title>
+<p id="P5">A deep mutational scanning experiment can measure how all single amino-acid mutations to the SARS-CoV-2 RBD affect binding by a monoclonal antibody (<xref ref-type="bibr" rid="R11">Greaney <italic>et al</italic>. 2021d</xref>). This mutationlevel information can be summarized for each RBD site, such as by taking the mean or sum of mutation-level effects at a site. Here we will work with these site-level escape maps.</p>
+<p id="P6">As a small example to illustrate the principle behind our approach, <xref ref-type="fig" rid="F1">Figure 1A</xref> shows previously reported measurements (<xref ref-type="bibr" rid="R23">Starr <italic>et al</italic>. 2021b</xref>,c) of how mutations to each RBD site affect binding by three monoclonal antibodies: LY-CoV016 (ete-sevimab), LY-CoV555 (bamlanivimab), and REGN10987 (imde-vimab). Each antibody targets a different epitope on the RBD: LY-CoV016 targets the class 1 epitope, LY-CoV555 the class 2 epitope, and REGN10987 the class 3 epitope (<xref ref-type="bibr" rid="R1">Barnes <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R9">Greaney <italic>et al</italic>. 2021b</xref>). Because the antibodies have distinct epitopes, they are escaped by largely distinct sets of mutations: LY-CoV016 is most strongly escaped by mutations at site 417, LY-CoV555 at site 484, and REGN10987 at sites 444–446 (<xref ref-type="fig" rid="F1">Figure 1A</xref>).</p>
+<p id="P7">Now imagine a polyclonal antibody mix of these three antibodies combined at equal potencies. We can generate an escape map for this hypothetical antibody mix simply by averaging the experimentally measured escape maps for the three individual antibodies, yielding the thick black line in <xref ref-type="fig" rid="F1">Figure 1A</xref>. Because this polyclonal escape map is the average of the monoclonal antibody maps, its largest peaks are at the sites of strongest escape for each individual antibody: 417, 484, and 444–446.</p>
+<p id="P8">Next imagine removing one antibody from the mix by mutating its epitope. <xref ref-type="fig" rid="F1">Figure 1B</xref> shows the resulting escape map if LY-CoV555 is ablated, as would occur if site 484 was mutated. The thick black line for the antibody mix no longer has peaks at 484 and other sites targeted by LY-CoV555, such as 490. There-fore, in this hypothetical polyclonal antibody mix, escape at sites 484 and 490 is correlated since both sites are targeted by the same antibody. However, the polyclonal mix’s escape map at sites 417 and 460 is unaffected by mutations that escape LY-CoV555, since they are targeted by a different antibody, LY-CoV016. But if we also ablate LY-CoV016 (such as by mutating site 417), then the peaks at 417 and 460 also disappear, and the remaining peaks are at sites targeted by REGN10987, such as 444–446 (<xref ref-type="fig" rid="F1">Figure 1C</xref>). Of course, if REGN10987 was also ablated such as by mutating site 446, then the polyclonal antibody mix would have no remaining activity. This and other scenarios can be explored using the interactive version of <xref ref-type="fig" rid="F1">Figure 1</xref> at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/mini-example-escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/mini-example-escape-calc/</ext-link>.</p>
+</sec>
+<sec id="S3">
+<title>Aggregating deep mutational scanning data for 33 human antibodies yields a realistic escape calculator</title>
+<p id="P9">The toy example in the previous section illustrates how experimental data for individual antibodies can be combined to yield an escape map for a hypothetical polyclonal antibody mix. To create an escape map for an antibody mix that more realistically represents actual human sera, we aggregated previously generated deep mutational scanning data for 33 neutralizing antibodies elicited by SARS-CoV-2. These antibodies were isolated from a variety of patient cohorts within the first year of the pandemic (see Methods for details). An assumption of the analysis that follows is that an equipotent mixture of these 33 antibodies represents the neutralizing activity of human sera; we emphasize that this assumption is imperfect since in reality the antibodies were chosen for prior study for a variety of ad hoc reasons. The escape maps for all the individual antibodies can be interactively interrogated at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/</ext-link>.</p>
+<p id="P10">The overall polyclonal escape map generated by averaging the experimental data for all 33 antibodies is in <xref ref-type="fig" rid="F2">Figure 2A</xref>. As in the toy three-antibody example in the previous section, there are peaks at sites 417, 484, and 444–446. However, the peak at 484 is now larger than any other peak, reflecting the fact that antibodies targeting the class 2 epitope containing E484 are especially common in the human antibody response to early SARS-CoV-2 strains (<xref ref-type="bibr" rid="R29">Yuan <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R18">Robbiani <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. 2021a</xref>,<xref ref-type="bibr" rid="R9">b</xref>; <xref ref-type="bibr" rid="R2">Chen <italic>et al</italic>. 2021</xref>). In addition, there are smaller peaks at a variety of other sites, reflecting the fact that each antibody has a somewhat idiosyncratic epitope (<xref ref-type="fig" rid="F2">Figure 2A</xref>).</p>
+<p id="P11">We can follow the principle outlined in the toy example in the previous section to calculate the expected polyclonal escape map <italic>after</italic> mutating sites in the RBD. Specifically, we reduce the contribution of each antibody by an amount that scales with how strongly that antibody targets each mutated site (see Methods for details). For instance, the blue lines in <xref ref-type="fig" rid="F2">Figure 2B</xref> show the polyclonal escape map after mutating site 484. Mutating site 484 obviously drops the contribution of that site, but it also decreases the contribution of other sites such as 490 that are commonly targeted by antibodies with epitopes that include site 484. In contrast, mutating site 484 has minimal effect on the polyclonal escape map at sites like 417 or 444–446, since those sites are generally targeted by antibodies that are unaffected by mutations at site 484.</p>
+<p id="P12">We can also calculate the expected effects of compound mutations. <xref ref-type="fig" rid="F2">Figure 2C</xref> shows the polyclonal escape map after mutating all three RBD sites that are changed in the Beta variant (sites 417, 484, and 501). This polyclonal escape map has lost contributions not only from the mutated sites, but also sites that form common epitopes with 417 or 484 (e.g., sites 455, 456, 486, and 490). However, the escape map still has major contributions from antibodies targeting sites like 444–446, since such antibodies are generally unaffected by mutations at sites 417, 484, or 501.</p>
+<p id="P13">We recommend the reader explores the interactive escape calculator at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link>, to perform calculations like those in <xref ref-type="fig" rid="F2">Figure 2</xref> for arbitrary combinations of mutated RBD sites. Such visual exploration of different combinations of mutations provides an intuitive sense of the antigenic structure of the RBD.</p>
+</sec>
+<sec id="S4">
+<title>The escape calculations correlate well with neutralization assays of human polyclonal sera against SARS-CoV-2 variants</title>
+<p id="P14">For each set of mutated RBD sites, we can define a quantitative score that represents the polyclonal antibody binding that remains after mutating these sites. This score is defined using the same principle as the site-wise escape calculator in the previous section: we reduce the contribution of each antibody by an amount that scales with how strongly it is escaped by each mutated site, and define the overall score as the fraction of all antibody contributions that remain (see Methods for details). This calculation is implemented in the interactive calculator at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link>, and returns a score that ranges from one (no mutations affect binding of any antibodies) to zero (all antibodies fully escaped).</p>
+<p id="P15">To test how these escape-calculator scores compare to experimentally measured neutralization titers, we collated neutralization data from three previously published studies (Lucas <italic>et al</italic>. 2021; <xref ref-type="bibr" rid="R26">Uriu <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R28">Wang <italic>et al</italic>. 2021</xref>), each of which characterized sera from two patient cohorts against a variety of SARS-CoV-2 variants and mutants. One can imagine many reasons why the escape-calculator scores might differ from the real neutralization titers: the calculator only considers RBD mutations, the antibodies used by the calculator might not accurately reflect the real mix in polyclonal sera, etc. But despite all these potential caveats, the escape-calculator scores correlate quite well with the measured neutralization titers across all studies and cohorts (<xref ref-type="fig" rid="F3">Figure 3</xref>). Therefore, the simple and intuitive approach used by the calculator seems to accurately reflect the dominant features of polyclonal antibody escape in the RBD.</p>
+</sec>
+<sec id="S5">
+<title>The escape calculator suggests extensive antigenic change in the new Omicron variant</title>
+<p id="P16">We applied the escape calculator to the recently reported Omicron variant, which has 15 mutated sites in its RBD (NGS-SA 2021; <xref ref-type="bibr" rid="R4">de Oliveira 2021</xref>). The calculated binding score for the Omicron variant is much lower than any other SARS-CoV-2 variants of concern, indicating extensive antibody escape (<xref ref-type="fig" rid="F4">Figure 4A</xref>). The Omicron variant’s calculated score is roughly equivalent to that of a polymutant spike (PMS20) that was artificially engineered in a pseudovirus by <xref ref-type="bibr" rid="R20">Schmidt <italic>et al</italic>. (2021)</xref> to maximize escape from polyclonal serum antibodies. For comparison, <xref ref-type="bibr" rid="R20">Schmidt <italic>et al</italic>. (2021)</xref> measured that neutralization titers against this artificial PMS20 spike were reduced by ~20- to ~80-fold for sera from various cohorts of vaccinated and infected individuals.</p>
+<p id="P17">The site-level escape map for the Omicron variant’s RBD is shown in <xref ref-type="fig" rid="F4">Figure 4B</xref>. The Omicron RBD has lost most peaks of antibody binding relative to the original RBD. Exploration of the mutations using the interactive calculator at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link> indicates that mutations at sites 484, 446, and 417 are the biggest drivers of this antigenic change, although other mutations also contribute. The residual peaks in the map suggests the remaining antibody activity against the Omicron variant RBD could be further eroded by mutations at sites like 346, 378, 444, and 504.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="discussion">
+<title>Discussion</title>
+<p id="P18">We have described an escape calculator that uses experimental data for 33 monoclonal antibodies to estimate the antigenic effects of arbitrary combinations of mutations to the SARS-CoV-2 RBD. The key insight is to aggregate data for individual antibodies to define both which RBD sites are antigenically important, and which combinations of mutations have redundant versus additive effects on antibody binding. For instance, sites 417, 484, and 490 are all peaks of antibody escape. But mutations at 484 and 490 have redundant effects since they generally escape the same antibodies, whereas mutations at 484 and 417 have additive effects since they generally escape different antibodies.</p>
+<p id="P19">Another key aspect of our approach is the interactive visual implementation of the escape calculator, so the user can interrogate the effects of mutations (or combinations of mutations) simply by clicking (or shift-clicking) on sites. This interactivity provides an intuitive understanding of the antigenic structure of the RBD, and shows how the calculator is performing simple transformations directly on experimental data. We encourage interactive use of the calculator so it acts as an aid to augment human interpretation, rather than a black-box computational method. However, we note that in addition to the interactive calculator at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link>, we also provide a Python module for batch processing of large numbers of sequences at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/</ext-link>.</p>
+<p id="P20">There are caveats that should be kept in mind when using the escape calculator. First, the calculator only considers sites in the RBD, and ignores mutations to other regions of spike. Second, the calculator assumes the neutralizing activity of human polyclonal serum is represented by an equipotent mix of the monoclonal antibodies that happen to have been previously characterized by deep mutational scanning. Third, the calculator simply averages site-level escape measurements across antibodies, and does not yet implement a real biophysical model of the combined activity of multiple antibodies (<xref ref-type="bibr" rid="R7">Einav and Bloom 2020</xref>). Finally, and in our minds most significantly, the calculator estimates the impact of mutations in reference to antibodies targeted to the early Wuhan-Hu-1 RBD—an approach that is currently reasonable, but will become problematic as human exposure and vaccination histories diversify in the years to come (see last paragraph).</p>
+<p id="P21">Despite all these caveats, the escape calculator yields binding scores that correlate with experimentally measured neutralization titers. In addition, the actual antigenic evolution of SARS-CoV-2 seems to follow the principles captured by the escape calculator: variants of concern generally have combinations of mutations calculated to have additive effects on antibody escape (e.g., 417 and 484) rather than combinations calculated to have redundant effects (e.g., 484 and 490). We suspect the calculator works well because the RBD is the dominant target of neutralizing activity (<xref ref-type="bibr" rid="R17">Piccoli <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. 2021a</xref>; <xref ref-type="bibr" rid="R20">Schmidt <italic>et al</italic>. 2021</xref>) and the human antibody-response to the early Wuhan-Hu-1 RBD shares broad commonalities across individuals (<xref ref-type="bibr" rid="R29">Yuan <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R18">Robbiani <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. 2021a</xref>,<xref ref-type="bibr" rid="R9">b</xref>; <xref ref-type="bibr" rid="R2">Chen <italic>et al</italic>. 2021</xref>).</p>
+<p id="P22">However, the situation will become more complex over time. Currently, most humans with antibodies to SARS-CoV-2 have been exposed to a RBD antigen that is identical or very similar to that of the early Wuhan-Hu-1 strain. Therefore, antigenic studies can reasonably define mutations in reference to that RBD, since it is what the antibodies target. But as humans are exposed to more diverged RBD variants, it will become difficult to determine what reference to use to define antigenic mutations, since different individuals will have antibodies targeting different RBDs. Additionally, differing exposure histories can leave individuals with different antibody specificities (<xref ref-type="bibr" rid="R3">Cobey and Hensley 2017</xref>), a process that is already starting to occur for SARS-CoV-2 (<xref ref-type="bibr" rid="R10">Greaney <italic>et al</italic>. 2021c</xref>). So in the future, it will be necessary to stratify the data used by the escape calculator by which RBD variant elicited the antibodies, and aggregate data for antibodies that reflect the sera in question. For this reason, we expect to continue adding to the data used by the escape calculator, and emphasize that it will change over time from the version described here, although we provide stable links to the current version in the Methods below.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<title>Methods</title>
+<sec id="S8">
+<title>Interactive versions of figures</title>
+<p id="P23">Interactive versions of all of the figures in this paper are at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/RBD_escape_calculator_paper/">https://jbloomlab.github.io/RBD_escape_calculator_paper/</ext-link>. These figures alíow mousing over points to see details, etc.</p>
+</sec>
+<sec id="S9">
+<title>Deep mutational scanning data used by the calculator</title>
+<p id="P24">The experimental data used by the escape calculator are drawn from seven previously published deep mutational scanning studies (<xref ref-type="bibr" rid="R11">Greaney <italic>et al</italic>. 2021d</xref>,<xref ref-type="bibr" rid="R9">b</xref>; <xref ref-type="bibr" rid="R23">Starr <italic>et al</italic>. 2021b</xref>,<xref ref-type="bibr" rid="R24">c</xref>,<xref ref-type="bibr" rid="R22">a</xref>; <xref ref-type="bibr" rid="R5">Dong <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R25">Tortorici <italic>et al</italic>. 2021</xref>) and one unpublished dataset available at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS-CoV-2-RBD_MAP_COV2-2955">https://github.com/jbloomlab/SARS-CoV-2-RBD_MAP_COV2-2955</ext-link>. In total, these studies contain data for 36 monoclonal antibodies. Three of these antibodies (CR3022, S304, and S309) were elicited by infection with SARS-CoV-1 and so are excluded from the datasets used for the calculations in this paper, although the calculator has an option (<monospace>eliciting_virus</monospace>) that allows optional inclusion of these antibodies. The majority of the antibodies were originally isolated from cohorts of individuals infected with SARS-CoV-2 in the first half of 2020, and were initially characterized by the Crowe lab (<xref ref-type="bibr" rid="R30">Zost <italic>et al</italic>. 2020</xref>), Nussenzweig lab (<xref ref-type="bibr" rid="R18">Robbiani <italic>et al</italic>. 2020</xref>), or Vir Biotechnology (<xref ref-type="bibr" rid="R17">Piccoli <italic>et al</italic>. 2020</xref>), with a few additional antibodies coming from commercial synthesis based on previously reported sequences (<xref ref-type="bibr" rid="R12">Hansen <italic>et al</italic>. 2020</xref>; <xref ref-type="bibr" rid="R13">Jones <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R21">Shi <italic>et al</italic>. 2020</xref>). The full deep mutational scanning data for all these antibodies are interactively displayed at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/</ext-link> and available in raw form at <ext-link ext-link-type="uri" xlink:href="https://raw.githubusercontent.com/jbloomlab/SARS2_RBD_Ab_escape_maps/main/processed_data/escape_data.csv">https://raw.githubusercontent.com/jbloomlab/SARS2_RBD_Ab_escape_maps/main/processed_data/escape_data.csv</ext-link> (see <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_v1/processed_data/escape_data.csv">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_v1/processed_data/escape_data.csv</ext-link> for a stable version of the raw data corresponding to that used in this paper).</p>
+<p id="P25">The deep mutational scanning measures an escape fraction for each tolerated RBD mutation against each antibody, which represents an estimate of how completely that mutation escapes antibody binding (<xref ref-type="bibr" rid="R11">Greaney <italic>et al</italic>. 2021d</xref>). We summarize the mutation-level escape fractions into site-level measurements in two ways: taking the sum of the mutation escape fractions at each site, or taking the mean of the mutation escape fractions across all tolerated mutations at each site. The results reported in this paper use the sums as the site-level metric, although the calculator has an option (<monospace>escape_metric</monospace>) to use the mean instead. We also normalize the site-level escape metrics for each antibody to account for different strengths of antibody selection in different experiments using the approach described in <xref ref-type="bibr" rid="R8">Greaney <italic>et al</italic>. (2021a)</xref> and implemented in <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/dmslogo/dmslogo.utils.html#dmslogo.utils.AxLimSetter">https://jbloomlab.github.io/dmslogo/dmslogo.utils.html#dmslogo.utils.AxLimSetter</ext-link> with <monospace>min_upperlim=1</monospace> and <monospace>max_from_quantile=(0.5, 0.05)</monospace>: essentially this corresponds to scaling the site escape values for each antibody so that a value of one corresponds to the larger of the maximum escape at a site or 20 times the median value across sites. The results reported in this paper use the normalized site-level metrics, although the calculator has an option (<monospace>escape_values_normalized</monospace>) to also use the non-normalized values.</p>
+</sec>
+<sec id="S10">
+<title>Calculation of the impact of mutations</title>
+<p id="P26">The escape calculator determines the impact of mutating sites by calculating how much each antibody is escaped by mutations at each site, and adjusting its contribution to the overall polyclonal mix accordingly.</p>
+<p id="P27">Specifically, for each antibody <italic>a</italic> we have a deep mutational scanning measurement <italic>x<sub>a,r</sub>
+</italic> of how much mutating <italic>r</italic> escapes that antibody. In the absence of any mutations, the overall escape map shown for the polyclonal mix is simply the mean over all antibodies, <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>A</mml:mi>
+</mml:mfrac>
+<mml:mstyle>
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>r</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula> where <italic>A</italic> is the number of antibodies.</p>
+<p id="P28">Let <inline-formula>
+<mml:math id="M2">
+<mml:mi>ℳ</mml:mi>
+</mml:math>
+</inline-formula> be the set of sites that are mutated. Then for each antibody we compute the binding retained as <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>ℳ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mstyle>
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>r</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>ℳ</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+<mml:msup>
+<mml:mi>r</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>r</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>r</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+<mml:msup>
+<mml:mi>r</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>.</mml:mo>
+<mml:msup>
+<mml:mi>r</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>s</mml:mi>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. Essentially, this equation means that if the RBD is mutated at a strong site of escape for an antibody <italic>a</italic>, much if the binding is lost (if it is the strongest site of escape, all binding is lost). The variable <italic>s</italic> represents how dramatically binding is lost for mutations at sites of escape that are not the strongest: larger values of <italic>s</italic> means mutations at even moderate sites of escape reduce binding a lot. In this paper we report calculations with <italic>s</italic> = 2, although the calculator has an option (<monospace>mutation_escape_-strength</monospace>) to choose other values. We then define the escape map after the mutations <inline-formula>
+<mml:math id="M4">
+<mml:mi>ℳ</mml:mi>
+</mml:math>
+</inline-formula> as <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>A</mml:mi>
+</mml:mfrac>
+<mml:mstyle>
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>a</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>r</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>ℳ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The calculator shows the escape map with no mutations in gray, and that after mutations in blue.</p>
+<p id="P29">The overall antibody binding scores represent the fraction of antibodies that still bind, and are calculated simply as <inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>A</mml:mi>
+</mml:mfrac>
+<mml:mstyle>
+<mml:msub>
+<mml:mo stretchy="false">∑</mml:mo>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>ℳ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula>.</p>
+</sec>
+<sec id="S11">
+<title>Implementation of interactive calculator</title>
+<p id="P30">The interactive calculator at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link> is imlemented using Altair (<ext-link ext-link-type="uri" xlink:href="https://altair-viz.github.io/">https://altair-viz.github.io/</ext-link>) (<xref ref-type="bibr" rid="R27">VanderPlas <italic>et al</italic>. 2018</xref>), which is in turn built upon Vega-Lite (<xref ref-type="bibr" rid="R19">Satyanarayan <italic>et al</italic>. 2017</xref>).</p>
+</sec>
+<sec id="S12">
+<title>Python module with batch-mode calculator</title>
+<p id="P31">A Python module that implements the calculations is at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/</ext-link>, and has all the same options as the interactive calculator.</p>
+</sec>
+<sec id="S13">
+<title>Compilation of neutralization titers from the literature</title>
+<p id="P32">For <xref ref-type="fig" rid="F3">Figure 3</xref>, we compiled neutralization data from three published studies on SARS-CoV-2 variants and mutants (<xref ref-type="bibr" rid="R15">Lucas <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R26">Uriu <italic>et al</italic>. 2021</xref>; <xref ref-type="bibr" rid="R28">Wang <italic>et al</italic>. 2021</xref>). For each study cohort, we computed the geometric mean fold change in neutralization titer over all subjects. The numerical compiled data are at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/RBD_escape_calculator_paper/tree/main/results/neut_studies">https://github.com/jbloomlab/RBD_escape_calculator_paper/tree/main/results/neut_studies</ext-link>.</p>
+</sec>
+<sec id="S14">
+<title>Mutations in SARS-CoV-2 variants</title>
+<p id="P33">For <xref ref-type="fig" rid="F4">Figure 4</xref>, the definitions of which RBD sites are mutated in each variant are shown in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S15">
+<title>Acknowledgments</title>
+<p>We thank collaborators in the Crowe lab, Nussenzweig lab, Bjorkman lab, and at Vir Biotechnology for sharing the antibodies that were used in prior published studies to generate the deep mutational scanning data aggregated here. We thank the Moyo and de Oliveira labs and other researchers in South Africa and Botswana for rapidly sharing information about the Omicron variant to enable the analyses in the last section of the results. This work was supported in part by the NIH/NIAID under R01AI141707 (to JDB) and T32AI083203 (to AJG). The work was also supported by the Gates Foundation grant INV-004949 to JDB. TNS is a Howard Hughes Medical Institute Fellow of the Damon Runyon Cancer Research Foundation. JDB is an Investigator of the Howard Hughes Medical Institute.</p>
+</ack>
+<sec sec-type="data-availability" id="S16">
+<title>Code and data availability</title>
+<p id="P34">The most up-to-date code and data used to implement the escape calculator are at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps</ext-link>, and the version described in this paper are at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/tree/bioRxiv_v1">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/tree/bioRxiv_v1</ext-link>.</p>
+<p id="P35">The data used by the escape calculator are at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_calculator_data.csv">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_calculator_data.csv</ext-link>, and the version used for this paper are at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_v1/processed_data/escape_calculator_data.csv">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_v1/processed_data/escape_calculator_data.csv</ext-link>.</p>
+<p id="P36">A downloadable HTML version of the escape calculator is at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/raw/main/docs/_includes/escape_calc_chart.html">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/raw/main/docs/_includes/escape_calc_chart.html</ext-link>, with the version described in this paper at <ext-link ext-link-type="uri" xlink:href="https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_vl/docs/_includes/escape_calc_chart.html">https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/bioRxiv_vl/docs/_includes/escape_calc_chart.html</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P37">
+<bold>Competing interests</bold>
+</p>
+<p id="P38">JDB consults for Moderna, Flagship Labs 77 and Oncorus. JDB is an inventor on a Fred Hutch licensed patents related to deep mutational scanning of viral proteins.</p>
+</fn>
+</fn-group>
+<ref-list>
+<title>Literature Cited</title>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barnes</surname>
+<given-names>CO</given-names>
+</name>
+<name>
+<surname>Jette</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Abernathy</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Dam</surname>
+<given-names>K-MA</given-names>
+</name>
+<name>
+<surname>Esswein</surname>
+<given-names>SR</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 neutralizing antibody structures inform therapeutic strategies</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>588</volume>
+<fpage>682</fpage>
+<lpage>687</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Gilchuk</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zost</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Suryadevara</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Winkler</surname>
+<given-names>ES</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Convergent antibody responses to the SARS-CoV-2 spike protein in convalescent and vaccinated individuals</article-title>
+<source>Cell Reports</source>
+<year>2021</year>
+<volume>36</volume>
+<elocation-id>109604</elocation-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cobey</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hensley</surname>
+<given-names>SE</given-names>
+</name>
+</person-group>
+<article-title>Immune history and influenza virus susceptibility</article-title>
+<source>Current opinion in virology</source>
+<year>2017</year>
+<volume>22</volume>
+<fpage>105</fpage>
+<lpage>111</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>de Oliveira</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<year>2021</year>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://twitter.com/Tuliodna/status/1463911554538160130">https://twitter.com/Tuliodna/status/1463911554538160130</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zost</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Dingens</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genetic and structural basis for SARS-CoV-2 variant neutralization by a two-antibody cocktail</article-title>
+<source>Nature Microbiology</source>
+<year>2021</year>
+<volume>6</volume>
+<fpage>1233</fpage>
+<lpage>1244</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eguia</surname>
+<given-names>RT</given-names>
+</name>
+<name>
+<surname>Crawford</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Stevens-Ayers</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kelnhofer-Millevolte</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Greninger</surname>
+<given-names>AL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A human coronavirus evolves antigenically to escape antibody immunity</article-title>
+<source>PLoS Pathogens</source>
+<year>2021</year>
+<volume>17</volume>
+<elocation-id>e1009453</elocation-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Einav</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>When two are better than one: Modeling the mechanisms of antibody mixtures</article-title>
+<source>PLoS Computational Biology</source>
+<year>2020</year>
+<volume>16</volume>
+<elocation-id>e1007830</elocation-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Loes</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Crawford</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Malone</surname>
+<given-names>KD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comprehensive mapping of mutations in the SARS-CoV-2 receptor-binding domain that affect recognition by polyclonal human plasma antibodies</article-title>
+<source>Cell Host &amp; Microbe</source>
+<year>2021a</year>
+<volume>29</volume>
+<fpage>463</fpage>
+<lpage>476</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Barnes</surname>
+<given-names>CO</given-names>
+</name>
+<name>
+<surname>Weisblum</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Schmidt</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Mapping mutations to the SARS-CoV-2 RBD that escape binding by different classes of antibodies</article-title>
+<source>Nature communications</source>
+<year>2021b</year>
+<volume>12</volume>
+<fpage>1</fpage>
+<lpage>14</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Eguia</surname>
+<given-names>RT</given-names>
+</name>
+<name>
+<surname>Loes</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Khan</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 variant elicits an antibody response with a shifted immunodominance hierarchy</article-title>
+<source>bioRxiv</source>
+<year>2021c</year>
+<elocation-id>2021.10.12.464114</elocation-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Gilchuk</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Zost</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Binshtein</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Complete mapping of mutations to the SARS-CoV-2 spike receptor-binding domain that escape antibody recognition</article-title>
+<source>Cell Host &amp; Microbe</source>
+<year>2021d</year>
+<volume>29</volume>
+<fpage>44</fpage>
+<lpage>57</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hansen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Baum</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pascal</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Russo</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Giordano</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Studies in humanized mice and convalescent humans yield a SARS-CoV-2 antibody cocktail</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>1010</fpage>
+<lpage>1014</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jones</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Brown-Augsburger</surname>
+<given-names>PL</given-names>
+</name>
+<name>
+<surname>Corbett</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Westendorf</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Davies</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The neutralizing antibody, LY-CoV555, protects against SARS-CoV-2 infection in nonhuman primates</article-title>
+<source>Science Translational Medicine</source>
+<year>2021</year>
+<volume>13</volume>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kistler</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Bedford</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Evidence for adaptive evolution in the receptor-binding domain of seasonal coronaviruses OC43 and 229E</article-title>
+<source>eLife</source>
+<year>2021</year>
+<volume>10</volume>
+<elocation-id>e64509</elocation-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lucas</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Vogels</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Yildirim</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Rothman</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Impact of circulating SARS-CoV-2 variants on mRNA vaccine-induced immunity</article-title>
+<source>Nature</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="web">
+<collab>NGS-SA</collab>
+<source>2021 SARS-CoV-2 sequencing update 26 November 2021 by the Network for Genomic Surveillance in South Africa</source>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://www.nicd.ac.za/wp-content/uploads/2021/11/Update-of-SA-sequencing-data-from-GISAID-26-Nov_Final.pdf">https://www.nicd.ac.za/wp-content/uploads/2021/11/Update-of-SA-sequencing-data-from-GISAID-26-Nov_Final.pdf</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Piccoli</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>Y-J</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Czudnochowski</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Mapping neutralizing and immunodominant sites on the SARS-CoV-2 spike receptor-binding domain by structure-guided high-resolution serology</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>183</volume>
+<fpage>1024</fpage>
+<lpage>1042</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robbiani</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Gaebler</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Muecksch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Lorenzi</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Convergent antibody responses to SARS-CoV-2 in convalescent individuals</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>584</volume>
+<fpage>437</fpage>
+<lpage>442</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Satyanarayan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Moritz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wongsuphasawat</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Heer</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Vega-Lite: A grammar of interactive graphics</article-title>
+<source>IEEE transactions on visualization and computer graphics</source>
+<year>2017</year>
+<volume>23</volume>
+<fpage>341</fpage>
+<lpage>350</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schmidt</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Weisblum</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Rutkowska</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Poston</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>DaSilva</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>High genetic barrier to SARS-CoV-2 polyclonal neutralizing antibody escape</article-title>
+<source>Nature</source>
+<year>2021</year>
+<fpage>1</fpage>
+<lpage>5</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Duan</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A human neutralizing antibody targets the receptor-binding site of sars-cov-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>584</volume>
+<fpage>120</fpage>
+<lpage>124</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Czudnochowski</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zatta</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>Y-J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 RBD antibodies that maximize breadth and resistance to escape</article-title>
+<source>Nature</source>
+<year>2021a</year>
+<volume>597</volume>
+<fpage>97</fpage>
+<lpage>102</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Addetia</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hannon</surname>
+<given-names>WW</given-names>
+</name>
+<name>
+<surname>Choud-hary</surname>
+<given-names>MC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Prospective mapping of viral mutations that escape antibodies used to treat COVID-19</article-title>
+<source>Science</source>
+<year>2021b</year>
+<volume>371</volume>
+<fpage>850</fpage>
+<lpage>854</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Dingens</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>Complete map of SARS-CoV-2 RBD mutations that escape the monoclonal antibody LY-CoV555 and its cocktail with LY-CoV016</article-title>
+<source>Cell Reports Medicine</source>
+<year>2021c</year>
+<volume>2</volume>
+<elocation-id>100255</elocation-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Czudnochowski</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Marzi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Broad sarbecovirus neutralization by a human monoclonal antibody</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>597</volume>
+<fpage>103</fpage>
+<lpage>108</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Uriu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kimura</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Shirakawa</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Takaori-Kondo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nakada</surname>
+<given-names>T-a</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Neutralization of the SARS-CoV-2 Mu variant by convalescent and vaccine serum</article-title>
+<source>New England Journal of Medicine</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>VanderPlas</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Granger</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Heer</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Moritz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Wongsuphasawat</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Altair: Interactive statistical visualizations for Python</article-title>
+<source>Journal of Open Source Software</source>
+<year>2018</year>
+<volume>3</volume>
+<elocation-id>1057</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Nair</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Iketani</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Antibody resistance of SARS-CoV-2 variants B.1.351 and B.1.1.7</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>593</volume>
+<fpage>130</fpage>
+<lpage>135</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>NC</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>C-CD</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis of a shared antibody response to SARS-CoV-2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<fpage>1119</fpage>
+<lpage>1123</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zost</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Gilchuk</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Case</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Binshtein</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>RE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Potently neutralizing and protective human antibodies against SARS-CoV-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>584</volume>
+<fpage>443</fpage>
+<lpage>449</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Escape map for a hypothetical polyclonal mix consisting of an equipotent mixture of three monoclonal antibodies targeting distinct epitopes on the SARS-CoV-2 RBD.</title>
+<p>
+<bold>(A)</bold> Experimentally measured escape maps for three antibodies, and the mean of these maps (thick black line). Each point on the x-axis represents a site in the RBD, and the y-axis represents the total measured escape by all mutations at that site scaled so the maximum for each antibody is one. <bold>(B)</bold> Escape map if the contribution of antibody LY-CoV555 is ablated. <bold>(C)</bold> Escape map if the contributions of antibodies LY-CoV555 and LY-CoV016 are ablated. An interactive version of this figure is at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/mini-example-escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/mini-example-escape-calc/</ext-link>.</p>
+</caption>
+<graphic xlink:href="EMS141102-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>An escape calculator generated by aggregating deep mutational scanning for 33 neutralizing antibodies targeting the SARS-CoV-2 RBD.</title>
+<p>
+<bold>(A)</bold> The blue line shows the extent of escape mediated by mutations at each site, as estimated by simply averaging the data for all the individual antibodies. <bold>(B)</bold> The blue line shows escape map after a mutation to site 484 (red point) ablates recognition by antibodies strongly targeting that site, while the gray line shows the original escape map in the absence of any mutations. <bold>(C)</bold> The escape map after mutating sites 417, 484, and 501 (the three RBD sites mutated in the Beta variant). An interactive version of this figure is at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/">https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/</ext-link>.</p>
+</caption>
+<graphic xlink:href="EMS141102-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Correlation of calculated binding scores with experimentally measured fold changes in neutralization for SARS-CoV-2 variants and mutants (smaller values indicate worse neutralization). The data of <xref ref-type="bibr" rid="R15">Lucas <italic>et al</italic>. (2021)</xref> was generated using authentic SARS-CoV-2 and sera from vaccinated individuals who were (top) or were not (bottom) previously infected with SARS-CoV-2. The data of <xref ref-type="bibr" rid="R26">Uriu <italic>et al</italic>. (2021)</xref> and <xref ref-type="bibr" rid="R28">Wang <italic>et al</italic>. (2021)</xref> was generated using pseudovirus against convalescent (top) or vaccine (bottom) sera, with vaccine sera from Pfizer BNT162b2 or Moderna mRNA-1273 vaccines, respectively. The fold changes are geometric means over all subjects in each cohort. An interactive version of this figure that allows mousing over points to see details is at https://jbloomlab.github.io/RBD_escap e_calculator_paper/neut_studies.html.</p>
+</caption>
+<graphic xlink:href="EMS141102-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Escape calculations for the Omicron variant.</title>
+<p>
+<bold>(A)</bold> The calculated binding scores for SARS-CoV-2 variants and the artificial polymutant spike (PMS20) generated by <xref ref-type="bibr" rid="R20">Schmidt <italic>et al</italic>. (2021)</xref>. Scores of one indicate no mutations affect binding, and scores of zero indicate no antibody binding remains. An interactive version of this plot that allows mousing over points to see details is at <ext-link ext-link-type="uri" xlink:href="https://jbloomlab.github.io/RBD_escape_calculator_paper/variants.html">https://jbloomlab.github.io/RBD_escape_calculator_paper/variants.html</ext-link>. <bold>(B)</bold> The calculated escape map for the Omicron variant’s RBD (blue) compared to an unmutated RBD (gray), with sites of mutations in the Omicron variant in red. The mutated RBD sites for each variant are in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</caption>
+<graphic xlink:href="EMS141102-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Mutated RBD sites in SARS-CoV-2 variants</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="middle">variant</th>
+<th align="left" valign="middle">mutated RBD sites</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">Wuhan-Hu-1</td>
+<td align="left" valign="middle"/>
+</tr>
+<tr>
+<td align="left" valign="middle">Alpha</td>
+<td align="left" valign="middle">501</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Beta</td>
+<td align="left" valign="middle">417 484 501</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Gamma</td>
+<td align="left" valign="middle">417 484 501</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Delta</td>
+<td align="left" valign="middle">452 478</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Lambda</td>
+<td align="left" valign="middle">452 490</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Mu</td>
+<td align="left" valign="middle">346 484 501</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Omicron</td>
+<td align="left" valign="middle">339 371 373 375 417 440 446 477 478 484 493 496 498 501 505</td>
+</tr>
+<tr>
+<td align="left" valign="middle">PMS20</td>
+<td align="left" valign="middle">346 417 440 445 455 475 484 501</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

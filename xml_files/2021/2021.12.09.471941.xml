@@ -1,0 +1,2322 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141131</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.09.471941</article-id>
+<article-id pub-id-type="archive">PPR431356</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>ClusTRace, a bioinformatic pipeline for analyzing clusters in virus phylogenies</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Plyusnin</surname>
+<given-names>Ilya</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Nguyen</surname>
+<given-names>Phuoc Thien Truong</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Sironen</surname>
+<given-names>Tarja</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Vapalahti</surname>
+<given-names>Olli</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Smura</surname>
+<given-names>Teemu</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Kant</surname>
+<given-names>Ravi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Veterinary Bioscience, University of Helsinki, 00014 Helsinki, Finland</aff>
+<aff id="A2">
+<label>2</label>Department of Virology, University of Helsinki, 00014 Helsinki, Finland</aff>
+<aff id="A3">
+<label>3</label>Department of Virology and Immunology, University of Helsinki and Helsinki University Hospital, 00014 Helsinki, Finland</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>To whom correspondence should be addressed. <email>Ilja.Pljusnin@helsinki.fi</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>12</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<sec id="S1">
+<title>Summary</title>
+<p id="P1">SARS-CoV-2 is the highly transmissible etiologic agent of coronavirus disease 2019 (COVID-19) and has become a global scientific and public health challenge since December 2019. Several new variants of SARS-CoV-2 have emerged globally raising concern about prevention and treatment of COVID-19. Early detection and in depth analysis of the emerging variants allowing pre-emptive alert and mitigation efforts are thus of paramount importance.</p>
+<p id="P2">Here we present ClusTRace, a novel bioinformatic pipeline for a fast and scalable analysis of sequence clusters or clades in large viral phylogenies. ClusTRace offers several high level functionalities including outlier filtering, aligning, phylogenetic tree reconstruction, cluster or clade extraction, variant calling, visualization and reporting. ClusTRace was developed as an aid for COVID-19 transmission chain tracing in Finland and the main emphasis has been on fast and unsupervised screening of phylogenies for markers of super-spreading events and other features of concern, such as high rates of cluster growth and/or accumulation of novel mutations.</p>
+</sec>
+<sec id="S2">
+<title>Availability</title>
+<p id="P3">All code is freely available from <ext-link ext-link-type="uri" xlink:href="https://bitbucket.org/plyusnin/clustrace/">https://bitbucket.org/plyusnin/clustrace/</ext-link>
+</p>
+</sec>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S3" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P4">Emerging pathogens are a constant threat to mankind, as shown by the Ebola (<xref ref-type="bibr" rid="R5">Dixon et al., 2014</xref>) and Zika (<xref ref-type="bibr" rid="R11">Kindhauser et al., 2016</xref>) virus outbreaks in 2014 and 2015 respectively, and the ongoing severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) pandemic. These viruses are of zoonotic origin, like the majority of emerging pathogens (Woolhouse and Gowtage-Sequeria). Environmental changes, new forms of land use, increasing human and production animal densities, trans-boundary movements, travel and globalization have dramatically enhanced the rate of zoonotic disease emergence (<xref ref-type="bibr" rid="R17">Morens and Fauci, 2020</xref>). All viruses, including SARS-CoV-2, change over time, however most changes have negligible effect on the virus’s phenotype. However, some mutations may affect key pathogenic properties such as transmissibility and disease severity, or the performance of vaccines, therapeutic agents or diagnostic tools. SARS-CoV-2 is the causative agent of coronavirus disease 2019 (COVID-19) (<xref ref-type="bibr" rid="R29">Wu et al., 2020</xref>). The SARS-CoV-2 pandemic has already infected more than 262 million people in 224 countries, causing over 5 million deaths globally as of 1st of December 2021 (<ext-link ext-link-type="uri" xlink:href="https://www.worldometers.info/coronavirus/">https://www.worldometers.info/coronavirus/</ext-link>).</p>
+<p id="P5">SARS-CoV-2 is a global challenge, which is further complicated by the continuous emergence of new Variants of Concern (VOCs) or Variants of Interest (VOI). Variants that have carried VOC status include Alpha (B.1.1.7) (<xref ref-type="bibr" rid="R27">Wise, 2020</xref>), Beta (B1.351) (<xref ref-type="bibr" rid="R25">Tegally et al., 2020</xref>), Gamma (P.1), Delta (B.1.617.2) (<xref ref-type="bibr" rid="R12">Kirola, 2021</xref>) and, as of writing this, we are experiencing early spread of Omicron (<xref ref-type="bibr" rid="R14">Latif et al., 2021b</xref>). These VOCs pose an increased public health risk due to having one or more of the following characteristics: higher transmissibility (<xref ref-type="bibr" rid="R3">Campbell et al., 2021</xref>), immune escape properties for antibodies from previous infection (<xref ref-type="bibr" rid="R26">Virtanen et al., 2021</xref>), lower response towards current vaccines compared to the original wild type strains these vaccines were based on (<xref ref-type="bibr" rid="R9">Jalkanen et al., 2021</xref>). Detecting and monitoring these novel variants is essential in SARS-CoV-2 surveillance.</p>
+<p id="P6">COVID-19 is the first pandemic with the pathogen being under surveillance using full genome sequencing on a global scale and over an extensive time period. Surveillance of the pandemic creates demand for fast and scalable sequencing, genome assembling, viral strain assignment, phylogenetic analysis, variant calling and molecular epidemiology to inform contact tracing and non-pharmaceutical interventions. Although bioinformatics offers an abundance of methods and tools for sequence analysis, their employment in virology and epidemiology can be hindered by the developer-user gap between bioinformatics and other fields (<xref ref-type="bibr" rid="R16">Mangul et al., 2019</xref>). This gap can be bridged by pipelines tailored specifically for the analysis of viral sequences and equipped with intuitive interface and output reporting. A number of bioinformatic software packages are already available to help with detection, tracking and tracing of VOCs e.g. Pangolin (<xref ref-type="bibr" rid="R20">O’Toole et al., 2021</xref>), Nextstrain (<xref ref-type="bibr" rid="R7">Hadfield et al., 2018</xref>), Nextclade (<xref ref-type="bibr" rid="R1">Aksamentov et al., 2021</xref>), Jovian (<xref ref-type="bibr" rid="R30">Zwagemaker et al., 2021</xref>) and HaVoC (<xref ref-type="bibr" rid="R19">Nguyen et al., 2021</xref>). At the same time co-infections can be tracked with meta-genomic approaches like Lazypipe (<xref ref-type="bibr" rid="R23">Plyusnin et al., 2020</xref>). Such tools are certainly helping the global effort for COVID-19 surveillance but they are not void of limitations. Tools like Pangolin and Nextclade are primarily designed for tracking large accumulations of mutation events that are rare and may be preceded by the less visible sub-lineage genetic changes. Nextstrain offers a comprehensive analysis, but is heavily dependent on sequence metadata, dataset prefiltering and time-consuming manual inspection of the produced interactive reports. Here we introduce ClusTRace (<ext-link ext-link-type="uri" xlink:href="https://www2.helsinki.fi/en/projects/clustrace">https://www2.helsinki.fi/en/projects/clustrace</ext-link>), a novel bioinformatic pipeline for Unix/Linux environments that complements the existing toolkits with unsupervised clade or cluster analysis, intuitive visualizations and reporting. ClusTRace can help with surveillance of the current ongoing COVID-19 pandemic and for any upcoming future epidemic or pandemic.</p>
+</sec>
+<sec id="S4" sec-type="materials | methods">
+<label>2</label>
+<title>Material and Methods</title>
+<p id="P7">ClusTRace is a bioinformatic software package implemented primarily in perl. ClusTRace supports several tasks that can be executed one by one or combined into pipelines (<xref ref-type="fig" rid="F1">Figure 1</xref>).</p>
+<sec id="S5">
+<label>2.1</label>
+<title>Basic workflow</title>
+<p id="P8">The analysis starts with consensus SARS-CoV-2 genomic sequences output by a given sequencing platform (e.g., Illumina). In the first step, ClusTRace assigns genomic sequences to a dynamic Pango lineage classification with Pangolin (<xref ref-type="bibr" rid="R20">O’Toole et al., 2021</xref>). Then, ClusTRace sorts sequences into multi-fasta files according to the assigned lineage file. Although we use Pangolin as the default lineage assigner, classification file can be produced with any method preferred by the user (the pipeline will accept any csv-file that includes a named column labelled as “lineage”).</p>
+<p id="P9">Multi-fasta files are then pruned from outliers with the help of SeqKit (<xref ref-type="bibr" rid="R24">Shen et al., 2016</xref>). By default, we remove all sequences that deviate more than 10% from the median length of the sequence set or that have more than 10% gaps (these parameters can be modified on the command line with --<italic>minlen</italic>, --<italic>maxlen</italic> and --<italic>maxgap</italic>).</p>
+<p id="P10">In the next step, filtered sequence sets for each lineage are aligned with MAFFT v7 (<xref ref-type="bibr" rid="R10">Katoh and Standley, 2013</xref>). Multiple sequence alignments (MSAs) are then used to construct phylogenetic trees with IQ-TREE 2 (<xref ref-type="bibr" rid="R18">Minh et al., 2020</xref>). IQ-TREE 2 supports a wide range of substitution models and will, by default, use ModelFinder to determine the best-fit model (<xref ref-type="bibr" rid="R18">Minh et al., 2020</xref>). The user can choose to create bootstrapped consensus trees with IQ-TREE 2 Ultra-Fast Bootstrapping (ClusTRace --<italic>ufboot</italic> option). For very large sequence sets, the user can choose to run VeryFastTree (<xref ref-type="bibr" rid="R22">Piñeiro et al., 2020</xref>) with GTR model (ClusTRace --<italic>tree vftree</italic> option).</p>
+<p id="P11">In the next step, sequence clusters are extracted with TreeCluster (<xref ref-type="bibr" rid="R2">Balaban et al., 2019</xref>). Clusters are extracted with MaxClade-method at several pairwise distance cut-offs. We use two cut-off thresholds that are scaled to the size of SARS-CoV-19 genome (~30,000 nt) and roughly correspond to twenty and thirty mutations between pairs of sequences. Next, ClusTRace creates custom nexus trees in which sequences are assigned labels and colours according to the assigned cluster.</p>
+<p id="P12">ClusTRace can read date annotations from sequence ids and will accept common date formats (e.g. “|YYYY-MM-DD|”). For date annotated sequences ClusTRace will trace the speed of growth for the extracted clusters. This is done by assigning sequences to time periods (calendar months or weeks) and by tracing the number of sequences that are assigned to each cluster and that are dated up to the given time period. For each lineage ClusTRace will print a separate cluster summary file with detailed information on the extracted clusters. These excel summaries include <italic>clustSeqN</italic>, <italic>clustSeqId</italic> and <italic>clustGR</italic> data sheets. The first and second data sheets report the number and ids of sequences in each cluster for each time period, while the third reports cluster size, median and maximal growth rates, and support value for the corresponding sub-phylogeny for each cluster. Separate <italic>clustGR</italic> data sheets are printed for each cluster cut-off threshold (by default twenty and thirty).</p>
+<p id="P13">In the last step, ClusTRace extracts MSA(s) and runs variant calling for the extracted clusters. Nucleotide mutations are called from these against a reference genome with MsaToVcf (<xref ref-type="bibr" rid="R21">Page et al., 2016</xref>). Nucleotide variants are filtered to exclude 100 nt from the start and the end of the genome, as well as any regions that have over 30nt continuous stretches of below 75% coverage (these are assumed to represent sequencing errors). We also exclude variants with support below 50%. These filtering options are specified in the pipeline options and can be modified. Amino acid (aa) variants are called with snpEff (<xref ref-type="bibr" rid="R4">Cingolani et al., 2012</xref>). Finally, aa variants in all clusters are parsed and added to the cluster Excel summaries as <italic>clustMutations</italic> and <italic>clustMutationTable</italic> data sheets. The <italic>clustMutations</italic> sheet reports nt and aa mutations for each cluster, reference aa mutations and non-reference aa mutations. Reporting reference and non-reference mutations requires supplying reference mutations in a separate file. For genes of interest non-reference mutations can be reported separately (current version reports mutations for the S-gene). The <italic>clustMutationTable</italic> sheet reports aa mutations for the fastest growing clusters in a binary matrix. The top row lists aa mutations in genomic order with non-reference mutations highlighted in bold.</p>
+<p id="P14">ClusTRace also supports extracting nt and aa, reference aa and non-reference aa mutations for lineage MSA(s) or for any other collection of MSA(s). Lineage mutations are reported with excel summary tables similar to the cluster mutation summaries.</p>
+<p id="P15">ClusTRace also offers an interface to g3viz R library (<xref ref-type="bibr" rid="R6">Guo et al., 2020</xref>). Using this interface, the user can generate in R environment interactive mutation plots for both cluster and lineage vcf-files. These interactive plots can be saved in the form of simple html files to complement excel reports.</p>
+</sec>
+<sec id="S6">
+<label>2.2</label>
+<title>Adding new sequences to your analysis</title>
+<p id="P16">ClusTRace supports updating your analysis with new sequence batches. Using this option, the user can update MSA(s) and tree(s) with novel data without repeating the whole analysis and by keeping exactly the same clusters for the updated dataset. This reduces subsequent run times and allows for more rapid analysis with up-to-date data. In this mode sequences are added to reference MSA(s) and new trees are restricted with reference topologies. The same set of clusters are identified in the updated trees by locating the last common ancestor (LCA) for old sequences and by assigning new sequences to the LCA with the shortest path in the tree. Due to topology changes, some clusters may shift to include other clusters; these are marked in the summary tables to avoid overestimation of the growth rates.</p>
+</sec>
+<sec id="S7">
+<label>2.3</label>
+<title>Selecting outgroup sequences</title>
+<p id="P17">ClusTRace uses outgroup sequences to reroot phylogenetic trees. Several options are offered for the user. The default option is to use COVID-19 reference genome (NC_045512.2), however the user can also specify a given genomic sequence or a collection of sequences with options --<italic>outgroup file</italic> and --<italic>outgroup directory</italic>. If --<italic>outgroup</italic> is a directory, the pipeline will look for an outgroup fasta file for each lineage. This can be an exact match (e.g. B.1.1.7.fasta) or a less specific match (e.g. B.1.fasta for B.1.1.7 lineage). Outgroup sequence will be added to all resulting MSA(s) and all phylogenetic trees will be rerooted using the outgroup.</p>
+</sec>
+</sec>
+<sec id="S8" sec-type="results">
+<label>3</label>
+<title>Results</title>
+<p id="P18">We used ClusTRace to analyze a dataset of COVID-19 full genome sequences from patient samples collected in Finland from January to the end of May 2021. We started by running ClusTRace Pangolin mapping, multi-fasta construction and outlier filtering. In the downstream analysis, we focused on the dominant variants of concern, which for this dataset were the Alpha VOC with 5,379 sequences and Beta VOC with 1,051 sequences (GISAID accessions are listed in <xref ref-type="supplementary-material" rid="SD2">STable 1</xref>). We then run ClusTRace alignment, phylogeny with ultrafast bootstrapping (--<italic>ufboot</italic> option), default clustering and variant calling for these two lineages. As our outgroup sequences we used <italic>EPI_ISL_601443</italic> for Alpha and <italic>EPI_ISL_660190</italic> for Beta. All files output by ClusTRace for this analysis are available in <xref ref-type="supplementary-material" rid="SD1">SFile-1</xref>.</p>
+<p id="P19">To get a quick summary on the lineage mutations, we start with g3viz visualisation (<xref ref-type="fig" rid="F2">Figure 2</xref>). For Alpha we see that most high frequency aa mutations follow the GISAID reference (<xref ref-type="fig" rid="F2">Figure 2.A</xref>). These include T1001I, A1708D, I2230T, 3675_3677del and P4715L in <italic>ORF1ab</italic>, 69_70del, N501Y, A570D, D614G, P681H, T716I, S982A and D1118H in <italic>S</italic>, D3L and S235F in <italic>N</italic>. For Alpha, there are just five aa variants specific for Finnish data with frequency 10% or higher: K5784R and E6272G in <italic>ORF1ab</italic>, N119H in <italic>ORF3a</italic> and G96S and RG203KP in <italic>N</italic>.</p>
+<p id="P20">For Beta, approximately half of mutations with frequency 10% or higher were not covered by the GISAID reference (<xref ref-type="fig" rid="F2">Figure 2.B</xref>). The GISAID reference aa mutations for Beta were: T265I, K1655N, K3353R and P4715L in <italic>ORF1ab</italic>, D80A, D614G and A701V in <italic>S</italic>, Q57H and S171L in <italic>ORF3a</italic>, P71L in <italic>E</italic>, T205I in <italic>N</italic>, while the non-reference aa mutations were: T3058I, A3209V, A3235S, D4459A, T5912I and A6976V in <italic>ORF1ab</italic>, T19I and I896L in <italic>S</italic>, M24V, I26V and I27V in <italic>ORF7b</italic>, K44R and I121L in <italic>ORF8</italic>. Note that Beta has non-GISAID mutations in Spike protein, which may potentially affect their receptor binding: T19I in 789 (75%) and I896L in 175 (16.7%) sequences.</p>
+<p id="P21">Cluster analysis with TreeCluster (<xref ref-type="bibr" rid="R2">Balaban et al., 2019</xref>) max-clade method yielded 110 clusters for Alpha and nineteen clusters for Beta (<xref ref-type="fig" rid="F3">Figures 3</xref> and <xref ref-type="fig" rid="F4">4</xref>). Here we take a closer look at the ten clusters for Alpha and Beta that had the highest per month growth rate peaks over the analysed time period.</p>
+<p id="P22">We start by discussing Alpha clusters. Clusters with the largest per month growth peaks covered 3,243 (58.5%) of all Alpha sequences. Cluster size was between 100 (1.9%) and 479 (8.9%) sequences (<xref ref-type="table" rid="T1">Table 1</xref>). Maximal absolute growth rates (i.e. the number of sequences added to the cluster) ranged between 74 and 310 sequences per month and peak growth was during February and March. Number of non-GISAID aa mutations introduced in these clusters ranged from one to six. Solitary non-GISAID mutations in S-gene were found in clusters 56 (D80Y), 38 (D287G) and 22 (A701V) (<xref ref-type="table" rid="T2">Table 2</xref>).</p>
+<p id="P23">The ten fastest growing clusters covered 979 (94.5%) of Beta sequences. Cluster size was between fourteen (1.3%) and 259 (24.6%) sequences (<xref ref-type="table" rid="T3">Table 3</xref>). Maximal growth rates ranged between 11 and 148 sequences per month and maximal growth was during February (clusters 3 and 8), March (clusters 1,4,7,10,17,18 and 19) and April (cluster 9). Number of non-GISAID aa mutations introduced in these clusters ranged from three to eight. Several clusters had non-GISAID mutations in S-gene: L18F (cluster 1), T19I (clusters 8-10, 17 and 19) and I896L (cluster 9) (<xref ref-type="table" rid="T4">Table 4</xref>).</p>
+</sec>
+<sec id="S9" sec-type="discussion">
+<label>4</label>
+<title>Discussion</title>
+<p id="P24">The years 2020 and 2021 could arguably be referred to as a turning point in the history of global health.</p>
+<p id="P25">The COVID-19 pandemic has demonstrated that emerging pathogens can cause havoc in our globalised world. On the other hand, the pandemic has accelerated development in many fields including genomic sequencing, bioinformatics, diagnostic testing and vaccins. The ongoing pandemic has emphasised the need for fast, scalable and, ideally pipelined, analysis of viral genomic sequences. For health authorities, it is important to be able to streamline processing large amounts of genomic sequence data into various summaries and reports that can help to make rational decisions concerning e.g. restrictions, non-pharmaceutical interventions and border control measures to minimize further spread of SARS-CoV-2. Researchers also struggle with the continuous inflow of SARS-CoV-2 sequences that need to be organized into lineages, alignments and phylogenetic trees in order to make sense of the constantly evolving pandemic.</p>
+<p id="P26">Here, we have presented ClusTRace, a novel bioinformatic pipeline for fast and scalable analysis of large collections of SARS-CoV-2 sequences. ClusTRace supports many types of relevant analyses. These include lineage assignment, generation of multi-fasta collections, outlier filtering, generation of multiple sequence alignments and phylogenetic trees, extraction and matching of monophyletic sequence clusters, estimation of cluster growth rates and support values, nt and aa variant calling for lineages and clusters, as well as cluster and mutation reporting and visualizations. Although most of these steps can be performed separately with designated bioinformatic tools, pipelining with a high-level interface helps to cut down on the learning and operating costs of complex bioinformatic analysis. Several authors have commented on the developer-user gap between bioinformatics and other fields in biology and biomedical research (<xref ref-type="bibr" rid="R16">Mangul et al., 2019</xref>). Pipelines that are tailored to the needs of virus research are an important way to bridge this gap.</p>
+<p id="P27">Notable pipelines for tracking viral outbreak phylodynamics include Augur, Auspice, Nextstrain, Nextclade and Pangolin (<xref ref-type="bibr" rid="R8">Huddleston et al., 2021</xref>; <xref ref-type="bibr" rid="R1">Aksamentov et al., 2021</xref>; <xref ref-type="bibr" rid="R7">Hadfield et al., 2018</xref>; <xref ref-type="bibr" rid="R20">O’Toole et al., 2021</xref>). Here, we reflect on key similarities and differences of ClusTRace to these toolkits. Pangolin and Nextclade are primarily concerned with classifying viral genomes into major lineages, while ClusTRace is designed to track more in-depth changes within lineages. Nextclade also offers mutation calling for large clades, which is similar to ClusTRace mutation calling for lineages. Nextstrain is an integration of several toolkits, including Augur for analysing sequence and phylogeographical data, and Auspice for visualising results. Like ClusTRace, Augur offers functionalities for filtering, aligning, phylogenetic reconstruction, rerooting and refinement of the obtained phylogenies, and also offers functionalities to estimate mutation frequencies. However, unlike ClusTRace, Augur also infers sequences and ancestral traits for the ancestral tree nodes. Auspice is designed to visualise phylogenetic and phylogeographic data output by Augur in an interactive webpage format. In ClusTRace, we provide different visualizations, namely Excel summaries and interactive g3viz plots for high growth-rate and/or mutation-rate clades. Unlike Nextstrain/Auspice visualizations, ClusTRace focuses directly on parts of the phylogeny that are picked out by the unsupervised clustering and analysis procedure, although this does not provide any details on the likely origin of the mutations in the tree. This approach has its advantages, such as simplicity, speed and scalability; unlike Nextstrain/Augur, ClusTRace has no need for downsampling the sequence sets. ClusTRace analysis is also largely unsupervised, i.e. clades are selected and examined for mutations and growth-peaks automatically, in effect filtering clades with alarming features that can then be checked manually more in detail.</p>
+<p id="P28">In this work, we illustrated the intended scenario for ClusTRace usage on Finnish Alpha and Beta variants of concern. We run ClusTRace lineage assignment, generation of multi-fasta collections, outlier filtering, alignment, phylogenetic tree building, cluster extraction and variant calling as described in the <xref ref-type="sec" rid="S7">results</xref> section. Overall, this approach can be described as an unsupervised phylogeny-based cluster analysis. ClusTRace uses automated clustering coupled with cluster growth rate analysis and variant calling to scan through the phylogeny. Clusters that display elevated growth rates, elevated non-reference mutation content or mutations in genomic regions that are of accentuated concern, such as the S-gene, can then be easily flagged for downstream analysis.</p>
+<p id="P29">The current SARS-CoV-2 pandemic might endure to the unforeseeable future, and new viral variants will likely continue to emerge. Therefore, the global response has to continue to adapt and improve to mitigate the costs of the pandemic. The progress made since the start of the pandemic in early 2020 with the global implementation of full genome sequencing can be consolidated by developing efficient and scalable bioinformatic tools that are specifically tailored for genomic surveillance of viral pathogens. These tools must deliver fast, scalable and, ideally, unsupervised analysis and reporting on the pandemic events of concern. Our pipeline, ClusTRace, adds to the available toolbox the option for fast, scalable and unsupervised screening and reporting of the within or local lineage events of concern, such as elevated growth and mutation rates. ClusTRace can also be adapted for the surveillance of viral pathogens other than the SARS-CoV-2, which may prove useful in future epidemic emergencies.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>SFile 1</label>
+<media xlink:href="EMS141131-supplement-SFile_1.zip" mimetype="application" mime-subtype="zip" id="N66231" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>STable 1</label>
+<media xlink:href="EMS141131-supplement-STable_1.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66240" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S10">
+<title>Funding</title>
+<p>This study was supported by the Academy of Finland (grant number 336490, 339510), VEO - European Union’s Horizon 2020 (grant number 874735), Finnish Institute for Health and Welfare, the Jane and Aatos Erkko Foundation, and Helsinki University Hospital Funds (TYH2018322 and TYH2021343).</p>
+</ack>
+<sec id="S11" sec-type="data-availability">
+<title>Data Availability</title>
+<p id="P30">ClusTRace user manual and other resources are hosted at the project’s website (<ext-link ext-link-type="uri" xlink:href="https://www2.helsinki.fi/en/projects/clustrace">https://www2.helsinki.fi/en/projects/clustrace</ext-link>). ClusTRace source code is available from <ext-link ext-link-type="uri" xlink:href="https://bitbucket.org/plyusnin/clustrace/src/master/">https://bitbucket.org/plyusnin/clustrace/</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P31">
+<bold>Conflict Of Interest</bold>
+</p>
+<p id="P32">None declared.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Aksamentov</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Nextclade: clade assignment, mutation calling and quality control for viral genomes</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Balaban</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>TreeCluster: Clustering biological sequences using phylogenetic trees</article-title>
+<source>PLOS ONE</source>
+<year>2019</year>
+<volume>14</volume>
+<elocation-id>e0221068</elocation-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Campbell</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Increased transmissibility and global spread of SARS-CoV-2 variants of concern as at June 2021</article-title>
+<source>Eurosurveillance</source>
+<year>2021</year>
+<volume>26</volume>
+<elocation-id>2100509</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cingolani</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A program for annotating and predicting the effects of singlenucleotide polymorphisms, SnpEff: SNPs in the genome of Drosophila melanogaster strain w1118; iso-2; iso-3</article-title>
+<source>Fly (Austin)</source>
+<year>2012</year>
+<volume>6</volume>
+<fpage>80</fpage>
+<lpage>92</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dixon</surname>
+<given-names>MG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ebola viral disease outbreak--West Africa, 2014</article-title>
+<source>MMWR Morb Mortal Wkly Rep</source>
+<year>2014</year>
+<volume>63</volume>
+<fpage>548</fpage>
+<lpage>551</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guo</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>G3viz: an R package to interactively visualize genetic mutation data using a lollipopdiagram</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>928</fpage>
+<lpage>929</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hadfield</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Nextstrain: real-time tracking of pathogen evolution</article-title>
+<source>Bioinformatics</source>
+<year>2018</year>
+<volume>34</volume>
+<fpage>4121</fpage>
+<lpage>4123</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huddleston</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Augur: a bioinformatics toolkit for phylogenetic analyses of human pathogens</article-title>
+<source>J Open Source Softw</source>
+<year>2021</year>
+<volume>6</volume>
+<fpage>2906</fpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jalkanen</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19 mRNA vaccine induced antibody responses against three SARS-CoV-2 variants</article-title>
+<source>Nat Commun</source>
+<year>2021</year>
+<volume>12</volume>
+<fpage>3991</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<article-title>MAFFT Multiple Sequence Alignment Software Version 7: Improvements in Performance and Usability</article-title>
+<source>Mol Biol Evol</source>
+<year>2013</year>
+<volume>30</volume>
+<fpage>772</fpage>
+<lpage>780</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kindhauser</surname>
+<given-names>MK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Zika: the origin and spread of a mosquito-borne virus</article-title>
+<source>Bull World Health Organ</source>
+<year>2016</year>
+<volume>94</volume>
+<fpage>675</fpage>
+<lpage>686C</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kirola</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Genetic emergence of B.1.617.2 in COVID-19</article-title>
+<source>New Microbes New Infect</source>
+<year>2021</year>
+<volume>43</volume>
+<elocation-id>100929</elocation-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="report">
+<person-group person-group-type="author">
+<name>
+<surname>Latif</surname>
+<given-names>AA</given-names>
+</name>
+<etal/>
+</person-group>
+<source>B.1.1.7 Lineage Report. outbreak.info</source>
+<year>2021a</year>
+<date-in-citation>Accessed 28 September 2021</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://outbreak.info/situation-reports?pango=B.1.1.7">https://outbreak.info/situation-reports?pango=B.1.1.7</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="report">
+<person-group person-group-type="author">
+<name>
+<surname>Latif</surname>
+<given-names>AA</given-names>
+</name>
+<etal/>
+</person-group>
+<source>B.1.1.529 Lineage Report</source>
+<year>2021b</year>
+<date-in-citation>Accessed 30 November 2021</date-in-citation>
+<comment>available at <ext-link ext-link-type="uri" xlink:href="https://outbreak.info/situation-reports?pango=B.1.1.529">https://outbreak.info/situation-reports?pango=B.1.1.529</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="report">
+<person-group person-group-type="author">
+<name>
+<surname>Latif</surname>
+<given-names>AA</given-names>
+</name>
+<etal/>
+</person-group>
+<source>B.1.351 Lineage Report. outbreak.info</source>
+<year>2021c</year>
+<date-in-citation>Accessed 28 September 2021</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://outbreak.info/situation-reports?pango=B.1.351">https://outbreak.info/situation-reports?pango=B.1.351</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mangul</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Systematic benchmarking of omics computational tools</article-title>
+<source>Nat Commun</source>
+<year>2019</year>
+<volume>10</volume>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morens</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Fauci</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Emerging pandemic diseases: how we got to COVID-19</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Minh</surname>
+<given-names>BQ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>IQ-TREE 2: New Models and Efficient Methods for Phylogenetic Inference in the Genomic Era</article-title>
+<source>Mol Biol Evol</source>
+<year>2020</year>
+<volume>37</volume>
+<fpage>1530</fpage>
+<lpage>1534</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nguyen</surname>
+<given-names>PT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>HaVoC, a bioinformatic pipeline for reference-based consensus assembly and lineage assignment for SARS-CoV-2 sequence</article-title>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Assignment of epidemiological lineages in an emerging pandemic using the pangolin tool</article-title>
+<source>Virus Evol</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Page</surname>
+<given-names>AJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SNP-sites: rapid efficient extraction of SNPs from multi-FASTA alignments</article-title>
+<source>Microb Genomics</source>
+<year>2016</year>
+<volume>2</volume>
+<elocation-id>e000056</elocation-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Piñeiro</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Very Fast Tree: speeding up the estimation of phylogenies forlarge alignments through parallelization and vectorization strategies</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>4658</fpage>
+<lpage>4659</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Plyusnin</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Novel NGS pipeline for virus discovery from a wide spectrum of hosts and sample types</article-title>
+<source>Virus Evol</source>
+<year>2020</year>
+<volume>6</volume>
+<elocation-id>veaa091</elocation-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SeqKit: A Cross-Platform and Ultrafast Toolkit for FASTA/Q File Manipulation</article-title>
+<source>PLOS ONE</source>
+<year>2016</year>
+<volume>11</volume>
+<elocation-id>e0163962</elocation-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Tegally</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Emergence and rapid spread of a new severe acute respiratory syndrome-related coronavirus 2 (SARS-CoV-2) lineage with multiple spike mutations in South Africa</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Virtanen</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Kinetics of Neutralizing Antibodies of COVID-19 Patients Tested Using Clinical D614G, B.1.1.7, and B 1.351 Isolates in Microneutralization Assays</article-title>
+<source>Viruses</source>
+<year>2021</year>
+<volume>13</volume>
+<fpage>996</fpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wise</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: New coronavirus variant is identified in UK</article-title>
+<source>BMJ</source>
+<year>2020</year>
+<volume>371</volume>
+<elocation-id>m4857</elocation-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Woolhouse</surname>
+<given-names>MEJ</given-names>
+</name>
+<name>
+<surname>Gowtage-Sequeria</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Host Range and Emerging and Reemerging Pathogens</article-title>
+<source>Emerging Infectious Diseases journal - CDC</source>
+<year>2005</year>
+<month>December</month>
+<volume>11</volume>
+<issue>12</issue>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>265</fpage>
+<lpage>269</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Zwagemaker</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<source>DennisSchmitz/Jovian: 1.2.07 Zenodo</source>
+<year>2021</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>ClusTRace flowchart</title>
+</caption>
+<graphic xlink:href="EMS141131-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Amino acid mutations for Finnish Alpha</title>
+<p>(A) and Beta (B) datasets All mutations found in at least ten sequences are plotted. GISAID characteristic mutations (<xref ref-type="bibr" rid="R13">Latif et al., 2021a</xref>, 1, <xref ref-type="bibr" rid="R15">2021c</xref>) are plotted in purple, mutations not found in the GISAID reference are plotted in green. Graphics were created with the ClusTRace interface to g3viz (<xref ref-type="bibr" rid="R6">Guo et al., 2020</xref>).</p>
+</caption>
+<graphic xlink:href="EMS141131-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Consensus tree for Finnish Alpha dataset with clusters collapsed</title>
+<p>Bar plots on the right indicate the number of sequences in each cluster. For clarity, clusters with less than ten sequences and singletons were removed. Inner nodes with no large cluster descendants are plotted in grey.</p>
+</caption>
+<graphic xlink:href="EMS141131-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Consensus tree for Finnish Beta dataset with clusters collapsed</title>
+<p>Bar plots on the right indicate the number of sequences in each cluster. For clarity, clusters with less than ten sequences were removed.</p>
+</caption>
+<graphic xlink:href="EMS141131-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Growth rates for ten Alpha clusters with maximal monthly growth rates.</title>
+</caption>
+<table frame="void" rules="none">
+<thead>
+<tr>
+<th align="center" valign="top"/>
+<th align="center" valign="top" colspan="6" style="border-bottom: solid thin">Time Period</th>
+<th align="center" valign="top" colspan="3"/>
+</tr>
+<tr>
+<th align="right" valign="top">Cluster</th>
+<th align="right" valign="top">2020-12</th>
+<th align="right" valign="top">2021-01</th>
+<th align="right" valign="top">2021-02</th>
+<th align="right" valign="top">2021-03</th>
+<th align="right" valign="top">2021-04</th>
+<th align="right" valign="top">2021-05</th>
+<th align="right" valign="top">medGR</th>
+<th align="right" valign="top">maxGR</th>
+<th align="right" valign="top">maxGR%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 68</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">69</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>379</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">462</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">479</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">479</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">69</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">310</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">64.7%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 81</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">19</td>
+<td align="right" valign="top">
+<bold>219</bold>
+</td>
+<td align="right" valign="top">389</td>
+<td align="right" valign="top">440</td>
+<td align="right" valign="top">449</td>
+<td align="right" valign="top">51</td>
+<td align="right" valign="top">200</td>
+<td align="right" valign="top">44.5%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 70</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">9</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>188</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">278</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">315</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">324</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">37</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">179</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">55.2%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 80</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">50</td>
+<td align="right" valign="top">158</td>
+<td align="right" valign="top">
+<bold>337</bold>
+</td>
+<td align="right" valign="top">385</td>
+<td align="right" valign="top">388</td>
+<td align="right" valign="top">50</td>
+<td align="right" valign="top">179</td>
+<td align="right" valign="top">46.1%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 56</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">47</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>224</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">302</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">314</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">47</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">177</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">56.4%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 24</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">9</td>
+<td align="right" valign="top">67</td>
+<td align="right" valign="top">
+<bold>238</bold>
+</td>
+<td align="right" valign="top">392</td>
+<td align="right" valign="top">402</td>
+<td align="right" valign="top">58</td>
+<td align="right" valign="top">171</td>
+<td align="right" valign="top">42.5%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 22</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">9</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">104</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>246</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">277</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">283</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">31</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">142</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">50.2%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 38</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">26</td>
+<td align="right" valign="top">
+<bold>139</bold>
+</td>
+<td align="right" valign="top">223</td>
+<td align="right" valign="top">228</td>
+<td align="right" valign="top">230</td>
+<td align="right" valign="top">25</td>
+<td align="right" valign="top">113</td>
+<td align="right" valign="top">49.1%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 74</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">2</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">39</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>125</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">169</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">177</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">177</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">37</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">86</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">48.6%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 15</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">1</td>
+<td align="right" valign="top">3</td>
+<td align="right" valign="top">22</td>
+<td align="right" valign="top">
+<bold>96</bold>
+</td>
+<td align="right" valign="top">100</td>
+<td align="right" valign="top">4</td>
+<td align="right" valign="top">74</td>
+<td align="right" valign="top">74.0%</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#e7e6e6">Singleton<break/>s</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">2</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">8</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">21</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">37</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">42</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">43</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6" colspan="5"/>
+</tr>
+<tr>
+<td align="right" valign="top">Total</td>
+<td align="right" valign="top">39</td>
+<td align="right" valign="top">480</td>
+<td align="right" valign="top">2316</td>
+<td align="right" valign="top">
+<bold>4320</bold>
+</td>
+<td align="right" valign="top">5241</td>
+<td align="right" valign="top">5380</td>
+<td align="right" valign="top">921</td>
+<td align="right" valign="top">2004</td>
+<td align="right" valign="top">37.2%</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<p id="P33">Cluster, cluster id, Time Period, time period by month, medGR, median absolute growth rate per month, maxGR, maximal absolute growth rate per month, maxGR%, maximal relative growth rate per month. Values in bold indicate the month of the maximal absolute growth rate.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Mutations in Alpha clusters</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Cluster E</th>
+<th align="center" valign="top" colspan="17">ORF1ab</th>
+<th align="center" valign="top" colspan="14">S</th>
+<th align="center" valign="top" colspan="2">ORF3a</th>
+<th align="center" valign="top" colspan="3">ORF8</th>
+<th align="center" valign="top" colspan="9">N</th>
+</tr>
+<tr>
+<th align="center" valign="top"/>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">1001IL</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">1507F</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">A1708D</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">T2166I</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">I2230T</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">S2661F</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">W2769C</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">G2941S</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">I3619V</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">3675_3677del</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P4619L</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P4715L</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">K5784R</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">E6129D</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">E6272G</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P6376S</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">M6661L</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">69_70del</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">H69S</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D80Y</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">144del</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">Y144L</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D287G</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">N501Y</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">A570D</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D614G</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P681H</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">A701V</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">T716I</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">S982A</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D1118H</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">L15F</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">N119H</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">Q27<xref ref-type="table-fn" rid="TFN3">*</xref>
+</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">R52I</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">Y73C</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D3L</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">G96S</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P151S</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">R203K</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">RG203KP</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">RG203KR</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">G204R</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">S235F</th>
+<th align="left" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">E378Q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">
+<xref ref-type="table-fn" rid="TFN3">*</xref>GISAID B.1.1.7</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 68</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 81</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 70</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 80</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 56</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 24</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 22</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 38</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 74</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 15</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN2">
+<p id="P34">Here, aa mutations with frequencies exceeding 50% are listed in genomic order</p>
+</fn>
+<fn id="TFN3">
+<label>*</label>
+<p id="P35">The first row depicts characteristic mutations for B.1.1.7 lineage colected from the GISAID lineage report (<xref ref-type="bibr" rid="R13">Latif et al., 2021a</xref>). Non-reference mutations are in bold.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Growth rates for ten Beta clusters with maximal monthly growth rates</title>
+</caption>
+<table frame="void" rules="none">
+<thead>
+<tr>
+<th align="center" valign="top"/>
+<th align="center" valign="top" colspan="6" style="border-bottom: solid thin">Time Period</th>
+<th align="center" valign="top" colspan="3"/>
+</tr>
+<tr>
+<th align="right" valign="top">Cluster</th>
+<th align="right" valign="top">2020-12</th>
+<th align="right" valign="top">2021-01</th>
+<th align="right" valign="top">2021-02</th>
+<th align="right" valign="top">2021-03</th>
+<th align="right" valign="top">2021-04</th>
+<th align="right" valign="top">2021-05</th>
+<th align="right" valign="top">medGR</th>
+<th align="right" valign="top">maxGR</th>
+<th align="right" valign="top">maxGR%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 10</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">2</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">79</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>227</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">255</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">259</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">28</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">148</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">57.1%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 17</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">4</td>
+<td align="right" valign="top">
+<bold>134</bold>
+</td>
+<td align="right" valign="top">207</td>
+<td align="right" valign="top">211</td>
+<td align="right" valign="top">4</td>
+<td align="right" valign="top">130</td>
+<td align="right" valign="top">61.6%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 19</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>83</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">90</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">90</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">83</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">92.2%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 9</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">3</td>
+<td align="right" valign="top">55</td>
+<td align="right" valign="top">
+<bold>129</bold>
+</td>
+<td align="right" valign="top">130</td>
+<td align="right" valign="top">3</td>
+<td align="right" valign="top">74</td>
+<td align="right" valign="top">56.9%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 4</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">20</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>81</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">132</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">134</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">20</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">61</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">45.5%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 1</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">4</td>
+<td align="right" valign="top">5</td>
+<td align="right" valign="top">
+<bold>31</bold>
+</td>
+<td align="right" valign="top">39</td>
+<td align="right" valign="top">39</td>
+<td align="right" valign="top">4</td>
+<td align="right" valign="top">26</td>
+<td align="right" valign="top">66.7%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 8</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>21</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">34</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">39</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">40</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">5</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">21</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">52.5%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 18</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">2</td>
+<td align="right" valign="top">
+<bold>22</bold>
+</td>
+<td align="right" valign="top">42</td>
+<td align="right" valign="top">47</td>
+<td align="right" valign="top">5</td>
+<td align="right" valign="top">20</td>
+<td align="right" valign="top">42.6%</td>
+</tr>
+<tr>
+<td align="right" valign="top" style="background-color:#e7e6e6">Clust 3</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">0</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">2</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">
+<bold>19</bold>
+</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">29</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">29</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">29</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">2</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">17</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">58.6%</td>
+</tr>
+<tr>
+<td align="right" valign="top">Clust 7</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">0</td>
+<td align="right" valign="top">2</td>
+<td align="right" valign="top">
+<bold>13</bold>
+</td>
+<td align="right" valign="top">14</td>
+<td align="right" valign="top">14</td>
+<td align="right" valign="top" style="background-color:#e7e6e6">1</td>
+<td align="right" valign="top">11</td>
+<td align="right" valign="top">78.6%</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#e7e6e6">Singleton<break/>s</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">3</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">5</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">5</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">9</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">9</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6">9</td>
+<td align="right" valign="bottom" style="background-color:#e7e6e6" colspan="5"/>
+</tr>
+<tr>
+<td align="right" valign="top">Total</td>
+<td align="right" valign="top">3</td>
+<td align="right" valign="top">19</td>
+<td align="right" valign="top">189</td>
+<td align="right" valign="top">
+<bold>762</bold>
+</td>
+<td align="right" valign="top">1034</td>
+<td align="right" valign="top">1052</td>
+<td align="right" valign="top">170</td>
+<td align="right" valign="top">573</td>
+<td align="right" valign="top">54.5%</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN4">
+<p id="P36">Annotation as in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>Mutations in Beta clusters</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Cluster E</th>
+<th align="center" valign="top" colspan="15">ORF1ab</th>
+<th align="center" valign="top" colspan="11">S</th>
+<th align="center" valign="top" colspan="5">ORF3a</th>
+<th align="center" valign="top">E</th>
+<th align="center" valign="top" colspan="3">ORF7b</th>
+<th align="center" valign="top" colspan="3">ORF8</th>
+<th align="center" valign="top" colspan="2">N</th>
+</tr>
+<tr>
+<th align="center" valign="top"/>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">T265I</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>A698V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">K1655N</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>T3058I</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>A3209V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>A3235S</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">K3353R</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">3675_3677del</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>D4459A</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>P4715H</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P4715L</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>T5912I</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>D6734G</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>T6949I</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>A6976V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>L18F</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>T19I</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D80A</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D215G</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">241_243del</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">K417N</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">E484K</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">N501Y</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">D614G</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">A701V</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>I896L</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>L52F</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">Q57H</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>W131L</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">S171L</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>G254<xref ref-type="table-fn" rid="TFN6">*</xref>
+</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">P71L</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>M24V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>I26V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>I27V</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>P38S</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>K44R</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>I121L</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">
+<bold>A12T</bold>
+</th>
+<th align="center" valign="top" style="=-webkit-transform:rotate(-90deg);-moz-transform:rotate(-90deg);-o-transform:rotate(-90deg);transform:rotate(-90deg);padding: 40px">T205I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">
+<xref ref-type="table-fn" rid="TFN6">*</xref>GISAID B.1.351</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 10</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 17</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 19</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 9</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 4</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 8</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 18</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 3</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clust 7</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top" style="background-color:#d0cece">1</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN5">
+<p id="P37">Here, aa mutations with frequencies exceeding 50% are listed in genomic order.</p>
+</fn>
+<fn id="TFN6">
+<label>*</label>
+<p id="P38">The first row depicts characteristic mutations for B.1.351 lineage collected from the GISAID lineage report (<xref ref-type="bibr" rid="R15">Latif et al., 2021c</xref>). Non-reference mutations are in bold.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</floats-group>
+</article>

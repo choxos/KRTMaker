@@ -1,0 +1,4387 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS133034</article-id>
+<article-id pub-id-type="doi">10.1101/2021.08.16.456428</article-id>
+<article-id pub-id-type="archive">PPR383176</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>A Generic Force Field for Simulating Native Protein Structures Using Dissipative Particle Dynamics</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Vaiwala</surname>
+<given-names>Rakesh</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Ayappa</surname>
+<given-names>K. Ganapathy</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>Chemical Engineering Department, Indian Institute of Science, Bangalore 560012, India</aff>
+<aff id="A2">
+<label>b</label>Centre for BioSystems Science and Engineering, Indian Institute of Science, Bangalore 560012, India</aff>
+<author-notes>
+<corresp id="CR1">
+<email>ayappa@iisc.ac.in</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>18</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>16</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">A coarse-grained force field for molecular dynamics simulations of native structures of proteins in a dissipative particle dynamics (DPD) framework is developed. The parameters for bonded interactions are derived by mapping the bonds and angles for 20 amino acids onto target distributions obtained from fully atomistic simulations in explicit solvent. A dual-basin potential is introduced for stabilizing backbone angles, to cover a wide spectrum of protein secondary structures. The backbone dihedral potential enables folding of the protein from an unfolded initial state to the folded native structure. The proposed force field is validated by evaluating structural properties of several model peptides and proteins including the SARS-CoV-2 fusion peptide, consisting of <italic>α</italic>-helices, <italic>β</italic>-sheets, loops and turns. Detailed comparisons with fully atomistic simulations are carried out to assess the ability of the proposed force field to stabilize the different secondary structures present in proteins. The compact conformations of the native states were evident from the radius of gyration as well as the high intensity peaks of the root mean square deviation histograms, which were found to lie below 0.4 nm. The Ramachandran-like energy landscape on the phase space of backbone angles (<italic>θ</italic>) and dihedrals (<italic>ϕ</italic>) effectively captured the conformational phase space of <italic>α</italic>-helices at <italic>∼</italic>(<italic>ϕ</italic> = 50 °, <italic>θ</italic> = 90 °) and <italic>β</italic>-strands at <italic>∼</italic>(<italic>ϕ</italic> = <italic>±</italic>180 °, <italic>θ</italic> = 90 <italic>◦</italic> − 120 °). Furthermore, the residue-residue native contacts are also well reproduced by the proposed DPD model. The applicability of the model to multidomain complexes is assessed using lysozyme as well as a large <italic>α</italic> helical bacterial pore-forming toxin, cytolysin A. Our studies illustrate that the proposed force field is generic, and can potentially be extended for efficient in-silico investigations of membrane bound polypeptides and proteins using DPD simulations.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">Molecular dynamics (MD) simulations have been extensively used to uncover the understanding of processes that occur at the molecular scale and has emerged as an indispensable computational tool to study a wide variety of systems with atomistic as well as mesoscopic detail. Although accurate in its description, studying the structure and dynamics of large biomolecular complexes for longer times with atomistic resolution using all-atom simulations is computationally prohibitive. Coarse-grained (CG) approaches, with a reduction in the number of degrees of freedom to enhance conformational sampling, allow assessing processes that occur at physiologically relevant spatial and temporal scales. Consequently, there has been a rapid development of CG models and multiscale simulation methods in last few decades for simulating simple fluids, ionic liquids, biomembranes, proteins and transmembrane protein assemblies.<sup>
+<xref ref-type="bibr" rid="R1">1</xref>–<xref ref-type="bibr" rid="R11">11</xref>
+</sup>
+</p>
+<p id="P3">With an increase in virulent bacterial and viral infections, CG modelling of biological systems involving membrane-protein complexes has attracted considerable attention.<sup>
+<xref ref-type="bibr" rid="R11">11</xref>–<xref ref-type="bibr" rid="R14">14</xref>
+</sup> As a result, numerous CG protein models at various levels of reduced resolution ranging from one to five CG beads mapped to represent an amino acid residue have been developed.<sup>
+<xref ref-type="bibr" rid="R15">15</xref>,<xref ref-type="bibr" rid="R16">16</xref>
+</sup> Depending on the level of description used to characterize the protein and solvent, models vary in their ability to capture protein folding, conformational dynamics and prediction of the native states. These CG models of proteins are structure-based,<sup>
+<xref ref-type="bibr" rid="R17">17</xref>–<xref ref-type="bibr" rid="R24">24</xref>
+</sup> knowledge-based,<sup>
+<xref ref-type="bibr" rid="R25">25</xref>–<xref ref-type="bibr" rid="R30">30</xref>
+</sup> and physics-based,<sup>
+<xref ref-type="bibr" rid="R31">31</xref>–<xref ref-type="bibr" rid="R37">37</xref>
+</sup> with varying degrees of structural accuracy, model transferability and thermodynamic consistency. The MARTINI, OPEP, PRIMO, UNRES, and SIRAH are among some of the popular protein force fields for CG-MD simulations.<sup>
+<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R15">15</xref>,<xref ref-type="bibr" rid="R16">16</xref>,<xref ref-type="bibr" rid="R38">38</xref>–<xref ref-type="bibr" rid="R40">40</xref>
+</sup>
+</p>
+<p id="P4">Dissipative particle dynamics (DPD) is a particle based simulation method, which allows one to examine the underlying system at mesoscopic length and time scales.<sup>
+<xref ref-type="bibr" rid="R41">41</xref>,<xref ref-type="bibr" rid="R42">42</xref>
+</sup> DPD has been extensively used to study biomembranes, polymers and polyelectrolytes, and it has been shown to predict the scaling behaviour of several systems.<sup>
+<xref ref-type="bibr" rid="R43">43</xref>–<xref ref-type="bibr" rid="R51">51</xref>
+</sup> However, DPD has been used to a lesser extent to study systems involving peptides and proteins. The DPD simulation framework is attractive for simulation of proteins, since dynamics are naturally evolved in the canonical ensemble in the presence of explicit solvent particles.</p>
+<p id="P5">In an early study, Vishnyakov <italic>et al.</italic>
+<sup>
+<xref ref-type="bibr" rid="R52">52</xref>
+</sup> introduced a novel approach to model secondary structures of polypeptides using DPD simulations. The <italic>α</italic>-helices and <italic>β</italic>-sheet structures were stabilized using dissociable Morse bonds between 1-3 as well as 1-5 amino acid residues in the protein sequence. The stiffness constant for the Morse bonds, the charge on the residues and the hydrophobicity were varied to capture a given secondary structure, without the need for amino acid specific interaction potentials. The authors also point out that the presence of multiple Morse bonds due to their spherical symmetry could cause peptides to adopt unphysical conformations.<sup>
+<xref ref-type="bibr" rid="R52">52</xref>
+</sup> Following the MARTINI scheme for assigning bead types to protein residues, a CG mapping scheme for amino acids has been proposed for simulating antimicrobial peptides using the DPD methodology.<sup>
+<xref ref-type="bibr" rid="R53">53</xref>,<xref ref-type="bibr" rid="R54">54</xref>
+</sup> The repulsive force parameters for backbone beads are specific to the secondary structures being simulated, and the Morse potential between pairs of backbone beads has been used to stabilize <italic>α</italic>-helices and <italic>β</italic>-sheet structures.</p>
+<p id="P6">The knowledge-based protein force field proposed by Peter <italic>et al.</italic>
+<sup>
+<xref ref-type="bibr" rid="R55">55</xref>
+</sup> is a polarizable model for simulating proteins in the DPD framework. A pair of oppositely charged Drude particles, which are transparent to other CG beads, has been employed to mimic electrostatic polarization of the peptide backbone. Being a polarizable force field, the protein model is computationally expensive in a polarizable solvent model. In a DPD based model developed by Truszkowski <italic>et al.</italic>,<sup>
+<xref ref-type="bibr" rid="R56">56</xref>
+</sup> a protein force field has been presented with a CG mapping scheme based on underlying molecular fragments. For instance, the side chains of serine and threonine were represented by the CG beads that correspond to methanol and ethanol fragments, respectively. In absence of anisotropic interactions in the model, the structural rigidity of the protein was maintained by harmonic bonds between the backbone beads, similar to the elastic dynamic network models used in MARTINI simulations, 57 adding to the computational overhead. This also precludes simulating protein folding from an unfolded state as well as secondary structure transitions.</p>
+<p id="P7">In a very recent DPD study on folding of polyalanine into its native structure, the <italic>α</italic>-helix was stabilized by optimizing the repulsive force constant for the alanine residues that form the helical structure using the native contacts derived from atomistic simulations.<sup>
+<xref ref-type="bibr" rid="R58">58</xref>
+</sup> The dihedral potential was used to stabilize the helical structure. Nevertheless, the parameter set is polyalanine specific, and therefore the parameters need to be re-optimized for different proteins with varying secondary structures.</p>
+<p id="P8">The above studies reveal that although DPD models have been used to model specific protein structures, an efficient and generic protein force field for simulating native protein structures in the DPD formalism is yet to be developed. Additionally, it is desirable to develop a protein force field which can be integrated with existing DPD models for phospholipid membranes.<sup>
+<xref ref-type="bibr" rid="R43">43</xref>,<xref ref-type="bibr" rid="R53">53</xref>,<xref ref-type="bibr" rid="R59">59</xref>–<xref ref-type="bibr" rid="R63">63</xref>
+</sup> In an attempt to bridge this gap, we present a complete set of force field parameters for 20 amino acids for simulating polypeptides and proteins using DPD. The native conformations, namely <italic>α</italic>-helix, rigid turn, flexible loop, <italic>β</italic>-hairpin and other extended structures, are preserved by introducing backbone dihedrals. Not restricted to a specific protein or protein structure, the proposed force field for bonded and non-bonded interactions is generic and can be applied to a wide range of peptides and protein structures. Unlike previous force fields developed for DPD simulations, the force field presented here does not require a priori knowledge of the presence of distinct secondary structures such as <italic>α</italic>-helices and <italic>β</italic>-sheets. Additionally the model is computationally inexpensive when compared with the polarizable protein models,<sup>
+<xref ref-type="bibr" rid="R55">55</xref>
+</sup> and the elastic network based models.<sup>
+<xref ref-type="bibr" rid="R56">56</xref>
+</sup> A fact that the emergence of covid-19 shook the world<sup>
+<xref ref-type="bibr" rid="R64">64</xref>
+</sup> has led a rising interest in protein-membrane interactions, and a full trimeric spike protein model for SARS-CoV-2 is also now available with our CG force field for such studies in the DPD framework.</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Simulation methodology</title>
+<p id="P9">In this section the protocols for simulating the amino acid sequences in atomistic as well as CG frameworks are described. The peptides chosen for parametrizing and validating the DPD force field for proteins are depicted in <xref ref-type="fig" rid="F1">Fig. 1</xref>. These peptides include all the standard 20 amino acids, encompassing distinct structures such as <italic>α</italic>-helices, <italic>β</italic>-sheets, turns and flexible loops. Some of these peptides such as Trpzip (1LE1), Trpcage (1L2Y), 1HDN, 1J4M and lysozyme have been previously used for developing various protein force fields.<sup>
+<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R55">55</xref>,<xref ref-type="bibr" rid="R58">58</xref>,<xref ref-type="bibr" rid="R65">65</xref>–<xref ref-type="bibr" rid="R68">68</xref>
+</sup> The peptides shown in <xref ref-type="fig" rid="F1">Fig. 1A</xref> are used to parametrize the DPD force field, while the peptides and proteins in <xref ref-type="fig" rid="F1">Fig. 1B</xref> are used to test the robustness of the proposed force field. In addition to the smaller peptides we carried out DPD simulations of complex multidomain bacterial toxin cytolysin A (1QOY) and lysozyme (3TXJ) to demonstrate the versatility of the proposed force field (<xref ref-type="fig" rid="F1">Fig. 1B</xref>). The monomer of cytolysin A (ClyA), a 34 kDa protein expressed by <italic>Escherichia coli</italic>, takes part in membrane assisted oligomerization during pore formation. We also modify the force field to describe disulfide bonds between cysteine residues while simulating lysozyme.</p>
+<sec id="S3">
+<label>2.1</label>
+<title>Atomistic simulations</title>
+<p id="P10">The peptides shown in <xref ref-type="fig" rid="F1">Fig. 1</xref> were simulated in water with the all-atom (AA) CHARMM36 force fields using the GROMACS (2018.2) MD engine.<sup>
+<xref ref-type="bibr" rid="R69">69</xref>,<xref ref-type="bibr" rid="R70">70</xref>
+</sup> The CHARMM TIP3P water model was used for the aqueous environment, and periodic boundary conditions were used in the three orthogonal directions. The details for the different systems investigated are given in <xref ref-type="table" rid="T1">Table 1</xref>, and data was acquired over 200 ns long simulations after equilibration for 10 ns. The simulations were performed at room temperature (303.15 K) using a Nosé-Hoover thermostat with a coupling time constant of 1 ps.<sup>
+<xref ref-type="bibr" rid="R71">71</xref>
+</sup> While the system pressure was maintained at 1 bar using a Parrinello-Rahman barostat with a isotropic pressure coupling time constant of 5 ps and compressibility 4.5 × 10<sup>−5</sup> bar<sup>−1</sup>, which corresponds to water compressibility at ambient conditions.<sup>
+<xref ref-type="bibr" rid="R72">72</xref>
+</sup> The bonds with H-atoms were constrained using the LINCS algorithm.<sup>
+<xref ref-type="bibr" rid="R73">73</xref>
+</sup> The equations of motion were integrated using the leap-frog algorithm with a step size of 2 fs. The non-bonded van der Waals interactions were computed within a cutoff distance of 1.2 nm, and the forces were smoothly truncated to zero over the distance from 1.0 to 1.2 nm. The long range electrostatic interactions for charged species were evaluated using the Particle Mesh Ewald (PME) method with a real-space cutoff distance of 1.2 nm.<sup>
+<xref ref-type="bibr" rid="R74">74</xref>
+</sup> Na<sup>+</sup> and Cl<sup>–</sup> ions were added to neutralize charges on the peptides.</p>
+</sec>
+<sec id="S4">
+<label>2.2</label>
+<title>Dissipative particle dynamics simulations</title>
+<p id="P11">We use the standard formulation of the DPD method,<sup>
+<xref ref-type="bibr" rid="R41">41</xref>,<xref ref-type="bibr" rid="R42">42</xref>,<xref ref-type="bibr" rid="R59">59</xref>,<xref ref-type="bibr" rid="R75">75</xref>
+</sup> where suitable molecular fragments or beads represent the level of coarse-graining. The DPD beads interact with each other via the centrally directed pairwise forces. The soft repulsive conservative force <italic>f<sup>C</sup>
+</italic> between DPD particles <italic>i</italic> and <italic>j</italic> positioned at <bold>r<sub>i</sub>
+</bold> and <bold>r<sub>j</sub>
+</bold> is, <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi mathvariant="bold" mathsize="normal">f</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>e</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P12">where <italic>a<sub>i</sub>
+<sub>j</sub>
+</italic> is the repulsive force constant and <italic>R<sub>c</sub>
+</italic> is the cutoff radius. The radial separation between the particles <italic>i</italic> and <italic>j</italic> is <italic>r<sub>i</sub>
+<sub>j</sub>
+</italic> = |<bold>r</bold>
+<italic>
+<sub>i</sub>
+</italic> − <bold>r</bold>
+<italic>
+<sub>j</sub>
+</italic>|, and the unit vector <bold>e</bold>
+<italic>
+<sub>i</sub>
+<sub>j</sub>
+</italic> = (<bold>r</bold>
+<italic>
+<sub>i</sub>
+</italic> − <bold>r</bold>
+<italic>
+<sub>j</sub>
+</italic>)/<italic>r<sub>i</sub>
+<sub>j</sub>
+</italic>. The DPD particles also interact through pairwise dissipative <italic>f<sup>D</sup>
+</italic> and stochastic <italic>f<sup>R</sup>
+</italic> forces given by, <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msubsup>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>f</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>D</mml:mi>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mi>γ</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mtext> (</mml:mtext>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>e</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>v</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>e</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>and</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msubsup>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>f</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mi>R</mml:mi>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mi>σ</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>R</mml:mi>
+</mml:msub>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mi>ζ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mtext> </mml:mtext>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>e</mml:mi>
+</mml:mstyle>
+<mml:mrow>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+</mml:msub>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P13">The relative velocity <bold>v</bold>
+<italic>
+<sub>i</sub>
+<sub>j</sub>
+</italic> is <bold>v</bold>
+<italic>
+<sub>i</sub>
+</italic> − <bold>v</bold>
+<italic>
+<sub>j</sub>
+</italic>, while <italic>ζ<sub>i</sub>
+<sub>j</sub>
+</italic> is a random variable drawn from a Gaussian distribution with zero mean and a unit variance. While <italic>γ</italic> and <italic>σ</italic> are the strengths of the dissipative and random forces respectively. The weight function <italic>w<sub>R</sub>
+</italic>(<italic>r</italic>) = 1 − (<italic>r<sub>i</sub>
+<sub>j</sub>/R<sub>c</sub>
+</italic>). The strengths of the dissipative and stochastic forces are governed by the fluctuation-dissipation theorem,<sup>
+<xref ref-type="bibr" rid="R76">76</xref>
+</sup> <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msup>
+<mml:mtext>σ</mml:mtext>
+<mml:mtext>2</mml:mtext>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:mn>2</mml:mn>
+<mml:mi>γ</mml:mi>
+<mml:mi>k</mml:mi>
+<mml:mi>T</mml:mi>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>and</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mi>w</mml:mi>
+<mml:mi>R</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P14">resulting in a thermostat for the DPD simulation. Accordingly, the noise amplitude <italic>σ</italic> = 3.0 and the frictional strength <italic>γ</italic> = 4.5 are the usual choice for the DPD thermostat. The energy scale is <italic>kT</italic>, where <italic>k</italic> and <italic>T</italic> denote the Boltzmann constant and absolute temperature, respectively. The equations of motion for the DPD particles are integrated using the velocity Verlet scheme.<sup>
+<xref ref-type="bibr" rid="R42">42</xref>,<xref ref-type="bibr" rid="R77">77</xref>
+</sup>
+</p>
+</sec>
+<sec id="S5">
+<label>2.3</label>
+<title>Electrostatics in DPD simulations</title>
+<p id="P15">The charges assigned to the side chains for some of the amino acids are illustrated in <xref ref-type="fig" rid="F2">Fig. 2</xref>. In addition, peptides were assigned a charge of +1e at the N-terminus and -1e at the C-terminus.<sup>
+<xref ref-type="bibr" rid="R55">55</xref>,<xref ref-type="bibr" rid="R65">65</xref>
+</sup> Electroneutrality is maintained by addition of ions (see <xref ref-type="table" rid="T1">Table 1</xref>). Electrostatic interactions among the charged DPD particles can be evaluated either by locally solving the electrostatic field on spatially distributed grids<sup>
+<xref ref-type="bibr" rid="R75">75</xref>
+</sup> or by using the Ewald summation.<sup>
+<xref ref-type="bibr" rid="R78">78</xref>–<xref ref-type="bibr" rid="R80">80</xref>
+</sup> A comparative assessment of these methods is detailed elsewhere.<sup>
+<xref ref-type="bibr" rid="R81">81</xref>
+</sup> We computed the electrostatic potential Φ by solving iteratively the Poisson equation on real-space grids,<sup>
+<xref ref-type="bibr" rid="R75">75</xref>
+</sup>
+<disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mo>∇</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mi>r</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>∇</mml:mo>
+<mml:mi>Φ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>/</mml:mo>
+<mml:msub>
+<mml:mi>ε</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P16">The constants <italic>ε</italic>
+<sub>0</sub> and <italic>ε<sub>r</sub>
+</italic> are the dielectric permittivity of vacuum and local relative dielectric constant, respectively. We used a uniform dielectric constant, <italic>ε<sub>r</sub>
+</italic> = 78. The computational domain is discretized into three dimensional cells with a mesh size <italic>R<sub>c</sub>
+</italic>. The Coulomb charges on the DPD particles are smeared out over the grid points within a distance of <italic>R<sub>e</sub>
+</italic> = 1.6 <italic>R<sub>c</sub>
+</italic> using a linear charge distribution function, <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mi>f</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>3</mml:mn>
+<mml:mrow>
+<mml:mi>π</mml:mi>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mn>3</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P17">Following Groot,<sup>
+<xref ref-type="bibr" rid="R75">75</xref>
+</sup> the grid-based electrostatic potential, Φ(<bold>r</bold>) is obtained by solving the discretized version of the Poisson equation (<xref ref-type="disp-formula" rid="FD4">eqn (4)</xref>) using the successive relaxation method. The electrostatic force on each particle is calculated by interpolating the gradient of the potential using the same distribution function <italic>f</italic>(<italic>r</italic>).</p>
+<p id="P18">The system details including the number of DPD water beads are provided in <xref ref-type="table" rid="T1">Table 1</xref>. All DPD simulations are carried out at room temperature and constant volume with periodic boundary conditions in three Cartesian directions. A time step of 0.01 <italic>τ</italic> is used for integrating the equations of motion. The time scale of <italic>τ</italic>∼88 ps was deduced by mapping to the diffusion coefficient of water.59 In reduced DPD units the length <italic>R<sub>c</sub>
+</italic>, time <italic>τ</italic>, energy <italic>kT</italic> and masses <italic>m</italic> of the CG particles are set to unity. Each DPD trajectory for peptides 1HDN, 1J4M and 6VSB, which are used for parametrization, consists of 2 × 10<sup>5</sup> time steps with a step size of 0.01 <italic>τ</italic>, while each DPD simulation for 1L4X, Trpzip and Trpcage is comprised of 10<sup>6</sup> time steps. The last half of the trajectories are used for analysis in each case. The DPD force field developed using the different peptides (<xref ref-type="fig" rid="F1">Fig. 1</xref>) is given next.</p>
+</sec>
+<sec id="S6">
+<label>3</label>
+<title>DPD models for water and proteins</title>
+<p id="P19">The DPD bead for representation of water effectively comprises of three water molecules with the length scale <italic>R<sub>c</sub>
+</italic> = 0.646 nm, which is equivalent to the volume of three water molecules at room temperature.<sup>
+<xref ref-type="bibr" rid="R59">59</xref>
+</sup> With this three-to-one CG mapping scheme, the force constant for soft repulsive interactions between water-water is <italic>a<sub>ww</sub>
+</italic> = 78 <italic>kT/R<sub>c</sub>
+</italic>, which corresponds to the isothermal compressibility of water at room temperature.<sup>
+<xref ref-type="bibr" rid="R59">59</xref>
+</sup>
+</p>
+<p id="P20">Amino acids are the building blocks of peptides and proteins, whose secondary structures are highly correlated with the backbone dihedral angles.<sup>
+<xref ref-type="bibr" rid="R82">82</xref>–<xref ref-type="bibr" rid="R84">84</xref>
+</sup> Therefore, in the reduced representation shown in <xref ref-type="fig" rid="F2">Fig. 2</xref>, we map the backbone atoms of the protein onto the CG backbone beads (B), with the centers of these beads located at the positions of the C<italic>
+<sub>α</sub>
+</italic> atoms.<sup>
+<xref ref-type="bibr" rid="R65">65</xref>
+</sup> The mapping scheme we follow in fragmenting the side chains into CG beads allows us to directly adopt the Flory-Huggins (<italic>χ</italic>) parameters used by Truszkowski <italic>et al.</italic>
+<sup>
+<xref ref-type="bibr" rid="R56">56</xref>
+</sup> for the interactions between the CG beads. The different bead types for the amino acids are labelled from P2 - P17 as illustrated in <xref ref-type="fig" rid="F2">Fig. 2</xref> where the backbone bead ‘B’ corresponds to the bead type P3 for PRO and P2 for all other residues. For notational convenience we refer to the side chain beads as ‘S1’, ‘S2’ and ‘S3’ labelled progressively outward from the backbone bead. The residues GLY and PRO consist only of backbone beads, while TRP with bulky aromatic groups is represented by example P4, P14 and P12 in the TRP residue represent the side chain beads S1, S2 and S3, respectively, while the remaining 17 amino acid residues have either one (S1) or two (S1 and S2) side chain beads. The bonded interactions between the different beads are modelled using harmonic potentials with appropriate spring constants, <disp-formula id="FD6">
+<label>(6a)</label>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD7">
+<label>(6b)</label>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>A</mml:mi>
+</mml:msup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>θ</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD8">
+<label>(6c)</label>
+<mml:math id="M8">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>U</mml:mi>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>k</mml:mi>
+<mml:mi>b</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+<mml:mi>A</mml:mi>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>θ</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>θ</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P21">where <italic>U<sup>B</sup>
+</italic>(<italic>r</italic>) is the bonded potential with equilibrium bond length <italic>r</italic>
+<sub>0</sub>, <italic>U<sup>A</sup>
+</italic>(<italic>θ</italic>) is the angle bending potential with equilibrium angle <italic>θ</italic>
+<sub>0</sub>, while the corresponding spring constants are <italic>k<sub>b</sub>
+</italic> and <italic>k<sub>θ</sub>
+</italic> respectively. Here <inline-formula>
+<mml:math id="M9">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>U</mml:mi>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>k</mml:mi>
+<mml:mi>b</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+<mml:mi>A</mml:mi>
+</mml:msubsup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> represents a dual-basin angle potential (<xref ref-type="disp-formula" rid="FD8">eqn (6c)</xref>) between three consecutive beads (B-B-B) along the backbone with the equilibrium angles <italic>θ</italic>
+<sub>1</sub> = 90 ° and <italic>θ</italic>
+<sub>2</sub> = 120 °, which correspond to the backbone angles for <italic>α</italic>-helix and <italic>β</italic>-sheet structures, respectively. This parametrization is an improvement and a departure from the existing DPD force fields reported in the literature. Additionally we incorporate the backbone dihedral potential, <disp-formula id="FD9">
+<label>(7)</label>
+<mml:math id="M10">
+<mml:mrow>
+<mml:msup>
+<mml:mi>U</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>ϕ</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>cos</mml:mi>
+<mml:mo>⁡</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>ϕ</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P22">where the torsion angles along the protein backbone are maintained at the native state value of <italic>ϕ</italic>
+<sub>0</sub> using a cosine potential with the stiffness constant <italic>k<sub>ϕ</sub>
+</italic>. The dihedral potential has recently been used to stabilize the <italic>α</italic> helical structure in polyalanine.<sup>
+<xref ref-type="bibr" rid="R58">58</xref>
+</sup>
+</p>
+</sec>
+</sec>
+<sec id="S7">
+<label>4</label>
+<title>Model parametrization</title>
+<p id="P23">The repulsive force constants <italic>a<sub>i</sub>
+<sub>j</sub>
+</italic> among the protein beads and protein-water interactions are computed using the Flory-Huggins energy parameters <italic>χ<sub>i</sub>
+<sub>j</sub>
+</italic> using,<sup>
+<xref ref-type="bibr" rid="R42">42</xref>
+</sup> <disp-formula id="FD10">
+<label>(8)</label>
+<mml:math id="M11">
+<mml:mrow>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>a</mml:mi>
+<mml:mrow>
+<mml:mi>w</mml:mi>
+<mml:mi>w</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mn>3.497</mml:mn>
+<mml:msub>
+<mml:mi>χ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P24">As mentioned earlier, we have adopted the Flory-Huggins parameters for the DPD beads of proteins from the work of Truszkowski <italic>et al.</italic>,<sup>
+<xref ref-type="bibr" rid="R56">56</xref>
+</sup> where molecular fragments were simulated in an aqueous solvent using the COMPASS force field.<sup>
+<xref ref-type="bibr" rid="R85">85</xref>
+</sup> The full interaction matrix of the repulsive force constant evaluated from <xref ref-type="disp-formula" rid="FD10">eqn (8)</xref> is tabulated in <xref ref-type="table" rid="T2">Table 2</xref>, where the <italic>P<sub>i</sub>
+</italic>’s represent the different bead types as described in <xref ref-type="fig" rid="F2">Fig. 2</xref>. We note that ions interact with the protein and other CG beads with the same repulsive strength as the CG water, and hence ions are assigned P1 type bead. Since many DPD models for lipids membranes use a repulsive force with <italic>a<sub>ww</sub>
+</italic> = 78 <italic>kT/R<sub>c</sub>
+</italic>, our model for the protein can directly be integrated with the existing phospholipid force fields to investigate protein-membrane complexes.<sup>
+<xref ref-type="bibr" rid="R53">53</xref>,<xref ref-type="bibr" rid="R54">54</xref>,<xref ref-type="bibr" rid="R59">59</xref>,<xref ref-type="bibr" rid="R86">86</xref>–<xref ref-type="bibr" rid="R89">89</xref>
+</sup>
+</p>
+<p id="P25">Using a bottom-up approach for coarse-graining, the bonded parameters, namely the equilibrium bond lengths and angles (<italic>r</italic>
+<sub>0</sub> and <italic>θ</italic>
+<sub>0</sub> in <xref ref-type="disp-formula" rid="FD6">eqn (6))</xref>, are deduced from the centers of reference distributions for the virtual CG bonds and angles derived from AA trajectories. We used an iterative procedure to optimize the bonded interactions. In order to use a higher time step in DPD simulations, the bond stiffness <italic>k<sub>b</sub>
+</italic> is restricted to 2000 <inline-formula>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula>, and a minimum value of <italic>k<sub>b</sub>
+</italic> is set to 1500 <inline-formula>
+<mml:math id="M13">
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> to control the spread of the distributions. The stiffness for the angle bending potential is chosen to be 10, 15 or 20 <italic>kT/rad</italic>
+<sup>2</sup> depending on the spread of the angles in the reference distributions. During the iterative procedure, bond lengths (<italic>X</italic> = <italic>r</italic>
+<sub>0</sub>) as well as the angles (<italic>X</italic> = <italic>θ</italic>
+<sub>0</sub>) in CG distributions (<italic>X<sup>CG</sup>
+</italic>) are updated, according to <italic>X</italic> = <italic>X</italic> + (<italic>X<sup>AA</sup> − X<sup>CG</sup>
+</italic>), with a convergence tolerance of 0.005 nm in bond lengths and a maximum 5° deviation in angles from the centers of corresponding reference distributions (<italic>X<sup>AA</sup>
+</italic>). The optimized CG bond lengths and the bond stiffness values are given in <xref ref-type="table" rid="T3">Table 3</xref>. With <italic>R<sub>c</sub>
+</italic> = 0.646 nm, the CG bond length of 0.58 <italic>R<sub>c</sub>
+</italic> between two consecutive backbone beads (B-B) results in a distance of 0.38 nm between two consecutive C<italic>
+<sub>α</sub>
+</italic> atoms in the AA protein model. The bond between S1 and S3 beads of TRP is also constrained to 0.64<italic>R<sub>c</sub>
+</italic> for controlling angles in the TRP residue.</p>
+<p id="P26">
+<xref ref-type="fig" rid="F3">Figure 3</xref> shows the distributions for bonds in the different amino acid residues compared with the corresponding target distributions obtained from atomistic simulations. The CG distributions obtained in DPD simulations are inherently broader due to the soft repulsive nature of the DPD interactions, however excellent overlap is observed with the mean values coinciding well with the AA target distributions. For residues LYS and ILE, the bond distributions are bimodal in the AA simulations, while the harmonic bond potential in DPD captures one of the peaks.</p>
+<p id="P27">
+<xref ref-type="fig" rid="F4">Figure 4</xref> indicates the distributions of angles within the different amino acid residues, namely B-S1-S2, as well as the angle B-B-S1 across two consecutive residues. The B-B-S1 angle is set to 115°. The angle S1-B-B (not shown) comprising of first two residues at the N-terminus is constrained to <italic>θ</italic>
+<sub>0</sub> = 100° with the stiffness constant <italic>k<sub>θ</sub>
+</italic> = 15 <italic>kT/rad</italic>
+<sup>2</sup>. On account of having three CG beads in its side chain, TRP residue has an additional angle S1-S2-S3 peaked at <italic>∼</italic>108°. According to <xref ref-type="disp-formula" rid="FD8">eqn (6c)</xref>, the energy landscape for the backbone angle B-B-B captures dual basins, 90 ° and 120°, encompassing the <italic>α</italic>-helices as well as <italic>β</italic>-extended structures which will be illustrated later in the text. The stiffness constant <italic>k<sub>θ</sub>
+</italic> is set to 15 <italic>kT/rad</italic>4 for the B-B-B backbone angle. <xref ref-type="table" rid="T3">Table 3</xref> provides the angle bending parameters.</p>
+<p id="P28">Stabilization of the native state conformations of peptides is achieved through the backbone dihedrals. The torsion angles <italic>ϕ</italic>
+<sub>0</sub> between four consecutive C<italic>
+<sub>α</sub>
+</italic> atoms along the protein backbone are computed from the native crystal structure, and maintained in DPD simulations using the torsion potential (<xref ref-type="disp-formula" rid="FD9">eqn (7)</xref>) with the stiffness constant <italic>k<sub>ϕ</sub>
+</italic> = 10 <italic>kT</italic>. The values for <italic>ϕ</italic>
+<sub>0</sub> are provided in <xref ref-type="supplementary-material" rid="SD1">Table S1</xref> in the Electronic <xref ref-type="supplementary-material" rid="SD1">Supplementary Information</xref> (ESI).</p>
+</sec>
+<sec id="S8">
+<label>5</label>
+<title>Model validation</title>
+<p id="P29">The proposed DPD parameters for the protein simulations are validated by evaluating various protein structural metrics such as the root mean square deviation (RMSD), radius of gyration (<italic>R<sub>g</sub>
+</italic>), residue-residue contacts and the Ramachandran-like maps. The proposed DPD force field is validated using the peptides 1L4X (<italic>α</italic>-helix), Trpzip (<italic>β</italic>-hairpin) and Trpcage (helix+loop), where we make a direct comparison with the atomistic simulations thereby providing a stringent test to the accuracy of the proposed force field.</p>
+<sec id="S9">
+<label>5.1</label>
+<title>Structural similarity</title>
+<p id="P30">To measure the similarity between the protein conformations and its native structure, we have calculated the root mean square deviation, RMSD(<bold>r</bold>, <bold>r</bold>′) = <inline-formula>
+<mml:math id="M14">
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:msup>
+<mml:mi>r</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+</mml:mstyle>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:math>
+</inline-formula> denotes the number of amino acid residues in the peptide sequence. While <bold>r</bold> and <bold>r</bold>
+<italic>′</italic> are position vectors of backbone beads (C<italic>
+<sub>α</sub>
+</italic> atoms for AA model) in the simulated trajectory and in the native PDB structure, respectively. The ability of the DPD model to retain the level of compactness of the protein structure close to that of the native structure is determined by computing the radius of gyration, <inline-formula>
+<mml:math id="M15">
+<mml:mrow>
+<mml:msub>
+<mml:mi>R</mml:mi>
+<mml:mi>g</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>N</mml:mi>
+</mml:mfrac>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mstyle mathvariant="bold" mathsize="normal">
+<mml:mi>r</mml:mi>
+</mml:mstyle>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:math>
+</inline-formula>, where <bold>r</bold>
+<italic>
+<sub>m</sub>
+</italic> is the center of mass coordinates of the protein backbone.</p>
+<p id="P31">
+<xref ref-type="fig" rid="F5">Figure 5</xref> shows the joint probability histograms of RMSD and <italic>R<sub>g</sub>
+</italic> for the peptides 1L4X (<italic>α</italic>-helix), Trpzip (<italic>β</italic>-hairpin) and Trpcage (helix+loop). The color maps are represented as − log(<italic>P/P<sub>max</sub>
+</italic>) where <italic>P<sub>max</sub>
+</italic> is the maximum value of <italic>P</italic> in the distribution. Hence the intensity value close to zero indicates the highest probabilities in the distribution. From the high probability regions the radius of gyration is accurately captured in our DPD simulations. For instance, the distribution for the peptide Trpzip peaks at <italic>R<sub>g</sub>∼</italic>0.6 <italic>±</italic> 0.001 nm in DPD model (<xref ref-type="fig" rid="F5">Fig. 5E</xref>), and this agrees well with <italic>R<sub>g</sub>∼</italic>0.58 <italic>±</italic> 0.001 nm at the high probability region for the AA model (<xref ref-type="fig" rid="F5">Fig. 5B</xref>).</p>
+<p id="P32">The RMSD variations show some interesting trends across the different proteins. For the <italic>α</italic>-helical peptide 1L4X, the range of the RMSD variations are similar, with the DPD model displaying a slightly lower RMSD when compared with the AA data. In the case of Trpzip (<italic>β</italic>-hairpin) and Trpcage (helix+loop), the RMSD values obtained from the AA simulations are smaller when compared with the DPD simulations. Although the RMSD of the peptides in the DPD simulations shows a slightly higher spread when compared to a relatively narrow range observed in the AA simulations, the conformations sampled at RMSD ranging from <italic>∼</italic>0.1 − 0.3 nm represent the energetically favourable configurations that are sampled to a greater extent (<xref ref-type="fig" rid="F5">Fig. 5</xref>). Furthermore, if one examines the most probable values for RMSD, the differences are within 0.2 nm between DPD results and the reference AA RMSD data. Additionally, the range of the RMSD sampling is superior to the previous polarizable model, 55 which reported RMSD in the range 0.5 − 0.7 nm for the peptides Trpzip and Trpcage. For the peptides 1HDN, 1J4M and 6VSB, which were used for parametrization, the RMSD and <italic>R<sub>g</sub>
+</italic> data are provided in <xref ref-type="supplementary-material" rid="SD1">Fig. S1</xref> of the ESI.</p>
+</sec>
+<sec id="S10">
+<label>5.2</label>
+<title>Native contacts</title>
+<p id="P33">The success of CG models for proteins relies on its ability to retain the residue-residue contacts that characterize a given native structure. This can be achieved by constraining the contacts using the harmonic potential (Gō and elastic network models) or through Lennard-Jones potential (Gō-MARTINI).<sup>
+<xref ref-type="bibr" rid="R17">17</xref>,<xref ref-type="bibr" rid="R38">38</xref>,<xref ref-type="bibr" rid="R57">57</xref>,<xref ref-type="bibr" rid="R90">90</xref>
+</sup> In the DPD model presented here, the secondary structures are stabilized with the dihedral (<xref ref-type="disp-formula" rid="FD9">eqn (7)</xref>) and the dual-basin angle bending potentials (<xref ref-type="disp-formula" rid="FD8">eqn (6c)</xref>). Unless stated otherwise, we computed the contact maps using a distance criterion between a pair of residues falling within 1 nm for both the AA and DPD simulations.</p>
+<p id="P34">As illustrated in <xref ref-type="fig" rid="F6">Fig. 6</xref>, where contact maps with the color bars indicate the fraction of a trajectory having stabilized contacts, the residue-residue contacts are well captured in the helical peptides (<xref ref-type="fig" rid="F6">Fig. 6A and D</xref>). The comparison for the peptides with <italic>β</italic>-hairpin (<xref ref-type="fig" rid="F6">Fig. 6B and E</xref>) and the flexible loop structures (<xref ref-type="fig" rid="F6">Fig. 6C and F</xref>) are also satisfactory. The discrepancies in contact maps between the AA and DPD models for these structures are attributed to non-local excluded volume interactions, which are soft repulsive in the DPD force field (<xref ref-type="disp-formula" rid="FD1">eqn (1)</xref>). The soft repulsive nature of the DPD force field is able to capture all the dominant contact pairs, albeit with reduced intensity in some cases. For example in the Trpzip structure (<xref ref-type="fig" rid="F6">Fig. 6B and E</xref>)) the contacts between residues 12 with 1-4 are captured with a lower intensity in the DPD simulations. Although an increased cutoff for the contacts in the DPD model can reduce the differences, we prefer to make comparisons with the AA simulations with a similar cutoff criterion. <xref ref-type="supplementary-material" rid="SD1">Figure S2</xref> in ESI provides the contact maps for the peptides 1HDN, 1J4M and 6VSB. The native contacts are further quantified by computing the order parameter<sup>
+<xref ref-type="bibr" rid="R91">91</xref>
+</sup> <inline-formula>
+<mml:math id="M16">
+<mml:mrow>
+<mml:mi>Q</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>≥</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>3</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mtext>exp</mml:mtext>
+<mml:mo>⁡</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>|</mml:mo>
+<mml:mo>/</mml:mo>
+<mml:mn>3</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>/</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The summation runs over all non-local contacts between pairs of residues <italic>i</italic> and <italic>j ≥ i</italic> + 3, with distances <italic>r<sub>i</sub>
+<sub>j</sub>
+</italic> in simulated trajectories and <inline-formula>
+<mml:math id="M17">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> in native PDB structures. The order parameter <italic>Q</italic> is normalized by the total contacts, <italic>n</italic>. The time averaged <italic>Q</italic> values from the DPD simulations are 0.79, 0.63 and 0.66 for 1L4X, Trpzip and Trpcage, respectively (<xref ref-type="supplementary-material" rid="SD1">Fig. S3</xref> in ESI). The Q values lying in the range 0.55 <italic>≤ Q ≤</italic> 1 provides additional confirmation for the inherent stability of the structures in the proposed DPD force field.</p>
+</sec>
+<sec id="S11">
+<label>5.3</label>
+<title>Ramachandran conformational space</title>
+<p id="P35">Equivalent to an energy surface on the <italic>ϕ − ψ</italic> plane formed by two dihedral angles in atomistic models, the Ramachandran-like plot in a reduced CG representation is a two-dimensional density plot of the backbone angle <italic>θ</italic> and torsion angle <italic>ϕ</italic>.<sup>
+<xref ref-type="bibr" rid="R92">92</xref>
+</sup> The Ramachandran-like maps for peptides 1HDN, 1J4M and 6VSB are given in <xref ref-type="supplementary-material" rid="SD1">Fig. S4</xref> of ESI. Referring to <xref ref-type="fig" rid="F7">Fig. 7A and D</xref>, dominant sampling of the conformations occurs at, <italic>θ</italic> = 90 ° and <italic>ϕ</italic> = 50 ° for the helical peptide 1L4X as well as for the peptide Trpcage (<xref ref-type="fig" rid="F7">Fig. 7C and F</xref>), which has helices at the N-terminus (residues 1-9). The increased sampling centered around <italic>ϕ</italic> = ∓120° accounts for the turn regions in the peptides Trpzip (<xref ref-type="fig" rid="F7">Fig. 7B and E</xref>) and Trpcage (<xref ref-type="fig" rid="F7">Fig. 7C and F</xref>). The presence of <italic>β−</italic>sheets in the peptide Trpzip (<xref ref-type="fig" rid="F7">Fig. 7B and E</xref>) is evident from high density spots at <italic>ϕ∼±</italic> 180 °. Correlating the conformational space mapped with the <italic>ϕ</italic>, <italic>θ</italic> angles with the observed secondary structures, our data is consistent with the density maps in these reduced co-ordinates given in earlier CG-MD studies.<sup>
+<xref ref-type="bibr" rid="R92">92</xref>
+</sup>
+</p>
+</sec>
+<sec id="S12">
+<label>5.4</label>
+<title>Protein folding</title>
+<p id="P36">The robustness of the proposed force field is tested by allowing the peptide sequences to fold back to their three dimensional native structures. We carried out folding simulations on peptides 1L4X (<italic>α</italic>-helix) and Trpzip (<italic>β</italic>-hairpin). The initial unfolded configurations were obtained by switching off the dihedral terms and changing the equilibrium backbone angles to 180 °. With ‘d’ being the distance between <italic>C<sub>α</sub>
+</italic> atoms in the native state in the AA model, a pair of residues in the DPD model is said to be in contact when their backbone beads are closer than 1.3d. 90 However, due to purely repulsive nature of the DPD forces and relatively higher flexibility of <italic>β</italic>-hairpin in absence of hydrogen bonding, a cutoff of 1.3d + 0.2 nm can be used to capture more than 90% of the native contacts in <italic>β</italic>-hairpin structure. <xref ref-type="fig" rid="F8">Figure 8</xref> illustrates the time evolution of native contacts averaged over 10 independent folding simulation trajectories for each peptide. It is clear from the folding curves in <xref ref-type="fig" rid="F8">Fig. 8</xref> that the characteristic folding times for <italic>α</italic>-helix as well as <italic>β</italic>-hairpin are of similar order (∼ 10<italic>τ</italic>), which we attribute to the equilibration time scales for the dihedral angles. Unlike the ten-fold faster folding of <italic>α</italic>-helix over the <italic>β</italic>-hairpin structures observed for atomistic as well as Gō-MARTINI models in previous studies, 90,93the folding times for the <italic>α</italic>-helix is only slightly faster than that of <italic>β</italic>-hairpin in the present DPD model.</p>
+</sec>
+<sec id="S13">
+<label>5.5</label>
+<title>Multidomain proteins</title>
+<p id="P37">The generality of the proposed DPD protein model for in-silico study of multidomain proteins is further examined by simulating larger protein structures. We chose lysozyme and cytolysin A (ClyA) for this purpose, and describe simulations first for lysozyme followed by ClyA in this section. The simulations are carried out for 10<sup>6</sup> time steps after an initial equilibration period of 10<sup>5</sup> steps, and the last half of the trajectory was used for calculating the structural properties. Lysozyme (PDB: 3TXJ) is employed here to illustrate the manner in which we incorporate the disulfide linkages present between pairs of CYS residues. Lysozyme comprises of 129 amino acid residues, with six small helical domains, H1 (residues:5-15), H2 (25-36), H3 (80-83), H4 (88-102), H5 (109-115), H6 (120-124), as well as extended structures (residues: 43-45, 51-53, 58-59) as depicted in <xref ref-type="fig" rid="F1">Figs. 1</xref> and <xref ref-type="fig" rid="F9">9D</xref>. The four pairs of CYS residues, (residues 6 and 127, 30 and 115, 64 and 80, 76 and 94) are involved in forming four disulfide linkages in lysozyme. In order to incorporate the disulfide bonds in the DPD model, we used a harmonic potential (<xref ref-type="disp-formula" rid="FD6">eqn (6a)</xref>) between these pairs of residues with a bond length of <italic>r</italic>
+<sub>0</sub> = 0.31 <italic>R<sub>c</sub>
+</italic> (0.2 nm in AA reference model) and a bond stiffness, <italic>k<sub>b</sub>
+</italic> = 1500 <italic>kT/nm</italic>
+<sup>2</sup>.</p>
+<p id="P38">The time evolution of RMSD of the structural domains of lysozyme (<xref ref-type="supplementary-material" rid="SD1">Fig. S5</xref> in ESI) indicates that the six helices and the extended strands retain their native structures at RMSD <italic>∼</italic>0.3 nm in the DPD simulation. Due to the presence of flexible loops and turns, the overall structure of entire lysozyme showed a higher RMSD of 0.937 <italic>±</italic> 0.003 nm when compared with RMSD 0.117 <italic>±</italic> 0.003 nm obtained in the atomistic simulation. However, the RMSD observed in our simulation is nearly 30% lower than the RMSD of lysozyme reported earlier. 58 Interestingly, as indicated in <xref ref-type="supplementary-material" rid="SD1">Fig. S5</xref> in ESI, the root mean square fluctuations (RMSF data) in DPD simulation largely follow the trends observed in RMSF data obtained from AA simulation of lysozyme, lying well within <italic>∼</italic>0.5 nm for most of the regions within the protein.</p>
+<p id="P39">
+<xref ref-type="fig" rid="F9">Figure 9A</xref> shows the residue-residue contacts within a cutoff distance of 1 nm in lysozyme. Our DPD force field efficiently stabilizes the residue contacts in all six helical as well as extended sheet regions of the lysozyme when compared with the contact maps derived from atomistic simulation (<xref ref-type="fig" rid="F9">Fig. 9B</xref>). Furthermore, the contacts between residues forming the disulfide linkages are captured both in AA as well as in DPD results. For instance, the contacts around the pairs of residues, namely 6 and 127, 30 and 115, 64 and 80, 76 and 94, are captured in our DPD simulations. The <italic>R<sub>g</sub>
+</italic> value of 1.549 <italic>±</italic> 0.001 nm from DPD simulation is in good agreement with the <italic>R<sub>g</sub>
+</italic> = 1.393<italic>±</italic>0.001 nm obtained from the AA simulation (<xref ref-type="fig" rid="F9">Fig. 9C</xref>).</p>
+<p id="P40">ClyA is an <italic>α</italic> pore-forming toxin secreted by <italic>Escherichia coli</italic>, which assembles on the target membrane to form a dodecameric transmembrane channel.<sup>
+<xref ref-type="bibr" rid="R94">94</xref>,<xref ref-type="bibr" rid="R95">95</xref>
+</sup> The structure of the ClyA monomer (PDB: 1QOY, 303 residues in <xref ref-type="fig" rid="F1">Fig. 1</xref>) is predominantly <italic>α</italic> helical containing the segments <italic>α</italic>A1 (residues 1-35), <italic>α</italic>A2 (residues 36-46), <italic>α</italic>B (residues 56-101), <italic>α</italic>C (residues 106-176), <italic>α</italic>F (residues 208-259) and <italic>α</italic>G (residues 269-291). The segment with residues 177-203 is referred to as the <italic>β</italic>-tongue. The residues in <italic>β</italic>-tongue are flexible and highly hydrophobic in nature. The overall length of the protein is <italic>∼</italic>10 nm forming a 34 kDa protein. An energy minimized atomistic configuration of the ClyA monomer was obtained from the work of Sathyanarayana <italic>et al.</italic>,<sup>
+<xref ref-type="bibr" rid="R96">96</xref>
+</sup> where homology modelling was used to determine the structure of the N and C termini segments. The equivalent CG-mapped structure was simulated in water using the DPD force field. The residue-residue contact maps within a cutoff distance are depicted in <xref ref-type="fig" rid="F10">Figs. 10A and B</xref> for the DPD as well as AA models of ClyA. The DPD model is able to faithfully reproduce most of the contacts observed in the AA data. We also observed additional contacts formed between residues 50-100 (<italic>α</italic>B) and 200-250 (<italic>α</italic>F) in the DPD simulations (<xref ref-type="fig" rid="F10">Figs. 10A</xref>) which form part of the helical bundle in the ClyA monomer.</p>
+<p id="P41">For most of the ClyA residues, the RMSD (<xref ref-type="supplementary-material" rid="SD1">Fig. S6</xref> in ESI) as well as the RMSF (<xref ref-type="fig" rid="F10">Fig. 10D</xref>) are within 0.5 nm, which is lower than the length scale of the CG beads. In AA model, an increased RMSF is observed in the loop regions that connect the different helices. In addition a large RMSF is observed in the <italic>β</italic>-tongue residues where a large conformational changes occur upon binding with a phospholipid membrane. Interestingly our DPD model is able to qualitatively capture the trends in RMSF observed in the AA simulation for ClyA, however the base line fluctuations are larger in the DPD model. <xref ref-type="fig" rid="F10">Fig. 10C</xref> illustrates that the secondary structures are preserved in the DPD simulation of ClyA with an overall compactness similar to that observed in the crystal structure (<xref ref-type="fig" rid="F1">Fig. 1</xref>). Overall our results indicate that the proposed DPD parametrization is able to capture and reliably retain the secondary structure of ClyA when compared with the AA model.</p>
+</sec>
+</sec>
+<sec id="S14" sec-type="conclusions">
+<label>6</label>
+<title>Conclusions</title>
+<p id="P42">We propose a CG force field for simulating peptides and proteins within the DPD framework. The bonded interactions in the DPD force field were parametrized using representative small peptides consisting of an <italic>α</italic>-helix, <italic>β</italic>-sheet and the fusion peptide of SARS-CoV-2 having an extended loop structure. The performance of the proposed DPD force field was extensively tested and compared with AA simulations using other short peptides, a large 34 kDa protein with 303 residues found in the pore-forming protein ClyA and the lysozyme protein having 129 residues. When compared with fully atomistic simulations, the proposed DPD force field is found to reliably preserve the protein structure and compactness as measured by the RMSD and <italic>R<sub>g</sub>
+</italic> respectively. Excellent agreement of the native contacts with AA simulations further validates the accuracy of the proposed DPD force field. Additionally, the conformations sampled on two-dimensional Ramachandran-like <italic>θ − ϕ</italic> maps were in agreement with similar maps used in a previous CG-MD study<sup>
+<xref ref-type="bibr" rid="R92">92</xref>
+</sup> for the respective secondary structures.</p>
+<p id="P43">With the ability to retain the native protein structure, the model captures protein folding from unfolded states. The dihedral potential is a key factor in stabilizing secondary conformations of the different protein structures. The dual-basin potential for the protein backbone angles, which is an improvement over the previous DPD models, effectively covers the entire spectrum of secondary structures consisting of helices, loops and extended conformations.</p>
+<p id="P44">When compared with existing DPD models for proteins,<sup>
+<xref ref-type="bibr" rid="R52">52</xref>–<xref ref-type="bibr" rid="R56">56</xref>,<xref ref-type="bibr" rid="R58">58</xref>
+</sup> our proposed DPD force field reliably stabilizes a variety of protein secondary structures, reproduces native contacts, and captures protein folding to the native state. Our model alleviates the limitations present in previous Morse potential based DPD models<sup>
+<xref ref-type="bibr" rid="R52">52</xref>–<xref ref-type="bibr" rid="R54">54</xref>
+</sup> that have been used to predict secondary structures of proteins, and obviates the need to reparametrize potentials for specific protein structures. Comparing our model with polarizable DPD force fields,<sup>
+<xref ref-type="bibr" rid="R55">55</xref>
+</sup> improved RMSD values are obtained for the Trpcage (helix-turn-loop motif) and Trpzip (<italic>β</italic> sheet motif) using the proposed DPD force field. Unlike an elastic network model that controls the structural flexibility by the use of harmonic potentials between the pairs of the backbone beads, 56 our protein model retains the backbone flexibility by incorporating backbone angle and dihedral potentials parametrized with AA reference models. We therefore expect our model to be computationally efficient, especially for simulating large proteins and membrane-protein domains. The trimeric spike protein of SARS-CoV-2 can also be now simulated using our DPD force field.</p>
+<p id="P45">Combined with the backbone angle and dihedral potentials, our proposed DPD force field, parametrized using the Flory-Huggins parameters for 20 standard amino acids, is generic and not limited to any specific secondary structure. We finally point out that the strength of the repulsion parameters used in our study are compatible with the existing repulsion parameters used for phospholipid membranes, allowing one to study protein-membrane systems without significant reparametrization.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Information</label>
+<media xlink:href="EMS133034-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N68644" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgements</title>
+<p>We gratefully acknowledge Thematic Unit of Excellence on Computational Materials Science (TUE-CMS) for the computational facilities. One of us, Rakesh Vaiwala acknowledges support from Unilever Research and Development (Bengaluru, India). We also thank Rochish Thaokar and Soumava Palit from Indian Institute of Technology Bombay (IITB) for initial discussions on protein simulations using the DPD methodology. We also thank Avijeet Kulshrestha from our laboratory for providing the all-atom simulation data for ClyA.</p>
+</ack>
+<fn-group>
+<fn fn-type="conflict" id="FN1">
+<p id="P46">
+<bold>Conflicts of interest</bold>
+</p>
+<p id="P47">The authors declare no conflict of interests.</p>
+</fn>
+<fn id="FN2">
+<label>†</label>
+<p id="P48">Electronic Supplementary Information (ESI) available.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chu</surname>
+<given-names>J-W</given-names>
+</name>
+<name>
+<surname>Ayton</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Izvekov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<source>Mol Phys</source>
+<year>2007</year>
+<volume>105</volume>
+<fpage>167</fpage>
+<lpage>175</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Noid</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>J-W</given-names>
+</name>
+<name>
+<surname>Ayton</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Krishna</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Izvekov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+<name>
+<surname>Das</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>HC</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2008</year>
+<volume>128</volume>
+<elocation-id>244114</elocation-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Noid</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>J-W</given-names>
+</name>
+<name>
+<surname>Ayton</surname>
+<given-names>GS</given-names>
+</name>
+<name>
+<surname>Izvekov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>HC</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2008</year>
+<volume>128</volume>
+<elocation-id>244115</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Arkhipov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Yin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2008</year>
+<volume>95</volume>
+<fpage>2806</fpage>
+<lpage>2821</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cascella</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dal Peraro</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>CHIMIA Int J Chem</source>
+<year>2009</year>
+<volume>63</volume>
+<fpage>14</fpage>
+<lpage>18</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Czaplewski</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Liwo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Makowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ołdziej</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Scheraga</surname>
+<given-names>HA</given-names>
+</name>
+</person-group>
+<source>Multiscale Approaches to Protein Modeling</source>
+<publisher-name>Springer</publisher-name>
+<year>2011</year>
+<fpage>35</fpage>
+<lpage>83</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Adhikari</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Freed</surname>
+<given-names>KF</given-names>
+</name>
+<name>
+<surname>Sosnick</surname>
+<given-names>TR</given-names>
+</name>
+</person-group>
+<source>Phys Rev Lett</source>
+<year>2013</year>
+<volume>111</volume>
+<elocation-id>028103</elocation-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lafond</surname>
+<given-names>PG</given-names>
+</name>
+<name>
+<surname>Izvekov</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2016</year>
+<volume>12</volume>
+<fpage>5737</fpage>
+<lpage>5750</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bore</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Milano</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Cascella</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2018</year>
+<volume>14</volume>
+<fpage>1120</fpage>
+<lpage>1130</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Conway</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>An</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bejagam</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Deshmukh</surname>
+<given-names>SA</given-names>
+</name>
+</person-group>
+<source>Mol Syst Des Eng</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>675</fpage>
+<lpage>685</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Desikan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Behera</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Maiti</surname>
+<given-names>PK</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<source>Meth Enzymol</source>
+<year>2021</year>
+<volume>649</volume>
+<fpage>461</fpage>
+<lpage>502</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaiwala</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Puranik</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2020</year>
+<volume>16</volume>
+<fpage>5369</fpage>
+<lpage>5384</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jiang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Velkov</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Comput Struct Biotechnol J</source>
+<year>2021</year>
+<volume>19</volume>
+<fpage>3885</fpage>
+<lpage>3891</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yu</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pak</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Monje-Galvan</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Casalino</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Gaieb</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Dommer</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Amaro</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2021</year>
+<volume>120</volume>
+<fpage>1097</fpage>
+<lpage>1104</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kmiecik</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gront</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kolinski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wieteska</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Dawid</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Kolinski</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Chem Rev</source>
+<year>2016</year>
+<volume>116</volume>
+<fpage>7898</fpage>
+<lpage>7936</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tozzini</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<source>Curr Opin Struct Biol</source>
+<year>2005</year>
+<volume>15</volume>
+<fpage>144</fpage>
+<lpage>150</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Taketomi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ueda</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Gō</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>Int J Pept Protein Res</source>
+<year>1975</year>
+<volume>7</volume>
+<fpage>445</fpage>
+<lpage>459</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gō</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Taketomi</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<source>Int J Pept Protein Res</source>
+<year>1979</year>
+<volume>13</volume>
+<fpage>447</fpage>
+<lpage>461</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Trylska</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tozzini</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McCammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2005</year>
+<volume>89</volume>
+<fpage>1455</fpage>
+<lpage>1463</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maragakis</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Mol Biol</source>
+<year>2005</year>
+<volume>352</volume>
+<fpage>807</fpage>
+<lpage>822</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chu</surname>
+<given-names>J-W</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2007</year>
+<volume>93</volume>
+<fpage>3860</fpage>
+<lpage>3871</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lyman</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Pfaendtner</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2008</year>
+<volume>95</volume>
+<fpage>4183</fpage>
+<lpage>4192</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hamacher</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>McCammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2006</year>
+<volume>2</volume>
+<fpage>873</fpage>
+<lpage>878</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giri Rao</surname>
+<given-names>VH</given-names>
+</name>
+<name>
+<surname>Desikan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Gosavi</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2016</year>
+<volume>120</volume>
+<fpage>12064</fpage>
+<lpage>12078</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bereau</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Deserno</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2009</year>
+<volume>130</volume>
+<elocation-id>06B621</elocation-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kolin´ski</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Acta Biochim Pol</source>
+<year>2004</year>
+<volume>51</volume>
+<fpage>349</fpage>
+<lpage>371</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yap</surname>
+<given-names>E-H</given-names>
+</name>
+<name>
+<surname>Fawzi</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Head-Gordon</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>Proteins: Struct Funct Bioinf</source>
+<year>2008</year>
+<volume>70</volume>
+<fpage>626</fpage>
+<lpage>638</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klimov</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Thirumalai</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<source>Proc Natl Acad Sci</source>
+<year>2000</year>
+<volume>97</volume>
+<fpage>2544</fpage>
+<lpage>2549</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mukherjee</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bagchi</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2003</year>
+<volume>118</volume>
+<fpage>4733</fpage>
+<lpage>4747</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Darré</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Machado</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Brandner</surname>
+<given-names>AF</given-names>
+</name>
+<name>
+<surname>González</surname>
+<given-names>HC</given-names>
+</name>
+<name>
+<surname>Ferreira</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pantano</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2015</year>
+<volume>11</volume>
+<fpage>723</fpage>
+<lpage>739</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Monticelli</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Kandasamy</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Periole</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Larson</surname>
+<given-names>RG</given-names>
+</name>
+<name>
+<surname>Tieleman</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Marrink</surname>
+<given-names>S-J</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2008</year>
+<volume>4</volume>
+<fpage>819</fpage>
+<lpage>834</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sterpone</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Melchionna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Tuffery</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Pasquali</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mousseau</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Cragnolini</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chebaro</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>St-Pierre</surname>
+<given-names>J-F</given-names>
+</name>
+<name>
+<surname>Kalimeri</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barducci</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>Chem Soc Rev</source>
+<year>2014</year>
+<volume>43</volume>
+<fpage>4871</fpage>
+<lpage>4893</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pasi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lavery</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ceres</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>785</fpage>
+<lpage>793</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kar</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Gopal</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>Y-M</given-names>
+</name>
+<name>
+<surname>Predeus</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Feig</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>3769</fpage>
+<lpage>3788</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Das</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<source>Annu Rev Biochem</source>
+<year>2008</year>
+<volume>77</volume>
+<fpage>363</fpage>
+<lpage>382</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liwo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Baranowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Czaplewski</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Goła´s</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Jagieła</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Krupa</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Maciejczyk</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Makowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mozolewska</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<source>J Mol Model</source>
+<year>2014</year>
+<volume>20</volume>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Basdevant</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Borgis</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Ha-Duong</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>803</fpage>
+<lpage>813</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mahmood</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Poma</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Okazaki</surname>
+<given-names>K-i</given-names>
+</name>
+</person-group>
+<source>Front Mol Biosci</source>
+<year>2021</year>
+<volume>8</volume>
+<fpage>1</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baaden</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Marrink</surname>
+<given-names>SJ</given-names>
+</name>
+</person-group>
+<source>Curr Opin Struct Biol</source>
+<year>2013</year>
+<volume>23</volume>
+<fpage>878</fpage>
+<lpage>886</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>L-W</given-names>
+</name>
+<name>
+<surname>Chng</surname>
+<given-names>C-P</given-names>
+</name>
+</person-group>
+<source>Bioinform Biol Insights</source>
+<year>2008</year>
+<volume>2</volume>
+<elocation-id>BBI–S460</elocation-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoogerbrugge</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Koelman</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>Europhys Lett</source>
+<year>1992</year>
+<volume>19</volume>
+<fpage>155</fpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Groot</surname>
+<given-names>RD</given-names>
+</name>
+<name>
+<surname>Warren</surname>
+<given-names>PB</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>1997</year>
+<volume>107</volume>
+<fpage>4423</fpage>
+<lpage>4435</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kranenburg</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Venturoli</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Smit</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<source>Phys Rev E</source>
+<year>2003</year>
+<volume>67</volume>
+<elocation-id>060901</elocation-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Laradji</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sunil Kumar</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2005</year>
+<volume>123</volume>
+<elocation-id>224902</elocation-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thakkar</surname>
+<given-names>FM</given-names>
+</name>
+<name>
+<surname>Maiti</surname>
+<given-names>PK</given-names>
+</name>
+<name>
+<surname>Kumaran</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Soft Matter</source>
+<year>2011</year>
+<volume>7</volume>
+<fpage>3963</fpage>
+<lpage>3966</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thakkar</surname>
+<given-names>FM</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2011</year>
+<volume>135</volume>
+<elocation-id>104901</elocation-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaiwala</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jadhav</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Thaokar</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2019</year>
+<volume>15</volume>
+<fpage>5737</fpage>
+<lpage>5749</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Feng</surname>
+<given-names>YH</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>XP</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>ZQ</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>XD</given-names>
+</name>
+</person-group>
+<source>Mol Pharm</source>
+<year>2020</year>
+<volume>17</volume>
+<fpage>1778</fpage>
+<lpage>1799</lpage>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ramakrishna</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<source>Macromol Mater Eng</source>
+<year>2021</year>
+<volume>306</volume>
+<elocation-id>2000724</elocation-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Spenley</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>Europhys Lett</source>
+<year>2000</year>
+<volume>49</volume>
+<fpage>534</fpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaiwala</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Thaokar</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>Europhys Lett</source>
+<year>2018</year>
+<volume>120</volume>
+<elocation-id>48001</elocation-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vishnyakov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Talaga</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Neimark</surname>
+<given-names>AV</given-names>
+</name>
+</person-group>
+<source>J Phys Chem Lett</source>
+<year>2012</year>
+<volume>3</volume>
+<fpage>3081</fpage>
+<lpage>3087</lpage>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2015</year>
+<volume>119</volume>
+<fpage>850</fpage>
+<lpage>860</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<source>Sci Rep</source>
+<year>2016</year>
+<volume>6</volume>
+<fpage>1</fpage>
+<lpage>17</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peter</surname>
+<given-names>EK</given-names>
+</name>
+<name>
+<surname>Lykov</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Pivkin</surname>
+<given-names>IV</given-names>
+</name>
+</person-group>
+<source>Phys Chem Chem Phys</source>
+<year>2015</year>
+<volume>17</volume>
+<fpage>24452</fpage>
+<lpage>24461</lpage>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Truszkowski</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>van den Broek</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kuhn</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zielesny</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Epple</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Chem Inf Model</source>
+<year>2015</year>
+<volume>55</volume>
+<fpage>983</fpage>
+<lpage>997</lpage>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bahar</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Atilgan</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Erman</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<source>Folding and Design</source>
+<year>1997</year>
+<volume>2</volume>
+<fpage>173</fpage>
+<lpage>181</lpage>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choudhury</surname>
+<given-names>CK</given-names>
+</name>
+<name>
+<surname>Kuksenok</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2020</year>
+<volume>124</volume>
+<fpage>11379</fpage>
+<lpage>11386</lpage>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>59</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Groot</surname>
+<given-names>RD</given-names>
+</name>
+<name>
+<surname>Rabone</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2001</year>
+<volume>81</volume>
+<fpage>725</fpage>
+<lpage>736</lpage>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>60</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thakkar</surname>
+<given-names>FM</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2010</year>
+<volume>114</volume>
+<fpage>2738</fpage>
+<lpage>2748</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>61</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Illya</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Lipowsky</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shillcock</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2006</year>
+<volume>125</volume>
+<elocation-id>114710</elocation-id>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>62</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kranenburg</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Smit</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2005</year>
+<volume>109</volume>
+<fpage>6553</fpage>
+<lpage>6563</lpage>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>63</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Laradji</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>PS</given-names>
+</name>
+</person-group>
+<source>Comput Simul Studies Condens Matter Phys XIX</source>
+<publisher-name>Springer</publisher-name>
+<year>2009</year>
+<fpage>119</fpage>
+<lpage>133</lpage>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>64</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alexandrova</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Beykov</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Vassilev</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Juki´c</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Podlipnik</surname>
+<given-names>Cˇ</given-names>
+</name>
+</person-group>
+<source>Biotechnology &amp; Biotechnological Equipment</source>
+<year>2021</year>
+<volume>35</volume>
+<fpage>74</fpage>
+<lpage>102</lpage>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>65</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hills</surname>
+<given-names>RD</given-names>
+<suffix>Jr</suffix>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Voth</surname>
+<given-names>GA</given-names>
+</name>
+</person-group>
+<source>PLoS Comput Biol</source>
+<year>2010</year>
+<volume>6</volume>
+<elocation-id>e1000827</elocation-id>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>66</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ding</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Buldyrev</surname>
+<given-names>SV</given-names>
+</name>
+<name>
+<surname>Dokholyan</surname>
+<given-names>NV</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>2005</year>
+<volume>88</volume>
+<fpage>147</fpage>
+<lpage>155</lpage>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>67</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Robustelli</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Piana</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shaw</surname>
+<given-names>DE</given-names>
+</name>
+</person-group>
+<source>Proc Natl Acad Sci</source>
+<year>2018</year>
+<volume>115</volume>
+<fpage>E4758</fpage>
+<lpage>E4766</lpage>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>68</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sanyal</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Mittal</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shell</surname>
+<given-names>MS</given-names>
+</name>
+</person-group>
+<source>J Che Phys</source>
+<year>2019</year>
+<volume>151</volume>
+<elocation-id>044111</elocation-id>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>69</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abraham</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Murtola</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Schulz</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Páll</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Hess</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Lindahl</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<source>SoftwareX</source>
+<year>2015</year>
+<volume>1</volume>
+<fpage>19</fpage>
+<lpage>25</lpage>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>70</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Van Der Spoel</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Lindahl</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Hess</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Groenhof</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Mark</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Berendsen</surname>
+<given-names>HJ</given-names>
+</name>
+</person-group>
+<source>J Comput Chem</source>
+<year>2005</year>
+<volume>26</volume>
+<fpage>1701</fpage>
+<lpage>1718</lpage>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>71</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martyna</surname>
+<given-names>GJ</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Tuckerman</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>1992</year>
+<volume>97</volume>
+<fpage>2635</fpage>
+<lpage>2643</lpage>
+</element-citation>
+</ref>
+<ref id="R72">
+<label>72</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Parrinello</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rahman</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<source>J Appl Phys</source>
+<year>1981</year>
+<volume>52</volume>
+<fpage>7182</fpage>
+<lpage>7190</lpage>
+</element-citation>
+</ref>
+<ref id="R73">
+<label>73</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hess</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Bekker</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Berendsen</surname>
+<given-names>HJ</given-names>
+</name>
+<name>
+<surname>Fraaije</surname>
+<given-names>JG</given-names>
+</name>
+</person-group>
+<source>J Comput Chem</source>
+<year>1997</year>
+<volume>18</volume>
+<fpage>1463</fpage>
+<lpage>1472</lpage>
+</element-citation>
+</ref>
+<ref id="R74">
+<label>74</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>York</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pedersen</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>1993</year>
+<volume>98</volume>
+<fpage>10089</fpage>
+<lpage>10092</lpage>
+</element-citation>
+</ref>
+<ref id="R75">
+<label>75</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Groot</surname>
+<given-names>RD</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2003</year>
+<volume>118</volume>
+<fpage>11265</fpage>
+<lpage>11277</lpage>
+</element-citation>
+</ref>
+<ref id="R76">
+<label>76</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Espanol</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Warren</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<source>Europhys Lett</source>
+<year>1995</year>
+<volume>30</volume>
+<fpage>191</fpage>
+</element-citation>
+</ref>
+<ref id="R77">
+<label>77</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Allen</surname>
+<given-names>MP</given-names>
+</name>
+<name>
+<surname>Tildesley</surname>
+<given-names>DJ</given-names>
+</name>
+</person-group>
+<source>Computer simulation of liquids</source>
+<publisher-name>Oxford university press</publisher-name>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R78">
+<label>78</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>González-Melchor</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mayoral</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Velázquez</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Alejandre</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2006</year>
+<volume>125</volume>
+<elocation-id>224107</elocation-id>
+</element-citation>
+</ref>
+<ref id="R79">
+<label>79</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Terrón-Mejía</surname>
+<given-names>KA</given-names>
+</name>
+<name>
+<surname>López-Rendón</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Goicochea</surname>
+<given-names>AG</given-names>
+</name>
+</person-group>
+<source>J Phys Condens Matter</source>
+<year>2016</year>
+<volume>28</volume>
+<elocation-id>425101</elocation-id>
+</element-citation>
+</ref>
+<ref id="R80">
+<label>80</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaiwala</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jadhav</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Thaokar</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>2017</year>
+<volume>146</volume>
+<elocation-id>124904</elocation-id>
+</element-citation>
+</ref>
+<ref id="R81">
+<label>81</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ibergay</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Malfreyt</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Tildesley</surname>
+<given-names>DJ</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2009</year>
+<volume>5</volume>
+<fpage>3245</fpage>
+<lpage>3259</lpage>
+</element-citation>
+</ref>
+<ref id="R82">
+<label>82</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ramakrishnan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ramachandran</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<source>Biophys J</source>
+<year>1965</year>
+<volume>5</volume>
+<fpage>909</fpage>
+<lpage>933</lpage>
+</element-citation>
+</ref>
+<ref id="R83">
+<label>83</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Fawzi</surname>
+<given-names>NJ</given-names>
+</name>
+<name>
+<surname>Head-Gordon</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<source>Proc Natl Acad Sci</source>
+<year>2003</year>
+<volume>100</volume>
+<fpage>10712</fpage>
+<lpage>10717</lpage>
+</element-citation>
+</ref>
+<ref id="R84">
+<label>84</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saravanan</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Selvaraj</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>J Biol Phys</source>
+<year>2017</year>
+<volume>43</volume>
+<fpage>265</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R85">
+<label>85</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>1998</year>
+<volume>102</volume>
+<fpage>7338</fpage>
+<lpage>7364</lpage>
+</element-citation>
+</ref>
+<ref id="R86">
+<label>86</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Burgess</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Vishnyakov</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Tsovko</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Neimark</surname>
+<given-names>AV</given-names>
+</name>
+</person-group>
+<source>J Phys Chem Lett</source>
+<year>2018</year>
+<volume>9</volume>
+<fpage>4872</fpage>
+<lpage>4877</lpage>
+</element-citation>
+</ref>
+<ref id="R87">
+<label>87</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sugii</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Takagi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Matsumoto</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<source>Int J Numer Methods Fluids</source>
+<year>2007</year>
+<volume>54</volume>
+<fpage>831</fpage>
+<lpage>840</lpage>
+</element-citation>
+</ref>
+<ref id="R88">
+<label>88</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ortiz</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>SO</given-names>
+</name>
+<name>
+<surname>Discher</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Lipowsky</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shillcock</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<source>J Phys Chem B</source>
+<year>2005</year>
+<volume>109</volume>
+<fpage>17708</fpage>
+<lpage>17714</lpage>
+</element-citation>
+</ref>
+<ref id="R89">
+<label>89</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choudhary</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kamil</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<source>ACS omega</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>22891</fpage>
+<lpage>22900</lpage>
+</element-citation>
+</ref>
+<ref id="R90">
+<label>90</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Poma</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Cieplak</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Theodorakis</surname>
+<given-names>PE</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2017</year>
+<volume>13</volume>
+<fpage>1366</fpage>
+<lpage>1374</lpage>
+</element-citation>
+</ref>
+<ref id="R91">
+<label>91</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Takada</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Luthey-Schulten</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wolynes</surname>
+<given-names>PG</given-names>
+</name>
+</person-group>
+<source>J Chem Phys</source>
+<year>1999</year>
+<volume>110</volume>
+<fpage>11616</fpage>
+<lpage>11629</lpage>
+</element-citation>
+</ref>
+<ref id="R92">
+<label>92</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tozzini</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Rocchia</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>McCammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<source>J Chem Theory Comput</source>
+<year>2006</year>
+<volume>2</volume>
+<fpage>667</fpage>
+<lpage>673</lpage>
+</element-citation>
+</ref>
+<ref id="R93">
+<label>93</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kubelka</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hofrichter</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Eaton</surname>
+<given-names>WA</given-names>
+</name>
+</person-group>
+<source>Curr Opin Struct Biol</source>
+<year>2004</year>
+<volume>14</volume>
+<fpage>76</fpage>
+<lpage>88</lpage>
+</element-citation>
+</ref>
+<ref id="R94">
+<label>94</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sathyanarayana</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Visweswariah</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<source>Acc Chem Res</source>
+<year>2020</year>
+<fpage>E7323</fpage>
+<lpage>E7330</lpage>
+</element-citation>
+</ref>
+<ref id="R95">
+<label>95</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sathyanarayana</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Maurya</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Behera</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ravichandran</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Visweswariah</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Roy</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>Proc Natl Acad Sci</source>
+<year>2018</year>
+<volume>115</volume>
+<elocation-id>E7323–E7330</elocation-id>
+</element-citation>
+</ref>
+<ref id="R96">
+<label>96</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sathyanarayana</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Desikan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ayappa</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Visweswariah</surname>
+<given-names>SS</given-names>
+</name>
+</person-group>
+<source>Biochemistry</source>
+<year>2016</year>
+<volume>55</volume>
+<fpage>5952</fpage>
+<lpage>5961</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<p>The peptides simulated for (A) parametrization and (B) validation of the CG force field are illustrated with their protein data bank (PDB) entries. Lysozyme is a multidomain protein with 129 residues comprising of helical segments, H1 (pink), H2 (blue), H3 (cyan), H4 (red), H5 (purple), H6 (silver) and extended sheet structure (green). Cytolysin A (ClyA) is a pore-forming toxin containing structural segments, namely <italic>α</italic>A1 (cyan), <italic>α</italic>A2 (violet), <italic>α</italic>B (green), <italic>α</italic>C (orange), <italic>β</italic>-tongue (yellow), <italic>α</italic>F (blue), and <italic>α</italic>G (pink).</p>
+</caption>
+<graphic xlink:href="EMS133034-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<p>Schematic showing the mapping of amino acids onto the CG beads illustrated as shaded boxes. The backbone CG beads are centered on the C<sub>
+<italic>α</italic>
+</sub> atoms of the amino acid residues and charges are illustrated for some of the side chains. The residues GLY and PRO are represented by a single bead. The bead type ascribed to the backbone bead is P2, except for the PRO residue, which has particle type P3. The other side chain beads have particle types, P4 - P17 as labelled in the schematic. The repulsive force parameters for the different particle types are given in <xref ref-type="table" rid="T2">Table 2</xref>.</p>
+</caption>
+<graphic xlink:href="EMS133034-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<p>Distributions for bond lengths in amino acid residues. The solid and dotted curves indicate the distributions obtained in AA and DPD simulations, respectively, for peptides 1HDN, 1J4M and 6VSB. The bond B-S1 (red) refers to the bond between the backbone bead B and side chain bead S1, while S1-S2 (blue) is the bond between S1 and S2 beads in the side chains. The TRP residue comprises of three beads in side chain, and thus has an additional S2-S3 bond (maroon). The distribution along the peptide backbone is B-B (red). The scale on the x-axis is the bond length in nm.</p>
+</caption>
+<graphic xlink:href="EMS133034-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<p>Distributions for angles in amino acid residues obtained from AA (<italic>−−</italic>) and DPD (−) simulations of peptides 1HDN, 1J4M and 6VSB. Within amino acids, there are B-S1-S2 (blue) and S1-S2-S3 (red in TRP) angles. The distribution for the angle across two consecutive residues, B-B-S1, is obtained by averaging over amino acids in a peptide.</p>
+</caption>
+<graphic xlink:href="EMS133034-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Fig. 5</label>
+<caption>
+<p>Color maps for the joint probability histograms <italic>P</italic> for the root mean square deviation (RMSD) and radius of gyration on the log-normal scale of − log(<italic>P/P<sub>max</sub>
+</italic>), where <italic>P<sub>max</sub>
+</italic>is the maximum value of <italic>P</italic> in histograms. The histograms (A, B, C) refer to the AA simulations for peptides 1L4X (A), Trpzip (B) and Trpcage (C), while their DPD counterparts are shown in panels D, E, and F respectively.</p>
+</caption>
+<graphic xlink:href="EMS133034-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Fig. 6</label>
+<caption>
+<p>The residue-residue contacts with a cutoff distance of 1.0 nm are shown for the peptides 1L4X (A, D), Trpzip (B, E) and Trpcage (C, F). The contact maps obtained from the all-atom simulations are indicated in panels A, B, and C, while those derived from the DPD simulations are shown in panels D, E and F.</p>
+</caption>
+<graphic xlink:href="EMS133034-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Fig. 7</label>
+<caption>
+<p>Ramachandran-like plots for the model peptides 1L4X (A, D), Trpzip (B, E) and Trpcage (C, F), showing in color maps the probability density <italic>P</italic>(<italic>ϕ</italic>, <italic>θ</italic>) as − log(<italic>P</italic>(<italic>ϕ</italic>, <italic>θ</italic>)<italic>/P<sub>max</sub>
+</italic>) on phase space of backbone angle <italic>θ</italic> and dihedral angle <italic>ϕ</italic>. The maximum density is <italic>P<sub>max</sub>
+</italic>. The top panels (A, B, C) are constructed from AA simulations, while the panels at the bottom (D, E, F) are the results from the DPD simulations. The angles are represented in degrees.</p>
+</caption>
+<graphic xlink:href="EMS133034-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Fig. 8</label>
+<caption>
+<p>Folding of peptides (A) <italic>α</italic>-helix 1L4X, and (B) <italic>β</italic>-hairpin Trpzip to their native states. The insets show the initial unfolded and the final folded structures. The backbone beads are colored in blue, while the side chain beads are illustrated in orange. The contacts between the backbone beads were calculated using a distance cutoff of 1.3 times the distance ‘d’ between C <italic>α</italic> atoms in the native AA structure. A slightly higher cutoff of 1.3d + 0.2 nm allows <italic>β</italic>-hairpin to recover more than 90% of the native contacts.</p>
+</caption>
+<graphic xlink:href="EMS133034-f008"/>
+</fig>
+<fig id="F9" position="float">
+<label>Fig. 9</label>
+<caption>
+<p>Lysozyme simulation results. (A) The residue-residue contact map in DPD simulation with cutoff distance of 1 nm, showing the contacts especially in the structural regions, namely six helices H1-H6 and the extended sheet. The arrows indicate the non-local contacts in the vicinity of the disulfide linkages. (B) The contact map obtained from AA simulation of lysozyme with a distance cutoff of 1 nm. (C) The radius of gyration (<italic>Rg</italic>) in DPD simulation stabilizes at <italic>Rg∼</italic>1.5 nm, while it is quite stable at <italic>Rg∼</italic>1.4 nm in AA simulation shown in the inset. The time in DPD simulations is in units of <italic>τ</italic>. (D) The simulation snapshot of lysozyme is illustrated with structural segments, and the color scheme is similar that used for lysozyme in <xref ref-type="fig" rid="F1">Fig. 1</xref>.</p>
+</caption>
+<graphic xlink:href="EMS133034-f009"/>
+</fig>
+<fig id="F10" position="float">
+<label>Fig. 10</label>
+<caption>
+<p>The performance of DPD force field for cytolysin A (ClyA) monomer in water and its comparison with AA simulation results. (A) The residue-residue contact map with a cutoff distance of 1.2 nm between pairs of backbone beads in the DPD simulation. (B) Contact maps constructed from AA simulations for the pairs of C<italic>
+<sub>α</sub>
+</italic> atoms with a distance cutoff of 1.0 nm. (C) The final snapshot indicates the backbone of ClyA, with the color scheme similar to that used in <xref ref-type="fig" rid="F1">Fig. 1</xref> for ClyA. (D) Root mean square fluctuations of the backbone bead positions for ClyA from both the DPD and AA simulations.</p>
+</caption>
+<graphic xlink:href="EMS133034-f010"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Details for different systems simulated using all-atom and DPD descriptions</title>
+</caption>
+<table frame="hsides" rules="groups">
+<tbody>
+<tr>
+<td align="left" valign="top" rowspan="2" style="border-bottom: solid thin">
+<bold>Peptide</bold>
+</td>
+<td align="center" valign="top" colspan="2" style="border-bottom: solid thin">
+<bold>All-atom Simulation</bold>
+</td>
+<td align="center" valign="top" colspan="2" style="border-bottom: solid thin">
+<bold>DPD Simulation</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-bottom: solid thin">peptide atoms</td>
+<td align="left" valign="top" style="border-bottom: solid thin">water (ions)</td>
+<td align="left" valign="top" style="border-bottom: solid thin">peptide beads</td>
+<td align="left" valign="top" style="border-bottom: solid thin">CG water (ions)</td>
+</tr>
+<tr>
+<td align="left" valign="top">1HDN</td>
+<td align="left" valign="top">233</td>
+<td align="left" valign="top">6944 (1 Na<sup>+</sup>)</td>
+<td align="left" valign="top">38</td>
+<td align="left" valign="top">2961 (+1)</td>
+</tr>
+<tr>
+<td align="left" valign="top">1J4M</td>
+<td align="left" valign="top">236</td>
+<td align="left" valign="top">6944 (2 Cl<sup>–</sup>)</td>
+<td align="left" valign="top">34</td>
+<td align="left" valign="top">2964 (–2)</td>
+</tr>
+<tr>
+<td align="left" valign="top">6VSB</td>
+<td align="left" valign="top">410</td>
+<td align="left" valign="top">6887 (2 Na<sup>+</sup>)</td>
+<td align="left" valign="top">64</td>
+<td align="left" valign="top">2934 (+2)</td>
+</tr>
+<tr>
+<td align="left" valign="top">1L4X</td>
+<td align="left" valign="top">260</td>
+<td align="left" valign="top">6939</td>
+<td align="left" valign="top">41</td>
+<td align="left" valign="top">2959</td>
+</tr>
+<tr>
+<td align="left" valign="top">Trpzip</td>
+<td align="left" valign="top">218</td>
+<td align="left" valign="top">6947 (1 Cl<sup>–</sup>)</td>
+<td align="left" valign="top">34</td>
+<td align="left" valign="top">2965 (–1)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Trpcage</td>
+<td align="left" valign="top">304</td>
+<td align="left" valign="top">6929 (1 Cl<sup>–</sup>)</td>
+<td align="left" valign="top">42</td>
+<td align="left" valign="top">2957 (–1)</td>
+</tr>
+<tr>
+<td align="left" valign="top">Lysozyme</td>
+<td align="left" valign="top">1960</td>
+<td align="left" valign="top">55963 (8 Cl<sup>–</sup>)</td>
+<td align="left" valign="top">301</td>
+<td align="left" valign="top">9816 (–8)</td>
+</tr>
+<tr>
+<td align="left" valign="top">ClyA</td>
+<td align="left" valign="top">4792</td>
+<td align="left" valign="top">24787 (7 Na<sup>+</sup>)</td>
+<td align="left" valign="top">749</td>
+<td align="left" valign="top">31188 (+7)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Repulsive force constants, <italic>a<sub>ij</sub>
+</italic> evaluated from <xref ref-type="disp-formula" rid="FD10">eqn (8)</xref> for interactions between the different protein beads, P2-P17 as illustrated in <xref ref-type="fig" rid="F2">Fig. 2</xref> as well the water bead, P1</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">↓ Bead type →</th>
+<th align="left" valign="top">P1</th>
+<th align="left" valign="top">P2</th>
+<th align="left" valign="top">P3</th>
+<th align="left" valign="top">P4</th>
+<th align="left" valign="top">P5</th>
+<th align="left" valign="top">P6</th>
+<th align="left" valign="top">P7</th>
+<th align="left" valign="top">P8</th>
+<th align="left" valign="top">P9</th>
+<th align="left" valign="top">P10</th>
+<th align="left" valign="top">P11</th>
+<th align="left" valign="top">P12</th>
+<th align="left" valign="top">P13</th>
+<th align="left" valign="top">P14</th>
+<th align="left" valign="top">P15</th>
+<th align="left" valign="top">P16</th>
+<th align="left" valign="top">P17</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<bold>P1</bold>
+</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">91</td>
+<td align="left" valign="top">93</td>
+<td align="left" valign="top">94</td>
+<td align="left" valign="top">90</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">70</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">91</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">83</td>
+<td align="left" valign="top">68</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">76</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P2</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">72</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P3</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">67</td>
+<td align="left" valign="top">69</td>
+<td align="left" valign="top">69</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">71</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P4</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">82</td>
+<td align="left" valign="top">81</td>
+<td align="left" valign="top">83</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">96</td>
+<td align="left" valign="top">101</td>
+<td align="left" valign="top">81</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P5</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">82</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">81</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">95</td>
+<td align="left" valign="top">100</td>
+<td align="left" valign="top">79</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P6</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">82</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">81</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">74</td>
+<td align="left" valign="top">97</td>
+<td align="left" valign="top">101</td>
+<td align="left" valign="top">79</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P7</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">81</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">92</td>
+<td align="left" valign="top">93</td>
+<td align="left" valign="top">77</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P8</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">77</td>
+<td align="left" valign="top">69</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">63</td>
+<td align="left" valign="top">68</td>
+<td align="left" valign="top">73</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P9</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">81</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">66</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">73</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P10</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">73</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P11</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">76</td>
+<td align="left" valign="top">67</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">73</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P12</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">75</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">93</td>
+<td align="left" valign="top">94</td>
+<td align="left" valign="top">76</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P13</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">73</td>
+<td align="left" valign="top">71</td>
+<td align="left" valign="top">72</td>
+<td align="left" valign="top">68</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P14</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+<td align="left" valign="top">82</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">71</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P15</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">105</td>
+<td align="left" valign="top">56</td>
+<td align="left" valign="top">70</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P16</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">105</td>
+<td align="left" valign="top">74</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>P17</bold>
+</td>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top"/>
+<td align="left" valign="top">78</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Bonded interaction parameters between the backbone beads, B and the side chain beads S1, S2 and S3 for the different amino acid residues illustrated in <xref ref-type="fig" rid="F2">Fig. 2</xref>
+</title>
+</caption>
+<table frame="hsides" rules="groups">
+<tbody>
+<tr>
+<td align="left" valign="top" rowspan="2" style="border-bottom: solid thin">
+<bold>Residue</bold>
+</td>
+<td align="center" valign="top" colspan="2" style="border-bottom: solid thin">
+<bold>Bonds</bold>
+<break/>
+<bold>(B-S1, S1-S2)</bold>
+</td>
+<td align="center" valign="top" colspan="2" style="border-bottom: solid thin">
+<bold>Angles</bold>
+<break/>
+<bold>(B-S1-S2)</bold>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="border-bottom: solid thin">bond length <italic>r<sub>0</sub>
+</italic> <italic>R<sub>c</sub>
+</italic>
+</td>
+<td align="left" valign="top" style="border-bottom: solid thin">stiffness <italic>k<sub>b</sub>
+</italic> <inline-formula>
+<mml:math id="M18">
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mo>/</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="left" valign="top" style="border-bottom: solid thin">angle <italic>θ</italic>
+<sub>0</sub> (degree)</td>
+<td align="left" valign="top" style="border-bottom: solid thin">stiffness <italic>k<sub>θ</sub>
+</italic> <italic>(kT/rad<sup>2</sup>)</italic>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top">ALA</td>
+<td align="left" valign="top">0.24</td>
+<td align="left" valign="top">2000</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">ARG</td>
+<td align="left" valign="top">0.38, 0.56</td>
+<td align="left" valign="top">1500, 1500</td>
+<td align="left" valign="top">140</td>
+<td align="left" valign="top">10</td>
+</tr>
+<tr>
+<td align="left" valign="top">ASN</td>
+<td align="left" valign="top">0.40</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">ASP</td>
+<td align="left" valign="top">0.39</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">CYS</td>
+<td align="left" valign="top">0.37</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">GLN</td>
+<td align="left" valign="top">0.24, 0.41</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">90</td>
+<td align="left" valign="top">15</td>
+</tr>
+<tr>
+<td align="left" valign="top">GLU</td>
+<td align="left" valign="top">0.24, 0.40</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">140</td>
+<td align="left" valign="top">15</td>
+</tr>
+<tr>
+<td align="left" valign="top">HIS</td>
+<td align="left" valign="top">0.24, 0.43</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">110</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">ILE</td>
+<td align="left" valign="top">0.31, 0.39</td>
+<td align="left" valign="top">1500, 1500</td>
+<td align="left" valign="top">80</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">LEU</td>
+<td align="left" valign="top">0.24, 0.33</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">120</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">LYS</td>
+<td align="left" valign="top">0.37, 0.48</td>
+<td align="left" valign="top">1500, 1500</td>
+<td align="left" valign="top">140</td>
+<td align="left" valign="top">15</td>
+</tr>
+<tr>
+<td align="left" valign="top">MET</td>
+<td align="left" valign="top">0.31, 0.40</td>
+<td align="left" valign="top">1500, 1500</td>
+<td align="left" valign="top">110</td>
+<td align="left" valign="top">15</td>
+</tr>
+<tr>
+<td align="left" valign="top">PHE</td>
+<td align="left" valign="top">0.24, 0.48</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">110</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">SER</td>
+<td align="left" valign="top">0.31</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">THR</td>
+<td align="left" valign="top">0.31</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">TRP</td>
+<td align="left" valign="top">0.24, 0.43</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">115</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">TRP</td>
+<td align="left" valign="top">0.35 (S2-S3)</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">108</td>
+<td align="left" valign="top">20 (S1-S2-S3)</td>
+</tr>
+<tr>
+<td align="left" valign="top">TRP</td>
+<td align="left" valign="top">0.64 (S1-S3)</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">TYR</td>
+<td align="left" valign="top">0.24, 0.55</td>
+<td align="left" valign="top">2000, 1500</td>
+<td align="left" valign="top">110</td>
+<td align="left" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">VAL</td>
+<td align="left" valign="top">0.31</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">-</td>
+<td align="left" valign="top">-</td>
+</tr>
+<tr>
+<td align="left" valign="top">Backbone</td>
+<td align="left" valign="top">0.58 (B-B)</td>
+<td align="left" valign="top">1500</td>
+<td align="left" valign="top">115</td>
+<td align="left" valign="top">15 (B-B-S1)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

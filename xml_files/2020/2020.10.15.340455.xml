@@ -1,0 +1,3693 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS98630</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.15.340455</article-id>
+<article-id pub-id-type="archive">PPR227173</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Progressive and accurate assembly of multi-domain protein structures from cryo-EM density maps</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>Xiaogen</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Yang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Chengxin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zheng</surname>
+<given-names>Wei</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Guijun</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Zhang</surname>
+<given-names>Yang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A3">c</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>Department of Computational Medicine and Bioinformatics, University of Michigan, Ann Arbor, MI 48109, USA</aff>
+<aff id="A2">
+<label>b</label>College of Information Engineering, Zhejiang University of Technology, HangZhou 310023, China</aff>
+<aff id="A3">
+<label>c</label>Department of Biological Chemistry, University of Michigan, Ann Arbor, MI 48109, USA</aff>
+<author-notes>
+<corresp id="CR1">Correspondence should be addressed to Y. Z. (<email>zhng@umich.edu</email>).</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>18</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>16</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Progress in cryo-electron microscopy (cryo-EM) has provided the potential for large-size protein structure determination. However, the solution rate for multi-domain proteins remains low due to the difficulty in modeling inter-domain orientations. We developed DEMO-EM, an automatic method to assemble multi-domain structures from cryo-EM maps through a progressive structural refinement procedure combining rigid-body domain fitting and flexible assembly simulations with deep neural network inter-domain distance profiles. The method was tested on a large-scale benchmark set of proteins containing up to twelve continuous and discontinuous domains with medium-to-low-resolution density maps, where DEMO-EM produced models with correct inter-domain orientations (TM-score &gt;0.5) for 98% of cases and significantly outperformed the state-of-the-art methods. DEMO-EM was applied to SARS-Cov-2 coronavirus genome and generated models with average TM-score/RMSD of 0.97/1.4Å to the deposited structures. These results demonstrated an efficient pipeline that enables automated and reliable large-scale multi-domain protein structure modeling with atomic-level accuracy from cryo-EM maps.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Single-particle cryo-electron microscopy (cryo-EM) has emerged as a powerful means in modeling macromolecular structures at near-atomic resolution<sup>
+<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>
+</sup>. High resolution density maps allow direct construction of atomic structures with limited conformation sampling using software programs traditionally used for X-ray crystallography<sup>
+<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. However, the performance of the programs is poor when the resolution of density map is relatively low (e.g., &gt;3Å)<sup>
+<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R6">6</xref>
+</sup>. For these challenging cases, a common approach is to fit a homologous structure into the density map, followed by atom-level structural refinement<sup>
+<xref ref-type="bibr" rid="R7">7</xref>–<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. However, the success of the approach highly depends on the quality of the starting models, while many proteins have no previously solved structures of homologous proteins.</p>
+<p id="P3">The difficulty is particularly crucial for multi-domain proteins consisting of multiple structurally autonomous subunits. In fact, multi-domain proteins are common in nature and statistics has shown that more than two-thirds of prokaryote proteins and four-fifths of eukaryote proteins are composed of two or more domains<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup>; but only one third of structures in the PDB contain multiple domains (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1a</xref>). Due to the lack of multi-domain templates and the difficulty for <italic>ab initio</italic> domain orientation modeling, the field of computational structural biology has traditionally focused on the study of individual domains, including the community-wide CASP experiments which assess the quality of protein structure predictions mainly on the individual domains<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup>. Therefore, although cryo-EM provides a strong potential for determining large-size proteins<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup> and there are considerably more multi-domain proteins in the Electron Microscopy Data Bank (EMDB)<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup> than that in the PDB (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1b</xref>), it is usually difficult to use homology modeling to create appropriate frameworks for the density-map fitting and structural refinements of multi-domain proteins. These factors impose a significant challenge for cryo-EM based multi-domain structure modeling and are probably the important reasons that only less than half of the cryo-EM density map in the EMDB have atomic structures (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 1c</xref>). An additional barrier in large-scale cryo-EM structural modeling is that almost all structure fitting and refinement tools are not fully automated even with given homologous models. For example, many approaches require human-interventions in initial model-to-map fitting, a procedure that often significantly impacts quality of the final models<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>. Hence, developing advanced cryo-EM methods that can automatically and yet reliably assemble multi-domain structures becomes increasingly urgent given the rapid progress of cryo-EM structural biology.</p>
+<p id="P4">In this study, we proposed a novel automated approach (termed DEMO-EM, <xref ref-type="fig" rid="F1">Fig. 1</xref>) to create accurate complex structure models for multi-domain proteins from cryo-EM density maps. The pipeline can start from either experimentally determined domain structures or amino acid sequences, where in the latter case the domain split and individual domain structure modeling are performed with FUpred<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> and I-TASSER<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>, respectively. To systematically examine the strength and weakness, DEMO-EM was tested on a large-scale benchmark dataset consisting of various numbers of continuous and discontinuous domains over synthesized and experimental density maps. The results demonstrate significant advantages of DEMO-EM for cryo-EM guided domain structure assembly and refinement compared to the start-of-the-art approaches in the field. The source codes and datasets of DEMO-EM programs, together with an online server, are publicly available at <ext-link ext-link-type="uri" xlink:href="https://zhanglab.ccmb.med.umich.edu/DEMO-EM/">https://zhanglab.ccmb.med.umich.edu/DEMO-EM/</ext-link>.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>Multi-domain structure construction from synthesized density maps</title>
+<sec id="S4">
+<title>Benchmark data setting</title>
+<p id="P5">To evaluate DEMO-EM, we collected a set of 357 non-homologous proteins from the PDB with the domain boundary assigned by DomainParser<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup> (or SCOPe<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> and CATH<sup>
+<xref ref-type="bibr" rid="R22">22</xref>
+</sup> when available). The length of these proteins ranges from 99 to 1,693 residues with 2-12 domains. The density maps of these proteins are simulated according to the experimental structures by EMAN2<sup>
+<xref ref-type="bibr" rid="R23">23</xref>
+</sup>, with the resolution randomly selected from 2 to 10 Å and a grid spacing of 1 Å/voxel (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 2a</xref>). Two separate tests are performed to assemble experimental domain structures extracted from the full-length target structures and domain models predicted by I-TASSER<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>. For experimental domain structure assembly, all domains were randomly rotated and translated as rigid bodies before assembly. When using I-TASSER to model the domain structures, all homologous templates of a sequence identity &gt;30% to the query have been excluded; this resulted in domain models with variable quality and the TM-score ranging from 0.19 to 0.97 (see <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 2b</xref> for a histogram of TM-score distribution). Since we focus mainly on examining the domain assembly ability of DEMO-EM, we excluded the proteins with any domain of TM-score<sup>
+<xref ref-type="bibr" rid="R24">24</xref>
+</sup> below 0.5 in the second benchmark test, to eliminate the negative impact from incorrect domain models. This resulted in 229 proteins and the average TM-score for them is 0.76.</p>
+</sec>
+<sec id="S5">
+<title>Overall results of DEMO-EM modeling</title>
+<p id="P6">
+<xref ref-type="table" rid="T1">Table 1</xref> and <xref ref-type="fig" rid="F2">Figure 2</xref> present a summary of the DEMO-EM models on both benchmark tests. When the experimentally determined domain structures are used, DEMO-EM was able to assemble nearly perfect full-length models for almost all the targets, which resulted in an average TM-score=0.99 and RMSD=0.6 Å (<xref ref-type="fig" rid="F2">Figs. 2a and 2b</xref>). Importantly, the individual domain structures were well-folded in final full-length models with an average TM-score=0.98 and average RMSD=0.6 Å, despite the fact that atomic structure of full-length models are kept completely flexible in the domain assembly simulations; suggesting that the combination of the inherent DEMO-EM force field and the density-map data is capable to recognize and maintain correct folded domain structures.</p>
+<p id="P7">When predicted domain models are used, the local structure errors from I-TASSER model can negatively impact the full-length model assembly simulations. Nevertheless, DEMO-EM successfully assembles full-length models with a correct global fold (i.e., TM-score&gt;0.5)<sup>
+<xref ref-type="bibr" rid="R25">25</xref>
+</sup> for 97.4% of the test cases (blue histogram in <xref ref-type="fig" rid="F2">Fig 2a</xref>). In <xref ref-type="fig" rid="F2">Fig 2c</xref>, we presented a head-to-head TM-score comparison between the initial model obtained by matching I-TASSER domains with the cryo-EM maps and the final DEMO-EM model, where the TM-score of the final model was improved in nearly all test cases (with an average TM-score increase from 0.68 to 0.85, corresponding to p-value=6.1E-34 in Student’s t-test). Because creating a high TM-score model requests for correct modeling of both individual domains and inter-domain orientations, the data in <xref ref-type="fig" rid="F2">Fig 2c</xref> indicates that DEMO-EM domain assembly simulations could significantly improve the inter-domain orientations. Since the domain structures were kept flexible in DEMO-EM, part of the full-length model TM-score increase may also come from the quality improvement of individual domain structures. To examine this, we presented in <xref ref-type="fig" rid="F2">Fig 2d</xref> the TM-score comparison of individual domains by I-TASSER and DEMO-EM, where the TM-score by DEMO-EM was improved in 516 out of the 571 individual domains. On average, the TM-score of individual domains increased from 0.76 to 0.83 with a p-value=8.5E-16 in Student’s t-test, indicating the domain-level structural improvements brought by DEMO-EM are statistically significant.</p>
+<p id="P8">Interestingly, although the degrees of freedom and searching space usually increases with the number of domains for both domain assembly and full-length model refinement, the quality of the final models by DEMO-EM does not significantly decrease with an increasing number of domains for both experimental and I-TASSER domain model assemblies (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref> and <xref ref-type="supplementary-material" rid="SD1">2</xref>). In particular, the full-length models assembled using I-TASSER domain structures obtain an average TM-score of 0.84 for proteins with 3 or more domains, 97% of which have a final model TM-score &gt;0.5. This data demonstrates the ability of DEMO-EM for handling large complex structures of multi-domain proteins. In addition, proteins with discontinuous domains are usually difficult to model as they have several parts separated in sequence which increases the difficulty in individual domain modeling and inter-domain distances prediction. However, DEMO-EM correctly assembled nearly all the cases of discontinuous domains using experimental domain models, with an average TM-score=0.99 identical to that of the continuous domain model assembly (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>). This is probably due to the constraints brought by the additional linkers which help guide the discontinuous domain structure assembly (see <xref ref-type="disp-formula" rid="FD4">Eq. 4</xref> in Methods and <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 13</xref>). When assembling I-TASSER domain models, however, DEMO-EM achieves an average TM-score of 0.83 slightly lower than the continuous domain assembly results (TM-score=0.87, <xref ref-type="supplementary-material" rid="SD1">Supplementary Table 2</xref>), due to the modeling errors of I-TASSER models in the tail and linker regions which affect the packing the segment structures.</p>
+</sec>
+<sec id="S6">
+<title>Control of DEMO-EM with other cryo-EM modeling methods</title>
+<p id="P9">As a control, we listed in <xref ref-type="table" rid="T1">Table 1</xref> the model results by two widely used methods of MDFF<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup> and Rosetta<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup> for cryo-EM density map guided modeling (Supplementary Text 1). Since both methods need to start from full-length models, we built the initial full-length models by fitting each domain model into density maps using Situs<sup>
+<xref ref-type="bibr" rid="R26">26</xref>
+</sup>, one of the best publicly available structure-density map program. As shown in <xref ref-type="table" rid="T1">Table 1</xref>, <xref ref-type="fig" rid="F2">Figs. 2a and 2b</xref>, and <xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 3a</xref> and <xref ref-type="supplementary-material" rid="SD1">3b</xref>, DEMO-EM outperformed both control methods by a margin, with the average TM-score of the full-length models with experimental domains 19.3% and 25.3% higher than that of MDFF and Rosetta, respectively. The p-value in student’s t-test is 4.2E-38 and 4.5E-44, respectively, suggesting that the difference is statistically significantly.</p>
+<p id="P10">When I-TASSER domains were used, the TM-score improvement of DEMO-EM increases to 54.5% relative to MDFF and 60.4% to Rosetta, which corresponds to a student’s t-test p-value of 1.6E-54 and 3.5E-44, respectively. DEMO-EM also made more significant improvement in the domain-level structures. When starting from the I-TASSER domains, DEMO-EM improves the TM-score of individual domains in 89.0% of cases (<xref ref-type="fig" rid="F2">Fig. 2d</xref>), while MDFF and Rosetta did so only in 24.0% and 22.1% of the cases respectively (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 3c</xref> and <xref ref-type="supplementary-material" rid="SD1">3d</xref>).</p>
+</sec>
+<sec id="S7">
+<title>Why does DEMO-EM outperform control methods?</title>
+<p id="P11">There are several reasons for the superior performance of DEMO-EM over the control methods. First, the quick quasi-Newton searching process in combination with a space enumeration algorithm as taken by DEMO-EM (see <xref ref-type="sec" rid="S15">Methods</xref>) can correctly match individual domains into the density map and thus generate optimal initial full-length models for the majority of proteins. As shown in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 4a</xref>, the average TM-score of initial full-length models constructed by the quasi-Newton search were 0.97 and 0.69 (where 99.2% and 80.3% had a TM-score &gt;0.5) when starting with experimental and I-TASSER domains, respectively, which are 14.1% and 21.0% higher than those by the start-of-the-art structure-map docking program Situs.</p>
+<p id="P12">Second, DEMO-EM took a hierarchical process of rigid-body and flexible model assembly simulations to progressively refine the multi-domain structures. In particular, the rigid-body domain assembly process can quickly adjust domain poses based on density maps. When starting with the I-TASSER domains, for example, the average TM-scores of full-length models were improved from 0.69 to 0.78 where the number of cases with TM-score &gt;0.5 increases from 80.0% to 95.2% after the rigid-body assembly step (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 4b</xref>). This domain model improvement helps the subsequent DEMO-EM steps to detect unreasonably folded regions in initial full-length models for more efficient atomic-level structural assembly and refinement simulations.</p>
+<p id="P13">The last important advantage of DEMO-EM comes from the flexible assembly and refinement stage, which showed a superior ability to improve full-length models and individual domain models simultaneously with the assistance of deep-learning based inter-domain distances predictions when coupled with density-map correlation and inherent DEMO-EM force field. To examine the efficiency of the flexible assembly and refinement process, we feed the same full-length models assembled by the DEMO-EM rigid-body assembly step on the I-TASSER domains into MDFF and Rosetta. Although the better starting model quality resulted in a considerable improved final model for both MDFF and Rosetta, which have the average TM-score of 0.82 and 0.81 respectively, the overall quality is still worse than that of DEMO-EM with an average TM-score 0.85 (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 3</xref>). Compared to the rigid-body assembled models, the last stage of DEMO-EM simulations improved the TM-score by 9.0%, which is 75% higher than that by MDFF (5.1%) and 133% higher than that by Rosetta (3.8%), demonstrating the efficiency of the atomic-level domain structure refinement of DEMO-EM even starting from the same full-length models.</p>
+</sec>
+<sec id="S8">
+<title>Case studies</title>
+<p id="P14">In <xref ref-type="fig" rid="F3">Figure 3</xref>, we present two illustrative examples showing the construction process of DEMO-EM. For <italic>human xanthine oxidoreductase mutant F3</italic> (PDBID: 2e1qC), a complex protein with 8 continuous domains and 2 discontinuous domains (one of them has three discontinuous segments) using a simulated density map with a medium resolution of 5.3 Å (<xref ref-type="fig" rid="F3">Fig. 3a</xref>), one of the domains was initially docked into an incorrect region in the quasi-Newton based search, resulting in an suboptimal full-length TM-score of 0.89 and RMSD=5.4 Å. After the second step of rigid-body assembly, the domain was moved to the correct map space but still with some regions stretched outside the maps in several domains and have the model with a TM-score to 0.95 and RMSD=3.8 Å. At the last step, the flexible simulations refined the overall quality including drawing the exposed loops into the density map, which resulted in a further improved model with TM-score=0.98 and RMSD=2.7 Å. In this case, model quality of the 10 individual domains is also improved with average TM-score/RMSD improved from 0.84/3.2Å to 0.95/1.6Å, respectively.</p>
+<p id="P15">
+<xref ref-type="fig" rid="F3">Figure 3b</xref> shows another example from the <italic>cation-independent mannose 6-phosphate receptor</italic> (PDBID: 1q25A), a protein with 3 domains using a simulated density map with a low resolution of 9.9 Å. Two domains from N- and C-terminus were initially assigned into the same map space as they shared a similar fold with TM-score of 0.88; this resulted in a low TM-score=0.62 of full-length model. Guided by the global model-density correlation and particle movements implemented in the rigid-body assembly step, the incorrect domain fit was corrected with the full-length TM-score improved to 0.86. After the flexible assembly and refinement simulations, almost all wrong folding regions in the model were corrected which resulted in a global TM-score=0.96 and RMSD=2.2 Å. Again, the average TM-score/RMSD of the individual domains were significantly improved in this example from 0.76/3.6Å to 0.94/1.2Å, respectively.</p>
+<p id="P16">In <xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 5</xref>, we also present the full-length models created by MDFF and Rosetta starting with Situs for these two examples, which have a TM-score/RMSD equal to 0.17/34.5Å and 0.09/83.2Å for 2e1qC, and 0.36/22.2Å and 0.36/21.2Å for 1q25A, respectively; the low quality models are mainly due to the initial full-length models with incorrect domain orientations. The results of these case studies reinforce the advantage of the DEMO-EM pipeline for assembling multi-domain protein complex structures.</p>
+</sec>
+</sec>
+<sec id="S9">
+<title>Assemble multi-domain structures from experimental density maps</title>
+<sec id="S10">
+<title>Dataset collection</title>
+<p id="P17">To further examine the use of DEMO-EM on practical density maps, we collected a set of 51 non-redundant multi-domain proteins from EMDB that have experimental density map with resolution ranging from 2.8 to 10 Å (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 6a</xref>). The size of these proteins runs from 144 to 1,664 residues with the number of domains ranging from 2 to 8. To emulate the common real-life scenarios where the domain structures of target proteins are unknown, we predict the domain boundaries from sequence by a deep-learning contact-based program FUpred<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>, with the individual domain structures modelled by I-TASSER.</p>
+</sec>
+<sec id="S11">
+<title>Overall benchmark results</title>
+<p id="P18">As shown in <xref ref-type="fig" rid="F4">Figure 4a</xref>, FUpred did an acceptable job in domain boundary prediction and correctly predicted the number of domains in 37 out of the 51 test proteins. In 70.6% of cases, the domain overlap rate is &gt;80% compared to the DomainParser assignment on the target structure, resulting in an average normalized domain overlap (NDO) score of 0.83. The average TM-score of these domain models by I-TASSER was 0.72, where 94.0% of them had a correct fold with TM-score &gt;0.5 (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 6b</xref>). After the DEMO-EM assembly, the full-length models have an average TM-score of 0.81 (<xref ref-type="fig" rid="F4">Fig. 4b</xref>), where 92.2% of the cases have a correct global fold (TM-score&gt;0.5). Meanwhile, the average TM-score of individual domains in the full-length models was increased from 0.72 to 0.77 with 85.9% domains improved (<xref ref-type="fig" rid="F4">Fig. 4c</xref>), demonstrating again the ability of DEMO-EM on both levels of domain and full-length structure refinements.</p>
+<p id="P19">The average full-length TM-score (0.81) is slightly lower than that of the benchmark results on synthesized density maps (0.85), which is probably due to the fact that this dataset contains all targets while the former benchmark excluded targets with I-TASSER domains with incorrect folds. In fact, there are 10 out of 51 cases that have at least one I-TASSER domain model with TM-score &lt;0.5, where the incorrect domain structures can result in incorrect domain-map match and misguide the subsequent domain assembly and refinement simulations. If we excluded the 10 cases with incorrect domain model, the overall TM-score increases to 0.86, which is largely consistent with the former benchmark data; this result also demonstrates the robustness of DEMO-EM whose performance does not depend on the source of density maps from syntheses or experiments.</p>
+<p id="P20">As a control, we also listed in <xref ref-type="table" rid="T1">Table 1</xref> the modeling results by MDFF and Rosetta starting from the same set of I-TASSER domain models with the initial conformation assembled with Situs. The data shows again that DEMO-EM outperformed the control methods, with the average TM-score of the full-length models 76.1% and 102.5% higher than that of MDFF and Rosetta. The results are further confirmed by head-to-head TM-score comparison in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 7</xref>, where DEMO-EM has a higher TM-score for nearly all the targets.</p>
+</sec>
+<sec id="S12">
+<title>Case studies showing DEMO-EM models are likely closer to native than deposited models</title>
+<p id="P21">In <xref ref-type="fig" rid="F4">Figures 4d-g</xref>, we present two representative examples with density maps taken from EMDB, in which the models generated by DEMO-EM are likely better than the structural models deposited in the databases. First, <xref ref-type="fig" rid="F4">Figure 4d</xref> shows the deposited model of <italic>human PLC editing module</italic> in the PDB (PDBID: 6enyD with density map from EMD-3906 in EMDB), which was created by fitting of a homology model (from PDBID 3f8uC) with the cryo-EM density map at a resolution of 5.8 Å<sup>
+<xref ref-type="bibr" rid="R27">27</xref>
+</sup> using FlexEM<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup> and Chimera<sup>
+<xref ref-type="bibr" rid="R28">28</xref>
+</sup>. Although the deposited model has a close similarity to the DEMO-EM model (<xref ref-type="fig" rid="F4">Fig. 4e</xref>) with TM-score=0.96 and RMSD=1.4Å, many regions of the deposited model are exposed to the outside of the density map (e.g., the helix pointed by the arrow in <xref ref-type="fig" rid="F4">Fig. 4d</xref>), which resulted in an overall density-model correlation coefficient (CC) of 0.82. Almost all these wrong regions were corrected in the model constructed by DEMO-EM with the CC value improved to 0.85 where the fitting of the entire DEMO-EM model is shown in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 8a</xref>.</p>
+<p id="P22">
+<xref ref-type="fig" rid="F4">Figure 4f</xref> shows the deposited model of another example from the <italic>P2 polymerase inside in vitro assembled bacteriophage phi6 polymerase complex</italic> (PDB 5fj6A with density map from EMD-3186), which contains 2 continuous domains mediated with a discontinuous domain. The deposited model was produced by the fitting of a homology structure (PDB 1hhsA) with the density map at a resolution of 7.9 Å<sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup> using Chimera<sup>
+<xref ref-type="bibr" rid="R28">28</xref>
+</sup> and Phenix<sup>
+<xref ref-type="bibr" rid="R30">30</xref>
+</sup>. As there are many significant noisy grid points in the density map, some regions of the deposited model (e.g. loops point by arrows in <xref ref-type="fig" rid="F4">Fig. 4f</xref>) were incorrectly modelled because they were not wrapped in the density map with an overall CC of 0.83. The model created by DEMO-EM (<xref ref-type="fig" rid="F4">Fig. 4g</xref>) on the same density map data fixed all these local errors and resulted in an improved CC score (=0.86). Again, while the overall structure of deposited and DEMO-EM models is largely consistent (TM-score=0.95 and RMSD=1.9 Å), the DEMO-EM model is likely closer to the target structure, based on the CC values and the better structure packing with the experimental density maps (see the overall fitting of the DEMO-EM model in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 8b</xref>).</p>
+<p id="P23">Despite the favorable CC score values and better local structure packing, it is important to note that in the absence of other experimental information, it is still difficult to objectively assess if the DEMO-EM models are indeed closer to the native than that by other methods. For further examination, we made publicly available the DEMO-EM models for all the test proteins at <ext-link ext-link-type="uri" xlink:href="https://zhanglab.ccmb.med.umich.edu/DEMO-EM/data_set/model_benchmark51.tar.gz">https://zhanglab.ccmb.med.umich.edu/DEMO-EM/data_set/model_benchmark51.tar.gz</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S13">
+<title>Application to structural modeling of the SARS-CoV-2 genome</title>
+<p id="P24">Given the on-going COVID-19 pandemic, considerable effort has been made on structural determination of critical proteins in the SARS-CoV-2, a pathogen coronavirus having caused the pandemic<sup>
+<xref ref-type="bibr" rid="R31">31</xref>
+</sup>. In <xref ref-type="fig" rid="F5">Figure 5</xref>, we present the full-length structural models constructed by DEMO-EM for all six SAR-CoV-2 proteins which have the cryo-EM data deposited in EMDB. Based on FUpred<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> prediction, five proteins contain multiple domains and two of them include discontinuous domains (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 4</xref>). Compared to the deposited models, many of which contained missed residues due to the loss of density data, the DEMO-EM models have an average TM-score/RMSD of 0.97/1.4Å on the regions where the deposited models have structure. Compared to the original density maps, DEMO-EM models achieved a slightly higher average CC (0.82) than the deposited models (0.80).</p>
+<p id="P25">The X-ray structure of the receptor binding domain (RBD) of the spike protein. which SARS-CoV-2 uses to bind the angiotensin-converting enzyme 2 (ACE2) to invade the host cells, was recently released (PDB 7bz5A)<sup>
+<xref ref-type="bibr" rid="R32">32</xref>
+</sup>. In <xref ref-type="fig" rid="F5">Fig 5g</xref>, we show a comparison of the structural model built by the DEMO-EM with the released X-ray structure, where the DEMO-EM model has a TM-score of 0.97 and RMSD of 0.92 Å which are slightly better than that of the deposited model (TM-score=0.96 and RMSD =0.97 Å). The DEMO-EM models for all the six SARS-CoV-2 proteins are downloadable at <ext-link ext-link-type="uri" xlink:href="https://zhanglab.ccmb.med.umich.edu/DEMO-EM/data_set/model_sarscov2.tar.gz">https://zhanglab.ccmb.med.umich.edu/DEMO-EM/data_set/model_sarscov2.tar.gz</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S14" sec-type="discussion">
+<title>Discussion</title>
+<p id="P26">Due to the scarcity of multi-domain template structures in the PDB, automated determination of multi-domain protein structures from cryo-EM density becomes a significant challenge as most approaches in the community rely on fitting and refinement of homology models. To address this issue, we developed a new method, DEMO-EM, dedicated to structure assembly of multi-domain proteins from cryo-EM density maps. Without relying on global homologous templates, the method integrates cutting-edge single-domain modeling and deep residual network learning techniques with progressive rigid-body and flexible Monte Carlo simulations into a hierarchical pipeline that is ready for automated and large-scale multi-domain protein structure prediction.</p>
+<p id="P27">DEMO-EM was carefully tested over a comprehensive benchmark set of 357 non-homologous proteins containing various numbers and types of domain structures using synthesized maps and 51 cases with experimental density data. The results showed that DEMO-EM yielded accurate full-length models for more than 91% cases with TM-score &gt;0.8 using density maps ranging from 2-10 Å. Meanwhile, the accuracy of individual domains in the final full-length model was significantly improved with the average TM-score increased by 8.9%. DEMO-EM was controlled with two widely used cryo-EM based structure modeling methods (MDFF<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup> and Rosetta<sup>
+<xref ref-type="bibr" rid="R13">13</xref>
+</sup>). Starting from the same cryo-EM data and individually predicted domain models, the TM-score of the full-length models constructed by DEMO-EM is 32.5% and 39.5% higher than the control methods, corresponding to a p-value of 2.1E-98 and 1.1E-104 in Student’s t-test, respectively. As an application, DEMO-EM was used to model six proteins from the SARS-CoV-2 with cryo-EM data available and generated correct fold for all the targets, with some cases being likely closer to the native than the deposited models in the EMDB.</p>
+<p id="P28">The superior performance of DEMO-EM stems partly from its ability for quick and reliably framework construction, which is enabled by the unique single-domain structure modeling from I-TASSER and the coarse-grained density-map space enumeration driven by the quasi-Newton searching process. Next, the domain-level rigid-body assembly simulation is capable of correcting domain positions and inter-domain orientations by combining density map restraints with inter-domain potentials, even when domain poses are occasionally incorrectly assigned in the initial frameworks. Finally, the atomic-level flexible structural assembly simulations couple density-map correlations with deep learning-based inter-domain distance profiles, which helps to simultaneously fine-tune local structural packing and inter-domain orientations and resulted in consistent improvement of both local and global structures.</p>
+<p id="P29">Despite the promising domain assembly results, the applicability and accuracy of DEMO-EM could be further improved in several aspects. First, most of the density maps in our tests are segmented from the full density map by UCSF Chimera<sup>
+<xref ref-type="bibr" rid="R28">28</xref>
+</sup>. Although manual segmentation is often straightforward, the automatic map segmentation techniques (e.g. the method in <italic>Phenix</italic>
+<sup>
+<xref ref-type="bibr" rid="R30">30</xref>
+</sup>) can be introduced into DEMO-EM. Second, all individual domain models are directly produced by I-TASSER without using guidance from density data. An incorrect initial domain model may lead to a poor final model since it affects the algorithm to identify correct poses for initial framework constructions. Therefore, combining the restraints of density data with I-TASSER potentials for individual domain model generation will be helpful to improve the accuracy of final models. In addition, recent studies have shown the deep-learning based contact and distance maps can significantly improve the tertiary protein structure prediction accuracy<sup>
+<xref ref-type="bibr" rid="R33">33</xref>,<xref ref-type="bibr" rid="R34">34</xref>
+</sup>, an updated I-TASSER program combining the new neural-network based contact and distance restraints will further improve the quality of the DEMO-EM. Studies along these lines are under progress.</p>
+</sec>
+<sec id="S15" sec-type="methods" specific-use="web-only">
+<title>Methods</title>
+<p id="P30">DEMO-EM is hierarchical approach to cryo-EM based multi-domain protein structure determination, which consists of four consecutive steps: (i) determining domain boundaries and modeling individual domains, (ii) matching domain models with density map for initial framework generation, (iii) rigid-body domain structure assembly for domain position and orientation optimization, and (iv) flexible structure assembly and refinement simulation of full-length structural models (<xref ref-type="fig" rid="F1">Fig. 1</xref>).</p>
+<sec id="S16">
+<title>Domain parsing and individual domain structure folding</title>
+<p id="P31">Starting from the query amino acid sequence, inter-residue contact maps are predicted by a deep-learning based neural network program, ResPRE<sup>
+<xref ref-type="bibr" rid="R36">36</xref>
+</sup>. The domain boundaries are then predicted using FUpred<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> by maximizing the number of intra-domain contacts and minimizes the number of inter-domain contacts. Next, the structural model of each domain is generated using I-TASSER<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup> by assembling continuous fragments excised from threading templates identified from the PDB<sup>
+<xref ref-type="bibr" rid="R37">37</xref>
+</sup>. For discontinuous domains that contain 2 or more segments from separate regions of the query sequence, the domain models are obtained by sequentially connecting the sequences of all segments.</p>
+</sec>
+<sec id="S17">
+<title>Deep neural network-based inter-domain distance prediction</title>
+<p id="P32">To help guide domain orientation assembly, an inter-domain distance map was predicted by a deep residual neural-network algorithm, DomainDist, whose architecture is outlined in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 9</xref>. DomainDist is an extension of the TripletRes<sup>
+<xref ref-type="bibr" rid="R38">38</xref>
+</sup> that was originally developed to predict inter-residue contact maps based on a triplet of coevolutionary matrices but was extended here for predicting the probability of inter-residue distance within 36 bins in [2, 20] Å. The DomainDist program was trained on a non-redundant dataset of 26,151 proteins collected from the PDB, where the multiple sequence alignment (MSA) for each protein was constructed using HHblits<sup>
+<xref ref-type="bibr" rid="R39">39</xref>
+</sup> searching against the Uniclust30 sequence database<sup>
+<xref ref-type="bibr" rid="R40">40</xref>
+</sup>. In addition to the 2D coevolutionary features employed in TripletRes, three 1D features, including Hidden Markov Model (HMM), one-hot representation of sequence and field parameters of Potts model, were adopted and tiled to two-dimension and concatenated with the 2D coevolutionary features. The neural network structure was designed following convolutional strategies, using ResNet basic blocks<sup>
+<xref ref-type="bibr" rid="R41">41</xref>
+</sup>. The neural network model was trained by Adam optimization algorithm to marginally minimize cross-entropy loss. Both intra-domain and inter-domain distance information was considered during the training, although only inter-domain distance information was considered by DEMO-EM.</p>
+</sec>
+<sec id="S18">
+<title>Quasi-Newton based domain and cryo-EM density-map matching</title>
+<p id="P33">For each individual domain model from I-TASSER, we used Limited-memory Broyden–Fletcher–Goldfarb–Shanno (L-BFGS), a quasi-Newton optimization algorithm with 6D translation-rotation degrees of freedom, to identify the best location and orientation of the domain with the highest correlation with the density map (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 10a</xref>). Since L-BEGS is a local optimization method whose results depend on its initial solutions, we started L-BEGS simulation from multiple initial positions (translation vector) and orientations (rotation angle) by enumerating all combinations of Euler angles (ø, θ, and <italic>ψ</italic>) with a step size of 30° across the density-map space (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 10b</xref>). For a given domain pose, a density correlation score (DCS) calculated by <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dcs</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mrow>
+<mml:mtext>EM</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>ρ</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mtext>EM</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mrow>
+<mml:mtext>MO</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>ρ</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mtext>MO</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mi>M</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>ρ</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mtext>EM</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+<mml:mspace width="0.4em"/>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mrow>
+<mml:mtext>MO</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>ρ</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mtext>MO</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula> is used to guide the L-BEGS simulations. Here, <italic>N</italic>
+<sub>vol</sub> is the number of voxels (grid points) in the density map and <italic>ρ</italic>
+<sub>EM</sub>(<italic>
+<bold>v</bold>
+<sub>i</sub>
+</italic>) is the experimental density of the <italic>i</italic>-th voxel <italic>
+<bold>v</bold>
+<sub>i</sub>
+</italic>. The density probed from the decoy structure is calculated by <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:msub>
+<mml:mi>ρ</mml:mi>
+<mml:mrow>
+<mml:mtext>MO</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>L</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mi>m</mml:mi>
+<mml:mn>3</mml:mn>
+</mml:msup>
+<mml:msqrt>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>2.4</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mn>0.8</mml:mn>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mstyle>
+<mml:mspace width="0.6em"/>
+<mml:mi>exp</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:mn>2.4</mml:mn>
+<mml:mo>+</mml:mo>
+<mml:mn>0.8</mml:mn>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">x</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>, where <italic>
+<bold>x</bold>
+<sub>i</sub>
+</italic> is the position of the <italic>j</italic>-th atom in the decoy, <italic>m</italic> is its mass, and <italic>R</italic> is the resolution of the density map. To speed up the matching process, a density map with voxel size of 2Å interpolated from the original density map is employed. After the L-BEGS simulation, all poses for each domain with DCS &lt;0.5 (or the top 10 poses when more than 10 poses with DCS&lt;0.5) are pooled and combined with the top poses of other domains to form initial models of full-length models. The combination is made by permutating initial poses of all domains and allows for domain overlaps, where top 30 full-length models with the lowest DCS are selected for the next step of rigid-body domain match and assembly.</p>
+</sec>
+<sec id="S19">
+<title>Rigid-body domain assembly</title>
+<p id="P34">Two rounds of rigid-body domain assembly simulations are performed to optimize domain positions and orientations. In the first round, domains are treated as particles where a quick replica-exchange Monte Carlo (REMC) simulation is made to quickly adjust the individual domain positions based on the global model-density correlations. In this step, the energy function contains only DCS (<xref ref-type="disp-formula" rid="FD1">Eq. 1</xref>), where movements include rigid-body translation and rotation around each domain’s center of mass (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 11a</xref> and <xref ref-type="supplementary-material" rid="SD1">b</xref>). It is noted that here DCS is calculated for the full chain model which should lead to more optimal model result from the last step whose optimization was based on DCS from individual domains. The density map with a voxel size of 3Å interpolated from the original map is applied to reduce the computational cost. 30 replicas are sampled in parallel with the temperature ranging from 0.1 to 15, and a global swap movement between two neighboring replicas is performed for every 200 MC movements. The simulation is terminated when the number of swaps reaches 20 * <italic>N</italic>
+<sub>dom</sub>, where <italic>N</italic>
+<sub>dom</sub> is the number of domains. The top 30 models are selected according to the DCS for the next round.</p>
+<p id="P35">The second round of rigid-body REMC simulation is to fine-tune the domain poses with a more detailed energy force field as defined in Eqs. (<xref ref-type="disp-formula" rid="FD2">2</xref>–<xref ref-type="disp-formula" rid="FD5">5</xref>), where a more elaborate density map with a voxel size of 2Å is interpolated from the original density map for the assembly. Besides the translation and rotation movements used in the first round, three new movements are added (<xref ref-type="supplementary-material" rid="SD1">Supplementary Figs. 11c-e</xref>), including self-rotation around the N-to-C axis of each domain, the translation along the neighboring domains in sequence, and the pose exchange between two domains with similar structures (i.e., TM-score ≥0.75) according to TM-align<sup>
+<xref ref-type="bibr" rid="R42">42</xref>
+</sup>, which is designed to reduce the case where domains with similar topology are swapped in the initial positions. The similar parameter setting with the first round is employed for REMC simulation, but the top 40 models are selected according to DCS for the next step.</p>
+</sec>
+<sec id="S20">
+<title>Energy function for rigid-body simulation</title>
+<p id="P36">Conformations in the rigid-body assembly are assessed by an energy function with four terms: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>rigid</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>dcs</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dcs</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>rg</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>rg</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mrow/>
+<mml:mrow>
+<mml:mtext>bc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>com</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>bc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>sc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>dom</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>dom</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>sc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula> where the first term <italic>density correlation score</italic> is the same as defined in <xref ref-type="disp-formula" rid="FD1">Eq. (1)</xref> but here it is used for full-length model. The second term is <italic>radius of gyration restraint</italic>, defined as <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>rg</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mtext>decoy</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.6em"/>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mtext>decoy</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&gt;</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mtext>decoy</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>min</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.6em"/>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>min</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&lt;</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mtext>decoy</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mspace width="2.2em"/>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>otherwis</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>Rg</italic>
+<sub>decoy</sub> is the radius of gyration of the decoy structure, <italic>Rg</italic>
+<sub>max</sub> and <italic>Rg</italic>
+<sub>min</sub> are the maximum and minimum estimated radius of gyration, respectively, i.e., <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mi>R</mml:mi>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mrow>
+<mml:mtext>center</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>/</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:math>
+</inline-formula> which is calculated from the <inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> voxels with density ≥0.05 after normalizing density values to the range of 0 and 1, where <inline-formula>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mrow>
+<mml:mtext>center</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mtext>i</mml:mtext>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>vol</mml:mtext>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:msub>
+<mml:mi mathvariant="bold-italic">ν</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the center point of these voxels. <italic>Rg</italic>
+<sub>min</sub> = 2.849<italic>L</italic>
+<sup>0.319</sup> (<italic>L</italic> is the query sequence length) is the statistical radius of gyration based on the known multi-domain protein models in the PDB, which has a Pearson correlation coefficient of 0.995 with real values (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 12</xref>).</p>
+<p id="P37">The third term <italic>domain boundary connectivity</italic> is designed to constrain the connectivity of two neighboring domains along sequence (<italic>m</italic> &lt; <italic>n</italic>), which is calculated by <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M8">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>bc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>b</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>b<sub>mn</sub>
+</italic> is the <italic>C<sub>α</sub>
+</italic> atom distance between the C-terminal residue of the <italic>m</italic>-th domain and the N-terminal of the <italic>n</italic>-th domain. For the case including discontinuous domains, <italic>b<sub>mn</sub>
+</italic> = (<italic>d</italic>
+<sub>1</sub> + <italic>d</italic>
+<sub>2</sub>)/2 is the average of two linker distances connecting the continuous domain with the discontinuous segments (see <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 13</xref>). <italic>b</italic>
+<sub>0</sub> = 3.8 Å is the standard distance between neighboring Cα atoms.</p>
+<p id="P38">The last term <italic>steric clashes</italic> penalizes domain pairs occupying the same space, which is defined as <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M9">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>sc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.4em"/>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>&lt;</mml:mo>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mtext>cut</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>otherwise</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>L<sub>m</sub>
+</italic> and <italic>L<sub>n</sub>
+</italic> represent the sequence length of the <italic>m</italic>-th and <italic>n</italic>-th domain, respectively. <inline-formula>
+<mml:math id="M10">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the distance between the <italic>i</italic>-th C<sub>
+<italic>α</italic>
+</sub> atom of the <italic>m</italic>-th domain and the <italic>j</italic>-th C<sub>α</sub> atom of the <italic>n</italic>-th domain in the decoy structure. <italic>d</italic>
+<sub>cut</sub> = 3.75 Å is the cutoff of distance to define a clash.</p>
+<p id="P39">The weighting factors in <italic>E</italic>
+<sub>rigid</sub> is optimized based on a training set of 425 proteins that has sequence identity &lt;30% to the test proteins, by maximizing the correlation between total energy and RMSD of the decoy models to the native using the differential evolution algorithm<sup>
+<xref ref-type="bibr" rid="R43">43</xref>,<xref ref-type="bibr" rid="R44">44</xref>
+</sup>. This resulted in <italic>w</italic>
+<sub>dcs</sub> = 300, <italic>w</italic>
+<sub>rg</sub> = 1.13, <italic>w</italic>
+<sub>bc</sub> = 0.55, and <italic>w</italic>
+<sub>sc</sub> = 0.91.</p>
+</sec>
+<sec id="S21">
+<title>Atom-level flexible domain assembly and refinement</title>
+<p id="P40">The process of flexible domain assembly and refinement contains two stages of simulations with progressive voxel resolutions and sampling focuses. In the first stage, six different movements are implemented (<xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 14</xref>): (i) LMProt<sup>
+<xref ref-type="bibr" rid="R45">45</xref>
+</sup> perturbation; (ii) segment rotation around the axis connecting two terminus; (iii) conformational shift of segments along the sequence; (iv) rigid-body segment translation; (v) rigid-body tail rotation; (vi) rigid-body domain-level translation and rotation. To enhance the efficiency, a nine-residue sliding window is used to determine which region needs more aggressive conformation sampling, where a local score (<italic>LC<sub>i</sub>
+</italic>) for the sliding window of the center residue (<italic>i</italic>) is computed as the average correlation coefficient between the nine-residue fragment and the entire density map. The probability for the <italic>i</italic>-th residue to be selected for movement is set as <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M11">
+<mml:mrow>
+<mml:msub>
+<mml:mi>p</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mspace width="0.6em"/>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>&lt;</mml:mo>
+<mml:mn>0.05</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>0.95</mml:mn>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mrow>
+<mml:mi>min</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mrow>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mrow>
+<mml:mi>min</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mspace width="0.4em"/>
+<mml:mi>L</mml:mi>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>≥</mml:mo>
+<mml:mn>0.05</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>LC</italic>
+<sub>max</sub> and <italic>LC</italic>
+<sub>min</sub>(= 0.05) represent the maximum and minimum local scores, respectively. As illustrated in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 15</xref>, the setting in <xref ref-type="disp-formula" rid="FD6">Eq. (6)</xref> helps ensure that the residues poorly correlated with the density map can receive more sampling than others. An atomic-level force field (see <xref ref-type="disp-formula" rid="FD7">Eqs. 7</xref>–<xref ref-type="disp-formula" rid="FD13">13</xref> below) is designed to guide the REMC simulation at this stage, where a density map with a voxel size of 3Å interpolated from the original density map is applied to reduce the computation cost and the DCS is calculated based on backbone atoms. Similarly, 40 replicas with the temperature ranging from 0.01 to 15 are sampled in parallel. The global swap movement between two neighboring replicas is performed for every <inline-formula>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mn>10</mml:mn>
+<mml:msqrt>
+<mml:mi>L</mml:mi>
+</mml:msqrt>
+</mml:mrow>
+</mml:math>
+</inline-formula> movements, where the simulation stops when the number of swaps reaches 200. All accepted decoys in the simulation are clustered by SPICKER<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>, and the centroid model in the first cluster is selected as a reference model for the second stage.</p>
+<p id="P41">In the second stage, a finer density map with a voxel size of 2 Å is implemented with the DCS computed on all atoms. In addition, all residues have the equal probability to be selected for the movement and sampling. The REMC simulation is guided by the same force field defined in Eqs. (<xref ref-type="disp-formula" rid="FD7">7</xref>–<xref ref-type="disp-formula" rid="FD13">13</xref>) but the reference model in <xref ref-type="disp-formula" rid="FD10">Eq. (10)</xref> is replaced by the centroid structure of the first cluster determined by SPICKER in the first stage. The simulation is terminated when the number of swaps reaches to 100. The lowest-energy decoy is selected to construct the final model, with the side-chain atoms repacked by FASPR<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup> followed by the FG-MD<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> refinement.</p>
+</sec>
+<sec id="S22">
+<title>DEMO-EM force field for flexible assembly simulation</title>
+<p id="P42">The flexible domain assemble simulations are implemented at a semi-atomic level, with each residue represented by N, C<sub>
+<italic>α</italic>
+</sub>, C, O, C<sub>β</sub>, H, and side-chain center of mass (SC). Among the seven modeling units, only the three backbone atoms (N, C<sub>
+<italic>α</italic>
+</sub>, and C) have coordinates directly determined in conformation sampling, while the other four are determined based on their relative positions to the three backbone atoms with parameters listed in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table 5</xref>. The simulations are guided a composite force field consisting of seven energy terms: <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M13">
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>flexible</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>dcs</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dcs</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>dt</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>dom</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>m</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>dom</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dt</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>ta</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>ta</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>dr</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dr</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mspace width="3.2em"/>
+<mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>L</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mi>i</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>L</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>[</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>ev</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>ev</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>hb</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>hb</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>w</mml:mi>
+<mml:mrow>
+<mml:mtext>gsc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>gsc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>]</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P43">The first term counts for the <italic>density correlation,</italic> which is in the same form as <xref ref-type="disp-formula" rid="FD1">Eq. (1)</xref> but calculated for full-length model.</p>
+<p id="P44">The second term is the <italic>inter-domain C<sub>β</sub> distance map</italic> as predicted by DomainDist: <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M14">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dt</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>ε</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M15">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the distance between the <italic>i</italic>-th <italic>C<sub>β</sub>
+</italic> (<italic>C<sub>α</sub>
+</italic> for Glycine) atom in the <italic>m</italic>-th domain and <italic>j</italic>-th <italic>C<sub>β</sub>
+</italic> atom in the <italic>n</italic>-th domain, <inline-formula>
+<mml:math id="M16">
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the predicted probability of the distance <inline-formula>
+<mml:math id="M17">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> located in the <italic>k</italic>-th distance bin, and <italic>ε</italic> = 1<italic>E</italic> – 4 is the pseudo count to offset low-probability bins. In the calculation, we only consider atom pairs with probability peak located in [2Å, 20Å], and these atom pairs with predicted probabilities &gt;0.5 in the last bin [&gt;20 Å], which represents a low prediction confidence in [2Å, 20Å], are excluded.</p>
+<p id="P45">The third term counts for <italic>torsion angle variations</italic> by <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M18">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>ta</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mstyle>
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+<mml:mrow>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>ϕ</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>ψ</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>ϕ<sub>1</sub>
+</italic> and <italic>ψ<sub>i</sub>
+</italic> represent the torsion angle pair of the <italic>i</italic>-th residue; <italic>A<sub>i</sub>
+</italic> and <italic>S<sub>i</sub>
+</italic> are the residue type and secondary structure type of the <italic>i</italic>-th residue, respectively; <italic>P</italic>(<italic>ϕ<sub>i</sub>, ψ<sub>i</sub>
+</italic>|<italic>A<sub>i</sub>, S<sub>i</sub>
+</italic>) is the conditional probability calculated based on the Ramachandran map of 6,023 high-resolution protein structures from the PDB<sup>
+<xref ref-type="bibr" rid="R46">46</xref>
+</sup>.</p>
+<p id="P46">The fourth term <italic>domain structure restraint</italic> is to prevent topologies of individual domains deviating too far away from the initial structures generated by I-TASSER: <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M19">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>dr</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mrow>
+<mml:mtext>dom</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:msup>
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>‖</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>‖</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>L<sub>m</sub>
+</italic> is the sequence length of the <italic>m</italic>-th domain; <italic>x<sub>i,m</sub>
+</italic> represents the <italic>i</italic>-th <italic>C<sub>α</sub>
+</italic> atom in the <italic>m</italic>-th domain of the decoy after superposing the domain to the reference model by I-TASSER, and <inline-formula>
+<mml:math id="M20">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the corresponding atom in the reference model.</p>
+<p id="P47">The fifth term <italic>excluded volume interaction</italic> is defined as <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M21">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>ev</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.4em"/>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&lt;</mml:mo>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>otherwise</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>d<sub>ij</sub>
+</italic> is the distance between the <italic>i</italic>-th and <italic>j</italic>-th atoms from different residues and <italic>σ<sub>ij</sub>
+</italic> is the sum of the van der Waals radius of the atom pairs taken from CHARMM<sup>
+<xref ref-type="bibr" rid="R47">47</xref>
+</sup> (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 6</xref>).</p>
+<p id="P48">The sixth term is the <italic>hydrogen bonding</italic> extended from QUARK<sup>
+<xref ref-type="bibr" rid="R46">46</xref>
+</sup>. As shown in <xref ref-type="supplementary-material" rid="SD1">Supplementary Fig. 16</xref>, only backbone H-bonds between residues (<italic>i</italic> and <italic>j</italic>) are considered, where four geometric features, including the distance between O<sub>
+<italic>i</italic>
+</sub> and H<sub>
+<italic>j</italic>
+</sub> (<italic>D</italic>(O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>)); the inner angel between C<sub>
+<italic>i</italic>
+</sub>, O<sub>
+<italic>i</italic>
+</sub>, and H<sub>
+<italic>j</italic>
+</sub> (<italic>A</italic>(C<sub>
+<italic>i</italic>
+</sub>, O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>)); the inner angle between O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>, and N<sub>
+<italic>j</italic>
+</sub> (<italic>A</italic>(O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>, N<sub>
+<italic>j</italic>
+</sub>)); and the torsion angle between C<sub>
+<italic>i</italic>
+</sub>, O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>, and N<sub>
+<italic>j</italic>
+</sub> (<italic>T</italic>(C<sub>
+<italic>i</italic>
+</sub>, O<sub>
+<italic>i</italic>
+</sub>, H<sub>
+<italic>j</italic>
+</sub>, N<sub>
+<italic>j</italic>
+</sub>)), are selected to evaluate the bonding. We consider four types of Hydrogen bonds (<italic>T</italic>
+<sub>1</sub>: helix, <italic>j</italic> = <italic>i</italic> + 4; <italic>T</italic>
+<sub>2</sub>: helix, <italic>j</italic> = i + 3; <italic>T</italic>
+<sub>3</sub>: parallel β-sheets; and <italic>T</italic>
+<sub>4</sub>: antiparallel β-sheets). The energy term of a single backbone hydrogen bond is thus calculated by <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M22">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>hb</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mn>4</mml:mn>
+</mml:munderover>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>μ</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:msubsup>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.6em"/>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mstyle>
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mn>3</mml:mn>
+</mml:munderover>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>μ</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:msubsup>
+<mml:mi>δ</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mtext>otherwise</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>T<sub>k</sub>
+</italic> represents the <italic>k</italic>th type of hydrogen bond, <italic>f<sub>l</sub>
+</italic>(<italic>i,j</italic>) denotes the <italic>l</italic>th feature of the decoy structure; <italic>μ<sub>kl</sub>
+</italic> and <italic>δ<sub>kl</sub>
+</italic> are the mean and standard deviation of the <italic>l</italic>th feature in the <italic>k</italic>th type hydrogen bond, which were pre-calculated from the high-resolution PDB structures and listed in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table 7</xref>.</p>
+<p id="P49">The last term <italic>generic sidechain-atom contact potential</italic> is used to evaluate the contacts between SC in one residue (<italic>i</italic>) and N, C<sub>
+<italic>α</italic>
+</sub>, C, O, C<sub>β</sub> and SC atoms in another residue (<italic>j</italic>): <disp-formula id="FD13">
+<label>(13)</label>
+<mml:math id="M23">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mtext>gsc</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>U</mml:mi>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>o</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>M</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>A<sub>i</sub>
+</italic> (or <italic>A<sub>j</sub>
+</italic>) is amino acid type of residue <italic>i</italic> (or <italic>j</italic>), <italic>M<sub>i</sub>
+</italic> (or <italic>M<sub>j</sub>
+</italic>) represents the atom type of the <italic>i</italic> (or <italic>j</italic>)-th residue, <italic>d<sub>ij</sub>
+</italic> is the distance between the SC of the <italic>i</italic>-th residue and <italic>M<sub>j</sub>
+</italic> atom of the <italic>j</italic>-th residue, and <italic>U<sub>plo</sub>
+</italic>(<italic>A<sub>i</sub>, A<sub>j</sub>, M<sub>i</sub>, M<sub>j</sub>, d<sub>ij</sub>
+</italic>) is the corresponding polarity potential pre-calculated from 6,500 non-redundant high-resolution PDB structures (see <ext-link ext-link-type="uri" xlink:href="https://zhanglab.ccmb.med.umich.edu/DEMO-EM/potential.html">https://zhanglab.ccmb.med.umich.edu/DEMO-EM/potential.html</ext-link>).</p>
+<p id="P50">Similarly, the weighting parameters in <xref ref-type="disp-formula" rid="FD7">Eq. (7)</xref> are determined by maximizing the correlation between the total energy and RMSD of the structure decoys of the 425 training proteins. This results in <italic>w</italic>
+<sub>dcs</sub> = 320, <italic>w</italic>
+<sub>ta</sub> = 0.3, <italic>w</italic>
+<sub>dr</sub> = 1.5, <italic>w</italic>
+<sub>dt</sub> = 0.15, <italic>w</italic>
+<sub>ev</sub> = 0.1, <italic>w</italic>
+<sub>hb</sub> = 0.05, and <italic>w</italic>
+<sub>gsc</sub> = 0.1.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary File</label>
+<media xlink:href="EMS98630-supplement-Supplementary_File.pdf" mimetype="application" mime-subtype="pdf" id="N69702" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S23">
+<title>Acknowledgements</title>
+<p>This work is supported in part by the National Institute of General Medical Sciences (GM136422 and S10OD026825 to Y.Z.), the National Institute of Allergy and Infectious Diseases (AI134678 to Y.Z.), the National Science Foundation (IIS1901191 and DBI2030790 to Y.Z.), the National Nature Science Foundation of China (61773346 to G.Z.) and the Key Project of Zhejiang Provincial Natural Science Foundation of China (LZ20F030002 to G.Z.). This work used the Extreme Science and Engineering Discovery Environment (XSEDE)<sup>
+<xref ref-type="bibr" rid="R35">35</xref>
+</sup>, which is supported by the National Science Foundation (ACI1548562).</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P51">
+<bold>Author Contributions</bold>
+</p>
+<p id="P52">Y.Z. conceived the project. X.Z. developed the pipeline and performed the test. YL. developed the method for inter-domain distances prediction. W.Z. developed the method for domain boundaries prediction. C.Z. helped analyze the data. G.Z. helped supervise the research. X.Z. and Y.Z. wrote the manuscript, and all authors read and approved the final manuscript.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P53">
+<bold>Competing Financial Interests</bold>
+</p>
+<p id="P54">The authors declare no competing financial interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Single-Particle Cryo-EM at Crystallographic Resolution</article-title>
+<source>Cell</source>
+<year>2015</year>
+<volume>161</volume>
+<fpage>450</fpage>
+<lpage>457</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuhlbrandt</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>The Resolution Revolution</article-title>
+<source>Science</source>
+<year>2014</year>
+<volume>343</volume>
+<fpage>1443</fpage>
+<lpage>1444</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cowtan</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>The Buccaneer software for automated model building. 1. Tracing protein chains</article-title>
+<source>Acta Crystallographica Section D: Biological Crystallography</source>
+<year>2006</year>
+<volume>62</volume>
+<fpage>1002</fpage>
+<lpage>1011</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Emsley</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Lohkamp</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Scott</surname>
+<given-names>WG</given-names>
+</name>
+<name>
+<surname>Cowtan</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Features and development of Coot</article-title>
+<source>Acta Crystallographica Section D: Biological Crystallography</source>
+<year>2010</year>
+<volume>66</volume>
+<fpage>486</fpage>
+<lpage>501</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Terwilliger</surname>
+<given-names>TC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Iterative model building, structure refinement and density modification with the PHENIX AutoBuild wizard</article-title>
+<source>Acta Crystallographica Section D: Biological Crystallography</source>
+<year>2008</year>
+<volume>64</volume>
+<fpage>61</fpage>
+<lpage>69</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Glaeser</surname>
+<given-names>RM</given-names>
+</name>
+</person-group>
+<article-title>How good can cryo-EM become?</article-title>
+<source>Nature methods</source>
+<year>2015</year>
+<volume>13</volume>
+<fpage>28</fpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DiMaio</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Tyka</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Chiu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Refinement of protein structures into low-resolution density maps using rosetta</article-title>
+<source>Journal of molecular biology</source>
+<year>2009</year>
+<volume>392</volume>
+<fpage>181</fpage>
+<lpage>190</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Topf</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Protein structure fitting and refinement guided by cryo-EM density</article-title>
+<source>Structure</source>
+<year>2008</year>
+<volume>16</volume>
+<fpage>295</fpage>
+<lpage>307</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>HB</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>A New Protocol for Atomic-Level Protein Structure Modeling and Refinement Using Low-to-Medium Resolution Cryo-EM Density Maps</article-title>
+<source>Journal of Molecular Biology</source>
+<year>2020</year>
+<volume>432</volume>
+<fpage>5365</fpage>
+<lpage>5377</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chothia</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Gough</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Vogel</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Teichmann</surname>
+<given-names>SA</given-names>
+</name>
+</person-group>
+<article-title>Evolution of the protein repertoire</article-title>
+<source>Science</source>
+<year>2003</year>
+<volume>300</volume>
+<fpage>1701</fpage>
+<lpage>1703</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kinch</surname>
+<given-names>LN</given-names>
+</name>
+<name>
+<surname>Kryshtafovych</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Monastyrskyy</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Grishin</surname>
+<given-names>NV</given-names>
+</name>
+</person-group>
+<article-title>CASP13 target classification into tertiary structure prediction categories</article-title>
+<source>Proteins-Structure Function and Bioinformatics</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1021</fpage>
+<lpage>1036</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lawson</surname>
+<given-names>CL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>EMDataBank.org: unified data resource for CryoEM</article-title>
+<source>Nucleic Acids Res</source>
+<year>2011</year>
+<volume>39</volume>
+<fpage>D456</fpage>
+<lpage>64</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DiMaio</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Atomic-accuracy models from 4.5-Å cryo-electron microscopy data with density-guided iterative local refinement</article-title>
+<source>Nature methods</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>361</fpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zheng</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>FUpred: Detecting protein domains through deep-learning based contact map prediction</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>3749</fpage>
+<lpage>3757</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The I-TASSER Suite: protein structure and function prediction</article-title>
+<source>Nature methods</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>7</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Ensembling multiple raw coevolutionary features with deep residual neural networks for contact - map prediction in CASP13</article-title>
+<source>Proteins: Structure, Function, Bioinformatics</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1082</fpage>
+<lpage>1091</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Skolnick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>SPICKER: A clustering approach to identify near - native protein folds</article-title>
+<source>Journal of computational chemistry</source>
+<year>2004</year>
+<volume>25</volume>
+<fpage>865</fpage>
+<lpage>871</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pearce</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>FASPR: an open-source tool for fast and accurate protein side-chain packing</article-title>
+<source>Bioinformatics</source>
+<year>2020</year>
+<volume>36</volume>
+<fpage>3758</fpage>
+<lpage>3765</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Atomic-level protein structure refinement using fragment-guided molecular dynamics conformation sampling</article-title>
+<source>Structure</source>
+<year>2011</year>
+<volume>19</volume>
+<fpage>1784</fpage>
+<lpage>1795</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gabow</surname>
+<given-names>HN</given-names>
+</name>
+</person-group>
+<article-title>Protein domain decomposition using a graph-theoretic approach</article-title>
+<source>Bioinformatics</source>
+<year>2000</year>
+<volume>16</volume>
+<fpage>1091</fpage>
+<lpage>1104</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chandonia</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Fox</surname>
+<given-names>NK</given-names>
+</name>
+<name>
+<surname>Brenner</surname>
+<given-names>SE</given-names>
+</name>
+</person-group>
+<article-title>SCOPe: manual curation and artifact removal in the structural classification of proteins-extended database</article-title>
+<source>Journal of molecular biology</source>
+<year>2017</year>
+<volume>429</volume>
+<fpage>348</fpage>
+<lpage>355</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>SD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Gene3D: expanding the utility of domain assignments</article-title>
+<source>Nucleic acids research</source>
+<year>2015</year>
+<volume>44</volume>
+<fpage>D404</fpage>
+<lpage>D409</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>EMAN2: an extensible image processing suite for electron microscopy</article-title>
+<source>Journal of structural biology</source>
+<year>2007</year>
+<volume>157</volume>
+<fpage>38</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Skolnick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Scoring function for automated assessment of protein structure template quality</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<year>2004</year>
+<volume>57</volume>
+<fpage>702</fpage>
+<lpage>710</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>How significant is a protein structure similarity with TM-score = 0.5?</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<fpage>889</fpage>
+<lpage>95</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chacón</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Wriggers</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Multi-resolution contour-based fitting of macromolecular structures</article-title>
+<source>Journal of molecular biology</source>
+<year>2002</year>
+<volume>317</volume>
+<fpage>375</fpage>
+<lpage>384</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blees</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of the human MHC-I peptide-loading complex</article-title>
+<source>Nature</source>
+<year>2017</year>
+<volume>551</volume>
+<fpage>525</fpage>
+<lpage>528</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pettersen</surname>
+<given-names>EF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UCSF Chimera—a visualization system for exploratory research and analysis</article-title>
+<source>Journal of computational chemistry</source>
+<year>2004</year>
+<volume>25</volume>
+<fpage>1605</fpage>
+<lpage>1612</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ilca</surname>
+<given-names>SL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Localized reconstruction of subunits from electron cryomicroscopy images of macromolecular complexes</article-title>
+<source>Nature communications</source>
+<year>2015</year>
+<volume>6</volume>
+<fpage>1</fpage>
+<lpage>8</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Terwilliger</surname>
+<given-names>TC</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>PD</given-names>
+</name>
+<name>
+<surname>Afonine</surname>
+<given-names>PV</given-names>
+</name>
+<name>
+<surname>Sobolev</surname>
+<given-names>OV</given-names>
+</name>
+</person-group>
+<article-title>A fully automatic method yielding initial models from high-resolution cryo-electron microscopy maps</article-title>
+<source>Nature methods</source>
+<year>2018</year>
+<volume>15</volume>
+<fpage>905</fpage>
+<lpage>908</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A pneumonia outbreak associated with a new coronavirus of probable bat origin</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>270</fpage>
+<lpage>273</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A noncompeting pair of human neutralizing antibodies block COVID-19 virus binding to its receptor ACE2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>368</volume>
+<fpage>1274</fpage>
+<lpage>1278</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zheng</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep-learning contact-map guided protein structure prediction in CASP13</article-title>
+<source>Proteins</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1149</fpage>
+<lpage>1164</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bell</surname>
+<given-names>EW</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Ensembling multiple raw coevolutionary features with deep residual neural networks for contact-map prediction in CASP13</article-title>
+<source>Proteins</source>
+<year>2019</year>
+<volume>87</volume>
+<fpage>1082</fpage>
+<lpage>1091</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Towns</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>XSEDE: AcceleratingScientific Discovery</article-title>
+<source>Comput Sci Eng</source>
+<year>2014</year>
+<volume>16</volume>
+<fpage>62</fpage>
+<lpage>74</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>ResPRE: high-accuracy protein contact prediction by coupling precision matrix with deep residual neural networks</article-title>
+<source>Bioinformatics</source>
+<year>2019</year>
+<volume>35</volume>
+<fpage>4647</fpage>
+<lpage>4655</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bernstein</surname>
+<given-names>FC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Protein Data Bank: A computer - based archival file for macromolecular structures</article-title>
+<source>European journal of biochemistry</source>
+<year>1977</year>
+<volume>80</volume>
+<fpage>319</fpage>
+<lpage>324</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deducing high-accuracy protein contact-maps from a triplet of coevolutionary matrices through deep residual convolutional networks</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.10.05.326140</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Remmert</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Biegert</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hauser</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Söding</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>HHblits: lightning-fast iterative protein sequence searching by HMM-HMM alignment</article-title>
+<source>Nature methods</source>
+<year>2012</year>
+<volume>9</volume>
+<fpage>173</fpage>
+<lpage>175</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirdita</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Uniclust databases of clustered and deeply annotated protein sequences and alignments</article-title>
+<source>Nucleic acids research</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>D170</fpage>
+<lpage>D176</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>He</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Deep residual learning for image recognition</article-title>
+<conf-name>Proceedings of the IEEE conference on computer vision and pattern recognition</conf-name>
+<year>2016</year>
+<fpage>770</fpage>
+<lpage>778</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Skolnick</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>TM-align: a protein structure alignment algorithm based on the TM-score</article-title>
+<source>Nucleic acids research</source>
+<year>2005</year>
+<volume>33</volume>
+<fpage>2302</fpage>
+<lpage>2309</lpage>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Storn</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Price</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Differential evolution-a simple and efficient heuristic for global optimization over continuous spaces</article-title>
+<source>Journal of global optimization</source>
+<year>1997</year>
+<volume>11</volume>
+<fpage>341</fpage>
+<lpage>359</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>XG</given-names>
+</name>
+<name>
+<surname>Peng</surname>
+<given-names>CX</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>Underestimation-assisted global-local cooperative differential evolution and the application to protein structure prediction</article-title>
+<source>IEEE Transactions on Evolutionary Computation</source>
+<year>2020</year>
+<volume>24</volume>
+<fpage>536</fpage>
+<lpage>550</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>da Silva</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Degrève</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Caliri</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>LMProt: an efficient algorithm for Monte Carlo sampling of protein conformational space</article-title>
+<source>Biophysical journal</source>
+<year>2004</year>
+<volume>87</volume>
+<fpage>1567</fpage>
+<lpage>1577</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xu</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Ab initio protein structure assembly using continuous structure fragments and optimized knowledge-based force field</article-title>
+<source>Proteins</source>
+<year>2012</year>
+<volume>80</volume>
+<fpage>1715</fpage>
+<lpage>1735</lpage>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brooks</surname>
+<given-names>BR</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CHARMM: the biomolecular simulation program</article-title>
+<source>Journal of computational chemistry</source>
+<year>2009</year>
+<volume>30</volume>
+<fpage>1545</fpage>
+<lpage>1614</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Flowchart of DEMO-EM illustrated with a 3-domain protein from the <italic>iron-dependent regulator of mycobacterium tuberculosis</italic> (PDBID: 1fx7A). Starting from the query sequence, domain boundaries and models of each domain are first predicted by FUpred<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> and I-TASSER<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>, respectively. Meanwhile, inter-domain distances are predicted with a deep convolutional neural-network predictor DomainDist. Second, each of the domain models is independently fit into the density map by quasi-Newton searching. Third, the initial full-length models are optimized by a two-step rigid-body REMC simulation to minimize the DCS between the density map and full-length model (<xref ref-type="disp-formula" rid="FD1">Eq. 1</xref>). Fourth, the lowest DCS model selected from the rigid-body assembly simulations undergoes flexible assembly with atom-, segment-, and domain-level refinements using REMC simulation guided by the DCS and inter-domain distance profiles coupled with a knowledge-based force field, with the resulting decoy conformations clustered by SPICKER<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup> to obtain a centroid model. Finally, the flexible assembly simulation is performed again for the full-atomic model with constraints from centroid models adding to the energy, and the final model is created from the lowest energy model after side-chain repacking with FASPR<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup> and FG-MD<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>.</p>
+</caption>
+<graphic xlink:href="EMS98630-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Summary of full-length structural models constructed by different approaches on 357 multi-domain proteins using synthesized density maps. (<bold>a</bold>) Mean and distribution of TM-score for models by DEMO-EM, MDFF and Rosetta, respectively. (<bold>b</bold>) Boxplot and distribution for RMSD of models by DEMO-EM, MDFF, and Rosetta, respectively. (<bold>c</bold>) Head-to-head comparison between TM-score of initial models by domain matching and that of final models after rigid-body assembly, flexible assembly and refinement. (<bold>d</bold>) Comparison between TM-score of individual domain models by I-TASSER and that in final full-length models by DEMO-EM.</p>
+</caption>
+<graphic xlink:href="EMS98630-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Representative examples showing the process of DEMO-EM. Density maps are shown in gray shadow where cartoons are DEMO-EM models with different colors indicating different domains. (<bold>a</bold>) 2e1qC, a protein with 10 domains (8 continuous domains and 2 discontinuous domains) using a simulated density map with a resolution of 5.3 Å. (<bold>b</bold>) 1q25A, a protein with 3 domains using a simulated density map with a resolution of 9.9Å.</p>
+</caption>
+<graphic xlink:href="EMS98630-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Summary of structures constructed by different approaches using experimental density map. (<bold>a</bold>) Distribution of NDO score of domain boundaries predicted by FUpred. (<bold>b</bold>) TM-score of full-length models constructed by DEMO-EM, MDFF, and Rosetta. (<bold>c</bold>) Head-to-head TM-score comparison of the initial individual models by I-TASSER and that in final full-length models by DEMO-EM. (<bold>d, e</bold>) The deposited model in PDB (PDBID: 6eny) (d) and reconstructed model (e) by DEMO-EM for <italic>human PLC editing module,</italic> where different color represents different domains. (<bold>f, g</bold>) The deposited model in PDB (PDBID: 5fj6) (f) and reproduced model (g) by DEMO-EM for <italic>the P2 polymerase inside in vitro assembled bacteriophage phi6 polymerase complex.</italic>
+</p>
+</caption>
+<graphic xlink:href="EMS98630-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Overlay of structural models by DEMO-EM on the cryo-EM density maps for the six proteins in SARS-CoV-2 genome. (<bold>a</bold>) Spike protein (density map from EMD-21375). (<bold>b</bold>) NSP8 (EMD-11007). (<bold>c</bold>) Helicase/NSP13 (EMD-22160). (<bold>d</bold>) ORF3a (EMD-22136). (<bold>e</bold>) NSP7 (EMD-11007). (<bold>f</bold>) RNA-directed RNA polymerase/NSP12 (EMD-11007). (<bold>g</bold>) Comparison of the Spike RBD domain by DEMO-EM (cyan) with the X-ray structure (red, PDB 7bz5A).</p>
+</caption>
+<graphic xlink:href="EMS98630-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Summary of cryo-EM based domain structure assembly results by different methods.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="middle" rowspan="3">Method</th>
+<th align="center" valign="middle" colspan="6">357 proteins with synthesized maps</th>
+<th align="center" valign="middle" colspan="4" rowspan="2">51 proteins with experimental maps</th>
+</tr>
+<tr>
+<th align="center" valign="middle" colspan="2">Experimental domain</th>
+<th align="center" valign="middle" colspan="4">I-TASSER domain</th>
+</tr>
+<tr>
+<th align="center" valign="middle">TM-score</th>
+<th align="center" valign="middle">RMSD</th>
+<th align="center" valign="middle">TM-score</th>
+<th align="center" valign="middle">RMSD</th>
+<th align="center" valign="middle">TM-score (domain)<sup>
+<xref ref-type="table-fn" rid="TFN1">a</xref>
+</sup>
+</th>
+<th align="center" valign="middle">RMSD (domain)<sup>
+<xref ref-type="table-fn" rid="TFN2">b</xref>
+</sup>
+</th>
+<th align="center" valign="middle">TM-score</th>
+<th align="center" valign="middle">RMSD</th>
+<th align="center" valign="middle">TM-score (domain)</th>
+<th align="center" valign="middle">RMSD (domain)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">MDFF</td>
+<td align="center" valign="middle">0.83</td>
+<td align="center" valign="middle">7.7</td>
+<td align="center" valign="middle">0.55</td>
+<td align="center" valign="middle">17.2</td>
+<td align="center" valign="middle">0.65</td>
+<td align="center" valign="middle">6.2</td>
+<td align="center" valign="middle">0.46</td>
+<td align="center" valign="middle">22.7</td>
+<td align="center" valign="middle">0.52</td>
+<td align="center" valign="middle">9.0</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Rosetta</td>
+<td align="center" valign="middle">0.79</td>
+<td align="center" valign="middle">8.1</td>
+<td align="center" valign="middle">0.53</td>
+<td align="center" valign="middle">17.5</td>
+<td align="center" valign="middle">0.57</td>
+<td align="center" valign="middle">8.1</td>
+<td align="center" valign="middle">0.40</td>
+<td align="center" valign="middle">25.6</td>
+<td align="center" valign="middle">0.44</td>
+<td align="center" valign="middle">12.9</td>
+</tr>
+<tr>
+<td align="left" valign="middle">DEMO-EM</td>
+<td align="center" valign="middle">
+<bold>0.99</bold>
+</td>
+<td align="center" valign="middle">
+<bold>0.6</bold>
+</td>
+<td align="center" valign="middle">
+<bold>0.85</bold>
+</td>
+<td align="center" valign="middle">
+<bold>6.0</bold>
+</td>
+<td align="center" valign="middle">
+<bold>0.83</bold>
+</td>
+<td align="center" valign="middle">
+<bold>4.1</bold>
+</td>
+<td align="center" valign="middle">
+<bold>0.81</bold>
+</td>
+<td align="center" valign="middle">
+<bold>7.3</bold>
+</td>
+<td align="center" valign="middle">
+<bold>0.77</bold>
+</td>
+<td align="center" valign="middle">
+<bold>4.4</bold>
+</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<label>a</label>
+<p id="P55">TM-score of individual domain models in full-length models.</p>
+</fn>
+<fn id="TFN2">
+<label>b</label>
+<p id="P56">RMSD of individual domains models in full-length models. Bold font highlights the best result in each category.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</floats-group>
+</article>

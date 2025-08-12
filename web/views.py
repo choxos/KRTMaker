@@ -14,10 +14,11 @@ from django.core.files.storage import default_storage
 from django.utils.decorators import method_decorator
 from django.views.generic import FormView, TemplateView
 from django.db.models import Count, Avg, Sum, Q
+from django.db import models
 from django.utils import timezone
 
 from .forms import KRTMakerForm, FeedbackForm
-from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics, Article, XMLFile
+from .models import KRTSession, ProcessedFile, KRTExport, SystemMetrics, Article, XMLFile, AdminKRT
 
 # Import the KRT maker functionality (using project root path)
 from django.conf import settings
@@ -181,16 +182,18 @@ class KRTMakerView(FormView):
                         'source': 'local_xml_storage'
                     }
             
-            # Parse authors - use detailed list if available, otherwise parse string
+            # Parse authors - handle both list and string formats
             authors_list = []
             if biorxiv_metadata.get('authors_detailed'):
                 # Use detailed author list if available
                 authors_list = biorxiv_metadata['authors_detailed']
             elif biorxiv_metadata.get('authors'):
-                # Fall back to parsing comma-separated string
-                authors_str = biorxiv_metadata['authors']
-                if isinstance(authors_str, str):
-                    authors_list = [author.strip() for author in authors_str.split(',')]
+                # Handle both list and comma-separated string formats
+                authors_data = biorxiv_metadata['authors']
+                if isinstance(authors_data, list):
+                    authors_list = authors_data
+                elif isinstance(authors_data, str):
+                    authors_list = [author.strip() for author in authors_data.split(',')]
                 
             # Parse publication date if available  
             pub_date = None
@@ -293,7 +296,11 @@ class KRTMakerView(FormView):
                 f'KRT extraction completed successfully! Found {len(result.get("rows", []))} resources in {processing_time:.1f} seconds.'
             )
             
-            return redirect('web:results', session_id=session_id)
+            # Redirect to article profile instead of results page
+            if session.doi:
+                return redirect('web:article_profile', identifier=session.doi)
+            else:
+                return redirect('web:article_profile', identifier=session_id)
             
         except KRTValidationError as e:
             if session:
@@ -491,14 +498,27 @@ class ArticleProfileView(TemplateView):
         # Check for existing KRT in the article
         existing_krt_info = self._detect_existing_krt(primary_session)
         
+        # Get admin-generated KRTs for this article/DOI
+        admin_krts = []
+        if primary_session.doi:
+            admin_krts = AdminKRT.get_for_doi(primary_session.doi)
+        
+        # Get best admin KRT for quick comparison
+        best_admin_krt = None
+        if primary_session.doi:
+            best_admin_krt = AdminKRT.get_best_for_doi(primary_session.doi)
+        
         context.update({
             'primary_session': primary_session,
+            'sessions': sessions,
             'all_sessions': sessions,
             'llm_results': list(llm_results.values()),
             'regex_results': regex_results,
             'total_sessions': sessions.count(),
             'article_key': article_key,
             'existing_krt_info': existing_krt_info,
+            'admin_krts': admin_krts,
+            'best_admin_krt': best_admin_krt,
         })
         
         return context
@@ -508,8 +528,59 @@ class ArticleProfileView(TemplateView):
         return {
             'has_krt': session.existing_krt_detected,
             'krt_count': session.existing_krt_count,
-            'krt_data': session.existing_krt_data
+            'krt_data': session.existing_krt_data,
+            'confidence_score': 85  # Default confidence score, can be enhanced later
         }
+
+
+class AdminKRTManagementView(TemplateView):
+    """Admin interface for managing admin-generated KRTs"""
+    template_name = 'web/admin_krt_management.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get statistics about admin KRTs
+        stats = AdminKRT.get_statistics()
+        
+        # Get recent admin KRTs
+        recent_krts = AdminKRT.objects.select_related('xml_file').order_by('-created_at')[:20]
+        
+        # Get pending KRTs that need generation
+        pending_krts = AdminKRT.get_pending_generation(limit=50)
+        
+        # Get featured/high-quality KRTs
+        featured_krts = AdminKRT.objects.filter(
+            is_featured=True, 
+            is_public=True
+        ).select_related('xml_file').order_by('-created_at')[:10]
+        
+        # Get provider/model breakdown
+        provider_stats = {}
+        for krt in AdminKRT.objects.values('provider', 'model_name').annotate(
+            count=Count('id'),
+            avg_resources=Avg('resources_found'),
+            avg_time=Avg('processing_time')
+        ):
+            key = f"{krt['provider']}_{krt['model_name']}"
+            provider_stats[key] = {
+                'provider': krt['provider'],
+                'model': krt['model_name'],
+                'count': krt['count'],
+                'avg_resources': round(krt['avg_resources'] or 0, 1),
+                'avg_time': round(krt['avg_time'] or 0, 2)
+            }
+        
+        context.update({
+            'stats': stats,
+            'recent_krts': recent_krts,
+            'pending_krts': pending_krts,
+            'featured_krts': featured_krts,
+            'provider_stats': list(provider_stats.values()),
+            'xml_file_count': XMLFile.objects.filter(is_available=True).count(),
+        })
+        
+        return context
 
 
 class DatabaseManagementView(TemplateView):
@@ -743,7 +814,7 @@ def check_doi_availability(request):
             return JsonResponse({
                 'success': False,
                 'error': 'Invalid bioRxiv URL or DOI format',
-                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2024.01.01.123456) or URL'
+                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2025.01.01.123456) or URL'
             }, status=400)
         
         # Step 1: Search for EPMC ID
@@ -812,57 +883,294 @@ def check_doi_availability(request):
 
 
 @require_http_methods(["GET"])
-def get_doi_suggestions(request):
+def get_krt_data_api(request, session_id):
     """
-    AJAX endpoint to get random DOI suggestions for autocomplete.
-    Returns a list of 10 random DOIs that have XML files available.
+    API endpoint to retrieve KRT data by session ID for AJAX modal display.
     """
     try:
-        # Get query parameter for search (if user is typing)
+        # Get the session
+        session = get_object_or_404(KRTSession, session_id=session_id)
+        
+        # Parse KRT data (handle both list and JSON string formats)
+        krt_data = []
+        if session.krt_data:
+            if isinstance(session.krt_data, list):
+                krt_data = session.krt_data
+            elif isinstance(session.krt_data, str):
+                try:
+                    krt_data = json.loads(session.krt_data)
+                except json.JSONDecodeError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Invalid KRT data format'
+                    }, status=500)
+            else:
+                krt_data = []
+        
+        # Calculate summary statistics
+        summary = {
+            'total_resources': len(krt_data),
+            'new_resources': sum(1 for item in krt_data if item.get('NEW/REUSE', '').lower() == 'new'),
+            'reused_resources': sum(1 for item in krt_data if item.get('NEW/REUSE', '').lower() == 'reuse'),
+            'processing_time': float(session.processing_time) if session.processing_time else 0,
+            'provider': session.provider,
+            'model': session.model_name,
+            'mode': session.mode,
+            'created_at': session.created_at.isoformat(),
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'session_id': session_id,
+            'krt_data': krt_data,
+            'summary': summary,
+            'session_info': {
+                'title': session.display_title,
+                'doi': session.doi,
+                'is_biorxiv_paper': session.is_biorxiv_paper,
+                'status': session.status,
+            }
+        })
+        
+    except KRTSession.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': f'Session not found: {session_id}'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_krt_data_by_doi_api(request, doi):
+    """
+    API endpoint to retrieve KRT data by DOI for external API access.
+    Returns the best KRT result for the given DOI.
+    """
+    try:
+        # Find the best session for this DOI (highest resource count)
+        sessions = KRTSession.objects.filter(
+            doi=doi,
+            status='completed'
+        ).exclude(
+            krt_data__isnull=True
+        ).exclude(
+            krt_data=''
+        ).order_by('-resources_found', '-created_at')
+        
+        if not sessions.exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'No completed KRT sessions found for DOI: {doi}'
+            }, status=404)
+        
+        best_session = sessions.first()
+        
+        # Parse KRT data (handle both list and JSON string formats)
+        krt_data = []
+        if best_session.krt_data:
+            if isinstance(best_session.krt_data, list):
+                krt_data = best_session.krt_data
+            elif isinstance(best_session.krt_data, str):
+                try:
+                    krt_data = json.loads(best_session.krt_data)
+                except json.JSONDecodeError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Invalid KRT data format'
+                    }, status=500)
+            else:
+                krt_data = []
+        
+        # Calculate summary statistics
+        summary = {
+            'total_resources': len(krt_data),
+            'new_resources': sum(1 for item in krt_data if item.get('NEW/REUSE', '').lower() == 'new'),
+            'reused_resources': sum(1 for item in krt_data if item.get('NEW/REUSE', '').lower() == 'reuse'),
+            'processing_time': float(best_session.processing_time) if best_session.processing_time else 0,
+            'provider': best_session.provider,
+            'model': best_session.model_name,
+            'mode': best_session.mode,
+            'created_at': best_session.created_at.isoformat(),
+            'total_sessions': sessions.count(),
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'doi': doi,
+            'session_id': best_session.session_id,
+            'krt_data': krt_data,
+            'summary': summary,
+            'article_info': {
+                'title': best_session.display_title,
+                'authors': best_session.formatted_authors,
+                'publication_date': best_session.publication_date.isoformat() if best_session.publication_date else None,
+                'journal': best_session.journal,
+                'is_biorxiv_paper': best_session.is_biorxiv_paper,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_doi_suggestions(request):
+    """
+    AJAX endpoint to get DOI suggestions organized by year.
+    Returns random preprints from each available year with load more functionality.
+    Load more batch sizes: 25 -> 100 -> 200
+    """
+    try:
+        # Get parameters
         query = request.GET.get('q', '').strip()
+        load_more = request.GET.get('load_more', '').lower() == 'true'
+        load_count = int(request.GET.get('load_count', '0'))
+        specific_year = request.GET.get('year', '').strip()
+        
+        # Determine batch size based on load count
+        # First load: 10 per year for overview, then 25, 100, 200 for load more
+        if load_more:
+            if load_count == 0:
+                batch_size = 25
+            elif load_count == 1:
+                batch_size = 100
+            elif load_count >= 2:
+                batch_size = 200
+            else:
+                batch_size = 25
+        else:
+            batch_size = 10  # Initial load: 10 per year for overview
         
         # Base queryset of available XML files
         xml_files = XMLFile.objects.filter(is_available=True)
         
         if query:
             # If user is typing, filter by DOI or title containing the query
+            limit = min(batch_size, 50)  # Cap search results at 50
             xml_files = xml_files.filter(
                 Q(doi__icontains=query) | 
                 Q(title__icontains=query)
-            ).order_by('doi')[:10]
-        else:
-            # If no query, return 10 random suggestions
-            xml_files = xml_files.order_by('?')[:10]
-        
-        suggestions = []
-        for xml_file in xml_files:
-            # Format authors for display
-            authors_display = "Unknown Authors"
-            if xml_file.authors:
-                try:
-                    authors_list = json.loads(xml_file.authors)
-                    if len(authors_list) > 3:
-                        authors_display = f"{', '.join(authors_list[:3])} et al."
-                    else:
-                        authors_display = ', '.join(authors_list)
-                except:
-                    authors_display = xml_file.authors[:50] + "..." if len(xml_file.authors) > 50 else xml_file.authors
+            ).order_by('doi')[:limit]
             
-            suggestions.append({
-                'doi': xml_file.doi,
-                'title': xml_file.title[:80] + "..." if xml_file.title and len(xml_file.title) > 80 else xml_file.title or "Unknown Title",
-                'authors': authors_display,
-                'publication_date': xml_file.publication_date.strftime('%Y-%m-%d') if xml_file.publication_date else 'Unknown Date',
-                'file_size': xml_file.file_size,
-                'downloaded_at': xml_file.downloaded_at.strftime('%Y-%m-%d') if xml_file.downloaded_at else None
+            suggestions = []
+            for xml_file in xml_files:
+                suggestions.append(_format_xml_file_for_suggestion(xml_file))
+            
+            return JsonResponse({
+                'success': True,
+                'suggestions': suggestions,
+                'total_available': XMLFile.objects.filter(is_available=True).count(),
+                'query': query,
+                'by_year': False,
+                'load_more': False
             })
         
-        return JsonResponse({
-            'success': True,
-            'suggestions': suggestions,
-            'total_available': XMLFile.objects.filter(is_available=True).count(),
-            'query': query
-        })
+        elif specific_year:
+            # Load more for a specific year
+            if specific_year == 'unknown':
+                year_files = xml_files.filter(publication_date__isnull=True)
+            else:
+                try:
+                    year_int = int(specific_year)
+                    year_files = xml_files.filter(publication_date__year=year_int)
+                except ValueError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Invalid year parameter'
+                    }, status=400)
+            
+            # Get random papers for this year
+            random_files = year_files.order_by('?')[:batch_size]
+            
+            suggestions = []
+            for xml_file in random_files:
+                suggestions.append(_format_xml_file_for_suggestion(xml_file))
+            
+            total_in_year = year_files.count()
+            can_load_more = total_in_year > len(suggestions) and load_count < 3
+            
+            return JsonResponse({
+                'success': True,
+                'suggestions': suggestions,
+                'year': specific_year,
+                'total_in_year': total_in_year,
+                'batch_size': batch_size,
+                'load_count': load_count,
+                'can_load_more': can_load_more,
+                'next_batch_size': 100 if load_count == 0 else 200 if load_count == 1 else None,
+                'by_year': False,
+                'load_more': True
+            })
+        
+        else:
+            # Initial load: overview with 10 random suggestions from each year
+            suggestions_by_year = {}
+            
+            # Get available years (from publication_date)
+            years = XMLFile.objects.filter(
+                is_available=True,
+                publication_date__isnull=False
+            ).values_list(
+                'publication_date__year', flat=True
+            ).distinct().order_by('-publication_date__year')
+            
+            total_suggestions = 0
+            for year in years:
+                year_files = xml_files.filter(publication_date__year=year)
+                year_count = year_files.count()
+                
+                # Get random papers for overview (10 per year)
+                year_random = year_files.order_by('?')[:10]
+                
+                year_suggestions = []
+                for xml_file in year_random:
+                    year_suggestions.append(_format_xml_file_for_suggestion(xml_file))
+                
+                if year_suggestions:
+                    suggestions_by_year[str(year)] = {
+                        'year': year,
+                        'total_count': year_count,
+                        'suggestions': year_suggestions,
+                        'can_load_more': year_count > 10,
+                        'showing_count': len(year_suggestions)
+                    }
+                    total_suggestions += len(year_suggestions)
+            
+            # Also get papers with no publication date
+            no_date_files = xml_files.filter(publication_date__isnull=True)
+            no_date_count = no_date_files.count()
+            
+            if no_date_count > 0:
+                no_date_random = no_date_files.order_by('?')[:10]
+                no_date_suggestions = []
+                for xml_file in no_date_random:
+                    no_date_suggestions.append(_format_xml_file_for_suggestion(xml_file))
+                
+                suggestions_by_year['unknown'] = {
+                    'year': 'Unknown',
+                    'total_count': no_date_count,
+                    'suggestions': no_date_suggestions,
+                    'can_load_more': no_date_count > 10,
+                    'showing_count': len(no_date_suggestions)
+                }
+                total_suggestions += len(no_date_suggestions)
+            
+            return JsonResponse({
+                'success': True,
+                'suggestions_by_year': suggestions_by_year,
+                'total_suggestions': total_suggestions,
+                'total_available': XMLFile.objects.filter(is_available=True).count(),
+                'query': None,
+                'by_year': True,
+                'load_more': False
+            })
         
     except Exception as e:
         return JsonResponse({
@@ -897,7 +1205,7 @@ def check_doi_local_availability(request):
             return JsonResponse({
                 'success': False,
                 'error': 'Invalid bioRxiv URL or DOI format',
-                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2024.01.01.123456) or URL'
+                'details': 'Please provide a valid bioRxiv DOI (e.g., 10.1101/2025.01.01.123456) or URL'
             }, status=400)
         
         # Check if XML file exists locally
@@ -967,3 +1275,65 @@ def check_doi_local_availability(request):
             'error': 'Server error while checking local DOI availability',
             'details': str(e)
         }, status=500)
+
+
+def _format_xml_file_for_suggestion(xml_file):
+    """Helper function to format XMLFile object for suggestion response"""
+    # Format authors for display
+    authors_display = "Unknown Authors"
+    if xml_file.authors:
+        try:
+            authors_list = json.loads(xml_file.authors)
+            if len(authors_list) > 3:
+                authors_display = f"{', '.join(authors_list[:3])} et al."
+            else:
+                authors_display = ', '.join(authors_list)
+        except:
+            authors_display = xml_file.authors[:50] + "..." if len(xml_file.authors) > 50 else xml_file.authors
+    
+    return {
+        'doi': xml_file.doi,
+        'title': xml_file.title[:80] + "..." if xml_file.title and len(xml_file.title) > 80 else xml_file.title or "Unknown Title",
+        'authors': authors_display,
+        'publication_date': xml_file.publication_date.strftime('%Y-%m-%d') if xml_file.publication_date else 'Unknown Date',
+        'file_size': xml_file.file_size,
+        'downloaded_at': xml_file.downloaded_at.strftime('%Y-%m-%d') if xml_file.downloaded_at else None
+    }
+
+
+class AboutView(TemplateView):
+    """About page with information about KRT Maker"""
+    template_name = 'web/about.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add some statistics for the about page
+        from .models import KRTSession, Article, XMLFile
+        
+        stats = {
+            'total_papers_processed': KRTSession.objects.filter(status='completed').count(),
+            'total_papers_available': XMLFile.objects.filter(is_available=True).count(),
+            'total_articles': Article.objects.count(),
+            'avg_processing_time': KRTSession.objects.filter(
+                status='completed', 
+                processing_time__isnull=False
+            ).aggregate(avg_time=models.Avg('processing_time'))['avg_time'] or 0,
+        }
+        
+        context['stats'] = stats
+        return context
+
+
+class APIDocsView(TemplateView):
+    """API Documentation page"""
+    template_name = 'web/api_docs.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add API endpoint information
+        context['base_url'] = self.request.build_absolute_uri('/api/')
+        context['version'] = '1.0'
+        
+        return context

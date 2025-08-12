@@ -1,0 +1,2134 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS135608</article-id>
+<article-id pub-id-type="doi">10.1101/2021.09.19.460950</article-id>
+<article-id pub-id-type="archive">PPR398030</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>IL13Pred: A method for predicting immunoregulatory cytokine IL-13 inducing peptides for managing COVID-19 severity</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Jain</surname>
+<given-names>Shipra</given-names>
+</name>
+<email>shipra@iiitd.ac.in</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Dhall</surname>
+<given-names>Anjali</given-names>
+</name>
+<email>anjalid@iiitd.ac.in</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Patiyal</surname>
+<given-names>Sumeet</given-names>
+</name>
+<email>sumeetp@iiitd.ac.in</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Raghava</surname>
+<given-names>Gajendra P. S.</given-names>
+</name>
+<email>raghava@iiitd.ac.in</email>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<aff id="A1">Department of Computational Biology, Indraprastha Institute of Information Technology, Okhla Phase 3, New Delhi-110020, India</aff>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>
+<bold>Corresponding author</bold>, Prof. G.P.S. Raghava, Head of Department, Department of Computational Biology, Indraprastha Institute of Information Technology, Okhla Phase 3, New Delhi-110020, India. <email>raghava@iiitd.ac.in</email>, Phone No: +91-11-26907444</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>24</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>21</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Interleukin 13 (IL-13) is an immunoregulatory cytokine that is primarily released by activated T-helper 2 cells. It induces the pathogenesis of many allergic diseases, such as airway hyperresponsiveness, glycoprotein hypersecretion and goblet cell hyperplasia. IL-13 also inhibits tumor immunosurveillance, which leads to carcinogenesis. In recent studies, elevated IL-13 serum levels have been shown in severe COVID-19 patients. Thus it is important to predict IL-13 inducing peptides or regions in a protein for designing safe protein therapeutics particularly immunotherapeutic. This paper describes a method developed for predicting, designing and scanning IL-13 inducing peptides. The dataset used in this study contain experimentally validated 313 IL-13 inducing peptides and 2908 non-inducing homo-sapiens peptides extracted from the immune epitope database (IEDB). We have extracted 95 key features using SVC-L1 technique from the originally generated 9165 features using Pfeature. Further, these key features were ranked based on their prediction ability, and top 10 features were used for building machine learning prediction models. In this study, we have deployed various machine learning techniques to develop models for predicting IL-13 inducing peptides. These models were trained, test and evaluated using five-fold cross-validation techniques; best model were evaluated on independent dataset. Our best model based on XGBoost achieves a maximum AUC of 0.83 and 0.80 on the training and independent dataset, respectively. Our analysis indicate that certain SARS-COV2 variants are more prone to induce IL-13 in COVID-19 patients. A standalone package as well as a web server named ‘IL-13Pred’ has been developed for predicting IL-13 inducing peptides (<ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred/">https://webs.iiitd.edu.in/raghava/il13pred/</ext-link>).</p>
+</abstract>
+<kwd-group>
+<kwd>Interleukin 13</kwd>
+<kwd>SARS-CoV2 variants</kwd>
+<kwd>COVID-19</kwd>
+<kwd>Immunoregulatory cytokine</kwd>
+<kwd>Prediction method</kwd>
+<kwd>Web server</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">IL-13 is an immune-regulatory cytokine primarily secreted by activated T helper-Type (Th) 2 cells that inhibits inflammatory cytokine production [<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>]. In literature many studies have shown that IL-13 is also produced by diverse cell types, including eosinophils, mast cells, basophils, smooth muscle cells, natural killer cells, and fibroblasts with varied biological functions [<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>]. The transcription of IL-13 cytokine is mainly regulated by GATA3 transcription factor. IL-13 has approx. 25% sequence homology with IL-4 and is located on human chromosome 5q31 [<xref ref-type="bibr" rid="R4">4</xref>]. It has been shown that IL-4 and IL-13 are functionally related, but it is surprising that IL-13 seems to be a more promising target for designing therapeutics than IL-4 [<xref ref-type="bibr" rid="R3">3</xref>]. As shown in <xref ref-type="fig" rid="F1">Figure 1</xref>, it mediates several vital functions in diverse biological pathways including regulation of airway hyperresponsiveness, allergic inflammation, mastocytosis, goblet cell hyperplasia, tissue eosinophilia, IgE Ab production, tumor cell growth, tissue remodeling, intracellular parasitism, and fibrosis.</p>
+<p id="P3">Many studies exhibited that alterations in IL-13 effector functions can be targeted to treat certain cancers, like B-cell chronic lymphocytic leukemia and Hodgkin's disease [<xref ref-type="bibr" rid="R5">5</xref>,<xref ref-type="bibr" rid="R6">6</xref>]. It inhibits tumor immunosurveillance in homo sapiens, therefore IL-13 inhibitors can act as effective cancer immunotherapeutics candidates by activating type-1 anti-cancer defense mechanisms [<xref ref-type="bibr" rid="R7">7</xref>,<xref ref-type="bibr" rid="R8">8</xref>]. Moreover, studies have reported that IL-13/ IL-4 receptors have a crucial role in prognosis of cancers such as pancreatic, gastric, and colon cancer [<xref ref-type="bibr" rid="R9">9</xref>–<xref ref-type="bibr" rid="R12">12</xref>]. They interact with tumor microenvironment by activating tumor-associated macrophages and myeloid-derived suppressor cells [<xref ref-type="bibr" rid="R13">13</xref>,<xref ref-type="bibr" rid="R14">14</xref>]. IL-13 receptors were found to be overexpressed in glioblastoma multiforme human samples in situ, whereas, normal specimen expressed few IL-13 binding receptor sites [<xref ref-type="bibr" rid="R15">15</xref>]. Moreover, increased IL-13 levels were observed in pulmonary artery hypertension (PAH) patients as compared to non-PAH controls [<xref ref-type="bibr" rid="R16">16</xref>]. Involvement of IL-13 receptor α1 in myocardial homeostasis embarking its role in cardiovascular diseases [<xref ref-type="bibr" rid="R17">17</xref>].</p>
+<p id="P4">IL-13 has emerged as a central regulator in airway hyperresponsiveness, fibrosis, mucus hypersecretion and switching of B cell antibody production from IgM to IgE. Research highlights that the IL-13 pathway could be a promising target in the treatment of diverse asthma phenotypes [<xref ref-type="bibr" rid="R18">18</xref>,<xref ref-type="bibr" rid="R19">19</xref>]. It has been shown in the past that anti-IL-13 drugs plays a major role in controlling the ‘Th2 high' asthmatic phenotype [<xref ref-type="bibr" rid="R20">20</xref>]. Therefore, anti-IL-13 drugs have become popular (anrukinzumab, lebrikizunab and tralokinumab) for controlling the severity of asthma [<xref ref-type="bibr" rid="R21">21</xref>]. IL-13 also has crucial consequences on non-hematopoietic cells, including endothelial cells, smooth muscle cells, fibroblasts, epithelial cells, and sensory neurons [<xref ref-type="bibr" rid="R22">22</xref>–<xref ref-type="bibr" rid="R25">25</xref>]. Additionally, several studies have shown that the plasma levels of IL-13 were significantly higher in COVID-19 patients [<xref ref-type="bibr" rid="R26">26</xref>–<xref ref-type="bibr" rid="R28">28</xref>]. A recent study has shown that the COVID-19 infected patients with elevated IL-13 serum levels required ventilation support as compared to others. Also, COVID-19 patients prescribed with IL-13 inhibiting drug (Dupilumab) have shown less dreadful symptoms [<xref ref-type="bibr" rid="R26">26</xref>]. In another study, researchers have reported differential expression levels of 14 cytokines including IL-13 in healthy control, moderate and severe COVID-19 patients, and they observed that the higher IL-13 expression level is directly proportional to the COVID-19 severity [<xref ref-type="bibr" rid="R28">28</xref>]. Therefore, it is the need of the hour to develop a prediction method devoted to classify IL13 inducing peptides. To the best of our knowledge, IL-13Pred is the first of its kind to predict the IL-13 inducing and non-inducing peptides from its amino acid sequence.</p>
+<p id="P5">In this study, we present an <italic>in-silico</italic> method to classify the IL-13 inducing and non-inducing peptides/epitopes. We have used experimentally reported IL-13 inducing and non-inducing peptides of humans from IEDB. Using this dataset, we have applied various state-of-the-art machine learning classifiers and the model performance was evaluated on the independent dataset. We have delivered a webserver and standalone version of ‘IL-13Pred’ for scientific community usage.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<title>Material and Methods</title>
+<sec id="S3">
+<title>Dataset Preparation and Pre-processing</title>
+<p id="P6">Initially, we extracted 343 IL-13 inducing experimentally validated peptides of humans from IEDB [<xref ref-type="bibr" rid="R29">29</xref>]. During pre-processing, we have removed the peptides with length less than 8 or more than 35 amino acids [<xref ref-type="bibr" rid="R30">30</xref>]. Also, to avoid any redundancy in the dataset, we have removed duplicate copies of the peptides (if any). Eventually, we left with a positive dataset of 313 IL-13 inducing peptides. One of the major challenges was to compile a negative dataset of experimentally validated non-inducing peptides. To overcome this issue, we have acquired the negative dataset from the recently published article IL6Pred [<xref ref-type="bibr" rid="R30">30</xref>], and after the pre-processing we obtained 2908 non-inducing peptides. Finally, we proceeded with a positive dataset of 313 IL-13 inducing and a negative dataset of 2908 non-inducing unique peptides.</p>
+</sec>
+<sec id="S4">
+<title>Feature Generation</title>
+<p id="P7">In the present method, we have implemented Pfeature to compute various types of descriptors using sequence information of the peptides. It generates a wide range of descriptors in a fixed vector size of a given protein or peptide sequence [<xref ref-type="bibr" rid="R31">31</xref>]. We utilized composition-based module of Pfeature for our dataset, and generated a vector of 9165 features for each sequence. For our dataset we computed 15 types of composition-based features like, AAC, DPC, TPC, ATC and many more as given in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</sec>
+<sec id="S5">
+<title>Ranking and Selection of features</title>
+<p id="P8">In order to extract the crucial features from a larger pool of features generated using Pfeature, we utilized SVC-L1-based feature selection technique from Scikit-learn package. SVC-L1 based method implements the support vector classifier (SVC) with linear kernel, penalized with L1 regularization [<xref ref-type="bibr" rid="R32">32</xref>]. This technique identifies the important features from the high-dimensional feature set. SVC-L1 is a faster method when compared to other available techniques for feature selection. Using this method, we have listed 95 important features from the pool of 9165 features.</p>
+<p id="P9">Post that, feature-selector tool was implemented for ranking of the obtained key 95 features based on their performance in classifying the IL-13 inducing and non-inducing peptides. Decision tree-based algorithm light gradient boosting machine is implemented in the feature-selector tool which calculates the rank of feature based on the number of times a feature is used to split the data across all trees [<xref ref-type="bibr" rid="R33">33</xref>]. This tool generates top-ranked features (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table S1</xref>) that were used to build machine learning prediction models for IL-13 inducing peptides.</p>
+</sec>
+<sec id="S6">
+<title>Cross-validation and External Validation dataset</title>
+<p id="P10">We have implemented standard protocols to build, test and evaluate our prediction models. In the present study, we have applied both 5-fold cross-validation as well as external validation technique. The complete dataset was divided in 80:20 proportion, where 80% (i.e. 250 positive and 2326 negative) of the dataset was categorized as training and the prevailing 20% (i.e. 63 positive and 582 negative) was designated as independent dataset [<xref ref-type="bibr" rid="R34">34</xref>].</p>
+</sec>
+<sec id="S7">
+<title>Machine learning Models and Evaluation</title>
+<p id="P11">In order to develop a prediction method for classifying IL-13 inducing peptides, we have implemented diverse machine learning techniques. In this study, we have used various classifiers such as eXtreme Gradient Boosting (XGB), K-nearest neighbor (KNN), support vector machine (SVM), gaussian naive bayes (GNB), decision tree (DT), linear regression (LR), and random forest (RF). We implemented Scikit-learn package of Python to build these machine learning prediction models [<xref ref-type="bibr" rid="R35">35</xref>].</p>
+<p id="P12">Standard norms of five-fold cross validation were followed such as marking four folds of data as training dataset and remaining one-fold as testing data. We have repeated this step five times and have reported the average scores of five cycles in result section. We have optimized various parameters respective to each classifier to obtain the best performing models. In result section we have reported the standard measures used to estimate the performance of the developed prediction models. We have calculated both threshold-dependent as well as threshold-independent parameters for evaluating the performance. Sensitivity, specificity, accuracy and Matthews correlation coefficient (MCC) are calculated as threshold-dependent parameters using equations 1-4. Area Under the Receiver Operating Characteristic curve (AUC) is calculated as the threshold-independent measure. <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>*</mml:mo>
+<mml:mn>100</mml:mn>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>*</mml:mo>
+<mml:mn>100</mml:mn>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:mi>A</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mtext> </mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>*</mml:mo>
+<mml:mn>100</mml:mn>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mi>M</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mi>C</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mi>N</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:math>
+</disp-formula> Where, FP is false positive, FN is false negative, TP is true positive and TN is true negative, respectively.</p>
+</sec>
+<sec id="S8">
+<title>Standalone and Web Server</title>
+<p id="P13">We have provided a user-friendly web interface named ‘IL-13Pred’ to predict IL-13 inducing and non-inducing peptides (<ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred">https://webs.iiitd.edu.in/raghava/il13pred</ext-link>). The web server is easy to use and has four major modules named as “Predict”, “Design”, “Protein Scan”, and “Blast Scan”. The front-end of the web interface was created using HTML5, JAVA, CSS3 and PHP scripts. This platform is compatible with most of modern devices including mobile, tablets, desktop and laptops. Standalone version of IL-13Pred can be downloaded from the provided URL <ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred/stand.html">https://webs.iiitd.edu.in/raghava/il13pred/stand.html</ext-link>.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="results">
+<title>Results</title>
+<sec id="S10">
+<title>Compositional Analysis</title>
+<p id="P14">We have computed the amino acid composition for the positive and negative dataset independently. The average amino acid composition for IL-13 inducing and non-inducing peptides is shown in <xref ref-type="fig" rid="F3">Figure 3</xref>. The average composition of L, K, M and N residues are higher in IL-13 inducing peptides. Whereas, the amino acids G, P, Y and T residues are abundant in non-inducing peptides.</p>
+</sec>
+<sec id="S11">
+<title>Positional Analysis</title>
+<p id="P15">The amino acid positional analysis depicts the dominant residues at a particular position in IL-13 inducing and non-inducing peptides i.e., positive and negative dataset. In <xref ref-type="fig" rid="F4">figure 4</xref>, two sample logo shows the important amino acid residue at a particular position and its relative occurrence in the sequence. The first eight positions represent the eight N-terminal peptide residues, and the last eight positions represent the eight C-terminal peptide residues. In IL-13 inducing peptides, we observe that Leucine (L) occurs more frequently at 2<sup>nd</sup>, 5<sup>th</sup>, 7<sup>th</sup>,9<sup>th</sup>, 11<sup>th</sup> and 16<sup>th</sup> position. Further, Asparagine (N) is mostly preferred at 6<sup>th</sup>, 8<sup>th</sup>, 14<sup>th</sup> and 16<sup>th</sup> position. Whereas, in negative dataset, we observe that the Threonine (T) occurred at 1<sup>st</sup>, 6<sup>th</sup>, 13<sup>th</sup>, 16<sup>th</sup> position with good abundance, and Proline (P) preferred at 3<sup>rd</sup>, 5<sup>th</sup>, 14<sup>th</sup> position. In addition to these two amino acids, Glycine (G) showed an interesting pattern in duplets at 7<sup>th</sup> and 14<sup>th</sup> position.</p>
+</sec>
+<sec id="S12">
+<title>Machine Learning Models Performance evaluation</title>
+<p id="P16">In order to develop prediction models, we have used a positive dataset of 313 IL-13 inducing and a negative dataset of 2908 non-inducing unique peptides. We have applied various machine learning techniques such as SVM, KNN, LR, DT, RF, XGB, and GNB. The performance of all the developed models for top 95 features are reported in <xref ref-type="table" rid="T2">Table 2</xref>. RF based model outperforms other models with the AUC of 0.87 and 0.83 on the training and testing dataset, respectively.</p>
+<p id="P17">Further, we ranked the 95 selected features using feature-selector library of Python. In order to identify the best set of features without compromising the performance, we have developed the models on top 10, 20, 30, …95 features (<xref ref-type="supplementary-material" rid="SD1">Supplementary Table S2, S3</xref>). It was observed that the models developed on top-10 features performed quite well without much compromising the performance, as compared to the models developed on 95 features. As shown in <xref ref-type="table" rid="T3">Table 3</xref>, XGB based model outperforms other classifiers with AUC value of 0.83 and 0.80 on the training and testing dataset, respectively.</p>
+<p id="P18">In order to check the robustness of the developed models, we have reshuffled the dataset 10 times and calculated the performance of models on top-10 features. <xref ref-type="table" rid="T4">Table 4</xref> represents the mean and standard deviation of performance obtained after reshuffling the data ten times. We have observed that the performance of the models is maintained even after reshuffling, signifying the robustness of the developed models. XGB based model has shown the similar trend as in <xref ref-type="table" rid="T3">Table 3</xref>, with AUC of 0.82 ± 0.03</p>
+<sec id="S13">
+<title>Case Study 1: IL-13 inducing peptides in proteins of SARS-CoV-2</title>
+<p id="P19">Recent studies have reported the role of elevated IL-13 levels in COVID-19 patients [<xref ref-type="bibr" rid="R26">26</xref>–<xref ref-type="bibr" rid="R28">28</xref>]. Coronavirus proteins massively induces the release of this immunoregulatory cytokine. To identify the IL-13 inducing peptides in the SARS coronavirus proteins, we have utilized “Protein Scan” module of ‘IL-13Pred’ (<ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred/scan.php">https://webs.iiitd.edu.in/raghava/il13pred/scan.php</ext-link>) using the default parameters. We downloaded the SARS-CoV-2 proteins of five different countries, including India (MZ340539.1), China (MT291829.1), USA (MZ319836.1) Brazil (MZ169911.1) and Japan (LC528233.2) from NCBI (<ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/datasets/coronavirus/">https://www.ncbi.nlm.nih.gov/datasets/coronavirus/</ext-link>). We identified 213 IL-13 inducing peptides out of 1259 peptides of the spike proteins of USA (Geolocation: California) reported SARS-CoV-2 strain (as reported in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table S4</xref>). In addition to these, we have also identified the IL-13 inducing/non-inducing peptides in other coronavirus proteins such as envelope protein, ORF6, ORF1ab, ORF3a, ORF7a/7b, ORF8, nucleocapsid phosphoprotein, ORF10 and membrane glycoprotein of USA strain, represented in <xref ref-type="supplementary-material" rid="SD1">Supplementary Table S5</xref>. These findings shall be taken into consideration by the scientific community, while designing subunit vaccine against COVID-19 and other disorders that can be provoked by the induction of IL-13.</p>
+</sec>
+<sec id="S14">
+<title>Case Study 2: IL-13 inducing peptides in Spike proteins of SARS-CoV-2 variant strains</title>
+<p id="P20">In this study, we have made a systematic attempt to highlight contrast among IL-13 inducing peptides in SARS-CoV-2 variant strains. We have identified and reported IL-13 inducing peptides in Alpha (B.1.1.7), Beta (B.1.351) and Delta (B.1.617.2) variants of SARS-CoV-2 virus. We have downloaded the reference Spike protein of SARS-CoV-2 from NCBI. Post that we have manually done the substitution mutations reported by Centers for Disease Control and Prevention (CDC portal) and Indian SARS-CoV-2 Genomics Consortium using In-House script. The Alpha variant (B.1.1.7) has total of seven substitution mutations namely N501Y, A570D, D614G, P681H, T716I, S982A and D1118H. The Beta variant (B.1.351) was obtained by doing subsequent nine substitution mutation D80A, D215G, K417N, E484K, N501Y, D614G, A701V, L18F and R246I in reference spike protein sequence. The Delta (B.1.617.2) variant of SARS-CoV-2 strain had nine mutations namely T19R, T95I, G142D, R158G, L452R, T478K, D614G, P681R and D950N from reference protein. In order to identify the IL-13 inducing peptides in these curated variants of COVID-19 Spike proteins, we have executed “Protein Scan” module of ‘IL-13Pred’ (<ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred/scan.php">https://webs.iiitd.edu.in/raghava/il13pred/scan.php</ext-link>) using the default parameters. Initially, we have computed IL-13 inducing and non-inducing peptides of all three variants strains. Subsequently, we have mapped the differences of three variants across the reference protein sequence in terms of IL-13 inducing vs non inducing properties. <xref ref-type="table" rid="T6">Table 6</xref> represents the sequences with contrasting effects after substitution mutation in spike proteins. As shown in table below, few mutations have turned on the IL-13 inducing property and some have turned off the same. For instance, mutation at 618<sup>th</sup> position of the spike protein in Delta strain from amino acid Proline to Arginine have turned on the IL-13 inducing property of the mutated peptide. Similarly, mutation from Aspartic acid to Asparagine at 950<sup>th</sup> position have changed the nature of peptides from non-inducer to IL-13 inducer.</p>
+<p id="P21">However, the similar trends of these amino acid is depicted in <xref ref-type="fig" rid="F3">Figure 3</xref>, where the composition of Arginine and Asparagine is preferred in IL-13 inducing peptides as compared to non-inducing peptides. In a given sequence, composition and position of the amino acid plays a vital role in changing the properties and role of the proteins in variant strains, which is also depicted in <xref ref-type="table" rid="T6">Table 6</xref>. The complete results of three variant spike protein strains are provided in the <xref ref-type="supplementary-material" rid="SD1">Supplementary Tables (S6-S8)</xref>.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S15" sec-type="discussion | conclusions">
+<title>Discussion and Conclusion</title>
+<p id="P22">IL-13 have been shown its role in mucosal inflammation, including allergic asthma, eosinophilic oesophagitis, ulcerative colitis, and fibrosis [<xref ref-type="bibr" rid="R4">4</xref>]. We have also seen that receptors of IL-13 were found to be overexpressed in various cancer cells, defining it as a promising target for cancer immunotherapy. In recent study, researcher have shown the correlation between IL-13 levels and COVID-19 severity. Higher level of IL-13 has been reported in severe COVID-19 patients. They have also observed that COVID-19 patients with higher IL-13 serum levels tend to prolong ventilation support as compared to others. They have shown that IL-13 neutralization results in reduced COVID-19 severity and lung hyaluronan deposition in mouse model. In addition, they have reported that COVID-19 patients taking Dupilumab medicine had less severe disease [<xref ref-type="bibr" rid="R26">26</xref>]. In present study, we made a systematic approach to understand the role of IL-13 inducing peptides and have provided a method to classify IL-13 inducing peptides. The experimentally validated IL-13 inducing peptides of humans from IEDB are taken for developing prediction models. The positive dataset of 313 IL-13 inducing and a negative dataset of 2908 IL-13 non-inducing unique peptides, were used in this study. The amino acid composition and positional analysis was performed to show contrast among IL-13 inducing and non-inducing peptides. From compositional analysis we observe that the amino acid leucine, lysine, methionine and asparagine residues are preferred in IL-13 inducing peptides. However, glycine, proline, tyrosine and threonine residues are abundantly found in non-inducing peptides. On the other hand, the positional analysis shows that leucine is preferred at 2<sup>nd</sup>, 5<sup>th</sup>, 7<sup>th</sup>,9<sup>th</sup>, 11<sup>th</sup> and 16<sup>th</sup> position, whereas, asparagine is mostly preferred at 6<sup>th</sup>, 8<sup>th</sup>, 14<sup>th</sup> and 16<sup>th</sup> position in the positive dataset.</p>
+<p id="P23">Further, we have applied Pfeature tool for extracting relevant features from this dataset. Using the extracted feature set, we have applied well-established machine learning methods with tuned parameters to develop the models with best performance. Machine learning model performance for both set of features, such as 95 selected features and top 10 features are reported. XGBoost-based model achieves a maximum AUC of 0.83 and 0.80 on training and independent dataset, respectively using top10 features. We have provided a webserver and a standalone version of ‘IL-13Pred’ for scientific community usage for distinguishing the IL-13 inducing and non-inducing peptides/epitopes. Using the protein scan module of ‘IL-13Pred’ webserver, we identify the IL-13 inducing peptides in 5 different COVID-19 strains such as India (MZ340539.1), China (MT291829.1), USA (MZ319836.1) Brazil (MZ169911.1) and Japan (LC528233.2). Also, we have identified the IL-13 inducing regions in Spike protein of Alpha (B.1.1.7), Beta (B.1.351) and Delta (B.1.617.2) variants of SARS-CoV-2 virus. The prediction results show that the amino acid P168R and D950N mutations in Delta variant induce IL-13 immunoregulatory cytokine.</p>
+<p id="P24">The efficacy of an epitope/peptide to induce IL-13 and alter the immune response towards a disease state makes it of great importance in immunotherapy and vaccine designing. Although inducing IL-13 response in patients is a very complex process that depends on various factors. An epitope/ peptide is still a promising alternative while designing a vaccine or immunotherapy against any disease. In literature, studies have shown that antibodies that can block IL-13 receptors could be used in designing vaccine effectively [<xref ref-type="bibr" rid="R36">36</xref>,<xref ref-type="bibr" rid="R37">37</xref>]. Thus, IL-13 induced immunosuppression could serve as a crucial step in vaccine subunit designing. Although diverse <italic>in silico</italic> methods are available for T cell epitopes prediction, but no computational method was there for IL-13 inducing epitopes/ peptide prediction. The present study is an organized attempt made in this direction for providing a user-friendly platform/ webserver. We encourage scientific community to use IL-13Pred for developing efficient immunotherapy and vaccine candidates by differentiating them apriori as IL-13 inducing epitopes.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Tables</label>
+<media xlink:href="EMS135608-supplement-Supplementary_Tables.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66536" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgement</title>
+<p>AD is thankful to the Department of Science and Technology (DST-INSPIRE) and SP is thankful to the Department of Biotechnology (DBT) for providing senior research fellowships. SJ, AD and SP are thankful to the Department of Computational Biology, IIITD New Delhi for infrastructure and facilities.</p>
+</ack>
+<bio id="B1">
+<p id="P25">
+<bold>Author’s Biography</bold>
+</p>
+<list list-type="order" id="L1">
+<list-item>
+<p id="P26">Shipra Jain is currently working as Ph.D. in Computational Biology from Department of Computational Biology, Indraprastha Institute of Information Technology, New Delhi, India.</p>
+</list-item>
+<list-item>
+<p id="P27">Anjali Dhall is currently working as Ph.D. in Computational Biology from Department of Computational Biology, Indraprastha Institute of Information Technology, New Delhi, India.</p>
+</list-item>
+<list-item>
+<p id="P28">Sumeet Patiyal is currently working as Ph.D. in Computational Biology from Department of Computational Biology, Indraprastha Institute of Information Technology, New Delhi, India.</p>
+</list-item>
+<list-item>
+<p id="P29">Gajendra P. S. Raghava is currently working as Professor and Head of Department of Computational Biology, Indraprastha Institute of Information Technology, New Delhi, India.</p>
+</list-item>
+</list>
+</bio>
+<sec sec-type="data-availability" id="S17">
+<title>Data Availability Statement</title>
+<p id="P30">All the datasets generated for this study are either included in this article the dataset is available at <ext-link ext-link-type="uri" xlink:href="https://webs.iiitd.edu.in/raghava/il13pred/dataset.php">https://webs.iiitd.edu.in/raghava/il13pred/dataset.php</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="conflict">
+<p id="P31">
+<bold>Conflict of Interest</bold>
+</p>
+<p id="P32">The authors declare no competing financial and non-financial interests.</p>
+</fn>
+<fn id="FN2" fn-type="con">
+<p id="P33">
+<bold>Author Contributions</bold>
+</p>
+<p id="P34">SJ, AD, and SP collected and processed the datasets. SJ, AD, SP and GPSR implemented the algorithms. SJ, AD, and SP developed the prediction models. SJ, AD, SP and GPSR analysed the results. SP, SJ and AD created the back-end of the web server and front-end user interface. SJ, AD, SJ and GPSR penned the manuscript. GPSR conceived and coordinated the project, and gave overall supervision to the project. All authors have read and approved the final manuscript.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>M</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>C</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>WM</surname>
+<given-names>R de</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Interleukin 13, a T-cell-derived cytokine that regulates human monocyte and B-cell function</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>1993</year>
+<volume>90</volume>
+<fpage>3735</fpage>
+<lpage>3739</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>M</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>C</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>D</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Interleukin-13 is a new human lymphokine regulating inflammatory and immune responses</article-title>
+<source>Nature</source>
+<year>1993</year>
+<volume>362</volume>
+<fpage>248</fpage>
+<lpage>250</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>W</surname>
+<given-names>TA</given-names>
+</name>
+</person-group>
+<article-title>IL-13 effector functions</article-title>
+<source>Annu Rev Immunol</source>
+<year>2003</year>
+<volume>21</volume>
+<fpage>425</fpage>
+<lpage>456</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>M</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>R</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Interleukin 13 and its role in gut defence and inflammation</article-title>
+<source>Gut</source>
+<year>2012</year>
+<volume>61</volume>
+<fpage>1765</fpage>
+<lpage>1773</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>S</surname>
+<given-names>BF</given-names>
+</name>
+<name>
+<surname>K</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>TW</given-names>
+</name>
+</person-group>
+<article-title>Interleukin 13: a growth factor in hodgkin lymphoma</article-title>
+<source>Int Arch Allergy Immunol</source>
+<year>2001</year>
+<volume>126</volume>
+<fpage>267</fpage>
+<lpage>276</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>P</surname>
+<given-names>RK</given-names>
+</name>
+</person-group>
+<article-title>Suppression of an IL-13 autocrine growth loop in a human Hodgkin/Reed-Sternberg tumor cell line by a novel IL-13 antagonist</article-title>
+<source>Cell Immunol</source>
+<year>2001</year>
+<volume>211</volume>
+<fpage>37</fpage>
+<lpage>42</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>T</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>P</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>B</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Role of IL-13 in regulation of anti-tumor immunity and tumor growth</article-title>
+<source>Cancer Immunol Immunother</source>
+<year>2004</year>
+<volume>53</volume>
+<fpage>79</fpage>
+<lpage>85</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>S</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Z</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Association between IL13 gene polymorphisms and susceptibility to cancer: a meta-analysis</article-title>
+<source>Gene</source>
+<year>2013</year>
+<volume>515</volume>
+<fpage>56</fpage>
+<lpage>61</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>T</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Endogenously Expressed IL-4Rα Promotes the Malignant Phenotype of Human Pancreatic Cancer In Vitro and In Vivo</article-title>
+<source>Int J Mol Sci</source>
+<year>2017</year>
+<volume>18</volume>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>S</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>T</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Possible Roles of Interleukin-4 and −13 and Their Receptors in Gastric and Colon Cancer</article-title>
+<source>Int J Mol Sci</source>
+<year>2021</year>
+<volume>22</volume>
+<fpage>1</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>L</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>A</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>R</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Interleukin-4 and interleukin-13 increase NADPH oxidase 1-related proliferation of human colon cancer cells</article-title>
+<source>Oncotarget</source>
+<year>2017</year>
+<volume>8</volume>
+<fpage>38113</fpage>
+<lpage>38135</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>C</surname>
+<given-names>YA</given-names>
+</name>
+<name>
+<surname>K</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Association of IL4, IL13, and IL4R polymorphisms with gastrointestinal cancer risk: A meta-analysis</article-title>
+<source>J Epidemiol</source>
+<year>2017</year>
+<volume>27</volume>
+<fpage>215</fpage>
+<lpage>220</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O-R</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Immune surveillance: a balance between protumor and antitumor immunity</article-title>
+<source>Curr Opin Genet Dev</source>
+<year>2008</year>
+<volume>18</volume>
+<fpage>11</fpage>
+<lpage>18</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>W</surname>
+<given-names>HW</given-names>
+</name>
+<name>
+<surname>J</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Alternative activation of tumor-associated macrophages by IL-4: priming for protumoral functions</article-title>
+<source>Cell Cycle</source>
+<year>2010</year>
+<volume>9</volume>
+<fpage>4824</fpage>
+<lpage>4835</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Debinski</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gibo</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Hulet</surname>
+<given-names>SW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Receptor for interleukin 13 is a marker and therapeutic target for human high-grade gliomas</article-title>
+<year>1999</year>
+<comment>undefined</comment>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuan</surname>
+<given-names>S-M</given-names>
+</name>
+</person-group>
+<article-title>Interleukin-13 in the pathogenesis of pulmonary artery hypertension</article-title>
+<source>J Lab Med</source>
+<year>2019</year>
+<volume>43</volume>
+<fpage>5</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>A</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>K</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>W</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>New Role for Interleukin-13 Receptor α1 in Myocardial Homeostasis and Heart Failure</article-title>
+<source>J Am Heart Assoc</source>
+<year>2017</year>
+<volume>6</volume>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>R</surname>
+<given-names>EL</given-names>
+</name>
+<name>
+<surname>L</surname>
+<given-names>RF</given-names>
+</name>
+</person-group>
+<article-title>Interleukin-13 signaling and its role in asthma</article-title>
+<source>World Allergy Organ J</source>
+<year>2011</year>
+<volume>4</volume>
+<fpage>54</fpage>
+<lpage>64</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>C</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Role of interleukin-13 in asthma</article-title>
+<source>Curr Allergy Asthma Rep</source>
+<year>2013</year>
+<volume>13</volume>
+<fpage>415</fpage>
+<lpage>420</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>C</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>L</surname>
+<given-names>RF</given-names>
+</name>
+<name>
+<surname>H</surname>
+<given-names>NA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Lebrikizumab treatment in adults with asthma</article-title>
+<source>N Engl J Med</source>
+<year>2011</year>
+<volume>365</volume>
+<fpage>1088</fpage>
+<lpage>1098</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>B</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>F</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>V</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Critical Evaluation of Anti-IL-13 and Anti-IL-4 Strategies in Severe Asthma</article-title>
+<source>Int Arch Allergy Immunol</source>
+<year>2016</year>
+<volume>170</volume>
+<fpage>122</fpage>
+<lpage>131</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bochner</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>Klunk</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Sterbinsky</surname>
+<given-names>SA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>IL-13 selectively induces vascular cell adhesion molecule-1 expression in human endothelial cells</article-title>
+<source>J Immunol</source>
+<year>1995</year>
+<volume>154</volume>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>W-K</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>IL-12/IL-13 axis in allergic asthma</article-title>
+<source>J Allergy Clin Immunol</source>
+<year>2001</year>
+<volume>107</volume>
+<fpage>9</fpage>
+<lpage>18</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>L</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>X</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>N</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Effects of Th2 cytokines on chemokine expression in the lung: IL-13 potently induces eotaxin expression by airway epithelial cells</article-title>
+<source>J Immunol</source>
+<year>1999</year>
+<volume>162</volume>
+<fpage>2477</fpage>
+<lpage>2487</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>O</surname>
+<given-names>LK</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>F</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sensory Neurons Co-opt Classical Immune Signaling Pathways to Mediate Chronic Itch</article-title>
+<source>Cell</source>
+<year>2017</year>
+<volume>171</volume>
+<fpage>217</fpage>
+<lpage>228</lpage>
+<elocation-id>e13</elocation-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>D</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>IL-13 is a driver of COVID-19 severity</article-title>
+<source>medRxiv Prepr Serv Heal Sci</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>H</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>W</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>L</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Clinical features of patients infected with 2019 novel coronavirus in Wuhan, China</article-title>
+<source>Lancet (London, England)</source>
+<year>2020</year>
+<volume>395</volume>
+<fpage>497</fpage>
+<lpage>506</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Y</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>L</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Plasma IP-10 and MCP-3 levels are highly associated with disease severity and predict the progression of COVID-19</article-title>
+<source>J Allergy Clin Immunol</source>
+<year>2020</year>
+<volume>146</volume>
+<fpage>119</fpage>
+<lpage>127</lpage>
+<elocation-id>e4</elocation-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>V</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>M</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>O</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The Immune Epitope Database (IEDB): 2018 update</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>D339</fpage>
+<lpage>D343</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>D</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>P</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computer-aided prediction and design of IL-6 inducing peptides: IL-6 plays a crucial role in COVID-19</article-title>
+<source>Brief Bioinform</source>
+<year>2021</year>
+<volume>22</volume>
+<fpage>936</fpage>
+<lpage>945</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pande</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Patiyal</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lathwal</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computing wide range of protein/peptide features from their sequence and structure</article-title>
+<source>bioRxiv</source>
+<year>2019</year>
+<elocation-id>599126</elocation-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Alelyani</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<source>Feature Selection for Classification: A Review</source>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Ke</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Meng</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Finley</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<source>LightGBM: A Highly Efficient Gradient Boosting Decision Tree</source>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nagpal</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Usmani</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Dhanda</surname>
+<given-names>SK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computer-aided designing of immunosuppressive peptides based on IL-10 inducing potential</article-title>
+<source>Sci Rep</source>
+<year>2017</year>
+<volume>7</volume>
+<elocation-id>42851</elocation-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gramfort</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine Learning in Python</article-title>
+<source>J Mach Learn Res</source>
+<year>2012</year>
+<volume>12</volume>
+<fpage>2825</fpage>
+<lpage>2830</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>T</surname>
+<given-names>CS</given-names>
+</name>
+<name>
+<surname>C</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>C</surname>
+<given-names>AL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RPC4046, A Novel Anti-interleukin-13 Antibody, Blocks IL-13 Binding to IL-13 α1 and α2 Receptors: A Randomized, Double-Blind, Placebo-Controlled, Dose-Escalation First-in-Human Study</article-title>
+<source>Adv Ther</source>
+<year>2017</year>
+<volume>34</volume>
+<fpage>1364</fpage>
+<lpage>1381</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>K</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>B</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>B</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Blockade of interleukin-13-mediated cell activation by a novel inhibitory antibody to human IL-13 receptor alpha1</article-title>
+<source>Mol Immunol</source>
+<year>2006</year>
+<volume>43</volume>
+<fpage>1799</fpage>
+<lpage>1807</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<boxed-text id="BX1" position="float" orientation="portrait">
+<caption>
+<title>Key Points</title>
+</caption>
+<list list-type="bullet" id="L2">
+<list-item>
+<p>Interleukin-13, an immunoregulatory cytokine plays an important role in increasing severity of COVID-19 and other diseases.</p>
+</list-item>
+<list-item>
+<p>IL-13Pred is a highly accurate in-silico method developed for predicting the IL-13 inducing peptides/ epitopes.</p>
+</list-item>
+<list-item>
+<p>IL-13 inducing peptides are reported in various SARS-CoV2 strains/variants proteins.</p>
+</list-item>
+<list-item>
+<p>This method can be used to detect IL-13 inducing peptides in vaccine candidates.</p>
+</list-item>
+<list-item>
+<p>User friendly web server and standalone software is freely available for IL-13Pred</p>
+</list-item>
+</list>
+</boxed-text>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Schematic representation of IL-13 activators and its functions in biological pathways.</title>
+</caption>
+<graphic xlink:href="EMS135608-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Work flow of IL-13Pred method algorithm.</title>
+</caption>
+<graphic xlink:href="EMS135608-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Average AAC of IL-13 inducing and non-inducing peptides.</title>
+</caption>
+<graphic xlink:href="EMS135608-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Two-sample logo displaying the amino acid positional conservation among IL-13 positive and negative dataset.</title>
+</caption>
+<graphic xlink:href="EMS135608-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>List of descriptors with brief description and number of feature; computed using Pfeature.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Description of Descriptor</th>
+<th align="center" valign="top">Number of features or length of vector</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">Amino Acid Composition (AAC)</td>
+<td align="right" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">Dipeptide Composition (DPC)</td>
+<td align="right" valign="top">400</td>
+</tr>
+<tr>
+<td align="left" valign="top">Tripeptide Composition (TPC)</td>
+<td align="right" valign="top">8000</td>
+</tr>
+<tr>
+<td align="left" valign="top">Atomic and Bond Composition (ABC)</td>
+<td align="right" valign="top">9</td>
+</tr>
+<tr>
+<td align="left" valign="top">Physicochemical Properties Composition (PCP)</td>
+<td align="right" valign="top">30</td>
+</tr>
+<tr>
+<td align="left" valign="top">Residue Repeat Information (RRI)</td>
+<td align="right" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">Distance Distribution of Residue (DDR)</td>
+<td align="right" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">Shannon-Entropy of Protein (SEP)</td>
+<td align="right" valign="top">1</td>
+</tr>
+<tr>
+<td align="left" valign="top">Shannon Entropy of Residues (SER)</td>
+<td align="right" valign="top">20</td>
+</tr>
+<tr>
+<td align="left" valign="top">Shannon Entropy of Physicochemical Property (SPC)</td>
+<td align="right" valign="top">25</td>
+</tr>
+<tr>
+<td align="left" valign="top">Conjoint Triad Calculation (CTC)</td>
+<td align="right" valign="top">343</td>
+</tr>
+<tr>
+<td align="left" valign="top">Composition enhanced Transition Distribution (CTD)</td>
+<td align="right" valign="top">189</td>
+</tr>
+<tr>
+<td align="left" valign="top">Pseudo Amino Acid Composition (PAAC)</td>
+<td align="right" valign="top">21</td>
+</tr>
+<tr>
+<td align="left" valign="top">Amphiphilic Pseudo Amino Acid Composition (PAAC)</td>
+<td align="right" valign="top">23</td>
+</tr>
+<tr>
+<td align="left" valign="top">Quasi-Sequence Order (QSO)</td>
+<td align="right" valign="top">42</td>
+</tr>
+<tr>
+<td align="left" valign="top">Sequence Order Coupling Number (SOC)</td>
+<td align="right" valign="top">2</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>The performance of the machine learning models developed using top 95 features.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Classifier</th>
+<th align="center" valign="top">Dataset</th>
+<th align="center" valign="top">Sensitivity</th>
+<th align="center" valign="top">Specificity</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">AUC</th>
+<th align="center" valign="top">MCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>DT</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">65.96</td>
+<td align="right" valign="top">66.38</td>
+<td align="right" valign="top">66.34</td>
+<td align="right" valign="top">0.70</td>
+<td align="right" valign="top">0.19</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">51.28</td>
+<td align="right" valign="top">66.31</td>
+<td align="right" valign="top">64.50</td>
+<td align="right" valign="top">0.60</td>
+<td align="right" valign="top">0.12</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>GNB</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">63.83</td>
+<td align="right" valign="top">79.58</td>
+<td align="right" valign="top">78.14</td>
+<td align="right" valign="top">0.78</td>
+<td align="right" valign="top">0.29</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">38.46</td>
+<td align="right" valign="top">77.43</td>
+<td align="right" valign="top">72.71</td>
+<td align="right" valign="top">0.61</td>
+<td align="right" valign="top">0.12</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>KNN</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">57.02</td>
+<td align="right" valign="top">65.61</td>
+<td align="right" valign="top">64.83</td>
+<td align="right" valign="top">0.64</td>
+<td align="right" valign="top">0.14</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">50.00</td>
+<td align="right" valign="top">69.31</td>
+<td align="right" valign="top">66.98</td>
+<td align="right" valign="top">0.62</td>
+<td align="right" valign="top">0.13</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>LR</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">73.62</td>
+<td align="right" valign="top">73.99</td>
+<td align="right" valign="top">73.95</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.30</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">58.97</td>
+<td align="right" valign="top">68.25</td>
+<td align="right" valign="top">67.13</td>
+<td align="right" valign="top">0.68</td>
+<td align="right" valign="top">0.19</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>RF</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">82.13</td>
+<td align="right" valign="top">79.88</td>
+<td align="right" valign="top">80.09</td>
+<td align="right" valign="top">0.88</td>
+<td align="right" valign="top">0.41</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">70.51</td>
+<td align="right" valign="top">77.07</td>
+<td align="right" valign="top">76.28</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.34</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>XGB</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">73.62</td>
+<td align="right" valign="top">76.59</td>
+<td align="right" valign="top">76.32</td>
+<td align="right" valign="top">0.84</td>
+<td align="right" valign="top">0.32</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">69.23</td>
+<td align="right" valign="top">73.19</td>
+<td align="right" valign="top">72.71</td>
+<td align="right" valign="top">0.80</td>
+<td align="right" valign="top">0.30</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>SVC</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">72.34</td>
+<td align="right" valign="top">71.25</td>
+<td align="right" valign="top">71.35</td>
+<td align="right" valign="top">0.79</td>
+<td align="right" valign="top">0.27</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">51.28</td>
+<td align="right" valign="top">68.08</td>
+<td align="right" valign="top">66.05</td>
+<td align="right" valign="top">0.62</td>
+<td align="right" valign="top">0.13</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>The performance of the machine learning models developed using top 10 features.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Classifier</th>
+<th align="center" valign="top">Dataset</th>
+<th align="center" valign="top">Sensitivity</th>
+<th align="center" valign="top">Specificity</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">AUC</th>
+<th align="center" valign="top">MCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>DT</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">69.36</td>
+<td align="right" valign="top">69.46</td>
+<td align="right" valign="top">69.45</td>
+<td align="right" valign="top">0.74</td>
+<td align="right" valign="top">0.24</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">60.26</td>
+<td align="right" valign="top">71.43</td>
+<td align="right" valign="top">70.08</td>
+<td align="right" valign="top">0.72</td>
+<td align="right" valign="top">0.22</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>GNB</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">71.06</td>
+<td align="right" valign="top">68.18</td>
+<td align="right" valign="top">68.44</td>
+<td align="right" valign="top">0.74</td>
+<td align="right" valign="top">0.24</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">64.10</td>
+<td align="right" valign="top">66.31</td>
+<td align="right" valign="top">66.05</td>
+<td align="right" valign="top">0.73</td>
+<td align="right" valign="top">0.21</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>KNN</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">65.11</td>
+<td align="right" valign="top">56.47</td>
+<td align="right" valign="top">57.26</td>
+<td align="right" valign="top">0.64</td>
+<td align="right" valign="top">0.13</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">60.26</td>
+<td align="right" valign="top">55.73</td>
+<td align="right" valign="top">56.28</td>
+<td align="right" valign="top">0.61</td>
+<td align="right" valign="top">0.11</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>LR</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">64.26</td>
+<td align="right" valign="top">61.85</td>
+<td align="right" valign="top">62.07</td>
+<td align="right" valign="top">0.67</td>
+<td align="right" valign="top">0.15</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">56.41</td>
+<td align="right" valign="top">59.61</td>
+<td align="right" valign="top">59.23</td>
+<td align="right" valign="top">0.63</td>
+<td align="right" valign="top">0.11</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>RF</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">74.47</td>
+<td align="right" valign="top">76.34</td>
+<td align="right" valign="top">76.17</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.33</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">64.10</td>
+<td align="right" valign="top">75.13</td>
+<td align="right" valign="top">73.80</td>
+<td align="right" valign="top">0.77</td>
+<td align="right" valign="top">0.28</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>XGB</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">78.30</td>
+<td align="right" valign="top">74.84</td>
+<td align="right" valign="top">75.16</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.33</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">71.80</td>
+<td align="right" valign="top">73.02</td>
+<td align="right" valign="top">72.87</td>
+<td align="right" valign="top">0.80</td>
+<td align="right" valign="top">0.30</td>
+</tr>
+<tr>
+<td align="left" valign="middle" rowspan="2">
+<bold>SVC</bold>
+</td>
+<td align="left" valign="top">
+<bold>Training</bold>
+</td>
+<td align="right" valign="top">54.47</td>
+<td align="right" valign="top">70.70</td>
+<td align="right" valign="top">69.22</td>
+<td align="right" valign="top">0.67</td>
+<td align="right" valign="top">0.16</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>Validation</bold>
+</td>
+<td align="right" valign="top">46.15</td>
+<td align="right" valign="top">74.25</td>
+<td align="right" valign="top">70.85</td>
+<td align="right" valign="top">0.64</td>
+<td align="right" valign="top">0.15</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>The performance of the machine learning models developed after reshuffling dataset 10 times using top 10 features.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Classifier</th>
+<th align="center" valign="top">Sensitivity</th>
+<th align="center" valign="top">Specificity</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">AUC</th>
+<th align="center" valign="top">MCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">
+<bold>DT</bold>
+</td>
+<td align="right" valign="top">63.65 ± 4.76</td>
+<td align="right" valign="top">67.94 ± 2.83</td>
+<td align="right" valign="top">67.52 ± 2.52</td>
+<td align="right" valign="top">0.71 ± 0.03</td>
+<td align="right" valign="top">0.20 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>GNB</bold>
+</td>
+<td align="right" valign="top">72.38 ± 4.92</td>
+<td align="right" valign="top">63.81 ± 2.52</td>
+<td align="right" valign="top">64.65 ± 2.30</td>
+<td align="right" valign="top">0.74 ± 0.02</td>
+<td align="right" valign="top">0.22 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>KNN</bold>
+</td>
+<td align="right" valign="top">64.44 ± 5.35</td>
+<td align="right" valign="top">51.25 ± 2.00</td>
+<td align="right" valign="top">52.54 ± 1.83</td>
+<td align="right" valign="top">0.62 ± 0.04</td>
+<td align="right" valign="top">0.09 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>LR</bold>
+</td>
+<td align="right" valign="top">62.22 ± 4.66</td>
+<td align="right" valign="top">60.76 ± 1.87</td>
+<td align="right" valign="top">60.90 ± 1.62</td>
+<td align="right" valign="top">0.66 ± 0.02</td>
+<td align="right" valign="top">0.14 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>RF</bold>
+</td>
+<td align="right" valign="top">74.13 ± 6.17</td>
+<td align="right" valign="top">73.95 ± 1.41</td>
+<td align="right" valign="top">73.97 ± 1.08</td>
+<td align="right" valign="top">0.81 ± 0.03</td>
+<td align="right" valign="top">0.30 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>XGB</bold>
+</td>
+<td align="right" valign="top">76.98 ± 4.98</td>
+<td align="right" valign="top">71.13 ± 1.75</td>
+<td align="right" valign="top">71.71 ± 1.51</td>
+<td align="right" valign="top">0.82 ± 0.03</td>
+<td align="right" valign="top">0.31 ± 0.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">
+<bold>SVC</bold>
+</td>
+<td align="right" valign="top">63.81 ± 8.46</td>
+<td align="right" valign="top">63.20 ± 3.35</td>
+<td align="right" valign="top">63.26 ± 2.70</td>
+<td align="right" valign="top">0.68 ± 0.04</td>
+<td align="right" valign="top">0.16 ± 0.04</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<title>Potential IL-13 inducing peptides predicted by IL-13Pred in spike protein of USA (MZ319836.1) strain</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">Epitope</th>
+<th align="center" valign="top">Prediction score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">ELDSFKEELDKYFKN</td>
+<td align="right" valign="top">0.39</td>
+</tr>
+<tr>
+<td align="left" valign="top">LLTDEMIAQYTSALL</td>
+<td align="right" valign="top">0.32</td>
+</tr>
+<tr>
+<td align="left" valign="top">KQGNFKNLREFVFKN</td>
+<td align="right" valign="top">0.3</td>
+</tr>
+<tr>
+<td align="left" valign="top">EIDRLNEVAKNLNES</td>
+<td align="right" valign="top">0.3</td>
+</tr>
+<tr>
+<td align="left" valign="top">VNIQKEIDRLNEVAK</td>
+<td align="right" valign="top">0.27</td>
+</tr>
+<tr>
+<td align="left" valign="top">LYRLFRKSNLKPFER</td>
+<td align="right" valign="top">0.25</td>
+</tr>
+<tr>
+<td align="left" valign="top">NIQKEIDRLNEVAKN</td>
+<td align="right" valign="top">0.23</td>
+</tr>
+<tr>
+<td align="left" valign="top">KSTNLVKNKCVNFNF</td>
+<td align="right" valign="top">0.22</td>
+</tr>
+<tr>
+<td align="left" valign="top">VLTESNKKFLPFQQF</td>
+<td align="right" valign="top">0.22</td>
+</tr>
+<tr>
+<td align="left" valign="top">IQKEIDRLNEVAKNL</td>
+<td align="right" valign="top">0.22</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" position="float" orientation="portrait">
+<label>Table 6</label>
+<caption>
+<title>Changes in IL-13 inducing properties by mutation in Spike protein in SARS-CoV-2 variant strains.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top">SARS-Cov2 Variants</th>
+<th align="center" valign="top">Mutation</th>
+<th align="center" valign="top">Reference Peptide</th>
+<th align="center" valign="top">Mutated Peptide</th>
+<th align="center" valign="top">Score_R</th>
+<th align="center" valign="top">Score_M</th>
+<th align="center" valign="top">Prediction_R</th>
+<th align="center" valign="top">Prediction_M</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle" rowspan="11">
+<bold>Alpha (B.1.1.7)</bold>
+</td>
+<td align="center" valign="top" rowspan="2">
+<bold>A570D</bold>
+</td>
+<td align="center" valign="top">NKKFLPFQQFGRDIA</td>
+<td align="center" valign="top">NKKFLPFQQFGRDID</td>
+<td align="center" valign="top">0.05</td>
+<td align="center" valign="top">0.11</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">KFLPFQQFGRDIADT</td>
+<td align="center" valign="top">KFLPFQQFGRDIDDT</td>
+<td align="center" valign="top">0.03</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>T716I</bold>
+</td>
+<td align="center" valign="top">SNNSIAIPTNFTISV</td>
+<td align="center" valign="top">SNNSIAIPINFTISV</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="5">
+<bold>S980A</bold>
+</td>
+<td align="center" valign="top">NFGAISSVLNDILSR</td>
+<td align="center" valign="top">NFGAISSVLNDILAR</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">GAISSVLNDILSRLD</td>
+<td align="center" valign="top">GAISSVLNDILARLD</td>
+<td align="center" valign="top">0.03</td>
+<td align="center" valign="top">0.08</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">VLNDILSRLDKVEAE</td>
+<td align="center" valign="top">VLNDILARLDKVEAE</td>
+<td align="center" valign="top">0.03</td>
+<td align="center" valign="top">0.07</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">LNDILSRLDKVEAEV</td>
+<td align="center" valign="top">LNDILARLDKVEAEV</td>
+<td align="center" valign="top">0.05</td>
+<td align="center" valign="top">0.08</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">NDILSRLDKVEAEVQ</td>
+<td align="center" valign="top">NDILARLDKVEAEVQ</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">0.09</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="3">
+<bold>D1118H</bold>
+</td>
+<td align="center" valign="top">TQRNFYEPQIITTDN</td>
+<td align="center" valign="top">TQRNFYEPQIITTHN</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">QRNFYEPQIITTDNT</td>
+<td align="center" valign="top">QRNFYEPQIITTHNT</td>
+<td align="center" valign="top">0.07</td>
+<td align="center" valign="top">0.03</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">YEPQIITTDNTFVSG</td>
+<td align="center" valign="top">YEPQIITTHNTFVSG</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="5">
+<bold>Beta (B.1.351)</bold>
+</td>
+<td align="center" valign="top" rowspan="2">
+<bold>L18F</bold>
+</td>
+<td align="center" valign="top">LVLLPLVSSQCVNLT</td>
+<td align="center" valign="top">LVLLPLVSSQCVNFT</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">LLPLVSSQCVNLTTR</td>
+<td align="center" valign="top">LLPLVSSQCVNFTTR</td>
+<td align="center" valign="top">0.07</td>
+<td align="center" valign="top">0.02</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="3">
+<bold>D80A</bold>
+</td>
+<td align="center" valign="top">VSGTNGTKRFDNPVL</td>
+<td align="center" valign="top">VSGTNGTKRFANPVL</td>
+<td align="center" valign="top">0.05</td>
+<td align="center" valign="top">0.12</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">GTNGTKRFDNPVLPF</td>
+<td align="center" valign="top">GTNGTKRFANPVLPF</td>
+<td align="center" valign="top">0.02</td>
+<td align="center" valign="top">0.07</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">SGTNGTKRFDNPVLP</td>
+<td align="center" valign="top">SGTNGTKRFANPVLP</td>
+<td align="center" valign="top">0.09</td>
+<td align="center" valign="top">0.02</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="5">
+<bold>Delta (B.1.617.2)</bold>
+</td>
+<td align="center" valign="top">
+<bold>T19R</bold>
+</td>
+<td align="center" valign="top">LVLLPLVSSQCVNLT</td>
+<td align="center" valign="top">LVLLPLVSSQCVNLR</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">0.04</td>
+<td align="center" valign="top">IL-13 inducer</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>R158G</bold>
+</td>
+<td align="center" valign="top">FRVYSSANNCTFEYV</td>
+<td align="center" valign="top">FGVYSSANNCTFEYV</td>
+<td align="center" valign="top">0.03</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="middle" rowspan="2">
+<bold>P618R</bold>
+</td>
+<td align="center" valign="top">TQTNSPRRARSVASQ</td>
+<td align="center" valign="top">TQTNSRRRARSVASQ</td>
+<td align="center" valign="top">0.02</td>
+<td align="center" valign="top">0.08</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">QTNSPRRARSVASQS</td>
+<td align="center" valign="top">QTNSRRRARSVASQS</td>
+<td align="center" valign="top">0.02</td>
+<td align="center" valign="top">0.08</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>D950N</bold>
+</td>
+<td align="center" valign="top">DSLSSTASALGKLQD</td>
+<td align="center" valign="top">DSLSSTASALGKLQN</td>
+<td align="center" valign="top">0.05</td>
+<td align="center" valign="top">0.06</td>
+<td align="center" valign="top">IL-13 non-inducer</td>
+<td align="center" valign="top">IL-13 inducer</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<p id="P35"># <bold>Score_R and Score_M is the score of Reference Spike protein and score of mutated Spike protein respectively</bold>
+</p>
+</fn>
+<fn id="TFN2">
+<p id="P36"># <bold>Prediction_R and Prediction_M is the IL-13 Inducing/non-inducing prediction of the Reference Spike protein and mutated Spike protein respectively</bold>
+</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</floats-group>
+</article>

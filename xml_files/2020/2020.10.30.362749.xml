@@ -1,0 +1,2936 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS103445</article-id>
+<article-id pub-id-type="doi">10.1101/2020.10.30.362749</article-id>
+<article-id pub-id-type="archive">PPR232981</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Mechanism of ligand recognition by human ACE2 receptor</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Bhattarai</surname>
+<given-names>Apurba</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Pawnikar</surname>
+<given-names>Shristi</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Yinglong</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Center for Computational Biology and Department of Molecular Biosciences University of Kansas, Lawrence, KS 66047, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding <email>miao@ku.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>04</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>01</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Angiotensin converting enzyme 2 (ACE2) plays a key role in renin-angiotensin system regulation and amino acid homeostasis. Human ACE2 acts as the receptor for severe acute respiratory syndrome coronaviruses SARS-CoV and SARS-CoV-2. ACE2 is also widely expressed in epithelial cells of lungs, heart, kidney and pancreas. It is considered an important drug target for treating SARS-CoV-2, as well as pulmonary diseases, heart failure, hypertension, renal diseases and diabetes. Despite the critical importance, the mechanism of ligand binding to the human ACE2 receptor remains unknown. Here, we address this challenge through all-atom simulations using a novel ligand Gaussian accelerated molecular dynamics (LiGaMD) method. Microsecond LiGaMD simulations have successfully captured both binding and unbinding of the MLN-4760 inhibitor in the ACE2 receptor. In the ligand unbound state, the ACE2 receptor samples distinct Open, Partially Open and Closed conformations. Ligand binding biases the receptor conformational ensemble towards the Closed state. The LiGaMD simulations thus suggest a conformational selection mechanism for ligand recognition by the ACE2 receptor. Our simulation findings are expected to facilitate rational drug design of ACE2 against coronaviruses and other related human diseases.</p>
+</abstract>
+<kwd-group>
+<kwd>Angiotensin converting enzyme 2 (ACE2)</kwd>
+<kwd>coronaviruses</kwd>
+<kwd>ligand binding</kwd>
+<kwd>ligand Gaussian accelerated molecular dynamics (LiGaMD)</kwd>
+<kwd>conformational selection</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Angiotensin converting enzyme 2 (ACE2) plays a key role in renin-angiotensin system regulation and amino acid homeostasis (<xref ref-type="bibr" rid="R11">Gheblawi et al., 2020</xref>;<xref ref-type="bibr" rid="R12">Gross et al., 2020</xref>). Human ACE2 acts as the receptor for severe acute respiratory syndrome coronaviruses SARS-CoV and SARS-CoV-2. ACE2 plays a vital role as a catalytic protease converting angiotensin II to angiotensin 1-7 and angiotensin I to angiotensin 1-9. Proteolytic reactions of these peptide hormones aid in the conversion of vasoconstrictors to vasodilators and thus help to maintain blood pressure (<xref ref-type="bibr" rid="R12">Gross et al., 2020</xref>). Likewise, ACE2 is widely expressed in epithelial cells of lungs, heart, kidney, and pancreas. It is an important drug target for treating pulmonary diseases, heart failure, hypertension, renal diseases and diabetes (<xref ref-type="bibr" rid="R28">Patel et al., 2016</xref>;<xref ref-type="bibr" rid="R41">Yan et al., 2020</xref>). ACE2 also stabilizes amino acid transporter B°AT1 to regulate the gut microbiome and amino acid homeostasis (<xref ref-type="bibr" rid="R29">Perlot and Penninger, 2013</xref>).</p>
+<p id="P3">Human ACE2 has been identified as the functional receptor for severe acute respiratory syndrome coronaviruses including SARS-CoV and SARS-CoV-2 (<xref ref-type="bibr" rid="R14">Hoffmann et al., 2020</xref>). SARS-CoV-2 is responsible for 2019 coronavirus pandemic (COVID-19). By mid-October 2020, ~40 million people have been infected by COVID-19 with ~1.1 million deaths around the world. With the unprecedented pandemic, it is of paramount importance to investigate virus infection and develop effective treatments of SARS-CoV-2. The entry of SARS-CoV-2 is mediated by interaction of the receptor binding domain (RBD) in the virus spike protein S1 subunit with the host ACE2 receptor. The transmembrane protease serine 2 (TMPRSS2) promotes priming of the spike protein and facilitates its S2 subunit to initiate the viral-cell membrane fusion. Hence, inhibiting the interaction between the viral RBD and host ACE2 presents a promising strategy for blocking SAR-COV-2 entry to the human cells.</p>
+<p id="P4">ACE2 consists of the N-terminal catalytic peptidase domain (PD) on the extracellular side and the C-terminal transmembrane collectrin-like domain (CLD) with a cytoplasmic tail on the intracellular side. The enzyme PD domain can be inhibited by compounds like MLN-4760 (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>), which bind to the protein active site and prevent substrate binding. MLN-4760 binding biases the receptor to adopt a “Closed” conformation, in which the protein active site formed by two subdomains of the PD is closed from the external environment (<xref ref-type="fig" rid="F1">Figure 1A</xref>). Furthermore, the receptor undergoes conformational changes with hinge-bending movement of the dynamic N-terminal subdomain I relative to the stable subdomain II, e.g., ~16° bending upon inhibitor binding (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>). In the absence of ligand binding, the two subdomains move apart from each other and the protein active site becomes exposed to solvent in an “Open” conformation (<xref ref-type="fig" rid="F1">Figure 1A</xref>). In complex with RBD of the SARS-CoV or SARS-CoV-2, the ACE2 receptor also adopts a “Partially Open” conformation, in which the subdomain I lies between the “Open” and “Closed” conformations (<xref ref-type="bibr" rid="R12">Gross et al., 2020</xref>) (<xref ref-type="fig" rid="F1">Figure 1A</xref>). Among over 20 experimental structures of the ACE2 receptor present in Protein Data Bank (PDB), most of them exhibit “Open” and “Partially Open” conformations but only one structure has been identified in the “Closed” conformation (PDB: 1R4L) (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>). Despite tremendous efforts to determine these experimental structures (<xref ref-type="bibr" rid="R16">Huentelman et al., 2004;</xref>
+<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>;<xref ref-type="bibr" rid="R19">Li et al., 2005</xref>;<xref ref-type="bibr" rid="R13">Hernández Prada et al., 2008</xref>;<xref ref-type="bibr" rid="R34">Song et al., 2018</xref>;<xref ref-type="bibr" rid="R33">Shang et al., 2020;</xref>
+<xref ref-type="bibr" rid="R40">Wang et al., 2020</xref>;<xref ref-type="bibr" rid="R41">Yan et al., 2020</xref>), the dynamics and functional mechanism of the ACE receptor are still poorly understood (<xref ref-type="bibr" rid="R26">Nami et al., 2020</xref>).</p>
+<p id="P5">MLN-4760 is a highly selective and potent (IC50: 0.44 nM) small-molecule inhibitor of the ACE2 receptor (<xref ref-type="bibr" rid="R7">Dales et al., 2002</xref>). The inhibitor has two carboxylate groups contributing to -2 net charge of the molecule (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). One of the negatively charged carboxylate groups interacts with the positively charged zinc ion, by which the ACE2 receptor functions as a metallopeptidase enzyme. Depending on ligand or viral RBD binding, the receptor adopts different conformations, but the pathways and mechanism of ligand binding in the ACE2 receptor remain unknown. In the context of SARS-CoV-2 and many other medical implications, it is important to understand the mechanism of ligand recognition by the ACE2 receptor in order to design effective drugs against the virus.</p>
+<p id="P6">Ligand Gaussian accelerated molecular dynamics (LiGaMD) (<xref ref-type="bibr" rid="R23">Miao et al., 2020</xref>) is an enhanced sampling computational technique that is developed to efficiently simulate both binding and unbinding of ligand molecules. It is based on Gaussian accelerated molecular dynamics (GaMD), which works by adding a harmonic boost potential to smooth the biomolecular potential energy surface (<xref ref-type="bibr" rid="R24">Miao et al., 2015</xref>). GaMD greatly reduces energy barriers and accelerates biomolecular simulations by orders of magnitude (<xref ref-type="bibr" rid="R21">Miao, 2018</xref>). GaMD provides unconstrained enhanced sampling without the requirement of pre-defined collective variables or reaction coordinates. Moreover, because the boost potential exhibits a Gaussian distribution, biomolecular free energy profiles can be properly recovered through cumulant expansion to the second order (<xref ref-type="bibr" rid="R24">Miao et al., 2015</xref>). In LiGaMD (<xref ref-type="bibr" rid="R23">Miao et al., 2020</xref>), the ligand non-bonded interaction potential energy is selectively boosted to enable ligand dissociation. Another boost potential is applied to the remaining potential energy of the entire system in a dual-boost algorithm to facilitate ligand rebinding. LiGaMD has been demonstrated on host-guest and protein-ligand binding model systems. LiGaMD allows us to capture repetitive ligand binding and unbinding, and thus characterize both ligand thermodynamics and kinetics simultaneously. The calculated ligand binding free energy and kinetic rate constants compared very well with experimental data (<xref ref-type="bibr" rid="R23">Miao et al., 2020</xref>).</p>
+<p id="P7">Here, we have applied all-atom LiGaMD simulations to investigate binding and unbinding of the MLN-4760 inhibitor and associated conformational changes of the ACE2 receptor. Microsecond LiGaMD simulations were able to capture both ligand binding and unbinding. The ACE2 receptor sampled Open, Partially Open and Closed conformational states, being consistent with previous experimental structures. Ligand binding could bias the receptor conformational ensemble to the Closed state, suggesting a conformational selection mechanism rather than induced fit. In summary, the LiGaMD simulations allowed us to understand the mechanism of ligand recognition by the ACE2 receptor.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S3">
+<title>Ligand Gaussian accelerated molecular dynamics (LiGaMD)</title>
+<p id="P8">LiGaMD is an enhanced sampling computational technique that is developed to efficiently simulate ligand binding and unbinding based on the previous GaMD (<xref ref-type="bibr" rid="R24">Miao et al., 2015</xref>). Details of the LiGaMD method has been described in the previous study (<xref ref-type="bibr" rid="R23">Miao et al., 2020</xref>). A brief summary will be provided here.</p>
+<p id="P9">We consider a system of ligand <italic>L</italic> binding to a protein <italic>P</italic> in a biological environment <italic>E.</italic> The system comprises of <italic>N</italic> atoms with their coordinates <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mi>r</mml:mi>
+<mml:mo>≡</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mi>N</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> and momenta <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mi>r</mml:mi>
+<mml:mo>≡</mml:mo>
+<mml:mo>:</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>p</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mo>⋯</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>p</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mi>N</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>. The system Hamiltonian can be expressed as: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:mi>H</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>K</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>K</italic>(<italic>p</italic>) and <italic>V</italic>(<italic>r</italic>) are the system kinetic and total potential energies, respectively. Next, we decompose the potential energy into the following terms: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mtable columnalign="left" equalrows="true" equalcolumns="true">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mspace width="0.2em"/>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>V<sub>P,b</sub>
+</italic>, <italic>V<sub>L,b</sub>
+</italic> and <italic>V<sub>E,b</sub>
+</italic> are the bonded potential energies in protein <italic>P,</italic> ligand <italic>L</italic> and environment <italic>E,</italic> respectively. <italic>V<sub>PP,nb</sub>
+</italic>, <italic>V<sub>LL,nb</sub>
+</italic> and <italic>V<sub>EE,nb</sub>
+</italic> are the self non-bonded potential energies in protein <italic>P</italic>, ligand <italic>L</italic> and environment <italic>E</italic>, respectively. <italic>V<sub>PL,nb</sub>
+</italic>, <italic>V<sub>PE,nb</sub>
+</italic> and <italic>V<sub>LE,nb</sub>
+</italic> are the non-bonded interaction energies between <italic>P-L, P-E</italic> and <italic>L-E,</italic> respectively. According to classical molecular mechanics force fields (<xref ref-type="bibr" rid="R6">Cornell et al., 1996</xref>;<xref ref-type="bibr" rid="R10">Duan et al., 2003</xref>;<xref ref-type="bibr" rid="R37">Vanommeslaeghe et al., 2010</xref>;<xref ref-type="bibr" rid="R38">Vanommeslaeghe and MacKerell, 2014</xref>), the non-bonded potential energies are usually calculated as: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">elec</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>v</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>W</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> Where <italic>V<sub>elec</sub>
+</italic> and <italic>V<sub>vdw</sub>
+</italic> are the system electrostatic and van der Waals potential energies. Presumably, ligand binding mainly involves the non-bonded interaction energies of the ligand, <italic>V<sub>L,nb</sub>
+</italic>(<italic>r</italic>) = <italic>V<sub>LL,nb</sub>
+</italic>(<italic>r<sub>L</sub>
+</italic>) + <italic>V<sub>PL,nb</sub>
+</italic>(<italic>r<sub>PL</sub>
+</italic>) + <italic>V<sub>LE,nb</sub>
+</italic>(<italic>r<sub>LE</sub>
+</italic>). In LiGaMD, we add boost potential selectively to the essential ligand non-bonded potential energy according to the GaMD algorithm: <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M6">
+<mml:mrow>
+<mml:mtext>Δ</mml:mtext>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="right" equalrows="true" equalcolumns="true">
+<mml:mtr columnalign="right">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>&lt;</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="right">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>≥</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>E<sub>L,nb</sub>
+</italic> is the threshold energy for applying boost potential and <italic>k<sub>L,nb</sub>
+</italic> is the harmonic constant. For simplicity, the subscript of Δ<italic>V<sub>L,nb</sub>
+</italic>(<italic>r</italic>), <italic>E<sub>L,nb</sub>
+</italic> and <italic>k<sub>L,nb</sub>
+</italic> is dropped in the following. When <italic>E</italic> is set to the lower bound <italic>E</italic>=<italic>V<sub>max</sub>
+</italic>, <italic>k</italic>
+<sub>0</sub> can be calculated as:<disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>min</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1.0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>min</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1.0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mi>V</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">max</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mtext mathvariant="italic">min</mml:mtext>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">max</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">avg</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P10">Alternatively, when the threshold energy <italic>E</italic> is set to its upper bound <inline-formula>
+<mml:math id="M8">
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">min</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mi>k</mml:mi>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is set to: <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M9">
+<mml:mrow>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+<mml:mrow>
+<mml:mo>′</mml:mo>
+<mml:mo>′</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>≡</mml:mo>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mi>V</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">max</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">min</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">avg</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="italic">min</mml:mtext>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> if <inline-formula>
+<mml:math id="M10">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>k</mml:mi>
+<mml:mn>0</mml:mn>
+<mml:mo>"</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> is found to be between <italic>0</italic> and <italic>1.</italic> Otherwise, <italic>k<sub>0</sub>
+</italic> is calculated using <xref ref-type="disp-formula" rid="FD7">Eqn. (5)</xref>.</p>
+<p id="P11">Next, one can add multiple ligand molecules in the solvent to facilitate ligand binding to proteins in MD simulations (<xref ref-type="bibr" rid="R9">Dror et al., 2011</xref>;<xref ref-type="bibr" rid="R21">Miao et al., 2018</xref>). This is based on the fact that the ligand binding rate constant <italic>k</italic>
+<sub>on</sub> is inversely proportional to the ligand concentration. The higher the ligand concentration, the faster the ligand binds, provided that the ligand concentration is still within its solubility limit. In addition to selectively boosting the bound ligand, another boost potential could thus be applied on the unbound ligand molecules, protein and solvent to facilitate both ligand dissociation and rebinding. The second boost potential is calculated using the total system potential energy other than the non-bonded potential energy of the bound ligand in <xref ref-type="disp-formula" rid="FD4">Eqn. (2)</xref> as: <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M11">
+<mml:mrow>
+<mml:mtable columnalign="left" equalrows="true" equalcolumns="true">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>L</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>L</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mspace width="0.2em"/>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>P</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>P</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>r</mml:mi>
+<mml:mrow>
+<mml:mi>P</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M12">
+<mml:mrow>
+<mml:mtext>Δ</mml:mtext>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="right" equalrows="true" equalcolumns="true">
+<mml:mtr columnalign="right">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>&lt;</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="right">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>r</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>≥</mml:mo>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>D</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>E<sub>D</sub>
+</italic> and <italic>k<sub>D</sub>
+</italic> are the corresponding threshold energy for applying the second boost potential and the harmonic constant, respectively. This leads to dual-boost LiGaMD (LiGaMD_Dual) with the total boost potential Δ<italic>V</italic>(<italic>r</italic>) = Δ<italic>V<sub>L,nb</sub>
+</italic>(<italic>r</italic>) + Δ<italic>V<sub>D</sub>
+</italic>(<italic>r</italic>).</p>
+</sec>
+<sec id="S4">
+<title>Energetic Reweighting</title>
+<p id="P12">To calculate potential of mean force (PMF) (<xref ref-type="bibr" rid="R32">Roux, 1995</xref>) from LiGaMD simulations, the probability distribution along a reaction coordinate is written as <italic>p*</italic>(<italic>A</italic>). Given the boost potential <inline-formula>
+<mml:math id="M13">
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> of each frame, <italic>p*</italic>(<italic>A</italic>) can be reweighted to recover the canonical ensemble distribution, <italic>p</italic>(<italic>A</italic>) as: <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M14">
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>p</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>〈</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>β</mml:mi>
+<mml:mi>Δ</mml:mi>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+<mml:mo>〉</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>M</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msub>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>〈</mml:mo>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mo>*</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>β</mml:mi>
+<mml:mi>Δ</mml:mi>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+<mml:mo>〉</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>M</mml:mi>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>M</italic> is the number of bins, <inline-formula>
+<mml:math id="M15">
+<mml:mrow>
+<mml:mi>β</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>k</mml:mi>
+<mml:mi>B</mml:mi>
+</mml:msub>
+<mml:mi>T</mml:mi>
+<mml:mspace width="0.2em"/>
+<mml:mtext>and</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:mo>〈</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>β</mml:mi>
+<mml:mtext>Δ</mml:mtext>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:msub>
+<mml:mrow>
+<mml:mo>〈</mml:mo>
+</mml:mrow>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the ensemble-averaged Boltzmann factor of <inline-formula>
+<mml:math id="M16">
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>⇀</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> for simulation frames found in the <italic>j</italic>
+<sup>th</sup> bin. The ensemble-averaged reweighting factor can be approximated using cumulant expansion: <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M17">
+<mml:mrow>
+<mml:mo stretchy="false">〈</mml:mo>
+<mml:mrow>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>β</mml:mi>
+<mml:mtext>Δ</mml:mtext>
+<mml:mi>V</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mover accent="true">
+<mml:mi>r</mml:mi>
+<mml:mo>→</mml:mo>
+</mml:mover>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+<mml:mo stretchy="false">〉</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mtext mathvariant="initial">exp</mml:mtext>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>∞</mml:mi>
+</mml:msubsup>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mi>β</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>!</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>}</mml:mo>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where the first two cumulants are given by <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M18">
+<mml:mrow>
+<mml:mtable equalrows="true" equalcolumns="true">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>〈</mml:mo>
+<mml:mrow>
+<mml:mtext>Δ</mml:mtext>
+<mml:mi>V</mml:mi>
+</mml:mrow>
+<mml:mo>〉</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo>〈</mml:mo>
+<mml:mrow>
+<mml:mtext>Δ</mml:mtext>
+<mml:msup>
+<mml:mi>V</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mo>〉</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mo>〈</mml:mo>
+<mml:mrow>
+<mml:mtext>Δ</mml:mtext>
+<mml:msup>
+<mml:mi>V</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mo>〉</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mi>σ</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula>.</p>
+<p id="P13">The boost potential obtained from LiGaMD simulations usually follows near-Gaussian distribution. Cumulant expansion to the second order thus provides a good approximation for computing the reweighting factor (<xref ref-type="bibr" rid="R25">Miao et al., 2014</xref>;<xref ref-type="bibr" rid="R24">Miao et al., 2015</xref>). The reweighted free energy <italic>F</italic>(<italic>A</italic>) = –<italic>k<sub>B</sub>T</italic> ln <italic>p</italic>(<italic>A</italic>) is calculated as: <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M19">
+<mml:mrow>
+<mml:mi>F</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>F</mml:mi>
+<mml:mo>∗</mml:mo>
+</mml:msup>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>A</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:msubsup>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msubsup>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mi>β</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>!</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:msub>
+<mml:mi>C</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>F*</italic>(<italic>A</italic>) = –<italic>k<sub>B</sub>T</italic> ln <italic>p*</italic>(<italic>A</italic>) is the modified free energy obtained from LiGaMD simulation and <italic>F<sub>c</sub>
+</italic> is a constant.</p>
+</sec>
+<sec id="S5">
+<title>Simulations of ligand binding in human ACE2 receptor</title>
+<p id="P14">LiGaMD simulations using the dual-boost scheme were performed on ligand binding to the ACE2 receptor. The X-ray crystal structure of the MLN-4760 inhibitor-bound ACE2 (PDB: 1R4L (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>)) was used to prepare the simulation system (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). The N-and C-termini of the peptides were capped with the acetyl (ACE) and N-methyl amide (NME) neutral groups, respectively. The missing hydrogen atoms were added using the <italic>tleap</italic> module in AMBER (<xref ref-type="bibr" rid="R5">Case et al., 2005a</xref>). The AMBER ff19SB force field (<xref ref-type="bibr" rid="R35">Tian et al., 2019</xref>) were used for the protein. The MLN-4760 ligand was modeled with GAFF-2 (<xref ref-type="bibr" rid="R3">Case et al., 2020</xref>) force field. Atomic partial charges of ligand were obtained through B3LYP/6-31G* quantum calculations of the electrostatic potential, for which the charges were fitted using the antechamber program (<xref ref-type="bibr" rid="R4">Case et al., 2005a</xref>;<xref ref-type="bibr" rid="R5">Case et al., 2005b</xref>). Each system was neutralized by adding counter ions and immersed in a cubic TIP3P (<xref ref-type="bibr" rid="R18">Jorgensen et al., 1983</xref>) water box, which was extended 10 Å from the receptor surface. A total of 10 ligand molecules (one in the X-ray bound conformation and another nine placed randomly in the solvent) were included in the system to facilitate ligand binding. This design was based on the fact that the ligand binding rate is inversely proportional to the ligand concentration. The higher the ligand concentration, the faster the ligand binds, provided that the ligand concentration is still within its solubility limit.</p>
+<p id="P15">The built simulation system was energy minimized with 1 kcal/mol/Å<sup>2</sup> constraints on the heavy atoms of the protein and ligand, including the steepest descent minimization of 5,000 steps followed by a conjugate gradient minimization of 5,000 steps. The system was then heated from 0 K to 300 K for 200 ps. It was further equilibrated using the NVT ensemble at 300K for 800 ps and the NPT ensemble at 300 K and 1 bar for 1 ns with 1 kcal/mol/Å<sup>2</sup> constraints on the heavy atoms of the protein and ligand, followed by 2 ns short cMD without any constraint. The LiGaMD simulations proceeded with 14 ns short cMD to collect the potential statistics, 64 ns GaMD equilibration after adding the boost potential and then three independent 1000 ns production runs (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). Initial testing simulations showed that when the threshold energy for applying boost potential to the ligand non-bonded energy was set to the lower bound (i.e., <italic>E</italic> = <italic>V</italic>
+<sub>max</sub>), the bound ligand maintained the X-ray conformation and did not dissociate. In comparison, when the threshold energy was set to the upper bound (i.e., <italic>E</italic> = <italic>V<sub>min</sub>
+</italic>+1/<italic>k</italic>), it enabled high enough boost potential to dissociate the ligand from the protein. In addition, boost applied not only to the ligand non-bonded energy but also to all the bonded energies can accelerate the molecular transitions for ligand dissociation and protein conformational change. Therefore, the threshold energy for applying the ligand boost potential was set to the upper bound in the LiGaMD_Dual simulations. Similarly, second boost potential was applied to the system total potential energy other than the ligand bonded/non-bonded potential energy to provide sufficient acceleration for sampling ligand rebinding. The threshold energy was set to the upper bound for rebinding part as well. LiGaMD_Dual production simulation frames were saved every 0.2 ps for analysis.</p>
+<p id="P16">The VMD (<xref ref-type="bibr" rid="R17">Humphrey et al., 1996</xref>) and CPPTRAJ (<xref ref-type="bibr" rid="R31">Roe and Cheatham, 2013</xref>) tools were used for simulation analysis. The 2D PMF profiles were calculated through energetic reweighting of the LiGaMD_Dual simulations using <italic>PyReweighting</italic> toolkit (<xref ref-type="bibr" rid="R25">Miao et al., 2014</xref>). 2D PMF profiles of the interdomain Glu56:CA – Ser128:CA atom distance and root-mean-square deviation (RMSD) of the MLN-4760 inhibitor relative to X-ray conformation were calculated to analyze conformational changes of the protein upon ligand binding. Residues Glu56 and Ser128 lie on the tip of α4 (subdomain I) and α6 helices (subdomain II), respectively. The bin size was set to 2.0 Å for the atom distances. Similarly, 2D PMF profiles of the Glu56:CA – Ser128:CA atom distance and RMSD of subdomain I relative to X-ray conformation were calculated to characterize domain flexibility in the ACE2 receptor. The cutoff of simulation frames in one bin for 2D PMF reweighting was set to 500. Structural clustering was performed on the LiGaMD simulations based on the RMSD of the receptor as well as the ligand snapshots using hierarchical agglomerative algorithm in CPPTRAJ (<xref ref-type="bibr" rid="R31">Roe and Cheatham, 2013</xref>). The RMSD cutoff was set to 2.0 A. The top structural clusters were identified as the representative conformations of the receptor and ligand corresponding to low-energy states in the PMF profiles.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="results">
+<title>Results</title>
+<p id="P17">Atomic trajectores were obtained from LiGaMD simulations on the MLN-4760 inhibitor-bound ACE2 receptor (PDB: 1R4L) (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>) (<xref ref-type="fig" rid="F1">Figure 1</xref>). During the LiGaMD equlibration, the bound ligand dissociated from the active site to the bulk solvent, accompanied by large conformational changes of the protein subdomain I (<xref ref-type="supplementary-material" rid="SD1">Figure S2</xref>). Upon ligand dissociation, subdomain I of the receptor changed from the “Closed” to “Open” conformation. Three independent 1000 ns LiGaMD production runs were further performed with randomized intitial atomic velocities after the equilbration simulation.</p>
+<p id="P18">During one of the three 1000 ns LiGaMD production simulations (“Sim 2” in <xref ref-type="supplementary-material" rid="SD1">Table S1</xref>), the MLN-4760 inhibitor bound to the active site of the ACE2 receptor during ~100-500 ns (<xref ref-type="fig" rid="F1">Figure 1B</xref>), while no ligand binding was observed in the other two simulations (<xref ref-type="supplementary-material" rid="SD1">Figure S3</xref>). In “Sim 2”, RMSD of the ligand relative to the 1R4L X-ray structure reached a minimum of ~0.99 Å near ~420 ns (<xref ref-type="fig" rid="F1">Figure 1B</xref>). The ligand then dissociated at ~500 ns into the bulk solvent and stayed unbound during the remainder of the 1000 ns LiGaMD simulation. Meanwhile, the receptor underwent large-scale conformational changes and sampled different conformations inlcuding the “Open”, “Partially Open” and “Closed” (<xref ref-type="fig" rid="F1">Figure 1A</xref>), which were consistent with the receptor experimental structures.</p>
+<sec id="S7">
+<title>LiGaMD simulations captured both ligand binding and dissociation of ACE2</title>
+<p id="P19">During the “Sim 2” LiGaMD trajectory, starting from the bulk solvent, one of the MLN-4760 inhibitor molecules first attached to the interface between the receptor 3<sub>10</sub>H4 and α5 helices within ~100 ns, moved up into the space between the two protein subdomains and entered the active site of the ACE2 receptor between ~100-160 ns (<xref ref-type="fig" rid="F1">Figure 1C</xref>). The ligand bound at the active site of the receptor during ~100-500 ns. At ~500 ns, the ligand dissociated from the active site to bulk solvent (<xref ref-type="fig" rid="F1">Figure 1D</xref>). The dissociation pathway was observed to be different from that of binding. Ligand dissociated from the opening between the receptor α2 and α4 helices as the subdomain I transitioned from “Closed” to “Open” conformation (<xref ref-type="fig" rid="F1">Figure 1D</xref>). On the other hand, the ligand bound through the space just above the 3<sub>10</sub>H4 and α5 helices (<xref ref-type="fig" rid="F1">Figure 1C</xref>). During ligand binding and dissociation in the “Sim 2” LiGaMD trajectory, subdomain I of the receptor sampled different conformations. However, such conformational changes were also observed in other two simulations (“Sim1” and “Sim 2”) regardless of ligand binding/dissociation (<xref ref-type="supplementary-material" rid="SD1">Figure S4</xref>).</p>
+</sec>
+<sec id="S8">
+<title>Free energy profiles of ligand binding in the human ACE2 receptor</title>
+<p id="P20">A 2D potential of mean force (PMF) free energy profile was calculated with the ligand RMSD relative to X-ray conformation and the interdomain distance by combining the three independent 1000 ns LiGaMD production trajectories (<xref ref-type="fig" rid="F2">Figures 2A</xref>). Six low-energy conformational states of the receptor were identified from the PMF profile, including the “Bound (B)”, “Intermediate-1 (I-1)”, “Intermediate-2 (I-2)”, “Intermediate-3 (I-3)”, “Unbound-1 (U-1)” and “Unbound-2 (U-2)”. Particularly, the system adopted the “Bound” state with ligand RMSD &lt; 5 Å, the “Unbound” state with ligand RMSD &gt; 35 Å and intermediatestates with 5 – 35 Å ligand RMSD relative to the 1R4L X-ray structure.</p>
+<p id="P21">In the “Bound” state, the ligand bound at the protein active site and the protein interdomain distance was ~14 Å. The ligand exhibited a minimum RMSD of 0.99 Å compared with the X-ray structure (<xref ref-type="fig" rid="F2">Figures 2A</xref> and <xref ref-type="fig" rid="F2">2B</xref>). The system sampled three different intermediate states during ligand binding, <italic>i.e.</italic>, “Intermediate-1 (I-1)”, “Intermediate-2 (I-2)” and “Intermediate-3 (I-3)”. In the I-1 state, the ligand RMSD was ~9.6 Å and the interdomain distance was ~18-20 Å (<xref ref-type="fig" rid="F2">Figures 2A</xref> and <xref ref-type="fig" rid="F2">2C</xref>). The ligand was located near the active site making interactions with residues of the α4 helix, α5 helix, α11 helix, 3<sub>10</sub>H8 helix, β4-β5 loop, and α8-3<sub>10</sub>H4 loop in the two protein subdomains. In the “I-2” state, the ligand RMSD was ~32.1 Å and the interdomain distance was ~12 Å (<xref ref-type="fig" rid="F2">Figures 2A</xref> and <xref ref-type="fig" rid="F2">2C</xref>). The ligand interacted with the α2 helix of subdomain I and the α4 helix of subdomain II in the receptor. In the “I-3” state, the ligand RMSD was ~29.6 Å and the interdomain distance was ~23 Å (<xref ref-type="fig" rid="F2">Figures 2A</xref> and <xref ref-type="fig" rid="F2">2C</xref>). The ligand interacted with the α8 helix, α20 helix, α8-β3 loop, and the C-terminal loop after the α20 helix in the protein subdomain II (<xref ref-type="fig" rid="F2">Figure 2C</xref>). The system sampled two “Unbound (U-1)” and “Unbound (U-2)” states, where the ligand RMSD was ~60-70 Å and the interdomain distances were ~12 Å and ~23 Å, respectively. In these states, the ligand was found far away from the receptor in the bulk solvent and the receptor could change between the “Closed” and “Open” conformations (<xref ref-type="fig" rid="F2">Figures 2A</xref> and <xref ref-type="fig" rid="F2">2D</xref>).</p>
+</sec>
+<sec id="S9">
+<title>Low-energy intermediate conformational states of ligand binding to human ACE2 receptor</title>
+<p id="P22">Low-energy intermediate conformational states “I-1”, “I-2” and “I-3” of the MLN-4760 inhibitor binding to the human ACE2 receptor identified from the LiGaMD simulation free energy profiles are shown in <xref ref-type="fig" rid="F3">Figures 3A</xref>, <xref ref-type="fig" rid="F3">3B</xref> and <xref ref-type="fig" rid="F3">3C</xref>, respectively. Polar and charged groups present in different parts of the receptor made favorable interactions with the charged carboxylate groups and the polar chloride and nitrogen atoms in the ligand molecule. These interactions played important role in recognition and binding of the MLN-4760 inhibitor to the receptor.</p>
+<p id="P23">In the intermediate “I-1” state, the receptor adopted a “Partially Open” conformation with ~18 Å interdomain distance. The ligand molecule was located near the recetpor active site with ~9.6 Å RMSD relative to the X-ray structure and formed interactions with residues from both subdomains of ACE2. One of the ligand carboxylate groups formed ionic interaction with the positively charged protein residue His345 (<xref ref-type="fig" rid="F3">Figure 3A</xref>). The carboxylate group also interacted with protein residue Thr371. Similary, one of the nitrogen atoms in the ligand’s central ring formed ionic interaction with the negatively charged protein residue Glu145. The ligand chloride group formed polar interactions with protein reisude Asn149.</p>
+<p id="P24">In the intermediate “I-2” state, the receptor adopted the “Closed” conformation and the ligand interacted with the α2 helix of subdomain I and the α4 helix of subdomain II in the receptor (<xref ref-type="fig" rid="F3">Figure 3B</xref>). One of the ligand chloride atoms formed polar interactions with protein residues Gln60 and Asn63, while the other chloride atom formed polar interactions with protein residues Thr118 and Asn121. One of the ligand’s negatively charged carboxylate groups formed ionic interaction with the protein postively charged residue Lys114. The ligand terminal benzene ring formed hydrohpobic interactions with protein residue Val59 (<xref ref-type="fig" rid="F3">Figure 3B</xref>).</p>
+<p id="P25">In the intermediate “I-3” state, one of the ligand chloride atoms formed polar interactions with protein residues Arg245, Ser602 and Met249 of subdomain II (<xref ref-type="fig" rid="F3">Figure 3C</xref>). One of the ligand charged caroxylate groups formed polar interactions with protein residue Asn601. The ligand terminal benzene ring formed hydrohpobic interactions with Pro258 in the receptor.</p>
+<p id="P26">During one of the LiGaMD trajectories (“Sim3”), the MLN-4760 ligand was observed to interact with residue Gly354 of the ACE2 receptor (<xref ref-type="supplementary-material" rid="SD1">Figure S5</xref>). The ligand terminal methyl group was able to form close hydrophobic interactions with the Gly354 residue in subdomain I of the ACE2 receptor. Notably, residue Gly354 is considered an important residue making direct interactions with the RBD of SARS-CoV and SARS-CoV-2 as seen in the experimental structures (<xref ref-type="bibr" rid="R40">Wang et al., 2020</xref>).</p>
+</sec>
+<sec id="S10">
+<title>Conformational plasticity of human ACE2 receptor</title>
+<p id="P27">In the LiGaMD simulations, while the protein subdomain II was stable maintaining the 1R4L X-ray conformation with ~2-4 Å RMSD (<xref ref-type="supplementary-material" rid="SD1">Figures S2</xref> and <xref ref-type="supplementary-material" rid="SD1">4B</xref>), subdomain I in the human ACE2 receptor exhibited high flexibility and underwent large conformational changes with ~3-10 Å RMSD compared with the X-ray conformation (<xref ref-type="fig" rid="F4">Figure 4A</xref>). We calculated 2D PMF regarding the interdomain distance and subdomain I RMSD relative to the 1R4L X-ray conformation. Three low-energy conformational states were identified in the PMF profile, including the “Open”, “Partially Open” and “Closed” (<xref ref-type="fig" rid="F3">Figure 3C</xref>).</p>
+<p id="P28">In the “Closed” conformation, subdomain I moved near subdomain II closing the acitve site. The receptor interdomain distance was ~14 Å and RMSD of subdomain I was ~4 Å compared with the 1R4L X-ray structure (<xref ref-type="fig" rid="F3">Figure 3C</xref>). In the “Partially Open” conformation, the receptor interdomain distance increased to ~18 Å and RMSD of subdomain I was ~4 Å compared with the 1R4L X-ray structure (<xref ref-type="fig" rid="F3">Figure 3C</xref>). Finally, the receptor interdomain distance could increase further to ~20 Å and the subdomain I RMSD relative to the 1R4L X-ray structure increased to ~6 Å in the “Open” conformation. Notably, conformations of the ACE2 receptor in the “Partially Open” and “Open” low-energy states were closely similar to the experimental 6ACK cryo-EM and 6LZG X-ray structures, respectively (<xref ref-type="fig" rid="F3">Figure 3C</xref>). Therefore, the different low-energy states of ACE2 receptor revealed from our LiGaMD simulations highlighted the receptor conformational plasticity during its function for ligand binding and interactions with other proteins (e.g., the coronavirus spike protein).</p>
+</sec>
+</sec>
+<sec id="S11" sec-type="discussion">
+<title>Discussion</title>
+<p id="P29">Since its discovery in 2000 (<xref ref-type="bibr" rid="R8">Donoghue et al., 2000</xref>), the ACE2 receptor has been recognized as a critical protease enzyme with multiple physiological roles in renin-angiotensin system, amino acid transport, gut microbiome ecology and innate immunity. The ACE2 receptor has also been identified as the functional receptor for SARS-CoV and SARS-CoV-2. The COVID-19 pandemic caused by SARS-CoV-2 has been recognized as a serious global health threat as it has no proper treatment and continues to spread across the world. With the infection cases rising daily, it is critical to develop therapeutics against SARS-CoV-2. Here, we have applied all-atom simulations using a novel LiGaMD method to investigate the mechanism of ligand binding to the human ACE2 receptor.</p>
+<p id="P30">Through LiGaMD enhanced sampling simulations, we have, for the first time, successfully captured both binding and dissociation of a ligand in the human ACE2 receptor. During the simulations, the receptor could sample distinct conformational states, revealing remarkable conformational plasticity of the receptor. Ligand binding biased the receptor conformational ensemble to the Closed state, suggesting a conformational selection mechanism rather than induced fit. Furthermore, the MLN-4760 ligand molecule with -2 net charge, formed polar interactions with charged and polar residues in the low energy intermediate states. This finding suggested that electrostatic interactions played an important role in the recognition and binding/dissociation of the MLN-4760 inhibitor to the ACE2 receptor, being consistent with previous findings of “electrostatic steering” in recognition of charged ligands by proteins (<xref ref-type="bibr" rid="R39">Wade et al., 1998</xref>;<xref ref-type="bibr" rid="R23">Miao et al., 2020</xref>).</p>
+<p id="P31">Despite our encouraging simulation findings, it is important to note that the number of ligand binding and unbinding events captured in the presented LiGaMD simulations was too small and the simulation free energy profiles were not converged. More sufficient sampling would be needed in order to obtain converged simulations and calculate the ligand binding thermodynamics and kinetics. This can be potentially achieved through additional and longer simulations, as well as further method developments combining LiGaMD with other enhanced sampling algorithms such as replica exchange (<xref ref-type="bibr" rid="R15">Huang et al., 2018</xref>;<xref ref-type="bibr" rid="R27">Oshima et al., 2019</xref>) and Markov state models (<xref ref-type="bibr" rid="R30">Plattner and Noe, 2015</xref>).</p>
+<p id="P32">In this context, the MLN-4760 inhibitor binds to the human ACE2 receptor with high affinity (IC50: 0.44 nM) (<xref ref-type="bibr" rid="R36">Towler et al., 2004</xref>). It is extremely difficult to simulate the ligand dissociation and binding with long-timescale cMD and even the enhanced sampling methods. Very few computational studies have been carried out on ligand binding to the ACE2 receptor. A recent study (<xref ref-type="bibr" rid="R26">Nami et al., 2020</xref>) showed that the MLN-4760 ligand could dissociate from the ACE2 receptor upon binding of the viral RBD. However, this study was not able to characterize ligand binding to the ACE2 receptor. In comparison, our LiGaMD simulations could capture both ligand binding and dissociation in the human ACE2 receptor.</p>
+<p id="P33">In case of SARS-CoV-2 infection, RBD of the viral spike protein attaches to the top region of subdomain I in the ACE2 receptor, which is distant from the receptor peptidase active site. Thus, the MLN-4760 inhibitor does not compete directly with the RBD of SARS-CoV-2. However, there have been evidences of allosteric signaling between the RBD binding site and active site in the ACE2 receptor. <xref ref-type="bibr" rid="R16">Huentelman et. al</xref>. (<xref ref-type="bibr" rid="R16">Huentelman et al., 2004</xref>) performed <italic>in silico</italic> molecular docking studies to identify a novel ACE2 inhibitor that could also block SARS-CoV spike protein-mediated receptor attachment. Our LiGaMD simulations further highlighted the dynamic nature of the receptor in terms of the large-scale movement of subdomain I and ligand binding. Similarly, LiGaMD simulations showed that MLN-4760 could form hydrophobic interactions with RBD binding site in subdomain I of the receptor. This information could be helpful in designing drugs that could block RBD binding to the receptor. Likewise, since the human ACE2 receptor shows conformational selection for ligand binding, virtual screening using ensemble docking(<xref ref-type="bibr" rid="R20">Lin et al., 2002</xref>;<xref ref-type="bibr" rid="R1">Amaro et al., 2008</xref>;<xref ref-type="bibr" rid="R2">Amaro et al., 2018</xref>) with receptor structural ensembles generated from the LiGaMD simulations will be a promising approach to designing potent drug molecules of the ACE2 receptor.</p>
+<p id="P34">In summary, we have successfully simulated both ligand binding and dissociation in the human ACE2 receptor using the novel LiGaMD enhanced sampling method. During the LiGaMD simulations, the receptor could sample distinct Closed, Partially Open and Open conformational states. Ligand binding biased the receptor towards the Closed conformation, suggesting a conformational selection mechanism. Our simulation findings are expected to facilitate rational drug design targeting ACE2 for the therapeutic treatments of COVID-19 and other related human diseases.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Material</label>
+<media xlink:href="EMS103445-supplement-Supplementary_Material.pdf" mimetype="application" mime-subtype="pdf" id="N68415" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S12">
+<title>Acknowledgements</title>
+<p>This work used supercomputing resources with allocation award TG-MCB180049 through the Extreme Science and Engineering Discovery Environment (XSEDE), which is supported by National Science Foundation grant number ACI-1548562, and the Research Computing Cluster at the University of Kansas. This work was supported in part by the National Institutes of Health (R01GM132572) and the startup funding in the College of Liberal Arts and Sciences at the University of Kansas.</p>
+</ack>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P35">
+<bold>Author Contributions</bold>
+</p>
+<p id="P36">Conceived the study: Y.M., A.B. and S.P.; Performed simulations: A.B.; Analyzed data: A.B. and S.P.; Wrote the manuscript: A.B., S.P. and Y.M.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P37">
+<bold>Conflict of Interest Statement</bold>
+</p>
+<p id="P38">The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amaro</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Baron</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>An improved relaxed complex scheme for receptor flexibility in computer-aided drug design</article-title>
+<source>Journal of Computer-Aided Molecular Design</source>
+<year>2008</year>
+<volume>22</volume>
+<fpage>693</fpage>
+<lpage>705</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amaro</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Baudry</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chodera</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Demir</surname>
+<given-names>Ö</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Smith</surname>
+<given-names>JC</given-names>
+</name>
+</person-group>
+<article-title>Ensemble Docking in Drug Discovery</article-title>
+<source>Biophysical Journal</source>
+<year>2018</year>
+<volume>114</volume>
+<fpage>2271</fpage>
+<lpage>2278</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Case</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Belfon</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ben-Shalom</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Brozell</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cerutti</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Cruzeiro Iii</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Duke</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Giambasi</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<source>AMBER 2020</source>
+<publisher-name>University of California</publisher-name>
+<publisher-loc>San Francisco</publisher-loc>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Cheatham Iii</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gohlke</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Merz</surname>
+<given-names>KM</given-names>
+<suffix>Jr</suffix>
+</name>
+<name>
+<surname>Onufriev</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>RJ</given-names>
+</name>
+</person-group>
+<article-title>The Amber biomolecular simulation programs</article-title>
+<source>Journal of computational chemistry</source>
+<year>2005a</year>
+<volume>26</volume>
+<fpage>1668</fpage>
+<lpage>1688</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gohlke</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Merz</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Onufriev</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Woods</surname>
+<given-names>RJ</given-names>
+</name>
+</person-group>
+<article-title>The Amber biomolecular simulation programs</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2005b</year>
+<volume>26</volume>
+<fpage>1668</fpage>
+<lpage>1688</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cornell</surname>
+<given-names>WD</given-names>
+</name>
+<name>
+<surname>Cieplak</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bayly</surname>
+<given-names>CI</given-names>
+</name>
+<name>
+<surname>Gould</surname>
+<given-names>IR</given-names>
+</name>
+<name>
+<surname>Merz</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Ferguson</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Spellmeyer</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Fox</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Caldwell</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Kollman</surname>
+<given-names>PA</given-names>
+</name>
+</person-group>
+<article-title>A second generation force field for the simulation of proteins, nucleic acids, and organic molecules (vol 117, pg 5179, 1995)</article-title>
+<source>Journal of the American Chemical Society</source>
+<year>1996</year>
+<volume>118</volume>
+<fpage>2309</fpage>
+<lpage>2309</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dales</surname>
+<given-names>NA</given-names>
+</name>
+<name>
+<surname>Gould</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Brown</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Calderwood</surname>
+<given-names>EF</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Minor</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Gavin</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Hales</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kaushik</surname>
+<given-names>VK</given-names>
+</name>
+<name>
+<surname>Stewart</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Substrate-based design of the first class of angiotensin-converting enzyme-related carboxypeptidase (ACE2) inhibitors</article-title>
+<source>Journal of the American Chemical Society</source>
+<year>2002</year>
+<volume>124</volume>
+<fpage>11852</fpage>
+<lpage>11853</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Donoghue</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hsieh</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Baronas</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Godbout</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Gosselin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Stagliano</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Donovan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Woolf</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Robison</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Jeyaseelan</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>A novel angiotensin-converting enzyme–related carboxypeptidase (ACE2) converts angiotensin I to angiotensin 1-9</article-title>
+<source>Circulation research</source>
+<year>2000</year>
+<volume>87</volume>
+<fpage>e1</fpage>
+<lpage>e9</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dror</surname>
+<given-names>RO</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Arlow</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Borhani</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Maragakis</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Shan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Shaw</surname>
+<given-names>DE</given-names>
+</name>
+</person-group>
+<article-title>Pathway and mechanism of drug binding to G-protein-coupled receptors</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2011</year>
+<volume>108</volume>
+<fpage>13118</fpage>
+<lpage>13123</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Duan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Chowdhury</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Xiong</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cieplak</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Caldwell</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Kollman</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>A point-charge force field for molecular mechanics simulations of proteins based on condensed-phase quantum mechanical calculations</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2003</year>
+<volume>24</volume>
+<fpage>1999</fpage>
+<lpage>2012</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gheblawi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Viveiros</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nguyen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>J-C</given-names>
+</name>
+<name>
+<surname>Turner</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Raizada</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Grant</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Oudit</surname>
+<given-names>GY</given-names>
+</name>
+</person-group>
+<article-title>Angiotensin-converting enzyme 2: SARS-CoV-2 receptor and regulator of the renin-angiotensin system: celebrating the 20th anniversary of the discovery of ACE2</article-title>
+<source>Circulation research</source>
+<year>2020</year>
+<volume>126</volume>
+<fpage>1456</fpage>
+<lpage>1474</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gross</surname>
+<given-names>LZF</given-names>
+</name>
+<name>
+<surname>Sacerdoti</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Piiper</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Zeuzem</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Leroux</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Biondi</surname>
+<given-names>RM</given-names>
+</name>
+</person-group>
+<article-title>ACE2, the Receptor that Enables the Infection by SARS-CoV-2: Biochemistry, Structure, Allostery and Evaluation of the Potential Development of ACE2 Modulators</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>HernáNdez Prada</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Ferreira</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Katovich</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Shenoy</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Santos</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Castellano</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Lampkins</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Gubala</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Ostrov</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Structure-based identification of small-molecule angiotensin-converting enzyme 2 activators as novel antihypertensive agents</article-title>
+<source>Hypertension</source>
+<year>2008</year>
+<volume>51</volume>
+<fpage>1312</fpage>
+<lpage>1317</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hoffmann</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Kleine-Weber</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schroeder</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Krüger</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Herrler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Erichsen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Schiergens</surname>
+<given-names>TS</given-names>
+</name>
+<name>
+<surname>Herrler</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>N-H</given-names>
+</name>
+<name>
+<surname>Nitsche</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 cell entry depends on ACE2 and TMPRSS2 and is blocked by a clinically proven protease inhibitor</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>YM</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Replica Exchange Gaussian Accelerated Molecular Dynamics: Improved Enhanced Sampling and Free Energy Calculation</article-title>
+<source>J Chem Theory Comput</source>
+<year>2018</year>
+<volume>14</volume>
+<fpage>1853</fpage>
+<lpage>1864</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huentelman</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Zubcevic</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hernandez Prada</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Dimitrov</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Raizada</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Ostrov</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Structure-based discovery of a novel angiotensin-converting enzyme 2 inhibitor</article-title>
+<source>Hypertension</source>
+<year>2004</year>
+<volume>44</volume>
+<fpage>903</fpage>
+<lpage>906</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Humphrey</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Dalke</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>VMD: Visual molecular dynamics</article-title>
+<source>Journal of Molecular Graphics &amp; Modelling</source>
+<year>1996</year>
+<volume>14</volume>
+<fpage>33</fpage>
+<lpage>38</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jorgensen</surname>
+<given-names>WL</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Madura</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Impey</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>ML</given-names>
+</name>
+</person-group>
+<article-title>Comparison of simple potential functions for simulating liquid water</article-title>
+<source>The Journal of chemical physics</source>
+<year>1983</year>
+<volume>79</volume>
+<fpage>926</fpage>
+<lpage>935</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Harrison</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>Structure of SARS coronavirus spike receptor-binding domain complexed with receptor</article-title>
+<source>Science</source>
+<year>2005</year>
+<volume>309</volume>
+<fpage>1864</fpage>
+<lpage>1868</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Perryman</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Schames</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Computational drug design accommodating receptor flexibility: The relaxed complex scheme</article-title>
+<source>Journal of the American Chemical Society</source>
+<year>2002</year>
+<volume>124</volume>
+<fpage>5632</fpage>
+<lpage>5633</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Acceleration of Biomolecular Kinetics in Gaussian Accelerated Molecular Dynamics</article-title>
+<source>Journal of Chemical Physics</source>
+<year>2018</year>
+<volume>149</volume>
+<fpage>072308</fpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bhattarai</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nguyen</surname>
+<given-names>ATN</given-names>
+</name>
+<name>
+<surname>Christopoulos</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>May</surname>
+<given-names>LT</given-names>
+</name>
+</person-group>
+<article-title>Structural Basis for Binding of Allosteric Drug Leads in the Adenosine A1 Receptor</article-title>
+<source>Sci Rep</source>
+<year>2018</year>
+<volume>8</volume>
+<fpage>16836</fpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bhattarai</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Ligand Gaussian accelerated molecular dynamics (LiGaMD): Characterization of ligand binding thermodynamics and kinetics</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2020</year>
+<volume>16</volume>
+<fpage>5526</fpage>
+<lpage>5547</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Feher</surname>
+<given-names>VA</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Gaussian Accelerated Molecular Dynamics: Unconstrained Enhanced Sampling and Free Energy Calculation</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2015</year>
+<volume>11</volume>
+<fpage>3584</fpage>
+<lpage>3595</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Sinko</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Pierce</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Bucher</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Mccammon</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Improved reweighting of accelerated molecular dynamics simulations for free energy calculation</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2014</year>
+<volume>10</volume>
+<fpage>2677</fpage>
+<lpage>2689</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nami</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Ghanaeian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ghanaeian</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Nami</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>The effect of ACE2 inhibitor MLN-4760 on the interaction of SARS-CoV-2 spike protein with human ACE2: a molecular dynamics study</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oshima</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Re</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Sugita</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Replica-Exchange Umbrella Sampling Combined with Gaussian Accelerated Molecular Dynamics for Free-Energy Calculation of Biomolecules</article-title>
+<source>JChem Theory Comput</source>
+<year>2019</year>
+<volume>15</volume>
+<fpage>5199</fpage>
+<lpage>5208</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Patel</surname>
+<given-names>VB</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>J-C</given-names>
+</name>
+<name>
+<surname>Grant</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Oudit</surname>
+<given-names>GY</given-names>
+</name>
+</person-group>
+<article-title>Role of the ACE2/angiotensin 17 axis of the renin-angiotensin system in heart failure</article-title>
+<source>Circulation research</source>
+<year>2016</year>
+<volume>118</volume>
+<fpage>1313</fpage>
+<lpage>1326</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Perlot</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Penninger</surname>
+<given-names>JM</given-names>
+</name>
+</person-group>
+<article-title>ACE2-From the renin-angiotensin system to gut microbiota and malnutrition</article-title>
+<source>Microbes and infection</source>
+<year>2013</year>
+<volume>15</volume>
+<fpage>866</fpage>
+<lpage>873</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Plattner</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Noe</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Protein conformational plasticity and complex ligand-binding kinetics explored by atomistic simulations and Markov models</article-title>
+<source>Nat Commun</source>
+<year>2015</year>
+<volume>6</volume>
+<fpage>7653</fpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roe</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Cheatham</surname>
+<given-names>TE</given-names>
+</name>
+</person-group>
+<article-title>PTRAJ and CPPTRAJ: Software for Processing and Analysis of Molecular Dynamics Trajectory Data</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2013</year>
+<volume>9</volume>
+<fpage>3084</fpage>
+<lpage>3095</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roux</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>The Calculation of the Potential of Mean Force Using Computer-Simulations</article-title>
+<source>Computer Physics Communications</source>
+<year>1995</year>
+<volume>91</volume>
+<fpage>275</fpage>
+<lpage>282</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Aihara</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Geng</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Auerbach</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Structural basis of receptor recognition by SARS-CoV-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<fpage>221</fpage>
+<lpage>224</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Song</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gui</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Xiang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Cryo-EM structure of the SARS coronavirus spike glycoprotein in complex with its host cell receptor ACE2</article-title>
+<source>PLoS pathogens</source>
+<year>2018</year>
+<volume>14</volume>
+<fpage>e1007236</fpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tian</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kasavajhala</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Belfon</surname>
+<given-names>KA</given-names>
+</name>
+<name>
+<surname>Raguette</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Migues</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Bickel</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Pincay</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>ff19SB: Amino-Acid-Specific Protein Backbone Parameters Trained against Quantum Mechanics Energy Surfaces in Solution</article-title>
+<source>Journal of Chemical Theory and Computation</source>
+<year>2019</year>
+<volume>16</volume>
+<fpage>528</fpage>
+<lpage>552</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Towler</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Staker</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Prasad</surname>
+<given-names>SG</given-names>
+</name>
+<name>
+<surname>Menon</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Parsons</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Ryan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Fisher</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Dales</surname>
+<given-names>NA</given-names>
+</name>
+</person-group>
+<article-title>ACE2 X-ray structures reveal a large hingebending motion important for inhibitor binding and catalysis</article-title>
+<source>Journal of Biological Chemistry</source>
+<year>2004</year>
+<volume>279</volume>
+<fpage>17996</fpage>
+<lpage>18007</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vanommeslaeghe</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Hatcher</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Acharya</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kundu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shim</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Darian</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Guvench</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Lopes</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Vorobyov</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Mackerell</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<article-title>CHARMM General Force Field: A Force Field for Drug-Like Molecules Compatible with the CHARMM All-Atom Additive Biological Force Fields</article-title>
+<source>Journal of Computational Chemistry</source>
+<year>2010</year>
+<volume>31</volume>
+<fpage>671</fpage>
+<lpage>690</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vanommeslaeghe</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Mackerell</surname>
+<given-names>AD</given-names>
+<suffix>Jr</suffix>
+</name>
+</person-group>
+<article-title>CHARMM additive and polarizable force fields for biophysics and computer-aided drug design</article-title>
+<source>Biochim Biophys Acta</source>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wade</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Gabdoulline</surname>
+<given-names>RR</given-names>
+</name>
+<name>
+<surname>Ludemann</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Lounnas</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Electrostatic steering and ionic tethering in enzyme-ligand binding: insights from simulations</article-title>
+<source>Proc Natl Acad Sci US A</source>
+<year>1998</year>
+<volume>95</volume>
+<fpage>5942</fpage>
+<lpage>5949</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Qiao</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>K-Y</given-names>
+</name>
+</person-group>
+<article-title>Structural and functional basis of SARS-CoV-2 entry by using human ACE2</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Q</given-names>
+</name>
+</person-group>
+<article-title>Structural basis for the recognition of SARS-CoV-2 by full-length human ACE2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>367</volume>
+<fpage>1444</fpage>
+<lpage>1448</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>(A) X-ray and cryo-EM strucutres of the ACE2 receptor with subdomain I in the “Open” (cyan, PDB: 6LZG), “Partially Open” (magenta, PDB: 6ACK) and “Closed” (orange, PDB: 1R4L) conformations. Subdomain II is stable and colored in gray. In the “Closed” conformation, the receptor is bound by the MLN-4760 inhibitor. The protein is shown as ribbons and the ligand as sticks (orange). (B) Root-mean-square deviations (RMSDs) of ten MLN-4760 inhibitor molecules relative to the bound X-ray conformation (PDB: 1R4L) are calculated from the 1000 ns “Sim 2” LiGaMD trajectory, in which the ligand bound to the ACE2 active site during ~100-400 ns and then dissociated into the bulk solvent. (C) Two views of the observed ligand binding pathway, for which the center ring of MLN-4760 is represented by lines and colored by simulation time in a blue-white-red (BWR) color scale. (D) Two views of the observed ligand dissociation pathway, for which the center ring of MLN-4760 is represented by lines and colored by simulation time in a blue-white-red (BWR) color scale.</p>
+</caption>
+<graphic xlink:href="EMS103445-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>(A) The 2D potential of mean force (PMF) free energy profile of the ligand RMSD and interdomain distance calculated by combining the three independent 1000 ns LiGaMD production simulations of human ACE2 receptor. Six low energy conformational states were identified, including the “Bound (B)”, “Intermediate-1 (I-1)”, “Intermediate-2 (I-2)”, “Intermediate-3 (I-3)”, “Unbound-1 (U-1)” and “Unbound-2 (U-2)”. (B) Conformations of the ACE2 receptor and MLN-4760 ligand in the “Bound (B)” state (green) compared with the X-ray conformation (Orange, PDB: 1R4L). (C) Conformations of the ACE2 receptor during binding of MLN-4760 in the “Intermediate-1 (I-1)” (blue) and “Intermediate-2 (I-2)” (yellow) and “Intermediate-3 (I-3)” (pink) states. (D) Conformations of the ACE2 receptor in the “Unbound-1 (U-1)” (ice blue) and “Unbound-2 (U-2)” (lime) states. The protein is shown as ribbons and ligand as sticks.</p>
+</caption>
+<graphic xlink:href="EMS103445-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>(A) The “Intermediate-1 (I-1)” conformational state of the MLN-4760 ligand (blue balls and sticks) bound to the ACE2 receptor (ribbons). Residues of subdomain I (blue) and subdomain II (gray) including H345, T371, E145 and N149 formed polar interactions with the ligand. (B) The “Intermediate-2 (I-2)” conformational state of MLN-4760 (yellow) bound to the ACE2 receptor (ribbons). Residues of subdomain I (yellow) and subdomain II (gray) including Q60, N63, N171 and N121 formed polar interactions with the ligand. (C) The “Intermediate-3 (I-3)” conformational state of MLN-4760 (pink) bound to the ACE2 receptor (ribbons). Residues of subdomain I (pink) and subdomain II (gray) including R245, M249, S602 and N601 formed polar interactions with the ligand.</p>
+</caption>
+<graphic xlink:href="EMS103445-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>RMSDs of (A) subdomain I and (B) subdomain II of the ACE2 receptor relative to the closed X-ray conformation (PDB:1R4L) are calculated from three independent LiGaMD production simulations. (C) 2D potential of mean force (PMF) of the subdomain I RMSD and interdomain distance calculated by combining the three LiGaMD simulations. Three low energy conformational states of the receptor are identified in the PMF profile, including the “Closed”, “Partially Open” and “Open”, which are similar to the 6LZG, 6ACK and 1R4L PDB structures, respectively. (D) Low-energy conformations of the ACE2 receptor with subdomain I found in the “Open” (red), “Partially Open” (blue) and “Closed” (green) states in the LiGaMD simulations. Subdomain II is stable and colored in gray.</p>
+</caption>
+<graphic xlink:href="EMS103445-f004"/>
+</fig>
+</floats-group>
+</article>

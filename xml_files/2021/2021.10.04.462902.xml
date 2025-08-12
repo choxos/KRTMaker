@@ -1,0 +1,3356 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS136342</article-id>
+<article-id pub-id-type="doi">10.1101/2021.10.04.462902</article-id>
+<article-id pub-id-type="archive">PPR404888</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>SARS-CoV-2 PLpro whole human proteome cleavage prediction and enrichment/depletion analysis</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Prescott</surname>
+<given-names>Lucas</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Independent Researcher, Boston, Massachusetts, United States of America</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>lskywalker2015@gmail.com</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>08</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>06</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">A novel coronavirus (SARS-CoV-2) has caused a pandemic that has killed millions of people, worldwide vaccination and herd immunity are still far away, and few therapeutics are approved by regulatory agencies for widespread use. The coronavirus 3-chymotrypsin-like protease (3CLpro) is a commonly investigated target in COVID-19, however less work has been directed toward the equally important papain-like protease (PLpro). PLpro is less characterized due to its fewer and more diverse cleavages in coronavirus proteomes and the assumption that it mainly modulates host pathways with its deubiquitinating activity. Here, I extend my previous work on 3CLpro human cleavage prediction and enrichment/depletion analysis to PLpro.[<xref ref-type="bibr" rid="R1">1</xref>] Using three sets of neural networks trained on different taxonomic ranks of dataset with a maximum of 463 different putative PLpro cleavages, Matthews correlation coefficients of 0.900, 0.948, and 0.966 were achieved for <italic>Coronaviridae</italic>, <italic>Betacoronavirus</italic>, and <italic>Sarbecovirus</italic>, respectively. I predict that more than 1,000 human proteins may be cleaved by PLpro depending on diversity of the training dataset and that many of these proteins are distinct from those previously predicted to be cleaved by 3CLpro. PLpro cleavages are similarly nonrandomly distributed and result in many annotations shared with 3CLpro cleavages including ubiquitination, poly(A) tail and 5’ cap RNA binding proteins, helicases, and endogenous viral proteins. Combining PLpro with 3CLpro cleavage predictions, additional novel enrichment analysis was performed on known substrates of cleaved E3 ubiquitin ligases with results indicating that many pathways including viral RNA sensing are affected indirectly by E3 ligase cleavage independent of traditional PLpro deubiquitinating activity. As with 3CLpro, PLpro whole proteome cleavage prediction revealed many novel potential therapeutic targets against coronaviruses, although experimental verification is similarly required.</p>
+</abstract>
+<kwd-group>
+<kwd>SARS-CoV-2</kwd>
+<kwd>COVID-19</kwd>
+<kwd>coronavirus</kwd>
+<kwd>protease</kwd>
+<kwd>deubiquitinase</kwd>
+<kwd>proteomics</kwd>
+<kwd>PLpro</kwd>
+<kwd>machine learning</kwd>
+<kwd>neural networks</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Coronavirus genomes contain multiple open reading frames, the largest of which contains two nonstructural cysteine proteases, nsp3/PLpro and nsp5/3CLpro, which cleave its polyprotein into functional proteins. 3CLpro cleaves 11 conserved sights in all coronavirus proteomes, and PLpro cleaves only 2 or 3 sites depending on whether nsp1 is functional. In addition to many other multifunctional domains, PLpro contains two papain-like domains with different properties, the first of which is sometimes inactive.[<xref ref-type="bibr" rid="R2">2</xref>]</p>
+<p id="P3">Most experimental work on PLpro focuses on its deubiquitinating and deISGylating activity[<xref ref-type="bibr" rid="R3">3</xref>] and faster kinetics relative to the human homologs USP7 and USP14.[<xref ref-type="bibr" rid="R4">4</xref>] Proteins and pathways disrupted by this activity include retinoic acid-inducible gene I (RIG-I), melanoma differentiation-associated protein 5 (MDA5), TNFR-associated factors (TRAF3/6), stimulator of interferon genes (STING), TANK-binding kinase 1 (TBK1), nuclear factor κ-light-chain-enhancer of activated B cells (NF-κB), interferon regulatory factor 3 (IRF3), type-I interferon production, Janus kinases and signal transducers and activators of transcription (JAK-STAT), and collagen expression via transforming growth factor (TGF-β1).[<xref ref-type="bibr" rid="R5">5</xref>–<xref ref-type="bibr" rid="R16">16</xref>] Separately, simple sequence alignments of the three SARS-CoV-2 cleavages with human proteins ranked by percent identity led Reynolds et al. to propose a few dozen human proteins to be directly cleaved by PLpro.[<xref ref-type="bibr" rid="R17">17</xref>] This method does not account for position-dependent residue importance or any physiochemical trends and therefore likely resulted in many false positives, yet they were able to demonstrate <italic>in vitro</italic> cleavage of protein S, MHC-α/β isoforms (MYH6/7), forkhead box P3 (FOXP3), and epidermal growth factor receptor (ERBB4). IRF3,[<xref ref-type="bibr" rid="R18">18</xref>] Unc-51 like autophagy activating kinase (ULK1),[<xref ref-type="bibr" rid="R19">19</xref>] proto-oncogene SRC, Kelch domain-containing protein 10 (KLHDC10), and bone marrow stromal antigen 1 (BST1)[<xref ref-type="bibr" rid="R20">20</xref>] were also independently demonstrated to be cleaved by PLpro <italic>in vitro</italic>.</p>
+<p id="P4">The high number of known 3CLpro cleavages has allowed for sequence logos and machine learning techniques to be applied to coronavirus and human sequences.[<xref ref-type="bibr" rid="R1">1</xref>, <xref ref-type="bibr" rid="R21">21</xref>] PLpro, however, is less characterized because (1) fewer cleavage sites are known, (2) these cleavages are not as conserved as 3CLpro cleavages, and it is unknown whether (3) any alpha- or betacoronaviruses are missing a cleavage before nsp2, (4) all gamma- and deltacoronaviruses are missing a cleavage before nsp2, or (5) whether the many uncharacterized coronaviruses have one or two functional papain-like domains and what differences they may have.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Data Set Preparation</title>
+<p id="P5">A complete, manually reviewed human proteome containing 20,350 sequences (not including alternative isoforms) was retrieved from UniProt/Swiss-Prot (proteome:up000005640 AND reviewed:yes).[<xref ref-type="bibr" rid="R22">22</xref>]</p>
+<p id="P6">Additional coronavirus polyprotein cleavages were collected from GenBank.[<xref ref-type="bibr" rid="R23">23</xref>] Searching for all combinations of “orf/pp” and “1/1a/1ab” within the family <italic>Coronaviridae</italic> returned 12,770 different, complete polyproteins with 463 different cleavages manually discovered using the Clustal Omega multiple sequence alignment server.[<xref ref-type="bibr" rid="R24">24</xref>–<xref ref-type="bibr" rid="R26">26</xref>] Unlike 3CLpro, no PLpro domain is found in the monotypic <italic>Microhyla letovirus 1</italic> in <italic>Coronaviridae</italic>. Similar domains are characterized in <italic>Arteriviridae</italic> and in some of <italic>Tobaniviridae</italic>, although none of these sequences were aligned here.[<xref ref-type="bibr" rid="R27">27</xref>] All unbalanced positive cleavages were used for subsequent classifier training in addition to all other 33,185 uncleaved coronavirus sequence windows with at least two glycines or alanines in the P2, P1, or P1’ positions, totaling 33,648 samples.</p>
+</sec>
+<sec id="S4">
+<title>Cleavage Prediction</title>
+<p id="P7">As in my previous work on 3CLpro,[<xref ref-type="bibr" rid="R1">1</xref>] sequence logo-based logistic regression and naïve Bayes classification and physiochemical and one-hot encoded neural networks (NNs) were used for prediction of cleavage sites.[<xref ref-type="bibr" rid="R28">28</xref>]</p>
+</sec>
+<sec id="S5">
+<title>Enrichment Analysis</title>
+<p id="P8">Protein annotation, classification, and enrichment analysis was performed using the Database for Annotation, Visualization, and Integrated Discovery (DAVID) 6.8.[<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>] Tissue (UP_TISSUE and UNIGENE_EST_QUARTILE), InterPro, direct Gene Ontology (GO includes cellular compartment (CC), biological process (BP), and molecular function (MF)), Reactome pathways, sequence features, and keywords annotations were all explored, and only annotations with Benjamini-Hochberg-corrected p-values less than 0.05 were considered statistically significant. Cleaved E3 ubiquitin ligases were matched to their respective substrates for additional enrichment analysis using the UbiNet 2.0 database.[<xref ref-type="bibr" rid="R31">31</xref>] All training data, prediction methods, and results can be found on GitHub (<ext-link ext-link-type="uri" xlink:href="https://github.com/Luke8472NN/NetProtease">https://github.com/Luke8472NN/NetProtease</ext-link>).</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="results">
+<title>Results</title>
+<p id="P9">Due to the greater difficulty aligning putative cleavages and more variable domains of nsp3, the assumption that SARS-CoV-2 PLpro can cleave all aligned sites in divergent coronaviruses is less plausible than for 3CLpro. First, some entries in this dataset containing one, two, or four glycines or alanines may be incorrectly shifted by one or two residues because they are difficult to align with PLpro’s consensus [KL]K[GAR][GA]^[GA]. The P1’ glycine or alanine is also not applicable when cleaving isopeptide bonds for deubiquitination, however lysine’s bound side chain somewhat resembles another small, hydrophobic peptide bond. Glycine is the smallest and most similar amino acid, and alanine is the second smallest, also resembling the hydrophobicity of lysine’s side chain (<xref ref-type="fig" rid="F1">Figure 1</xref>) and potentially similarly protecting the oxyanion of the tetrahedral intermediate from water in the tryptophan-containing oxyanion hole.[<xref ref-type="bibr" rid="R6">6</xref>] If this is correct, then ubiquitin’s arginine residue should be in the P3 position and not the P2 position as hinted by many sequences aligned here, particularly nsp1/2 cleavages (<xref ref-type="fig" rid="F2">Figure 2</xref>). Molecular docking or crystallography are, however, required to prove these chemical similarities relevant. Additionally complicating the problem, dimensionality reduction of putative cleavages did not cluster by order as well as for 3CLpro, and nsp1/2 cleavages missing from all gamma- and deltacoronaviruses have a distinct sequence logo (<xref ref-type="fig" rid="F2">Figure 2</xref>).</p>
+<p id="P10">With no easy way to prove functionality or activity of divergent papain-like domains and therefore the suitability of distant cleavages to be included into a single, unweighted dataset, machine learning models were trained on three different taxonomic ranks of data (all <italic>Coronaviridae</italic>, only <italic>Betacoronavirus</italic>, and only <italic>Sarbecovirus</italic>). Predicting sequence-dependent kinetic rates would be even more difficult than this classification given that swine acute diarrhea syndrome coronavirus (SADS-CoV) PLpro catalytic efficiency varies by two orders of magnitude depending of substrate[<xref ref-type="bibr" rid="R34">34</xref>] and also given that SARS-CoV-1 and -2 PLpro share 83% identity yet are known to preferentially cleave ubiquitin vs ISG15, respectively.[<xref ref-type="bibr" rid="R35">35</xref>] Preferences for isopeptidase over peptidase activity,[<xref ref-type="bibr" rid="R36">36</xref>] polyubiquitin chains over ISG15 or monoubiquitin,[<xref ref-type="bibr" rid="R37">37</xref>] and K48 over K63 ubiquitin linkages[<xref ref-type="bibr" rid="R38">38</xref>] also vary between viral lineages.[<xref ref-type="bibr" rid="R39">39</xref>, <xref ref-type="bibr" rid="R40">40</xref>] The distantly related foot-and-mouth disease virus (FMDV) leader protease even has irreversible deISGylating activity by leaving ISG15’s C-terminal diglycine on its target lysine.[<xref ref-type="bibr" rid="R41">41</xref>] It is fair to assume, however, that cleavages predicted by all three sets of models can occur in many infections no matter viral lineage. The size and imbalances of these final datasets are listed in <xref ref-type="table" rid="T1">Table 1</xref>. The greater diversity in the higher taxonomic datasets caused many more random sequences and human proteins to be predicted to be cleaved, however enrichment/depletion analysis proved robust against this.</p>
+<p id="P11">As with 3CLpro predictions, NNs outperformed all other classifiers no matter taxonomic rank (<xref ref-type="fig" rid="F3">Figure 3</xref>). This performance difference was most noticeable for the whole <italic>Coronaviridae</italic> dataset where single sequence logos cannot learn its multiple populations. Interestingly, physiochemical encoding also proved to describe sequences less efficiently than one-hot encoding and sequence logos for the <italic>Sarbecovirus</italic>-<italic>only</italic> dataset. The optimized hyperparameters for NNs with one-hot encoding were Adam solver, rectifier (ReLU) activation, 0.000001 regularization, no oversampling, and 1 hidden layer with 100 neurons. Combining networks into ensembles again improved accuracy and stability, so the final results were generated with triplicate 10-fold cross-validated networks with average 20% test Matthews correlation coefficients (MCC) of 0.900, 0.948, and 0.966 for <italic>Coronaviridae</italic>, <italic>Betacoronavirus</italic>, <italic>and Sarbecovirus</italic>, respectively. These accuracies, frequency cleaving random amino acid sequences, and number of human proteins with predicted cleavages are also listed in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+</sec>
+<sec id="S7" sec-type="discussion">
+<title>Discussion</title>
+<p id="P12">Enrichments and depletions were surprisingly shared between NN replicates, resampled training data, and between the three taxonomic ranks of training data, although the <italic>Sarbecovirus-specific</italic> list returned fewer statistically significant annotations due to its smaller size. As expected from SARS-CoV-2 pathogenesis and from previous 3CLpro results,[<xref ref-type="bibr" rid="R1">1</xref>] epithelium (tongue, larynx, pharynx, trachea) and brain were enriched, and olfactory receptors were depleted. As expected from the sequence logo, glycine- and alanine-rich proteins, such as collagens, were also enriched. Cytoskeletal and motor proteins were enriched as with 3CLpro due to their longer lengths, although their cleavage is likely still biologically relevant. In fact, this length bias is even larger in Reynolds et al.’s sequence identity method,[<xref ref-type="bibr" rid="R17">17</xref>] and surprisingly few of their predictions were shared in this PLpro prediction dataset, namely protection of telomeres 1 (POT1), membrane-associated guanylate kinase inverted 2 (MAGI2), multiple EGF-like domains 10 (MEGF10), myocardin, inactive RNASE10, amyloid beta A4 precursor protein-binding (APBB2), and myomesin-1. FOXP3 was also the only experimentally validated protein to be successfully predicted here.[<xref ref-type="bibr" rid="R18">18</xref>–<xref ref-type="bibr" rid="R20">20</xref>] This indicates that, as with 3CLpro prediction, any inaccuracies in prediction methods are amplified when applied to the entire human and must be experimentally verified, however enrichment analyses are robust against this variability.[<xref ref-type="bibr" rid="R1">1</xref>]</p>
+<p id="P13">The ubiquitination pathway was expectedly enriched given one of PLpro’s main functions is to deubiquitinate host proteins. Global effects of PLpro’s preference for particular ubiquitin chains or branchings are poorly characterized, and no peptide bond cleavages within E1, E2, or E3 enzymes are known. Combining these PLpro predictions with my previous 3CLpro dataset,[<xref ref-type="bibr" rid="R1">1</xref>] global effects on these pathways become clearer. Of the ten E1 enzymes,[<xref ref-type="bibr" rid="R42">42</xref>] two are cleaved by 3CLpro: UBA2 and UBA5. UBA2 is half of the only heterodimer required for SUMOylation and is cleaved in its C-terminal ubiquitin-like domain required for transfer to the only SUMO E2 conjugating protein, UBC9,[<xref ref-type="bibr" rid="R43">43</xref>] which is not cleaved by either protease. Interestingly, coronavirus nucleocapsid proteins are intentionally SUMOylated to promote their homo-oligomerization, interfere with cell division, and/or localize to the nucleus or nucleolus to alter viral vs host transcription or ribosomal biogenesis.[<xref ref-type="bibr" rid="R44">44</xref>–<xref ref-type="bibr" rid="R46">46</xref>] One downstream consequence of disrupted SUMOylation is reduced stability of STING,[<xref ref-type="bibr" rid="R47">47</xref>] which is already disrupted by PLpro deubiquitination.[<xref ref-type="bibr" rid="R48">48</xref>, <xref ref-type="bibr" rid="R49">49</xref>] TRIM38 (SUMOylating) is not, but SENP2 (deSUMOylating) is cleaved, indicating that STING regulation probably differs between early and late phase infection. PLpro’s additional deubiquitinating activity or cleavage of related enzymes may also change the period of SUMOylation and ubiquitination oscillations, impacting global proteasomal degradation kinetics.[<xref ref-type="bibr" rid="R50">50</xref>] Lastly, depletion of E2-conjugated SUMO stores may lead to preferential ubiquitination and degradation of p53[<xref ref-type="bibr" rid="R51">51</xref>] by RCHY1 later in infection,[<xref ref-type="bibr" rid="R36">36</xref>] which is already directly enhanced by PLpro SARS-unique domain,[<xref ref-type="bibr" rid="R52">52</xref>] and IκBα,[<xref ref-type="bibr" rid="R53">53</xref>] which activates NF-κB and worsens SARS-related mortality in mice.[<xref ref-type="bibr" rid="R54">54</xref>] UBA5, however, is the only UFMylation-specific E1 enzyme with implications in reticulophagy and hematopoiesis, and its only E2 conjugating protein, UFC1, is not cleaved by either protease.[<xref ref-type="bibr" rid="R55">55</xref>] First, UFMylation of DDRGK1, a reticulophagy protein activated by ribosome stalling,[<xref ref-type="bibr" rid="R56">56</xref>] may play a role in encouraging ribosomal frameshifts by forming double-membrane vesicles (DMVs) utilized by coronaviruses for replication[<xref ref-type="bibr" rid="R57">57</xref>] or by compartmentalizing ribosomes with viral RNA inside DMVs as with influenza A virus.[<xref ref-type="bibr" rid="R58">58</xref>] Second, like SUMOylation, UFMylation of p53 antagonizes ubiquitination and subsequent degradation.[<xref ref-type="bibr" rid="R59">59</xref>] Lastly, UFM1 depletion may encourage macrophage responses to interferon gamma,[<xref ref-type="bibr" rid="R60">60</xref>] contributing to the positive feedback with T cells in COVID-19-associated alveolar inflammation.[<xref ref-type="bibr" rid="R61">61</xref>] Although none of the few ISG15 enzymes are cleaved by either coronavirus protease, NEDD4, which is likely eventually inhibited by free ISG15 released by PLpro’s deISGylating activity,[<xref ref-type="bibr" rid="R62">62</xref>] is predicted to be cleaved by 3CLpro[<xref ref-type="bibr" rid="R1">1</xref>] and has been suggested as a therapeutic target for COVID-19 due to its upregulation in infected cells and probable involvement in egress via non-degradative ubiquitination of viral proteins.[<xref ref-type="bibr" rid="R63">63</xref>] The counterintuitive proviral activity of NEDD4 yet potential inhibition directly by 3CLpro and indirectly by PLpro hints that its regulation may be infection time dependent.</p>
+<p id="P14">Interpreting viral intent behind E2 and E3 enzyme cleavages is much more difficult, however similar enrichment analysis can be performed on the substrates specific to cleaved E3 ligases. Combining all predicted cleavages from the three PLpro datasets and the one 3CLpro dataset[<xref ref-type="bibr" rid="R1">1</xref>] and applying to UbiNet 2.0 E3-substrate interactions,[<xref ref-type="bibr" rid="R31">31</xref>] 38% of substrates were directly cleaved by the viral proteases, and 47% of substrates had E3 ligases cleaved by viral proteases. Because most ubiquitination tags substrates for proteasomal degradation, E3 ligase cleavage would effectively upregulate affected pathways. Although 19% of these cleavages were overlapping and therefore had unknown up- vs downregulation, most noteworthy enrichments were preserved after removal of this overlap from the list of substrates with cleaved E3 ligases. Noteworthy affected pathways include RAP1 related to cell adhesion and junction formation, PI3K/AKT related to cell survival and proliferation, p53 related to apoptosis, clathrin-dependent and -independent endocytosis, Fcγ and Fcε receptor signaling, and viral RNA-sensing RIG-I and TLR3 signaling to IRF3/7 and NF-κB and downstream interferon-stimulated STAT1/3. Given these pathways, particularly viral RNA sensing, are affected more directly by many other viral proteins early in infection, pathway activation via cleavage of E3 ligases independent of direct PLpro deubiquitination followed by reduced substrate turnover rate is likely only relevant later in infection once responses to interferon have begun.</p>
+<p id="P15">In addition to directly deubiquitinating host proteins, PLpro cleavage of lysyl oxidases (LOXL2/3) may disrupt the balance of lysine/acetyllysine/allysine on histones or non-histone proteins[<xref ref-type="bibr" rid="R64">64</xref>] to prevent crosslinking or monoubiquitination or disrupt acetylation of ubiquitin itself to prevent polyubiquitination.[<xref ref-type="bibr" rid="R65">65</xref>] For example, preventing LOXL3 deacetylation of STAT3 or relatedly cleaving chromodomain-helicase-DNA-binding protein 8 (CHD8), a STAT3 transcriptional repressor, could be part of how SARS-CoV-2 modulates immune cell differentiation[<xref ref-type="bibr" rid="R66">66</xref>] or the STAT1/STAT3 ratio.[<xref ref-type="bibr" rid="R67">67</xref>]</p>
+<p id="P16">Outside ubiquitination, RNA binding also stood out as a relevant enrichment because many antiviral pathways attempt to directly degrade viral RNA. Interestingly, the RGG/RG motif present in many RNA-binding proteins[<xref ref-type="bibr" rid="R68">68</xref>] is likely enriched in cleavages due to their similarity to PLpro’s sequence logo. Noteworthy cleaved proteins with RNA binding ability include poly(A) tail-associated Ras GTPase-activating protein-binding protein 2 (G3BP2), cleavage and polyadenylation specificity factors (CPSF5/7), zinc finger C3H1 domain-containing protein (ZFC3H1), and zinc finger CCHC domain-containing protein 14 (ZCCHC14) and 5’ cap-associated interferon-induced protein with tetratricopeptide repeats 2 (IFIT2) and dual specificity phosphatase 11 (DUSP11). G3BP2 is involved in stress granule formation and documented to be inhibited by SARS-CoV-2 nucleocapsid protein.[<xref ref-type="bibr" rid="R69">69</xref>, <xref ref-type="bibr" rid="R70">70</xref>] Cleavage of RNA cleavage factor Im subunits CPSF5/7 likely contributes to enhanced viral RNA translation by trapping host pre-mRNA in the nucleus as with influenza virus.[<xref ref-type="bibr" rid="R71">71</xref>] ZFC3H1 is a subunit of the poly(A) tail exosome targeting (PAXT) complex which targets longer and more polyadenylated RNAs than the traditional nuclear exosome targeting (NEXT) complex[<xref ref-type="bibr" rid="R72">72</xref>] with subunit ZCCHC14 also cleaved by PLpro and others cleaved by 3CLpro.[<xref ref-type="bibr" rid="R1">1</xref>] In addition to variable length polyadenylation over infection and between whole genomes and subgenomic mRNAs,[<xref ref-type="bibr" rid="R73">73</xref>, <xref ref-type="bibr" rid="R74">74</xref>] time-dependent antagonism of these two complexes by PLpro and 3CLpro may be another method coronaviruses control their relative rates of replication vs translation, the ratios of their subgenomic mRNAs, or the ratio of orf1a to orf1ab and resulting proteins. Given hepatitis B virus (HBV) and human cytomegalovirus (HCMV) exploit ZCCHC14 to elongate their poly(A) tails with errors to enhance stability against CCR4-NOT, coronaviruses should also be experimentally surveyed for similar not-so-pure poly(A) tails.[<xref ref-type="bibr" rid="R75">75</xref>] In fact, CCR4-NOT subunits 1 and 4, the latter with E3 ubiquitin ligase activity, are cleaved by 3CLpro.[<xref ref-type="bibr" rid="R1">1</xref>] In the cytoplasm, this cleavage probably stabilizes viral RNA and viral translation, but disrupting E3 ligase activity in the nucleus would stabilize its target JARID1C, a histone H3 K4 demethylase, globally repressing host transcription so that ribosomes can be directed more toward viral transcripts.[<xref ref-type="bibr" rid="R76">76</xref>] As for the two 5’ cap-associated proteins, interferon-stimulated IFIT2 inhibits eukaryotic initiation factor 3 (eIF3)-mediated translation of viral RNAs without cap 2’-O-ribose methylation, a pathway coronaviruses are sensitized to by inhibiting nsp16’s 2’-O-ribose methyltransferase activity,[<xref ref-type="bibr" rid="R77">77</xref>, <xref ref-type="bibr" rid="R78">78</xref>] and DUSP11 with 5’-triphosphatase and diphosphatase activity can either directly sensitize viral RNA to exoribonucleases as with hepatitis C virus (HCV)[<xref ref-type="bibr" rid="R79">79</xref>] or control RIG-I responses by altering viral or host triphosphate RNA balances.[<xref ref-type="bibr" rid="R80">80</xref>, <xref ref-type="bibr" rid="R81">81</xref>] RNA helicases are relatedly enriched yet as with 3CLpro cleavages have varying proviral and antiviral effects. Novel PLpro cleavages include neuron navigator 2, which possesses both helicase and exoribonuclease activity and is expressed in sensory nervous tissue susceptible to coronavirus infection, and DEAD box protein DDX42, which was recently shown to have broad antiviral activity including SARS-CoV-2 inhibition.[<xref ref-type="bibr" rid="R82">82</xref>]</p>
+<p id="P17">Lastly, as with 3CLpro,[<xref ref-type="bibr" rid="R1">1</xref>] endogenous retroviral proteins were enriched in cleavages, yet HERV-K genes were recently found to be more expressed in tracheal aspirates of patients with severe COVID-19 compared to uninfected and mildly infected patients.[<xref ref-type="bibr" rid="R83">83</xref>] Because this expression correlates with mortality, it is worth investigating inhibiting this mechanism with antiretroviral drugs commonly used against HIV.[<xref ref-type="bibr" rid="R84">84</xref>] HIV protease inhibitors cannot directly inhibit coronavirus proteases at reasonable concentrations due to their difference in mechanism,[<xref ref-type="bibr" rid="R85">85</xref>] and lopinavir-ritonavir did not improve outcomes of patients hospitalized with COVID-19,[<xref ref-type="bibr" rid="R86">86</xref>] indicating that targeting HERVs in COVID-19 may be difficult or too indirect for therapeutic efficacy.</p>
+</sec>
+<sec id="S8" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P18">Many results from my previous work on 3CLpro cleavages including enrichment of epithelium and brain, depletion of olfactory receptors, and enrichment of ubiquitination, viral RNA stabilizing and degrading mechanisms, and endogenous viral proteins are preserved in PLpro predictions.[<xref ref-type="bibr" rid="R1">1</xref>] Combination of the two cleavage datasets allowed for additional enrichment analysis of known substrates of cleaved E3 ubiquitin ligases, revealing that coronaviruses can regulate ubiquitination in host pathways independent of direct PLpro deubiquitinating activity. Experimental verification of these cleavages and characterization of the time dependence of these ubiquitination effects may reveal novel drug targets against COVID-19 or future human coronaviruses. Lastly, expansion of the training dataset to more divergent PLpro-containing Nidoviruses may be helpful in developing methods to phylogenetically weight aligned cleavage datasets to maximize accuracy for viral lineages or hosts of interest.</p>
+</sec>
+</body>
+<back>
+<ack id="S9">
+<title>Acknowledgements</title>
+<p>I am very grateful for my mother, Victoria Prescott, Esq., and friends who have given me invaluable help and advice throughout my work on this project.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Prescott</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 3CLpro whole human proteome cleavage prediction and enrichment/depletion analysis</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<month>Aug</month>
+<comment>[Preprint]</comment>
+<pub-id pub-id-type="doi">10.1101/2020.08.24.265645</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kusov</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hilgenfeld</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Nsp3 of coronaviruses: Structures and functions of a large multi-domain protein</article-title>
+<source>Antiviral Res</source>
+<year>2018</year>
+<month>Jan</month>
+<volume>149</volume>
+<fpage>58</fpage>
+<lpage>74</lpage>
+<pub-id pub-id-type="doi">10.1016/j.antiviral.2017.11.001</pub-id>
+<pub-id pub-id-type="pmid">29128390</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Neimeyer</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Mosbauer</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Klein</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Sieberg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mettelman</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Mielech</surname>
+<given-names>AM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The papain-like protease determines a virulence trait that varies among members of the SARS-coronavirus species</article-title>
+<source>PLOS Pathog</source>
+<year>2018</year>
+<month>Sep</month>
+<volume>14</volume>
+<issue>9</issue>
+<elocation-id>e1007296</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1007296</pub-id>
+<pub-id pub-id-type="pmid">30248143</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ratia</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Saikatendu</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Santarsiero</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Barretto</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Stevens</surname>
+<given-names>RC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus papain-like protease: structure of a viral deubiquitinating enzyme</article-title>
+<source>PNAS</source>
+<year>2006</year>
+<month>Apr</month>
+<volume>103</volume>
+<issue>15</issue>
+<fpage>5717</fpage>
+<lpage>22</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.0510851103</pub-id>
+<pub-id pub-id-type="pmid">16581910</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Masucci</surname>
+<given-names>MG</given-names>
+</name>
+</person-group>
+<article-title>Viral ubiquitin and ubiquitin-like deconjugases—Swiss Army knives for infection</article-title>
+<source>Biomolecules</source>
+<year>2020</year>
+<month>Aug</month>
+<volume>10</volume>
+<issue>8</issue>
+<fpage>1337</fpage>
+<pub-id pub-id-type="doi">10.3390/biom10081137</pub-id>
+<pub-id pub-id-type="pmid">32752270</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baez-Santos</surname>
+<given-names>YM</given-names>
+</name>
+<name>
+<surname>St John</surname>
+<given-names>SE</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<article-title>The SARS-coronavirus papain-like protease: structure, function and inhibition by designed antiviral compounds</article-title>
+<source>Antiviral Res</source>
+<year>2015</year>
+<month>Mar</month>
+<volume>115</volume>
+<fpage>21</fpage>
+<lpage>38</lpage>
+<pub-id pub-id-type="doi">10.1016/j.antiviral.2014.12.015</pub-id>
+<pub-id pub-id-type="pmid">25554382</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ratia</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Johnston</surname>
+<given-names>RE</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>RS</given-names>
+</name>
+</person-group>
+<article-title>Severe acute respiratory coronavirus papain-like protease ubiquitin-like domain and catalytic domain regulate antagonism of IRF3 and NF-κB signaling</article-title>
+<source>J Virol</source>
+<year>2009</year>
+<month>Jul</month>
+<volume>83</volume>
+<issue>13</issue>
+<fpage>6689</fpage>
+<lpage>705</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.02220-08</pub-id>
+<pub-id pub-id-type="pmid">19369340</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barretto</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Jukneliene</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Ratia</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>The papain-like protease of severe acute respiratory syndrome coronavirus has deubiquitinating activity</article-title>
+<source>J Virol</source>
+<year>2005</year>
+<month>Dec</month>
+<volume>79</volume>
+<issue>24</issue>
+<fpage>15189</fpage>
+<lpage>98</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.79.24.15189-15198.2005</pub-id>
+<pub-id pub-id-type="pmid">16306590</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bian</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Tu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xing</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Proteolytic processing, deubiquitinase and interferon antagonist activities of Middle East respiratory syndrome coronavirus papain-like protease</article-title>
+<source>J Gen Virol</source>
+<year>2014</year>
+<month>Mar</month>
+<volume>95</volume>
+<issue>3</issue>
+<fpage>614</fpage>
+<lpage>26</lpage>
+<pub-id pub-id-type="doi">10.1099/vir.0.059014-0</pub-id>
+<pub-id pub-id-type="pmid">24362959</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bailey-Elkin</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Knaap</surname>
+<given-names>RCM</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>GG</given-names>
+</name>
+<name>
+<surname>Dalebout</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Ninaber</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>van Kasteren</surname>
+<given-names>PB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Crystal structure of the Middle East respiratory syndrome coronavirus (MERS-CoV) papain-like protease bound to ubiquitin facilitates targeted disruption of deubiquitinating activity to demonstrate its role in innate immune suppression</article-title>
+<source>J Biol Chem</source>
+<year>2014</year>
+<month>Dec</month>
+<volume>289</volume>
+<fpage>34667</fpage>
+<lpage>82</lpage>
+<pub-id pub-id-type="doi">10.1074/jbc.M114.609644</pub-id>
+<pub-id pub-id-type="pmid">25320088</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Ping</surname>
+<given-names>JF</given-names>
+</name>
+<name>
+<surname>Tsai</surname>
+<given-names>FJ</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>YJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus papain-like protease suppressed alpha interferon-induced responses through downregulation of extracellular signal-regulated kinase 1-mediated signalling pathways</article-title>
+<source>J Gen Virol</source>
+<year>2011</year>
+<month>May</month>
+<volume>92</volume>
+<issue>5</issue>
+<fpage>1127</fpage>
+<lpage>40</lpage>
+<pub-id pub-id-type="doi">10.1099/vir.0.028936-0</pub-id>
+<pub-id pub-id-type="pmid">21270289</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xing</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Tu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The papain-like protease of porcine epidemic diarrhea virus negatively regulates type I interferon pathway by acting as a viral deubiquitinase</article-title>
+<source>J Gen Virol</source>
+<year>2013</year>
+<month>Jul</month>
+<volume>94</volume>
+<issue>7</issue>
+<fpage>1554</fpage>
+<lpage>67</lpage>
+<pub-id pub-id-type="doi">10.1099/vir.0.051169-0</pub-id>
+<pub-id pub-id-type="pmid">23596270</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matthews</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Schafer</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pham</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Frieman</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>The SARS coronavirus papain like protease can inhibit IRF3 at a post activation step that requires deubiquitination activity</article-title>
+<source>Virol J</source>
+<year>2014</year>
+<month>Dec</month>
+<volume>11</volume>
+<fpage>209</fpage>
+<pub-id pub-id-type="doi">10.1186/s12985-014-0209-9</pub-id>
+<pub-id pub-id-type="pmid">25481026</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Devaraj</surname>
+<given-names>SG</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Tseng</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barretto</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Regulation of IRF-3-dependent innate immunity by the papain-like protease domain of the severe acute respiratory syndrome coronavirus</article-title>
+<source>J Biol Chem</source>
+<year>2007</year>
+<month>Nov</month>
+<volume>282</volume>
+<fpage>32208</fpage>
+<lpage>21</lpage>
+<pub-id pub-id-type="doi">10.1074/jbc.M704870200</pub-id>
+<pub-id pub-id-type="pmid">17761676</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>CY</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>CY</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Hua</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>SH</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS coronavirus papain-like protease up-regulates the collagen expression through non-Samd TGF-β1 signaling</article-title>
+<source>Virus Res</source>
+<year>2017</year>
+<month>May</month>
+<volume>235</volume>
+<fpage>58</fpage>
+<lpage>66</lpage>
+<pub-id pub-id-type="doi">10.1016/j.virusres.2017.04.008</pub-id>
+<pub-id pub-id-type="pmid">28414040</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Parker</surname>
+<given-names>ZM</given-names>
+</name>
+<name>
+<surname>Acharya</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chiang</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>van Gent</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>ISG15-dependent activation of the sensor MDA5 is antagonized by the SARS-CoV-2 papain-like protease to evade host innate immunity</article-title>
+<source>Nat Microbiol</source>
+<year>2021</year>
+<month>Apr</month>
+<volume>6</volume>
+<issue>4</issue>
+<fpage>467</fpage>
+<lpage>78</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-021-00884-1</pub-id>
+<pub-id pub-id-type="pmid">33727702</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Reynolds</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Aceves</surname>
+<given-names>NM</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Compton</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Leary</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Freitas</surname>
+<given-names>BT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The SARS-CoV-2 SSHHPS recognized by the papain-like protease</article-title>
+<source>ACS Infect Dis</source>
+<year>2021</year>
+<month>Jun</month>
+<volume>7</volume>
+<issue>6</issue>
+<fpage>1483</fpage>
+<lpage>502</lpage>
+<pub-id pub-id-type="doi">10.1021/acsinfecdis.0c00866</pub-id>
+<pub-id pub-id-type="pmid">34019767</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Moustaqil</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ollivier</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chiu</surname>
+<given-names>HP</given-names>
+</name>
+<name>
+<surname>Van Tol</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Rudolffi-Soto</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Stevens</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 proteases PLpro and 3CLpro cleave IRF3 and critical modulators of inflammatory pathways (NLRP12 and TAB1): implications for disease presentation across species</article-title>
+<source>Emerg Microbes Infect</source>
+<year>2021</year>
+<month>Dec</month>
+<volume>10</volume>
+<issue>1</issue>
+<fpage>178</fpage>
+<lpage>95</lpage>
+<pub-id pub-id-type="doi">10.1080/22221751.2020.1870414</pub-id>
+<pub-id pub-id-type="pmid">33372854</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mohamud</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Xue</surname>
+<given-names>YC</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>CS</given-names>
+</name>
+<name>
+<surname>Bahreyni</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jan</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The papain-like protease of coronaviruses cleaves ULK1 to disrupt host autophagy</article-title>
+<source>Biochem Biophys Res Commun</source>
+<year>2021</year>
+<month>Feb</month>
+<volume>540</volume>
+<fpage>75</fpage>
+<lpage>82</lpage>
+<pub-id pub-id-type="doi">10.1016/j.bbrc.2020.12.091</pub-id>
+<pub-id pub-id-type="pmid">33450483</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Meyer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chiaravalli</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gellenoncourt</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Brownridge</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bryne</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Daly</surname>
+<given-names>LE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Characterising proteolysis during SARS-CoV-2 infection identifies viral cleavage sites and cellular targets with therapeutic potential</article-title>
+<source>Nat Commun</source>
+<year>2021</year>
+<month>Sep</month>
+<volume>12</volume>
+<issue>1</issue>
+<elocation-id>5553</elocation-id>
+<pub-id pub-id-type="doi">10.1038/s41467-021-25796-w</pub-id>
+<pub-id pub-id-type="pmid">34548480</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gao</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Ou</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>LL</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>WZ</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>CT</given-names>
+</name>
+</person-group>
+<article-title>Prediction of proteinase cleavage sites in polyproteins of coronaviruses and its applications in analyzing SARS-CoV genomes</article-title>
+<source>FEBS Lett</source>
+<year>2003</year>
+<month>Oct</month>
+<volume>553</volume>
+<issue>3</issue>
+<fpage>451</fpage>
+<lpage>6</lpage>
+<pub-id pub-id-type="doi">10.1016/s0014-5793(03)01091-3</pub-id>
+<pub-id pub-id-type="pmid">14572668</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<collab>The UniProt Consortium</collab>
+<article-title>UniProt: a worldwide hub of protein knowledge</article-title>
+<source>Nucleic Acids Res</source>
+<year>2019</year>
+<month>Jan</month>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D505</fpage>
+<lpage>15</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gky1049</pub-id>
+<pub-id pub-id-type="pmid">30395287</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Benson</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Cavanaugh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Clark</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Karsch-Mizrachi</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Lipman</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Ostell</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>GenBank</article-title>
+<source>Nucleic Acids Res</source>
+<year>2017</year>
+<month>Jan</month>
+<volume>45</volume>
+<issue>D1</issue>
+<fpage>D37</fpage>
+<lpage>42</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkw1070</pub-id>
+<pub-id pub-id-type="pmid">27899564</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sievers</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wilm</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dineen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gibson</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Karplus</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega</article-title>
+<source>Mol Syst Biol</source>
+<year>2011</year>
+<month>Oct</month>
+<volume>7</volume>
+<fpage>539</fpage>
+<pub-id pub-id-type="doi">10.1038/msb.2011.75</pub-id>
+<pub-id pub-id-type="pmid">21988835</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goujon</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>McWilliam</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Valentin</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Squizzato</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Paern</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new bioinformatics analysis tools framework at EMBL-EBI</article-title>
+<source>Nucleic Acids Res</source>
+<year>2010</year>
+<month>Jul</month>
+<volume>38</volume>
+<issue>2</issue>
+<fpage>W695</fpage>
+<lpage>9</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkq313</pub-id>
+<pub-id pub-id-type="pmid">20439314</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McWilliam</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Uludag</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Squizzato</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>YM</given-names>
+</name>
+<name>
+<surname>Buso</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Analysis tool web services from the EMBL-EBI</article-title>
+<source>Nucleic Acids Res</source>
+<year>2013</year>
+<month>Jul</month>
+<volume>41</volume>
+<issue>W1</issue>
+<fpage>W597</fpage>
+<lpage>600</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkt376</pub-id>
+<pub-id pub-id-type="pmid">23671338</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bukhari</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Mulley</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gulyaeva</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shu</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Jiang</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Description and initial characterization of metatranscriptomic nidovirus-like genomes from the proposed new family Abyssoviridae, and from a sister group to the Coronavirinae, the proposed genus Alphaletovirus</article-title>
+<source>Virology</source>
+<year>2018</year>
+<month>Nov</month>
+<volume>524</volume>
+<fpage>160</fpage>
+<lpage>71</lpage>
+<pub-id pub-id-type="doi">10.1016/j.virol.2018.08.010</pub-id>
+<pub-id pub-id-type="pmid">30199753</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gramfort</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Michel</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Thirion</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Grisel</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine Learning in Python</article-title>
+<source>J Mach Learn Res</source>
+<year>2011</year>
+<month>Oct</month>
+<volume>12</volume>
+<fpage>2825</fpage>
+<lpage>30</lpage>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html">http://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Sherman</surname>
+<given-names>BT</given-names>
+</name>
+<name>
+<surname>Lempicki</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Systematic and integrative analysis of large gene lists using DAVID bioinformatics resources</article-title>
+<source>Nat Protoc</source>
+<year>2009</year>
+<month>Jan</month>
+<volume>4</volume>
+<issue>1</issue>
+<fpage>44</fpage>
+<lpage>57</lpage>
+<pub-id pub-id-type="doi">10.1038/nprot.2008.211</pub-id>
+<pub-id pub-id-type="pmid">19131956</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>DW</given-names>
+</name>
+<name>
+<surname>Sherman</surname>
+<given-names>BT</given-names>
+</name>
+<name>
+<surname>Lempicki</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Bioinformatics enrichment tools: Paths toward the comprehensive functional analysis of large gene lists</article-title>
+<source>Nucleic Acids Res</source>
+<year>2009</year>
+<month>Jan</month>
+<volume>37</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>13</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkn923</pub-id>
+<pub-id pub-id-type="pmid">19033363</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jhong</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Pang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>KY</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UbiNet 2.0: a verified, classified, annotated and updated database of E3 ubiquitin-ligase-substrate interactions</article-title>
+<source>Database (Oxford)</source>
+<year>2021</year>
+<month>Mar</month>
+<volume>2021</volume>
+<elocation-id>baab010</elocation-id>
+<pub-id pub-id-type="doi">10.1093/database/baab010</pub-id>
+<pub-id pub-id-type="pmid">33693667</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Crooks</surname>
+<given-names>GE</given-names>
+</name>
+<name>
+<surname>Hon</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Chandonia</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Brenner</surname>
+<given-names>SE</given-names>
+</name>
+</person-group>
+<article-title>WebLogo: A sequence logo generator</article-title>
+<source>Genome Res</source>
+<year>2004</year>
+<month>Jun</month>
+<volume>14</volume>
+<fpage>1188</fpage>
+<lpage>90</lpage>
+<pub-id pub-id-type="doi">10.1101/gr.849004</pub-id>
+<pub-id pub-id-type="pmid">15173120</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>van der Maaten</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hinton</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Visualizing data using t-SNE</article-title>
+<source>J Mach Learn Res</source>
+<year>2008</year>
+<month>Nov</month>
+<volume>9</volume>
+<fpage>2579</fpage>
+<lpage>605</lpage>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="http://www.jmlr.org/papers/v9/vandermaaten08a.html">http://www.jmlr.org/papers/v9/vandermaaten08a.html</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Structural and biochemical characterization of SADS-CoV papain-like protease 2</article-title>
+<source>Protein Sci</source>
+<year>2020</year>
+<month>May</month>
+<volume>29</volume>
+<issue>5</issue>
+<fpage>1228</fpage>
+<lpage>41</lpage>
+<pub-id pub-id-type="doi">10.1002/pro.3857</pub-id>
+<pub-id pub-id-type="pmid">32216114</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shin</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Mukherjee</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Grewe</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bojkova</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Baek</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Papain-like protease regulates SARS-CoV-2 viral spread and innate immunity</article-title>
+<source>Nature</source>
+<year>2020</year>
+<month>Nov</month>
+<volume>587</volume>
+<issue>7835</issue>
+<fpage>657</fpage>
+<lpage>62</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2601-5</pub-id>
+<pub-id pub-id-type="pmid">32726803</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Spatial and temporal roles of SARS-CoV PLpro—A snapshot</article-title>
+<source>FASEB J</source>
+<year>2021</year>
+<month>Jan</month>
+<volume>35</volume>
+<issue>1</issue>
+<elocation-id>e21197</elocation-id>
+<pub-id pub-id-type="doi">10.1096/fj.202002271</pub-id>
+<pub-id pub-id-type="pmid">33368679</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bekes</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>van Noort</surname>
+<given-names>GJvdH</given-names>
+</name>
+<name>
+<surname>Ekkebus</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ovaa</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>TT</given-names>
+</name>
+<name>
+<surname>Lima</surname>
+<given-names>CD</given-names>
+</name>
+</person-group>
+<article-title>Recognition of Lys48-linked diubiquitin and deubiquitinating activities of the SARS coronavirus papain-like protease</article-title>
+<source>Mol Cell</source>
+<year>2016</year>
+<month>May</month>
+<volume>62</volume>
+<issue>4</issue>
+<fpage>572</fpage>
+<lpage>85</lpage>
+<pub-id pub-id-type="doi">10.1016/j.molcel.2016.04.016</pub-id>
+<pub-id pub-id-type="pmid">27203180</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ratia</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kilianski</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Baez-Santos</surname>
+<given-names>YM</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Structural basis for the ubiquitin-linkage specificity and deISGylating activity of SARS-CoV papain-like protease</article-title>
+<source>PLOS Pathog</source>
+<year>2014</year>
+<month>May</month>
+<volume>10</volume>
+<issue>5</issue>
+<elocation-id>e1004113</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1004113</pub-id>
+<pub-id pub-id-type="pmid">24854014</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Durie</surname>
+<given-names>IA</given-names>
+</name>
+<name>
+<surname>Dzimianski</surname>
+<given-names>JV</given-names>
+</name>
+<name>
+<surname>Daczkowski</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Faaberg</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Pegan</surname>
+<given-names>SD</given-names>
+</name>
+</person-group>
+<article-title>Structural insights into the interactions of papain-like protease 2 from the alphacoronavirus porcine epidemic diarrhea virus and ubiquitin</article-title>
+<source>Acta Crystallogr D Struct Biol</source>
+<year>2021</year>
+<month>Jul</month>
+<volume>77</volume>
+<issue>7</issue>
+<fpage>943</fpage>
+<lpage>53</lpage>
+<pub-id pub-id-type="doi">10.1107/S205979832100509X</pub-id>
+<pub-id pub-id-type="pmid">34196620</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clasman</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Everett</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Srinivasan</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<article-title>Decoupling deISGylating and deubiquitinating activities of the MERS virus papain-like protease</article-title>
+<source>Antiviral Res</source>
+<year>2020</year>
+<month>Feb</month>
+<volume>174</volume>
+<elocation-id>104661</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.antiviral.2019.104661</pub-id>
+<pub-id pub-id-type="pmid">31765674</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Swatek</surname>
+<given-names>KN</given-names>
+</name>
+<name>
+<surname>Aumayr</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pruneda</surname>
+<given-names>JN</given-names>
+</name>
+<name>
+<surname>Visser</surname>
+<given-names>LJ</given-names>
+</name>
+<name>
+<surname>Berryman</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kueck</surname>
+<given-names>AF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Irreversible inactivation of ISG15 by a viral leader protease enables alternative infection detection strategies</article-title>
+<source>PNAS</source>
+<year>2018</year>
+<month>Mar</month>
+<volume>115</volume>
+<issue>10</issue>
+<fpage>2371</fpage>
+<lpage>6</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1710617115</pub-id>
+<pub-id pub-id-type="pmid">29463763</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schulman</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Harper</surname>
+<given-names>JW</given-names>
+</name>
+</person-group>
+<article-title>Ubiquitin-like protein activation by E1 enzymes: the apex for downstream signalling pathways</article-title>
+<source>Nat Rev Mol Cell Biol</source>
+<year>2009</year>
+<month>May</month>
+<volume>10</volume>
+<issue>5</issue>
+<fpage>319</fpage>
+<lpage>31</lpage>
+<pub-id pub-id-type="doi">10.1038/nrm2673</pub-id>
+<pub-id pub-id-type="pmid">19352404</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lois</surname>
+<given-names>LM</given-names>
+</name>
+<name>
+<surname>Lima</surname>
+<given-names>CD</given-names>
+</name>
+</person-group>
+<article-title>Structures of the SUMO E1 provide mechanistic insights into SUMO activation and E2 recruitment to E1</article-title>
+<source>EMBO J</source>
+<year>2005</year>
+<month>Feb</month>
+<volume>24</volume>
+<issue>3</issue>
+<fpage>439</fpage>
+<lpage>51</lpage>
+<pub-id pub-id-type="doi">10.1038/sj.emboj.7600552</pub-id>
+<pub-id pub-id-type="pmid">15660128</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>FQ</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tam</surname>
+<given-names>JP</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>DX</given-names>
+</name>
+</person-group>
+<article-title>Sumoylation of the nucleocapsid protein of severe acute respiratory syndrome coronavirus</article-title>
+<source>FEBS Lett</source>
+<year>2005</year>
+<month>Apr</month>
+<volume>579</volume>
+<issue>11</issue>
+<fpage>2387</fpage>
+<lpage>96</lpage>
+<pub-id pub-id-type="doi">10.1016/j.febslet.2005.03.039</pub-id>
+<pub-id pub-id-type="pmid">15848177</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fan</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Zhuo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Qiang</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV nucleocapsid protein binds to hUbc9, a ubiquitin conjugating enzyme of the sumoylation system</article-title>
+<source>J Med Virol</source>
+<year>2006</year>
+<month>Nov</month>
+<volume>78</volume>
+<issue>11</issue>
+<fpage>1365</fpage>
+<lpage>73</lpage>
+<pub-id pub-id-type="doi">10.1002/jmv.20707</pub-id>
+<pub-id pub-id-type="pmid">16998888</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hiscox</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>The interaction of animal cytoplasmic RNA viruses with the nucleus to facilitate replication</article-title>
+<source>Virus Res</source>
+<year>2003</year>
+<month>Sep</month>
+<volume>95</volume>
+<issue>1</issue>
+<fpage>13</fpage>
+<lpage>22</lpage>
+<pub-id pub-id-type="doi">10.1016/S0168-1702(03)00160-6</pub-id>
+<pub-id pub-id-type="pmid">12921992</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Xie</surname>
+<given-names>XQ</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>CY</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>TT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sumoylation promotes the stability of the DNA sensor cGAS and the adaptor STING to regulate the kinetics of response to DNA virus</article-title>
+<source>Immunity</source>
+<year>2016</year>
+<month>Sep</month>
+<volume>45</volume>
+<issue>3</issue>
+<fpage>555</fpage>
+<lpage>69</lpage>
+<pub-id pub-id-type="doi">10.1016/j.immuni.2016.08.014</pub-id>
+<pub-id pub-id-type="pmid">27637147</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Xing</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Nichols</surname>
+<given-names>DB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Coronavirus papain-like proteases negatively regulate antiviral innate immune response through disruption of STING-mediated signaling</article-title>
+<source>PLOS One</source>
+<year>2012</year>
+<month>Feb</month>
+<volume>7</volume>
+<issue>2</issue>
+<elocation-id>e30802</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0030802</pub-id>
+<pub-id pub-id-type="pmid">22312431</pub-id>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maringer</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Fernandez-Sesma</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Message in a bottle: lessons learned from antagonism of STING signalling during RNA virus infection</article-title>
+<source>Cytokine Growth Factor Rev</source>
+<year>2014</year>
+<month>Dec</month>
+<volume>25</volume>
+<issue>6</issue>
+<fpage>669</fpage>
+<lpage>79</lpage>
+<pub-id pub-id-type="doi">10.1016/j.cytogfr.2014.08.004</pub-id>
+<pub-id pub-id-type="pmid">25212897</pub-id>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>50</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nguyen</surname>
+<given-names>LK</given-names>
+</name>
+<name>
+<surname>Dobrzynski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Fey</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kholodenko</surname>
+<given-names>BN</given-names>
+</name>
+</person-group>
+<article-title>Polyubiquitin chain assembly and organization determine the dynamics of protein activation and degradation</article-title>
+<source>Front Physiol</source>
+<year>2014</year>
+<month>Jan</month>
+<volume>5</volume>
+<fpage>4</fpage>
+<pub-id pub-id-type="doi">10.3389/fphys.2014.00004</pub-id>
+<pub-id pub-id-type="pmid">24478717</pub-id>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>51</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rodriquez</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Desterro</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Lain</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Midgley</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Lane</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Hay</surname>
+<given-names>RT</given-names>
+</name>
+</person-group>
+<article-title>SUMO-1 modification activates the transcriptional response of p53</article-title>
+<source>EMBO J</source>
+<year>1999</year>
+<month>Nov</month>
+<volume>18</volume>
+<issue>22</issue>
+<fpage>6455</fpage>
+<lpage>61</lpage>
+<pub-id pub-id-type="doi">10.1093/emboj/18.22.6455</pub-id>
+<pub-id pub-id-type="pmid">10562557</pub-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>52</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ma-Lauer</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Carbaio-Lozoya</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Hein</surname>
+<given-names>MY</given-names>
+</name>
+<name>
+<surname>Muller</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Lei</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>p53 down-regulates SARS coronavirus replication and is targeted by the SARS-unique domain and PLpro via E3 ubiquitin ligase RCHY1</article-title>
+<source>PNAS</source>
+<year>2016</year>
+<month>Aug</month>
+<volume>113</volume>
+<issue>35</issue>
+<fpage>E5192</fpage>
+<lpage>201</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1603435113</pub-id>
+<pub-id pub-id-type="pmid">27519799</pub-id>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>53</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Desterro</surname>
+<given-names>JMP</given-names>
+</name>
+<name>
+<surname>Rodriguez</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Hay</surname>
+<given-names>RT</given-names>
+</name>
+</person-group>
+<article-title>SUMO-1 modification of IκBα inhibits NF-κB activation</article-title>
+<source>Mol Cell</source>
+<year>1998</year>
+<month>Aug</month>
+<volume>2</volume>
+<issue>2</issue>
+<fpage>233</fpage>
+<lpage>9</lpage>
+<pub-id pub-id-type="doi">10.1016/s1097-2765(00)80133-1</pub-id>
+<pub-id pub-id-type="pmid">9734360</pub-id>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>54</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>DeDiego</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Nieto-Torres</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Regla-Nava</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Jimenez-Guardeno</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Fernandez-Delgado</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Fett</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inhibition of NF-κB-mediated inflammation in severe acute respiratory syndrome coronavirus-infected mice increases survival</article-title>
+<source>J Virol</source>
+<year>2014</year>
+<month>Jan</month>
+<volume>88</volume>
+<issue>2</issue>
+<fpage>913</fpage>
+<lpage>24</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.02576-13</pub-id>
+<pub-id pub-id-type="pmid">24198408</pub-id>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>55</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Banerjee</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kumar</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Wiener</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Decrypting UFMylation: how proteins are modified with UFM1</article-title>
+<source>Biomolecules</source>
+<year>2020</year>
+<month>Oct</month>
+<volume>10</volume>
+<issue>10</issue>
+<fpage>1442</fpage>
+<pub-id pub-id-type="doi">10.3390/biom10101442</pub-id>
+<pub-id pub-id-type="pmid">33066455</pub-id>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>56</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stephani</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Picchianti</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Gajic</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Beveridge</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Skarwan</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Hernandez</surname>
+<given-names>VSDM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A cross-kingdom conserved ER-phagy receptor maintains endoplasmic reticulum homeostasis during stress</article-title>
+<source>Elife</source>
+<year>2020</year>
+<month>Aug</month>
+<volume>9</volume>
+<elocation-id>e58396</elocation-id>
+<pub-id pub-id-type="doi">10.7554/eLife.58396</pub-id>
+<pub-id pub-id-type="pmid">32851973</pub-id>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>57</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wolff</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Melia</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Snijder</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Barcena</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Double-membrane vesicles as platforms for viral replication</article-title>
+<source>Trends in Microbiol</source>
+<year>2020</year>
+<month>Jun</month>
+<fpage>1839</fpage>
+<pub-id pub-id-type="doi">10.1016/j.tim.2020.05.009</pub-id>
+<pub-id pub-id-type="pmid">32536523</pub-id>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>58</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Becker</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Gannage</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Giese</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Abou-Eid</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Roubaty</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Influenza A virus induces autophagosomal targeting of ribosomal proteins</article-title>
+<source>Mol Cell Proteomics</source>
+<year>2018</year>
+<month>Oct</month>
+<volume>17</volume>
+<issue>10</issue>
+<fpage>1909</fpage>
+<lpage>21</lpage>
+<pub-id pub-id-type="doi">10.1074/mcp.RA117.000364</pub-id>
+<pub-id pub-id-type="pmid">29980615</pub-id>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>59</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>Q</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UFMylation maintains tumor suppressor p53 stability by antagonizing its ubiquitination</article-title>
+<source>Net Cell Biol</source>
+<year>2020</year>
+<month>Sep</month>
+<volume>22</volume>
+<issue>9</issue>
+<fpage>1056</fpage>
+<lpage>63</lpage>
+<pub-id pub-id-type="doi">10.1038/s41556-020-0559-z</pub-id>
+<pub-id pub-id-type="pmid">32807901</pub-id>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>60</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Balce</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>YT</given-names>
+</name>
+<name>
+<surname>McAllaster</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Dunlap</surname>
+<given-names>BF</given-names>
+</name>
+<name>
+<surname>Orvedahl</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hykes</surname>
+<given-names>BL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>UFMylation inhibits the proinflammatory capacity of interferon-y-activated macrophages</article-title>
+<source>PNAS</source>
+<year>2021</year>
+<month>Jan</month>
+<volume>118</volume>
+<issue>1</issue>
+<elocation-id>e2011763118</elocation-id>
+<pub-id pub-id-type="doi">10.1073/pnas.2011763118</pub-id>
+<pub-id pub-id-type="pmid">33372156</pub-id>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>61</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grant</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Morales-Nebreda</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Markov</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Swaminathan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Querrey</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Guzman</surname>
+<given-names>ER</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Circuits between infected macrophages and T cells in SARS-CoV-2 pneumonia</article-title>
+<source>Nature</source>
+<year>2021</year>
+<month>Feb</month>
+<volume>590</volume>
+<issue>7847</issue>
+<fpage>635</fpage>
+<lpage>41</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-03148-w</pub-id>
+<pub-id pub-id-type="pmid">33429418</pub-id>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>62</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Malakhova</surname>
+<given-names>OA</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>DE</given-names>
+</name>
+</person-group>
+<article-title>ISG15 inhibits Nedd4 ubiquitin E3 activity and enhances the innate antiviral response</article-title>
+<source>J Biol Chem</source>
+<year>2008</year>
+<month>Apr</month>
+<volume>283</volume>
+<issue>14</issue>
+<fpage>8783</fpage>
+<lpage>7</lpage>
+<pub-id pub-id-type="doi">10.1074/jbc.C800030200</pub-id>
+<pub-id pub-id-type="pmid">18287095</pub-id>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>63</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Novelli</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Biancolella</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Alonzi</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Novelli</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Patten</surname>
+<given-names>JJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inhibition of HECT E3 ligases as a potential therapy for COVID-19</article-title>
+<source>Cell Death Dis</source>
+<year>2021</year>
+<month>Mar</month>
+<volume>12</volume>
+<issue>4</issue>
+<fpage>310</fpage>
+<pub-id pub-id-type="doi">10.1038/s41419-021-03513-1</pub-id>
+<pub-id pub-id-type="pmid">33762578</pub-id>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>64</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Narita</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Weinert</surname>
+<given-names>BT</given-names>
+</name>
+<name>
+<surname>Choudhary</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Functions and mechanisms of non-histone protein acetylation</article-title>
+<source>Nat Rev Mol Cell Biol</source>
+<year>2018</year>
+<month>Mar</month>
+<volume>20</volume>
+<issue>3</issue>
+<fpage>156</fpage>
+<lpage>74</lpage>
+<pub-id pub-id-type="doi">10.1038/s41580-018-0081-3</pub-id>
+<pub-id pub-id-type="pmid">30467427</pub-id>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>65</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ohtake</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Saeki</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Sakamoto</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ohtake</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Nishikawa</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tsuchiya</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ubiquitin acetylation inhibits polyubiquitin chain elongation</article-title>
+<source>EMBO Rep</source>
+<year>2015</year>
+<month>Feb</month>
+<volume>16</volume>
+<issue>2</issue>
+<fpage>192</fpage>
+<lpage>201</lpage>
+<pub-id pub-id-type="doi">10.15252/embr.201439152</pub-id>
+<pub-id pub-id-type="pmid">25527407</pub-id>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>66</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ma</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>XJ</given-names>
+</name>
+<name>
+<surname>Xin</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>LS</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>QC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Lysyl oxidase 3 is a dual-specificity enzyme involved in STAT3 deacetylation and deacetylimination modulation</article-title>
+<source>Mol Cell</source>
+<year>2017</year>
+<month>Jan</month>
+<volume>65</volume>
+<issue>2</issue>
+<fpage>296</fpage>
+<lpage>309</lpage>
+<pub-id pub-id-type="doi">10.1016/j.molcel.2016.12.002</pub-id>
+<pub-id pub-id-type="pmid">28065600</pub-id>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>67</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matsuyama</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kubli</surname>
+<given-names>SP</given-names>
+</name>
+<name>
+<surname>Yoshinaga</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Pfeffer</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Mak</surname>
+<given-names>TW</given-names>
+</name>
+</person-group>
+<article-title>An aberrant STAT pathway is central to COVID-19</article-title>
+<source>Cell Death Differ</source>
+<year>2020</year>
+<month>Dec</month>
+<volume>27</volume>
+<issue>12</issue>
+<fpage>3209</fpage>
+<lpage>25</lpage>
+<pub-id pub-id-type="doi">10.1038/s41418-020-00633-7</pub-id>
+<pub-id pub-id-type="pmid">33037393</pub-id>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>68</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Thandapani</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>O’Connor</surname>
+<given-names>TR</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>TL</given-names>
+</name>
+<name>
+<surname>Richard</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Defining the RGG/RG motif</article-title>
+<source>Mol Cell</source>
+<year>2013</year>
+<month>Jun</month>
+<volume>50</volume>
+<issue>5</issue>
+<fpage>613</fpage>
+<lpage>23</lpage>
+<pub-id pub-id-type="doi">10.1016/j.molcel.2013.05.021</pub-id>
+<pub-id pub-id-type="pmid">23746349</pub-id>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>69</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nabeel-Shah</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ahmed</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Marcon</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Farhangmehr</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pu</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 nucleocapsid protein attenuates stress granule formation and alters gene expression via direct interaction with host mRNAs</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<month>Oct</month>
+<comment>[Preprint]</comment>
+<pub-id pub-id-type="doi">10.1101/2020.10.23.342113</pub-id>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>70</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cai</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Richard</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Arginine methylation of SARS-CoV-2 nucleocapsid protein regulated RNA binding, its ability to suppress stress granule formation, and viral replication</article-title>
+<source>J Biol Chem</source>
+<year>2021</year>
+<month>Jul</month>
+<volume>297</volume>
+<issue>1</issue>
+<elocation-id>100821</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.jbc.2021.100821</pub-id>
+<pub-id pub-id-type="pmid">34029587</pub-id>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>71</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nemeroff</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Barabino</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Keller</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Krug</surname>
+<given-names>RM</given-names>
+</name>
+</person-group>
+<article-title>Influenza virus NS1 protein interacts with the cellular 30 kDa subunit of CPSF and inhibits 3’ end formation of cellular pre-RNAs</article-title>
+<source>Mol Cell</source>
+<year>1998</year>
+<month>Jun</month>
+<volume>1</volume>
+<issue>7</issue>
+<fpage>991</fpage>
+<lpage>1000</lpage>
+<pub-id pub-id-type="doi">10.1016/s1097-2765(00)80099-4</pub-id>
+<pub-id pub-id-type="pmid">9651582</pub-id>
+</element-citation>
+</ref>
+<ref id="R72">
+<label>72</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Meola</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Domanski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Karadoulama</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Gentil</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Pultz</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Identification of a nuclear exosome decay pathway for processed transcripts</article-title>
+<source>Mol Cell</source>
+<year>2016</year>
+<month>Nov</month>
+<volume>64</volume>
+<issue>3</issue>
+<fpage>520</fpage>
+<lpage>33</lpage>
+<pub-id pub-id-type="doi">10.1016/j.molcel.2016.09.025</pub-id>
+<pub-id pub-id-type="pmid">27871484</pub-id>
+</element-citation>
+</ref>
+<ref id="R73">
+<label>73</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Ke</surname>
+<given-names>TY</given-names>
+</name>
+<name>
+<surname>Liao</surname>
+<given-names>WY</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>NY</given-names>
+</name>
+</person-group>
+<article-title>Regulation of coronaviral poly(A) tail length during infection</article-title>
+<source>PLOS One</source>
+<year>2013</year>
+<month>Jul</month>
+<volume>8</volume>
+<issue>7</issue>
+<elocation-id>e70548</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0070548</pub-id>
+<pub-id pub-id-type="pmid">23923003</pub-id>
+</element-citation>
+</ref>
+<ref id="R74">
+<label>74</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peng</surname>
+<given-names>YH</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>CN</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>CY</given-names>
+</name>
+<name>
+<surname>Tsai</surname>
+<given-names>TL</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>HY</given-names>
+</name>
+</person-group>
+<article-title>Characterization of the role of hexamer AGUAAA and poly(A) tail in coronavirus polyadenylation</article-title>
+<source>PLOS One</source>
+<year>2016</year>
+<month>Oct</month>
+<volume>11</volume>
+<issue>10</issue>
+<elocation-id>e0165077</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0165077</pub-id>
+<pub-id pub-id-type="pmid">27760233</pub-id>
+</element-citation>
+</ref>
+<ref id="R75">
+<label>75</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kim</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Yeo</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Seo</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>YY</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Viral hijacking of the TENT4-ZCCHC14 complex protects viral RNAs via mixed tailing</article-title>
+<source>Nat Struct Mol Biol</source>
+<year>2020</year>
+<month>Jun</month>
+<volume>27</volume>
+<issue>6</issue>
+<fpage>581</fpage>
+<lpage>8</lpage>
+<pub-id pub-id-type="doi">10.1038/s41594-020-0427-3</pub-id>
+<pub-id pub-id-type="pmid">32451488</pub-id>
+</element-citation>
+</ref>
+<ref id="R76">
+<label>76</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Miller</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Reese</surname>
+<given-names>JC</given-names>
+</name>
+</person-group>
+<article-title>Ccr4-Not complex: the control freak of eukaryotic cells</article-title>
+<source>Crit Rev Biochem Mol Biol</source>
+<year>2012</year>
+<month>Jul</month>
+<volume>47</volume>
+<issue>4</issue>
+<fpage>315</fpage>
+<lpage>33</lpage>
+<pub-id pub-id-type="doi">10.3109/10409238.2012.667214</pub-id>
+<pub-id pub-id-type="pmid">22416820</pub-id>
+</element-citation>
+</ref>
+<ref id="R77">
+<label>77</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Daffis</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Szretter</surname>
+<given-names>KJ</given-names>
+</name>
+<name>
+<surname>Schriewer</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Youn</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Errett</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>2’-O methylation of the viral mRNA cap evades host restriction by IFIT family members</article-title>
+<source>Nature</source>
+<year>2010</year>
+<month>Nov</month>
+<volume>468</volume>
+<issue>7322</issue>
+<fpage>452</fpage>
+<lpage>6</lpage>
+<pub-id pub-id-type="doi">10.1038/nature09489</pub-id>
+<pub-id pub-id-type="pmid">21085181</pub-id>
+</element-citation>
+</ref>
+<ref id="R78">
+<label>78</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Viswanathan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Arya</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dai</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Misra</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structural basis of RNA cap modification by SARS-CoV-2</article-title>
+<source>Nat Commun</source>
+<year>2020</year>
+<month>Jul</month>
+<volume>11</volume>
+<elocation-id>3718</elocation-id>
+<pub-id pub-id-type="doi">10.1038/s41467-020-17496-8</pub-id>
+<pub-id pub-id-type="pmid">32709886</pub-id>
+</element-citation>
+</ref>
+<ref id="R79">
+<label>79</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kincaid</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>VL</given-names>
+</name>
+<name>
+<surname>Chirayil</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Randall</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Sullivan</surname>
+<given-names>CS</given-names>
+</name>
+</person-group>
+<article-title>RNA triphosphatase DUSP11 enables exonuclease XRN-mediated restriction of hepatitis C virus</article-title>
+<source>PNAS</source>
+<year>2018</year>
+<month>Aug</month>
+<volume>115</volume>
+<issue>32</issue>
+<fpage>8197</fpage>
+<lpage>202</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1802326115</pub-id>
+<pub-id pub-id-type="pmid">30038017</pub-id>
+</element-citation>
+</ref>
+<ref id="R80">
+<label>80</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choi</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Burke</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Szymanik</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Nepal</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Battenhouse</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lau</surname>
+<given-names>JT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>DUSP11-mediated control of 5’-triphosphate RNA regulates RIG-I sensitivity</article-title>
+<source>Genes Dev</source>
+<year>2020</year>
+<month>Dec</month>
+<volume>34</volume>
+<issue>23-24</issue>
+<fpage>1697</fpage>
+<lpage>712</lpage>
+<pub-id pub-id-type="doi">10.1101/gad.340604.120</pub-id>
+<pub-id pub-id-type="pmid">33184222</pub-id>
+</element-citation>
+</ref>
+<ref id="R81">
+<label>81</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Choi</surname>
+<given-names>JH</given-names>
+</name>
+<name>
+<surname>Sullivan</surname>
+<given-names>CS</given-names>
+</name>
+</person-group>
+<article-title>DUSP11 and triphosphate RNA balance during virus infection</article-title>
+<source>PLOS Pathog</source>
+<year>2021</year>
+<month>Jan</month>
+<volume>17</volume>
+<issue>1</issue>
+<elocation-id>e1009145</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1009145</pub-id>
+<pub-id pub-id-type="pmid">33444401</pub-id>
+</element-citation>
+</ref>
+<ref id="R82">
+<label>82</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bonaventure</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Rebendenne</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>de Gracia</surname>
+<given-names>FG</given-names>
+</name>
+<name>
+<surname>McKellar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Gracias</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Labaronne</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A genome-wide CRISPR/Cas9 knock-out screen identifies DEAD box RNA helicase DDX42 as a broad antiviral inhibitor</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<month>Oct</month>
+<comment>[Preprint]</comment>
+<pub-id pub-id-type="doi">10.1101/2020.10.28.359356</pub-id>
+</element-citation>
+</ref>
+<ref id="R83">
+<label>83</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Temerozo</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Fintelman-Rodrigues</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Santos</surname>
+<given-names>MC</given-names>
+</name>
+<name>
+<surname>Hottz</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Sacramento</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Human endogenous retrovirus K activation in the lower respiratory tract of severe COVID-19 patients associated with early mortality</article-title>
+<source>Research Square</source>
+<year>2021</year>
+<month>May</month>
+<comment>[Preprint]</comment>
+<pub-id pub-id-type="doi">10.21203/rs.3.rs-514541/v1</pub-id>
+</element-citation>
+</ref>
+<ref id="R84">
+<label>84</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tyagi</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Parades</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Bianchet</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Nath</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Inhibition of human endogenous retrovirus-K by antiretroviral drugs</article-title>
+<source>Retrovirology</source>
+<year>2017</year>
+<month>Mar</month>
+<volume>14</volume>
+<fpage>21</fpage>
+<pub-id pub-id-type="doi">10.1186/s12977-017-0347-4</pub-id>
+<pub-id pub-id-type="pmid">28330477</pub-id>
+</element-citation>
+</ref>
+<ref id="R85">
+<label>85</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mahdi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Motyan</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Szojka</surname>
+<given-names>ZI</given-names>
+</name>
+<name>
+<surname>Golda</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Miczi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tozser</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Analysis of the efficacy of HIV protease inhibitors against SARS-CoV-2’s main protease</article-title>
+<source>Virol J</source>
+<year>2020</year>
+<month>Nov</month>
+<volume>17</volume>
+<issue>1</issue>
+<fpage>190</fpage>
+<pub-id pub-id-type="doi">10.1186/s12985-020-01457-0</pub-id>
+<pub-id pub-id-type="pmid">33243253</pub-id>
+</element-citation>
+</ref>
+<ref id="R86">
+<label>86</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cao</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A trial of lopinavir-ritonavir in adults hospitalized with severe COVID-19</article-title>
+<source>N Engl J Med</source>
+<year>2020</year>
+<month>May</month>
+<volume>382</volume>
+<issue>19</issue>
+<fpage>1787</fpage>
+<lpage>99</lpage>
+<pub-id pub-id-type="doi">10.1056/NEJMoa2001282</pub-id>
+<pub-id pub-id-type="pmid">32187464</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Chemical similarity between (A) ubiquitin-target RGG^K isopeptide bond and (B) RGG^G peptide bond.</title>
+</caption>
+<graphic xlink:href="EMS136342-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>(A) Sequence logos for the three cleavage sites in coronaviruses[<xref ref-type="bibr" rid="R32">32</xref>] and (B) one-hot encoded t-SNE colored by order and (C) by genus.[<xref ref-type="bibr" rid="R33">33</xref>]</title>
+</caption>
+<graphic xlink:href="EMS136342-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Train/test split fraction vs MCC demonstrating that performance quickly approaches a limit for all classifiers no matter taxonomic rank ((A) <italic>Coronaviridae</italic>, (B) <italic>Betacoronavirus</italic>, (C) <italic>Sarbecovirus</italic>).</title>
+</caption>
+<graphic xlink:href="EMS136342-f003"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Size and imbalance of the three datasets used to train machine learning models and the results of the final NN.</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top">Rank</th>
+<th align="left" valign="top">
+<italic>Coronaviridae</italic>
+</th>
+<th align="left" valign="top">
+<italic>Betacoronavirus</italic>
+</th>
+<th align="left" valign="top">
+<italic>Sarbecovirus</italic>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">nsp1/2 cleavages</td>
+<td align="left" valign="top">133</td>
+<td align="left" valign="top">49</td>
+<td align="left" valign="top">16</td>
+</tr>
+<tr>
+<td align="left" valign="top">nsp2/3 cleavages</td>
+<td align="left" valign="top">153</td>
+<td align="left" valign="top">60</td>
+<td align="left" valign="top">23</td>
+</tr>
+<tr>
+<td align="left" valign="top">nsp3/4 cleavages</td>
+<td align="left" valign="top">177</td>
+<td align="left" valign="top">46</td>
+<td align="left" valign="top">13</td>
+</tr>
+<tr>
+<td align="left" valign="top">Total cleaved</td>
+<td align="left" valign="top">463</td>
+<td align="left" valign="top">155</td>
+<td align="left" valign="top">52</td>
+</tr>
+<tr>
+<td align="left" valign="top">Total uncleaved</td>
+<td align="left" valign="top">33185</td>
+<td align="left" valign="top">10013</td>
+<td align="left" valign="top">2742</td>
+</tr>
+<tr>
+<td align="left" valign="top">% Cleaved</td>
+<td align="left" valign="top">1.38%</td>
+<td align="left" valign="top">1.52%</td>
+<td align="left" valign="top">1.86%</td>
+</tr>
+<tr>
+<td align="left" valign="top">Single network 20% test MCC</td>
+<td align="left" valign="top">0.895</td>
+<td align="left" valign="top">0.934</td>
+<td align="left" valign="top">0.988</td>
+</tr>
+<tr>
+<td align="left" valign="top">Ensemble 20% test MCC</td>
+<td align="left" valign="top">0.900</td>
+<td align="left" valign="top">0.948</td>
+<td align="left" valign="top">0.966</td>
+</tr>
+<tr>
+<td align="left" valign="top">Random cleavage frequency between 3 Gs or As</td>
+<td align="left" valign="top">2.00%</td>
+<td align="left" valign="top">0.54%</td>
+<td align="left" valign="top">0.07%</td>
+</tr>
+<tr>
+<td align="left" valign="top">Random cleavage frequency between ≥2 Gs or As</td>
+<td align="left" valign="top">0.38%</td>
+<td align="left" valign="top">0.23%</td>
+<td align="left" valign="top">0.05%</td>
+</tr>
+<tr>
+<td align="left" valign="top">Random cleavage frequency</td>
+<td align="left" valign="top">0.019%</td>
+<td align="left" valign="top">0.012%</td>
+<td align="left" valign="top">0.003%</td>
+</tr>
+<tr>
+<td align="left" valign="top">Average residues between random cleavages</td>
+<td align="left" valign="top">5300</td>
+<td align="left" valign="top">8300</td>
+<td align="left" valign="top">33000</td>
+</tr>
+<tr>
+<td align="left" valign="top">Human proteins cleaved</td>
+<td align="left" valign="top">1381</td>
+<td align="left" valign="top">980</td>
+<td align="left" valign="top">154</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

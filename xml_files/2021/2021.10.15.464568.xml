@@ -1,0 +1,1363 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS137014</article-id>
+<article-id pub-id-type="doi">10.1101/2021.10.15.464568</article-id>
+<article-id pub-id-type="archive">PPR407997</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Turning high-throughput structural biology into predictive inhibitor design</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Saar</surname>
+<given-names>Kadi L.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Fearon</surname>
+<given-names>Daren</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<collab>The COVID Moonshot Consortium</collab>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Delft</surname>
+<given-names>Frank von</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chodera</surname>
+<given-names>John D.</given-names>
+</name>
+<xref ref-type="aff" rid="A5">5</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>Alpha A.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A6">6</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Yusuf Hamied Department of Chemistry, University of Cambridge, Cambridge CB2 1EW, UK</aff>
+<aff id="A2">
+<label>2</label>Cavendish Laboratory, Department of Physics, University of Cambridge, Cambridge CB3 0HE, UK</aff>
+<aff id="A3">
+<label>3</label>Diamond Light Source Ltd., Harwell Science and Innovation Campus, Didcot, UK</aff>
+<aff id="A4">
+<label>4</label>Structural Genomics Consortium, University of Oxford, Old Road Campus, Roosevelt Drive, Headington, OX3 7DQ, UK</aff>
+<aff id="A5">
+<label>5</label>Computational and Systems Biology Program, Sloan Kettering Institute, Memorial Sloan Kettering Cancer Center, New York, NY 10065, USA</aff>
+<aff id="A6">
+<label>6</label>PostEra Inc, 2 Embarcadero Center, San Francisco, CA 94111, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>To whom correspondence should be addressed: <email>aal44@cam.ac.uk</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>17</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>15</day>
+<month>10</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">A common challenge in drug design pertains to finding chemical modifications to a ligand that increases its affinity to the target protein. An underutilised advance is the increase in structural biology throughput, which has progressed from an artisanal endeavour to a monthly throughput of up to 100 different ligands against a protein in modern synchrotrons. However, the missing piece is a framework that turns high throughput crystallography data into predictive models for ligand design. Here we designed a simple machine learning approach that predicts protein-ligand affinity from experimental structures of diverse ligands against a single protein paired with biochemical measurements. Our key insight is using physics-based energy descriptors to represent protein-ligand complexes, and a learning-to-rank approach that infers the relevant differences between binding modes. We ran a high throughput crystallography campaign against the SARS-CoV-2 Main Protease (M<sup>Pro</sup>), obtaining parallel measurements of over 200 protein-ligand complexes and the binding activity. This allows us to design a one-step library syntheses which improved the potency of two distinct micromolar hits by over 10-fold, arriving at a non-covalent and non-peptidomimetic inhibitor with 120 nM antiviral efficacy. Crucially, our approach successfully extends ligands to unexplored regions of the binding pocket, executing large and fruitful moves in chemical space with simple chemistry.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Predicting protein-ligand affinity is a longstanding challenge that underpins computer-aided drug design. The challenge often lies in designing chemical modifications which would significantly improve the potency of a weakly potent starting point (hit-to-lead) or finding chemotypes that maintains potency whilst designing away other liabilities (lead optimisation). Established medicinal chemistry heuristics focus on making interpretable and modest chemical changes, iteratively “morphing” the ligand to optimise interactions and explore unknown binding pockets<sup>
+<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>
+</sup>. Significant acceleration can be realised if this iterative process is replaced by methods which suggest large and synthetically facile changes to the ligand to give a significant increase in potency, motivating a computational approach to ligand design.</p>
+<p id="P3">The plethora of computational methods in the literature can be organised in terms of the available information they make use of. Ligand-based approaches (Figure a) derive information only from the chemical identity of ligands which are binding to the protein, and focus on learning the relationship between the chemical structure of the ligand and its activity. Such methods, however, are circumscribed by the problem of extrapolation: the model cannot extrapolate to regions of the binding site which are not already explored by molecules in the dataset, nor to unexplored interactions between novel chemotypes and the binding site.</p>
+<p id="P4">Structure-based approaches ameliorate this limitation by taking the protein structure into account and explicitly model the protein-ligand interactions (Figure b). However, rigorous methods, such as free energy perturbations (FEP) or alchemical free energy calculations generally require substantial computational resources and are constrained by the quality of the approximate forcefield.<sup>
+<xref ref-type="bibr" rid="R3">3</xref>–<xref ref-type="bibr" rid="R5">5</xref>
+</sup> In practice, these approaches are typically used to compute relative free energy changes of small modifications to predefined scaffolds<sup>
+<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R7">7</xref>
+</sup>, as convergence time and error both increase with the size of change relative to the starting ligand. To reduce computational cost, empirical scoring functions such as docking<sup>
+<xref ref-type="bibr" rid="R8">8</xref>–<xref ref-type="bibr" rid="R11">11</xref>
+</sup> have been developed. Whilst docking can identify hits from virtually screening large libraries<sup>
+<xref ref-type="bibr" rid="R12">12</xref>,<xref ref-type="bibr" rid="R13">13</xref>
+</sup>, it is typically not used in ligand optimisation as the correlation between predicted and experimentally measured protein-ligand interaction energy is often weak.</p>
+<p id="P5">The rapid acceleration in the throughput of structural biology unlocks a new source of data (Figure c). Historically, protein structure determination was laborious, thus on a particular target there were only handful of co-crystallised ligands reported in the literature. Although databases such as the Protein Data Bank<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> could be mined to parametrize docking algorithms<sup>
+<xref ref-type="bibr" rid="R15">15</xref>,<xref ref-type="bibr" rid="R16">16</xref>
+</sup>, this necessitates training on diverse classes of proteins with varied protein-ligand affinity measurement techniques, introducing noise and dataset bias<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>. The synergy between modern robotic techniques for crystallisation and crystal soaking<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup>, automated data analysis pipelines<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> and modern synchrotron infrastructure has increased the monthly throughput to up to 100s of ligands against a target<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup>. However, the missing piece of the puzzle is a framework that can turn high throughput crystallographic data into predictive models for ligand design.</p>
+<p id="P6">In this paper, we present a machine learning approach that relates high throughput crystallography data, represented as empirical energy terms, to measured bioactivity. We used this to accelerate the COVID Moonshot initiative<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup>, an open science consortium that reported over 200 protein-ligand complexes against SARS-CoV-2 Main Protease (M<sup>Pro</sup>) with associated potency (<italic>IC</italic>
+<sub>50</sub>) measurements. Retrospective validation shows that our method outperforms ligand-based and structure-based approaches. We prospectively designed one-step library syntheses, improving the potency of two distinct micromolar hits by over 10-fold and arrived at a lead compound with 120 nM antiviral efficacy. Crucially, our designed inhibitors gain potency by extending to unsampled regions of the binding site, illustrating the ability of our model to generalise via the incorporating physical interactions.</p>
+</sec>
+<sec id="S2" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<sec id="S3">
+<title>Energy-based model is generalizable across chemical space</title>
+<p id="P7">To describe protein-ligand structures as a fixed-length vector for downstream machine learning (Figure a), we turn to the literature on empirical scoring functions. We use the terms of empirical energy function – hydrophobic, electrostatic, hydrogen bonding etc. – as descriptors of the structures. Our hypothesis is that whilst empirical energy terms capture different aspects of protein-ligand interactions, how these interactions stack up to yield the free energy of binding depends on binding-site specific variables such as binding site flexibility. We further hypothesize that those protein-specific corrections are learnable from our dataset, comprising high throughput structural biology data and associated bioactivity. To fix ideas, in our approach we featurize all the protein-ligand complexes using the Open Drug Discovery Toolkit (ODDT)<sup>
+<xref ref-type="bibr" rid="R22">22</xref>
+</sup> and extract the Autodock Vina descriptors to serve as a low-dimensional representation of the each structure.</p>
+<p id="P8">We predict protein-ligand affinity using this representation as an input. Instead of predicting IC<sub>50</sub> values directly, we focused our attention to predicting the pairwise comparison of the ligands, choosing a cut-off of 0.25 log<sub>10</sub> units for classifying one compound as more active than another (<xref ref-type="supplementary-material" rid="SD2">Figure S1</xref>). The threshold was chosen to match typical assay error. This learning-to-rank approach allows us to combine qualitative (potency below measurable) and quantitative measurements, and forces the model to ignore irrelevant experimental noise by ensuring that it is only ranking structures with demonstrably different bioactivity<sup>
+<xref ref-type="bibr" rid="R23">23</xref>
+</sup>. We build our models using Autodock Vina descriptors as features and a random forest as the machine learning algorithm (<xref ref-type="sec" rid="S1">Materials and Methods</xref>; <xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S1</xref>).</p>
+<p id="P9">Specifically, we applied this approach to the high-throughput structural biology campaign against the SARS-CoV-2 M<sup>Pro</sup>, an essential protein in viral replication and a validated target for anti-coronavirus therapeutics<sup>
+<xref ref-type="bibr" rid="R24">24</xref>–<xref ref-type="bibr" rid="R27">27</xref>
+</sup>. All M<sup>Pro</sup> clinical candidates to date are peptidomimetics inhibiting via a covalent mechanism, which are generally suboptimal for drug development. We launched the COVID Moonshot, an open science initiative aiming to develop non-covalent small molecule oral antiviral<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup>. The campaign obtained 236 structures of non-covalent inhibitors binding to the M<sup>Pro</sup>. Out of these ligands, 94 had IC<sub>50</sub> below 50 <italic>μ</italic>M (<xref ref-type="supplementary-material" rid="SD2">Figure S2</xref>). To the best of our knowledge, COVID Moonshot is the only openly accessible dataset with over 100 structures of different ligands against a single target with associated bioactivity measurement; as such, our model evaluation will focus on this dataset.</p>
+<p id="P10">To implement the models and evaluate their performance in ranking novel ligands, first, we use a scaffold-split approach where an entire scaffold is held out from the training set and placed in the test set. There are four salient chemical scaffolds in the dataset: aminopyridine-like, isoquinoline, benzotriazole and quinolone (<xref ref-type="sec" rid="S1">Materials and Methods</xref>; <xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S2</xref>) with 123, 44, 19 and 15 structures, respectively. For the compounds that were part of the test set, we extracted the features from the docked structures instead of the experimental crystal structures, where the ligands had been docked to the active site using OpenEye’s FRED hybrid docking mode as implemented in the “Classic OEDocking” floe on the Orion online platform (<xref ref-type="sec" rid="S1">Materials and Methods</xref>). This is because when deploying the model as a prioritisation tool for synthesis and screening as we will do later in this work, experimental structural information is inaccessible and the docked structure serve as its approximation. Figure b shows that our learn-to-rank model achieved an average AUROC value around 0.8 (<xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S3</xref> shows the results broken down into different scaffolds). To estimate error in the performance metric, the training data was bootstrapped and 10 different models built for each scaffold, the quoted values are the mean and the standard deviations in the obtained AUROC values. This result illustrates that our model accurately ranks unseen ligands without the requirement to have any structures from that specific scaffold as part of the training set.</p>
+</sec>
+<sec id="S4">
+<title>Structural data is salient to model performance</title>
+<p id="P11">To understand the impact of experimental structural biology data, we consider two alternative models: (i) a ligand-based model that relied only on the use of ligand-based descriptors providing no information about the protein-crystal structure and (ii) a model that used a docked structure instead of the measured crystallographic structure. Specifically, for the former case, we featurised the ligands using Morgan fingerprints<sup>
+<xref ref-type="bibr" rid="R28">28</xref>
+</sup>, implemented through the use of the RDKit package. For the latter case, we docked ligands to the active site using OpenEye’s FRED hybrid docking modes described above. For consistency, the same model architecture (random forest) was used for all cases with the hyperparameters tuned separately for each model.</p>
+<p id="P12">Figure b shows that our approach which incorporates experimental structural data outperforms both docking-based and ligand-based models, highlighting the importance of high throughput structural biology. The AUROC values correspond to the average values across the four scaffolds. The slightly better performance of the docking-based model over the ligand-based one likely stems from the fact that the model does not rely solely on ligand-based input but also incorporates information about the protein-ligand interactions.</p>
+</sec>
+<sec id="S5">
+<title>Model maintains performance throughout the campaign</title>
+<p id="P13">Having demonstrated that our proposed strategy can reliably rank ligands by potency even when outside the chemical space that it encountered during training (i.e. for a new scaffold), we next explore how its utility varies through the campaign and what is the amount of structural data required for efficient performance. As a drug discovery campaign progresses, more knowledge about the chemical attributes that determine the binding of a ligand to its target is gathered and the designs are honed accordingly. Therefore, trying to predict the potency of molecules tested earlier in the campaign with molecule tested later in the campaign as training set is much easier (and less useful) than the converse, i.e. hindsight is usually much more accurate than foresight.</p>
+<p id="P14">To examine the predictive capability of the structure-driven ligand prioritisation approach as the campaign progresses, we use a time-split strategy. We ordered the compounds by the time when they had been tested and used only the structures available until that specific time point for training. We first note that in the course of the campaign, the potency of the molecules increased by many orders of magnitude (Figure c, black line). To avoid susceptibility of the model to memorise the specifics of a particular scaffold, we kept all aminopyridine-like and isoquinoline-like molecules in the training data while using benzotriazole-like and quinolone-like ligands for validation. Figure c (green line) shows that our structure-based model remains predictive when trained on molecules tested early in the campaign and deployed to rank molecules tested later. This is in contrast to the model that relied on ligand-based or docking-based input (Figure c, pink and dark yellow lines).</p>
+<p id="P15">Finally, from these data, we can interrogate that our proposed approach performs effectively (AU-ROC value above 0.7) when only around 100 crystal structures are available to train the model. Crucially, this is a throughput that could be achieved in a modern synchrotron<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup> on monthly timescale, illustrating that our proposed strategy has the potential to be exploited routinely in the context of drug discovery campaigns.</p>
+</sec>
+<sec id="S6">
+<title>Model-guided library synthesis discovers potent leads</title>
+<p id="P16">To apply our model to lead discovery, we need to generate protein-ligand structures for unseen ligands. Starting from two hits with a amine handle reported by the COVID Moonshot Consortium<sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup>, chosen because they have detectable potency and ease of synthetic access, we generate a virtual library that is synthesizable in single reaction step using amide formation (<xref ref-type="fig" rid="F3">Figure 3a</xref>) and reductive amination (<xref ref-type="fig" rid="F3">Figure 3b</xref>). The library design is motivated by structural data, aiming to extend the hit into the unoccupied P1’ binding pocket (<xref ref-type="fig" rid="F3">Figure 3</xref>, top left). Using the Manifold platform (<monospace>postera.ai/manifold</monospace>), we select carboxylic acid and aldehydes that are in-stock building blocks in Enamine (a synthetic chemistry CRO with one of the largest building block collections onsite) with the building blocks further filter based on predicted reactivity and the final compound having <italic>c</italic>log<italic>P</italic> &lt; 3. In total, there are 15,720 compounds in the amide virtual library and 2,664 compounds in the reductive amination library.</p>
+<p id="P17">We then generated predicted binding pose by constrained docking into the binding site using existing structural data in the isoquinoline series as the constraints (<xref ref-type="sec" rid="S1">Materials and Methods</xref>), and use our trained structure-based learn-to-rank approach to rank all the ligands in the virtual library. Specifically, each of the docked poses are ranked against the top 5 most potent non-covalent binders in the dataset (<xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S4</xref>) and the mean of the five predictions estimated to generate the final ranking. Top 18 compounds from the final ranking were selected from the amide formation library with 15 successfully synthesized, and top 32 from reductive amination library with 24 successfully synthesized.</p>
+<p id="P18">The compounds prioritised by our crystallography-driven approach were then assessed for Inhibition of M<sup>
+<italic>pro</italic>
+</sup> activity using a biochemical assay with a fluorescence-based readout<sup>
+<xref ref-type="bibr" rid="R23">23</xref>,<xref ref-type="bibr" rid="R29">29</xref>
+</sup>. <xref ref-type="fig" rid="F3">Figure 3</xref> shows that around 30% of the library has potency that is that greater than 2x compared to the reference. These compounds are all substantial changes to the hit, in some cases doubling the atom count, and reaching the ligand into unknown regions of the binding site whilst remaining a low log<italic>P</italic>. The high hit rate suggests that the model can accurately prioritise these new chemotypes. We note that compounds were assayed as enantiomers or diastereoisomers in this initial triage.</p>
+<p id="P19">We further characterise the potent leads by resolving the enantiomers/diasteroisomers. <xref ref-type="fig" rid="F4">Figure 4</xref> shows that our top enantiopure compound, Compound <bold>1</bold>, achieves nM potency in florescence Mpro assay. Compound <bold>1</bold> is further profiled in SARS-CoV-2 antiviral assay (CPE assay, in Vero E6 cells), attaining <italic>EC</italic>
+<sub>50</sub> = 120nM. As a control, Compound <bold>1</bold> displays no cytotoxicity effect against Vero E6 cells at 10<italic>μ</italic>M. Compound <bold>1</bold> is thus a starting point for the development of antiviral therapeutics.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="conclusions">
+<title>Conclusion</title>
+<p id="P20">With the crystal structures of protein-ligand complexes being acquired at an increasing throughput, here we show how these data can be used to power a new approach to computational ligand design by using physics-inspired empirical energy terms as a descriptor of the protein-ligand complex. We focus on the COVID Moonshot Initiative, which reported an unpredentedly rich dataset of 200 ligands for which both their activity and structure of binding to the main protease of SARS-CoV-2 had been determined. We developed a machine learning model that learned the relationship between the multi-dimensional docking score extracted from the crystal structure and the relative bioactivity of ligands. The approach maintained a high and robust performance (AUROC of 0.79), even when making predictions outside the training scaffold. It also yielded powerful results in a prospective campaign, increasing the potency of hit compounds by more than 10x with simple chemistry that extends the hits to unsampled region of the binding site. Our approach arrived at a lead compound with 120 nM antiviral efficacy.</p>
+</sec>
+<sec specific-use="web-only" id="S8" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S9">
+<title>Dividing the molecules by scaffolds</title>
+<p id="P21">In order to reliably estimate the performance of our developed model, we performed the train:test splits in a scaffold stratified manner. To this effect, four distinct scaffold categories were defined — aminopyridine-like, isoquinoline, benzotriazole and quinolone — and each compound classified as belonging into one of them by using SMARTS to define chemical substructures. <xref ref-type="supplementary-material" rid="SD2">Figure S5</xref> shows representative examples of each chemical series, highlighting with the chemical substructure that gives rise to the name.</p>
+</sec>
+<sec id="S10">
+<title>Model development</title>
+<p id="P22">As described in the Main Text, two types of models were developed: (i) those that divided the full dataset into the four scaffolds and developed four parallel models by each time keeping molecules that originated from one of the four scaffolds as a test set and using the remainder of the data for training, and (ii) those that sorted all the data chronologically by the date the molecule was tested.</p>
+<p id="P23">In all cases, after splitting the data into the training and test sets, all possible pairs were generated and a difference in the pIC<sub>50</sub> value as well as between the descriptors evaluated as as been illustrated in <xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S1</xref>. Compounds that were determined to be inactive were included when forming pairs and they were all allocated activities equal to the highest measured activity values. Following this data preparation step, a random forest classifier was trained to build a model that would predict if the difference in the pIC<sub>50</sub> value is above (the activity of the ligands differs) or below (the activity of the ligands does not differ) 0.25 log<sub>10</sub> units using the difference in the descriptors extracted from the structures of the respective compounds as the input features. Hyperparameters of each model were tuned by performing a 10-fold cross-validation process and a random grid search. Generally, the best performance was achieved at shallow forest depths (maximum depth of 3), which can be explained by the relatively large number of training points (order of 10<sup>3</sup> - 10<sup>4</sup>) in comparison to the number of features (6).</p>
+</sec>
+<sec id="S11">
+<title>Docking experiments</title>
+<p id="P24">We redocked all compounds synthesized by The COVID Moonshot Consoritium against x2908 structure reported by Diamond XChem. We use the “Classic OEDocking” floe v0.7.2 as implemented in the Orion 2020.3.1 Academic Stack (OpenEye Scientific). Omega was used to enumerate conformations (and expand stereochemistry) with up to 500 conformations. FRED was used for docking in HYBRID mode using the x2908 bound ligand. The docked poses are available on GitHub.</p>
+</sec>
+<sec id="S12">
+<title>Fluorescence MPro inhibition assay</title>
+<p id="P25">Method is described previously<sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup>. Compounds were seeded into assay-ready plates (Greiner 384 low volume, cat 784900) using an Echo 555 acoustic dispenser, and DMSO was back-filled for a uniform concentration in assay plates (DMSO concentration maximum 1%) Screening assays were performed in duplicate at 20<italic>μM</italic> and 50<italic>μM</italic>. Hits of greater than 50% inhibition at 50<italic>μM</italic> were confirmed by dose response assays. Dose response assays were performed in 12 point dilutions of 2-fold, typically beginning at 100<italic>μM</italic>. Highly active compounds were repeated in a similar fashion at lower concentrations beginning at 10<italic>μM</italic> or 1<italic>μM</italic>. Reagents for Mpro assay were dispensed into the assay plate in 10μl volumes for a final volume of 20<italic>μM</italic>.</p>
+<p id="P26">Final reaction concentrations were 20mM HEPES pH7.3, 1.0mM TCEP, 50mM NaCl, 0.01% Tween-20, 10% glycerol, 5nM Mpro, 375nM fluorogenic peptide substrate ([5-FAM]-AVLQSGFR-[Lys(Dabcyl)]-K-amide). Mpro was pre-incubated for 15 minutes at room temperature with compound before addition of substrate and a further 30 minute incubation. Protease reaction was measured in a BMG Pherastar FS with a 480/520 ex/em filter set. Raw data was mapped and normalized to high (Protease with DMSO) and low (No Protease) controls using Genedata Screener software. Normalized data was then uploaded to CDD Vault (Collaborative Drug Discovery). Dose response curves were generated for IC50 using nonlinear regression with the Levenberg–Marquardt algorithm with minimum inhibition = 0% and maximum inhibition = 100%.</p>
+</sec>
+<sec id="S13">
+<title>SARS-CoV-2 antiviral assay</title>
+<p id="P27">Method is described previously<sup>
+<xref ref-type="bibr" rid="R29">29</xref>
+</sup>. SARS-CoV-2 (GISAID accession EPI_ISL_406862) was kindly provided by Bundeswehr Institute of Microbiology, Munich, Germany. Virus stocks were propagated (4 passages) and tittered on Vero E6 cells. Handling and working with SARS-CoV-2 virus was conducted in a BSL3 facility in accordance with the biosafety guidelines of the Israel Institute for Biological Research (IIBR). Vero E6 were plated in 96-well plates and treated with compounds in medium containing 2 % fetal bovine serum. The assay plates containing compound dilutions and cells were incubated for 1 hour at 37oC temperature prior to adding Multiplicity of infection (MOI) 0.01 of viruses. Viruses were added to the entire plate, including virus control wells that did not contain test compound and Remdesivir drug used as positive control. After 72h incubation viral cytopathic effect (CPE) inhibition assay was measured with XTT reagent. Three replicate plates were used.</p>
+</sec>
+<sec id="S14">
+<title>Chemical Synthesis</title>
+<p id="P28">All compounds were synthesized at Enamine and available for purchase from their catalogue. Detailed description of the synthesis protocol is outlined in the <xref ref-type="supplementary-material" rid="SD1">Supplementary Materials</xref>.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Materials - Chemical Synthesis</label>
+<media xlink:href="EMS137014-supplement-Supplementary_Materials___Chemical_Synthesis.docx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.wordprocessingml.document" id="N66245" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Materials - Supplementary Figures</label>
+<media xlink:href="EMS137014-supplement-Supplementary_Materials___Supplementary_Figures.pdf" mimetype="application" mime-subtype="pdf" id="N66254" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S15">
+<title>Acknowledgements</title>
+<p>The research leading to these results has received funding from the Schmidt Science Fellows program in partnership with the Rhodes Trust (KLS). The Chodera laboratory receives or has received funding from multiple sources, including the National Institutes of Health, the National Science Foundation, the Parker Institute for Cancer Immunotherapy, Relay Therapeutics, Entasis Therapeutics, Silicon Therapeutics, EMD Serono (Merck KGaA), AstraZeneca, Vir Biotechnology, Bayer, XtalPi, Interline Therapeutics, the Molecular Sciences Software Institute, the Starr Cancer Consortium, the Open Force Field Consortium, Cycle for Survival, a Louis V. Gerstner Young Investigator Award, and the Sloan Kettering Institute. A complete funding history for the Chodera lab can be found at <ext-link ext-link-type="uri" xlink:href="http://choderalab.org/funding">http://choderalab.org/funding</ext-link>. AAL holds a Royal Society University Research Fellowship.</p>
+</ack>
+<sec sec-type="data-availability" id="S16">
+<title>Code availability</title>
+<p id="P29">Source code and data required to reproduced this study are available on: <ext-link ext-link-type="uri" xlink:href="https://github.com/kadiliissaar/ligand_design_structural_biology">https://github.com/kadiliissaar/ligand_design_structural_biology</ext-link>
+</p>
+</sec>
+<fn-group>
+<fn id="FN1">
+<p id="P30">
+<bold>Disclosures</bold>
+</p>
+<p id="P31">KLS is a consultant for Transition Bio Ltd. JDC is a current member of the Scientific Advisory Board of OpenEye Scientific Software, Redesign Science, and Interline Therapeutics, and has equity interests in Redesign Science and Interline Therapeutics. AAL has equity interests in PostEra.</p>
+</fn>
+<fn id="FN2" fn-type="con">
+<p id="P32">
+<bold>Author contributions</bold>
+</p>
+<p id="P33">KLS and AAL designed the study. DF, FvD and the COVID Moonshot Consortium performed all structural characterisation work, biochemical and antiviral assays. JCD designed and performed the docking experiments. KLS and AAL devised the predictive model and KLS implemented it. KLS and ALL wrote the original draft, all authors commented on it.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Topliss</surname>
+<given-names>JG</given-names>
+</name>
+</person-group>
+<article-title>Utilization of operational schemes for analog synthesis in drug design</article-title>
+<source>Journal of medicinal chemistry</source>
+<year>1972</year>
+<volume>15</volume>
+<issue>10</issue>
+<fpage>1006</fpage>
+<lpage>1011</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Awale</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hert</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Guasch</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Riniker</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kramer</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>The playbooks of medicinal chemistry design moves</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2021</year>
+<volume>61</volume>
+<issue>2</issue>
+<fpage>729</fpage>
+<lpage>742</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sherborne</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Shanmugasundaram</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Christ</surname>
+<given-names>CD</given-names>
+</name>
+<name>
+<surname>DesJarlais</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Duca</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Lewis</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Loughney</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Manas</surname>
+<given-names>ES</given-names>
+</name>
+<name>
+<surname>McGaughey</surname>
+<given-names>GB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Collaborating to improve the use of free-energy and other quantitative methods in drug discovery</article-title>
+<source>Journal of computer-aided molecular design</source>
+<year>2016</year>
+<volume>30</volume>
+<issue>12</issue>
+<fpage>1139</fpage>
+<lpage>1141</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Harder</surname>
+<given-names>ED</given-names>
+</name>
+<name>
+<surname>Berne</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Friesner</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Advancing drug discovery through enhanced free energy calculations</article-title>
+<source>Accounts of chemical research</source>
+<year>2017</year>
+<volume>50</volume>
+<issue>7</issue>
+<fpage>1625</fpage>
+<lpage>1632</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schindler</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Baumann</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Blum</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bose</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Buchstaller</surname>
+<given-names>H-P</given-names>
+</name>
+<name>
+<surname>Burgdorf</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Cappel</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chekler</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Czodrowski</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Dorsch</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Large-scale assessment of binding free energy calculations in active drug discovery projects</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2020</year>
+<volume>60</volume>
+<issue>11</issue>
+<fpage>5457</fpage>
+<lpage>5474</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schindler</surname>
+<given-names>CE</given-names>
+</name>
+<name>
+<surname>Baumann</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Blum</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Böse</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Buchstaller</surname>
+<given-names>H-P</given-names>
+</name>
+<name>
+<surname>Burgdorf</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Cappel</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chekler</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Czodrowski</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Dorsch</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Large-scale assessment of binding free energy calculations in active drug discovery projects</article-title>
+<source>Journal of Chemical Information and Modeling</source>
+<year>2020</year>
+<volume>60</volume>
+<issue>11</issue>
+<fpage>5457</fpage>
+<lpage>5474</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gapsys</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Pérez-Benito</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Aldeghi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Seeliger</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Van Vlijmen</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tresadern</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>de Groot</surname>
+<given-names>BL</given-names>
+</name>
+</person-group>
+<article-title>Large scale relative protein ligand binding affinities using non-equilibrium alchemy</article-title>
+<source>Chemical Science</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>4</issue>
+<fpage>1140</fpage>
+<lpage>1152</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Molecular docking for drug discovery and development: a widely used approach but far from perfect</article-title>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schweiker</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Levonis</surname>
+<given-names>SM</given-names>
+</name>
+</person-group>
+<article-title>Navigating the intricacies of molecular docking</article-title>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pinzi</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Rastelli</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Molecular docking: Shifting paradigms in drug discovery</article-title>
+<source>International journal of molecular sciences</source>
+<year>2019</year>
+<volume>20</volume>
+<issue>18</issue>
+<fpage>4331</fpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Dos Santos</surname>
+<given-names>RN</given-names>
+</name>
+<name>
+<surname>Ferreira</surname>
+<given-names>LG</given-names>
+</name>
+<name>
+<surname>Andricopulo</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<chapter-title>Practices in molecular docking and structure-based virtual screening</chapter-title>
+<source>Computational Drug Discovery and Design</source>
+<publisher-name>Springer</publisher-name>
+<year>2018</year>
+<fpage>31</fpage>
+<lpage>50</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lyu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Balius</surname>
+<given-names>TE</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Levit</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Moroz</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>O’Meara</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Che</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Algaa</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Tolmachova</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ultra-large library docking for discovering new chemotypes</article-title>
+<source>Nature</source>
+<year>2019</year>
+<volume>566</volume>
+<issue>7743</issue>
+<fpage>224</fpage>
+<lpage>229</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gorgulla</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Boeszoermenyi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z-F</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>PD</given-names>
+</name>
+<name>
+<surname>Coote</surname>
+<given-names>PW</given-names>
+</name>
+<name>
+<surname>Das</surname>
+<given-names>KMP</given-names>
+</name>
+<name>
+<surname>Malets</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>Radchenko</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Moroz</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>Scott</surname>
+<given-names>DA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>An open-source drug discovery platform enables ultra-large virtual screens</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>580</volume>
+<issue>7805</issue>
+<fpage>663</fpage>
+<lpage>668</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Berman</surname>
+<given-names>HM</given-names>
+</name>
+<name>
+<surname>Westbrook</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Feng</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Gilliland</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Bhat</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Weissig</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Shindyalov</surname>
+<given-names>IN</given-names>
+</name>
+<name>
+<surname>Bourne</surname>
+<given-names>PE</given-names>
+</name>
+</person-group>
+<article-title>The protein data bank</article-title>
+<source>Nucleic acids research</source>
+<year>2000</year>
+<volume>28</volume>
+<issue>1</issue>
+<fpage>235</fpage>
+<lpage>242</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ballester</surname>
+<given-names>PJ</given-names>
+</name>
+<name>
+<surname>Mitchell</surname>
+<given-names>JB</given-names>
+</name>
+</person-group>
+<article-title>A machine learning approach to predicting protein–ligand binding affinity with applications to molecular docking</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<issue>9</issue>
+<fpage>1169</fpage>
+<lpage>1175</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McNutt</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Francoeur</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Aggarwal</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Masuda</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Meli</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ragoza</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sunseri</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Koes</surname>
+<given-names>DR</given-names>
+</name>
+</person-group>
+<article-title>Gnina 1.0: molecular docking with deep learning</article-title>
+<source>Journal of cheminformatics</source>
+<year>2021</year>
+<volume>13</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sieg</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Flachsenberg</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Rarey</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>In need of bias control: evaluating chemical data for machine learning in structure-based virtual screening</article-title>
+<source>Journal of chemical information and modeling</source>
+<year>2019</year>
+<volume>59</volume>
+<issue>3</issue>
+<fpage>947</fpage>
+<lpage>961</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Douangamath</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Powell</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Fearon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Collins</surname>
+<given-names>PM</given-names>
+</name>
+<name>
+<surname>Talon</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Krojer</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Skyner</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Brandao-Neto</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Dunnett</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Dias</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Achieving efficient fragment screening at xchem facility at diamond light source.</article-title>
+<source>Journal of Visualized Experiments: Jove</source>
+<year>2021</year>
+<issue>171</issue>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pearce</surname>
+<given-names>NM</given-names>
+</name>
+<name>
+<surname>Krojer</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bradley</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Collins</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Nowak</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Talon</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Marsden</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Kelm</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Deane</surname>
+<given-names>CM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A multi-crystal method for extracting obscured crystallographic states from conventionally uninterpretable electron density</article-title>
+<source>Nature communications</source>
+<year>2017</year>
+<volume>8</volume>
+<issue>1</issue>
+<fpage>8</fpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Douangamath</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Fearon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gehrtz</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Krojer</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lukacik</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Owen</surname>
+<given-names>CD</given-names>
+</name>
+<name>
+<surname>Resnick</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Strain-Damerell</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Aimon</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ábrányi-Balogh</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Crystallographic and electrophilic fragment screening of the sars-cov-2 main protease</article-title>
+<source>Nature communications</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chodera</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>London</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>von Delft</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Crowdsourcing drug discovery for pandemics</article-title>
+<source>Nature Chemistry</source>
+<year>2020</year>
+<volume>12</volume>
+<issue>7</issue>
+<fpage>581</fpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wójcikowski</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zielenkiewicz</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Siedlecki</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Open drug discovery toolkit (oddt): a new open-source player in the drug discovery field</article-title>
+<source>Journal of cheminformatics</source>
+<year>2015</year>
+<volume>7</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morris</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>McCorkindale</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Drayman</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Chodera</surname>
+<given-names>JD</given-names>
+</name>
+<name>
+<surname>Tay</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>London</surname>
+<given-names>N</given-names>
+</name>
+<collab>C. M. Consortium</collab>
+<etal/>
+</person-group>
+<article-title>Discovery of sars-cov-2 main protease inhibitors using a synthesis-directed de novo design model</article-title>
+<source>Chemical Communications</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pillaiyar</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Manickam</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Namasivayam</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Hayashi</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>S-H</given-names>
+</name>
+</person-group>
+<article-title>An overview of severe acute respiratory syndrome–coronavirus (sars-cov) 3cl protease inhibitors: peptidomimetics and small molecule chemotherapy</article-title>
+<source>Journal of medicinal chemistry</source>
+<year>2016</year>
+<volume>59</volume>
+<issue>14</issue>
+<fpage>6595</fpage>
+<lpage>6628</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ullrich</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Nitsche</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>The sars-cov-2 main protease as drug target</article-title>
+<source>Bioorganic &amp; Medicinal Chemistry Letters</source>
+<year>2020</year>
+<elocation-id>127377</elocation-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cannalire</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cerchia</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Beccari</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Di Leva</surname>
+<given-names>FS</given-names>
+</name>
+<name>
+<surname>Summa</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Targeting sars-cov-2 proteases and polymerase for covid-19 treatment: state of the art and future opportunities</article-title>
+<source>Journal of medicinal chemistry</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ghosh</surname>
+<given-names>AK</given-names>
+</name>
+<name>
+<surname>Brindisi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Shahabi</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chapman</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>AD</given-names>
+</name>
+</person-group>
+<article-title>Drug development and medicinal chemistry efforts toward sars-coronavirus and covid-19 therapeutics</article-title>
+<source>ChemMedChem</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rogers</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Hahn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Extended-connectivity fingerprints</article-title>
+<source>Journal of chemical information and modeling</source>
+<year>2010</year>
+<volume>50</volume>
+<issue>5</issue>
+<fpage>742</fpage>
+<lpage>754</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Achdout</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Aimon</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bar-David</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Barr</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ben-Shmuel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bennett</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bobby</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Brun</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>S</surname>
+<given-names>BVNBS</given-names>
+</name>
+<name>
+<surname>Calmiano</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Covid moonshot: open science discovery of sars-cov-2 main protease inhibitors by combining crowdsourcing, high-throughput experiments, computational simulations, and machine learning</article-title>
+<source>BioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Overview of approaches used in computer-aided drug design.</title>
+<p>Conventional approaches predict the activity of ligands <bold>(a)</bold> by learning the relationships between the molecular structure of a molecule and its activity or <bold>(b)</bold> through physics-based modelling using only the structure of the target and relying on methods such as free energy perturbation (FEP) calculations or molecular docking. <bold>(c)</bold> Here, we demonstrated a strategy that exploits high-throughput crystallographic characterisation of protein-ligand complexes to predict ligand affinity.</p>
+</caption>
+<graphic xlink:href="EMS137014-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Structure-based learning outperforms docking and ligand-based machine learning in relative affinity predictions.</title>
+<p>
+<bold>(a)</bold> To build a model that captures the relationship between the crystal structure of a protein-ligand complex and the activity of the ligand, Autodock Vina descriptors were extracted from each crystal structure and deployed to predict the relative binding strength of ligands of interest. <bold>(b)</bold> Comparing this approach (green) to ligand-based learning (pink) and docking (yellow) using data from the COVID Moonshot campaign. The average AUROC scores were computed using a scaffold-split, with the error bars corresponding to standard error of the mean. Performance on individual scaffolds is shown in <xref ref-type="supplementary-material" rid="SD2">Supplementary Figure S3</xref>. <bold>(c)</bold> Time-split evaluation of our model. Our approach maintains its predictive power when trained on older, less potent molecules and asked to rank the affinities of newer more potent molecules (green line). The black line tracks the potency of most potent molecule discovered at that point.</p>
+</caption>
+<graphic xlink:href="EMS137014-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Lead compounds are starting points for antiviral development.</title>
+<p>Top hits reported in <xref ref-type="fig" rid="F3">Figure 3</xref> is purified and assayed in enzymatic assay. Compound 1, with nM potency, is further profiled in SARS-CoV-2 CPE assay in Vero E6 cells. The 95% CI for the enzymatic assays: Compound 1 [0.23, 0.43] <italic>μM</italic>, Compound 2 [0.96, 1.2] <italic>μM</italic>, Compound 3 [1.3, 1.7] <italic>μM</italic>.</p>
+</caption>
+<graphic xlink:href="EMS137014-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Lead compounds are starting points for antiviral development.</title>
+<p>Top hits reported in <xref ref-type="fig" rid="F3">Figure 3</xref> are purified and assayed in enzymatic assay for their activity against the SARS-CoV-2 main protease. Compound 1, with nM potency, is further profiled in SARS-CoV-2 CPE assay in Vero E6 cells and found to show no cytotoxic effect at 10 <italic>μ</italic>M. The 95% CI for the enzymatic assays: Compound 1 [0.23, 0.43] <italic>μ</italic>M, Compound 2 [0.96, 1.2] <italic>μ</italic>M, Compound 3 [1.3, 1.7] <italic>μ</italic>M.</p>
+</caption>
+<graphic xlink:href="EMS137014-f004"/>
+</fig>
+</floats-group>
+</article>

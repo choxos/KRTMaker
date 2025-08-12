@@ -1,0 +1,972 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS139937</article-id>
+<article-id pub-id-type="doi">10.1101/2021.11.07.467640</article-id>
+<article-id pub-id-type="archive">PPR417413</article-id>
+<article-version article-version-type="publisher-id">4</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>An interactome landscape of SARS-CoV-2 virus-human protein-protein interactions by protein sequence-based multi-label classifiers</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>Ho-Joon</given-names>
+</name>
+<aff id="A1">Department of Genetics and Yale Center for Genome Analysis, Yale University School of Medicine, New Haven, CT 06510, USA</aff>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence to: H.L. (<email>ho-joon.lee@yale.edu</email>)</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>08</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+<license>
+<ali:license_ref>https://europepmc.org/downloads/openaccess</ali:license_ref>
+<license-p>This preprint is made available via the <ext-link ext-link-type="uri" xlink:href="https://europepmc.org/downloads/openaccess">Europe PMC open access subset</ext-link>, for unrestricted research re-use and secondary analysis in any form or by any means with acknowledgement of the original preprint source.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The new coronavirus species, SARS-CoV-2, caused an unprecedented global pandemic of COVID-19 disease since late December 2019. A comprehensive characterization of protein-protein interactions (PPIs) between SARS-CoV-2 and human cells is a key to understanding the infection and preventing the disease. Here we present a novel approach to predict virus-host PPIs by multi-label machine learning classifiers of random forests and XGBoost using amino acid composition profiles of virus and human proteins. Our models harness a large-scale database of Viruses.STRING with &gt;80,000 virus-host PPIs along with evidence scores for multi-level evidence prediction, which is distinct from predicting binary interactions in previous studies. Our multi-label classifiers are based on 5 evidence levels binned from evidence scores. Our best model of XGBoost achieves 74% AUC and 68% accuracy on average in 10-fold cross validation. The most important amino acids are cysteine and histidine. In addition, our model predicts experimental PPIs with higher accuracy than text mining-based PPIs by 4% despite their smaller data size by more than 6-fold. We then predict evidence levels of ~2,000 SARS-CoV-2 virus-human PPIs from public experimental proteomics data. Interactions with SARS-CoV-2 Nsp7b show high evidence. We also predict evidence levels of all pairwise PPIs of ~550,000 between the SARS-CoV-2 and human proteomes to provide a draft virus-host interactome landscape for SARS-CoV-2 infection in humans in a comprehensive and unbiased way <italic>in silico</italic>. Most human proteins from 140 highest evidence predictions interact with SARS-CoV-2 Nsp7, Nsp1, and ORF14, with significant enrichment in the top 2 pathways of vascular smooth muscle contraction (CALD1, NPR2, CALML3) and Myc targets (CBX3, PES1). Our prediction also suggests that histone H2A components are targeted by multiple SARS-CoV-2 proteins.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">The new coronavirus species of SARS-CoV-2 has been an unprecedented global threat causing COVID-19 disease with more than 5.6 million deaths over 2 years as of February 1, 2022 (<ext-link ext-link-type="uri" xlink:href="https://covid19.who.int/">https://covid19.who.int/</ext-link>). The scientific community has been working towards a better understanding of the biology and disease of SARS-CoV-2 infection and COVID-19 and a cure or a medicine is yet to be discovered, although several vaccines have been successfully developed and administered in many countries. In response to this global challenge, we previously studied network controllability of a human directed protein-protein interaction (PPI) network for SARS-CoV-2 infection using proteomics and other omics data (<xref ref-type="bibr" rid="R13">Lee, 2021</xref>). Here we aim to develop machine learning models to predict a degree of evidence or confidence for virus-human physical or functional PPIs for SARS-CoV-2 infection. Previous studies have focused on binary classification tasks of pathogen-host PPIs including SARS-CoV-2 (<xref ref-type="bibr" rid="R1">Alguwaizani et al., 2018</xref>; <xref ref-type="bibr" rid="R5">Cui et al., 2016</xref>; <xref ref-type="bibr" rid="R6">Dey et al., 2020</xref>; <xref ref-type="bibr" rid="R7">Ding and Kihara, 2018</xref>; <xref ref-type="bibr" rid="R8">Du et al., 2021</xref>; <xref ref-type="bibr" rid="R9">García-Pérez et al., 2018</xref>; <xref ref-type="bibr" rid="R12">Kshirsagar et al., 2021</xref>; <xref ref-type="bibr" rid="R15">Nourani et al., 2015</xref>, <xref ref-type="bibr" rid="R16">2016</xref>; <xref ref-type="bibr" rid="R18">Sen et al., 2016</xref>; <xref ref-type="bibr" rid="R23">Yang et al., 2020</xref>; <xref ref-type="bibr" rid="R24">Zhang et al., 2017</xref>). Machine learning has been widely used in PPI prediction in general (<xref ref-type="bibr" rid="R17">Sarkar and Saha, 2019</xref>). Although binary classification for PPIs has been successful, measurements of physical PPIs are often noisy and subject to a rather subjective threshold for high or low confidence (<xref ref-type="bibr" rid="R10">Gordon et al., 2020a</xref>; <xref ref-type="bibr" rid="R11">Gordon et al., 2020b</xref>), which has been also studied in our previous work (<xref ref-type="bibr" rid="R13">Lee, 2021</xref>). In addition, such binary classifiers trained with data of physical PPIs are not directly generalizable to functional PPIs of many different types such as co-expression or common pathways.</p>
+<p id="P3">To address the limitation of binary classification, we use large-scale virus-host PPI data with evidence scores for different types of PPIs from a public database, Viruses.STRING (<xref ref-type="bibr" rid="R4">Cook et al., 2018</xref>). We build multi-label classification models by binning evidence scores into 5 evidence classes or levels. To the best of our knowledge, no study has been done using the database for multi-label classification of virus-host PPIs. We use two tree-based classifiers in this study: random forests for bagging (<xref ref-type="bibr" rid="R2">Breiman, 2001</xref>) and XGBoost for boosting (<xref ref-type="bibr" rid="R3">Chen and Guestrin, 2016</xref>). While bagging algorithms only control for high variance in a model, boosting algorithms control both bias and variance and hence are considered to be more effective. In particular, XGBoost algorithms have shown superior performances in many different applications, as was the case in our previous study (<xref ref-type="bibr" rid="R20">Smith et al., 2022</xref>). As for model features, we compute a number of different similarity measures between amino acid composition profiles of virus-human interacting protein pairs. In other words, we construct protein sequence-based multi-label classifiers to predict virus-human PPIs with different evidence or confidence levels. Feature importance is examined by two alternative methods. We take the best models to apply to public experimental proteomics data of SARS-CoV-2 infection, which is not included in the training data of Viruses.STRING. In addition, we predict evidence levels for all PPI pairs between the SARS-CoV-2 and human proteomes in a comprehensive and unbiased way to provide a draft virus-host interactome landscape of SARS-CoV-2 infection in humans <italic>in silico</italic>. Finally, we prioritize those virus-human PPIs or subnetworks of high evidence for biological relevance and therapeutic opportunities for SARS-CoV-2 infection and COVID-19 in future studies.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Data for model training and validation</title>
+<p id="P4">We use the Viruses.STRING database (v10.5) for model training and validation. It contains 80,775 virus-human PPIs, excluding SARS-CoV-2. Each PPI has a combined score, ranging from 0 to 1000, combined from multiple scores of different PPI types such as physical experiments, co-expression, co-occurrence, homology, or text mining. We take combined scores as PPI evidence and bin the scores into 5 evidence classes (ECs) with bin size = 200 for multi-label classification: EC1 = 27,990 PPIs, EC2 = 33,001 PPIs, EC3 = 14,642, EC4 = 4,037, and EC5 = 1,105 PPIs. 6,684 PPIs are based on experiments with combined scores &gt;= 435 (i.e., EC &gt;= 3; 6,481 PPIs in EC3). On the other hand, 40,465 PPIs are from text mining with 89.4% PPIs having combined scores &lt; 400 (20,447 PPIs in EC1 and 15,734 PPIs in EC2). Therefore, we pay particular attention to the two subsets of PPIs as part of prediction controls in this work.</p>
+</sec>
+<sec id="S4">
+<title>Test data</title>
+<p id="P5">Our test data is 1,998 SARS-CoV-2 virus-human PPIs from the IntAct database as of July 17, 2020. We also tested all 549,990 protein pairs between the SARS-CoV-2 and human proteomes (27 SARS-CoV-2 proteins and 20,370 reviewed proteins from UniProt).</p>
+</sec>
+<sec id="S5">
+<title>Model features</title>
+<p id="P6">For feature engineering, we first consider a virus-host undirected PPI network for generality, where nodes are virus or host proteins and edges are virus-host PPIs. In this work we are not concerned with PPIs among virus proteins or human proteins. In other words, one can think of it as an undirected bipartite graph. Given such a network or graph, we compute fractional compositions of the standard 20 amino acids of individual protein sequences as node features. We then compute various distance/similarity measures between the node features of each virus-host PPI pair as edge feature. We use the following 72 measures in this work: Pearson correlation, dot product, cross-correlation, Euclidean distance, cosine distance, Manhattan distance, Minkowski distance, Jensen-Shannon distance, Chebyshev distance, Canberra distance, Bray-Curtis distance, mutual information, the difference for each amino acid (human – virus), the absolute difference for each amino acid, and the ratio for each amino acid (virus/human). All computations were done in Python.</p>
+</sec>
+<sec id="S6">
+<title>Models</title>
+<p id="P7">We use random forests (RF) and XGBoost (XGB) as multi-label classifiers <italic>(sklearn</italic> and <italic>xgboost</italic> packages in Python). As XGB model was the best performing classifier in our previous work (<xref ref-type="bibr" rid="R20">Smith et al., 2022</xref>) as well as in other studies (<xref ref-type="bibr" rid="R3">Chen and Guestrin, 2016</xref>), we chose XGB as our main model in this work and RF as a baseline. We trained 36 RF models by grid search and performed 10-fold cross validation (CV) for each model (i.e., a total of 360 fits) with the following parameter values: n_estimators = (200, 500, 1000); max_samples = (1.0, 0.75, 0.5); criterion = (gini, entropy); max_features = (sqrt, log2). We trained 432 XGB models by grid search and performed 10-fold CV for each model (i.e., a total of 4,320 fits) with the objective function of the soft probability and the following parameter values: n_estimators = (200, 500, 1000); max_depth = (3, 6); learning rate = (0.05, 0.1, 0.3); gamma = (0.0, 1.0); reg_lambda = (1.0, 2.0); reg_alpha = (0.0, 1.0); subsample = (1.0, 0.75, 0.5). For both RF and XGB models, the random seed was 1618 and the scoring was based on the weighted one-vs-rest AUC score and the accuracy. The refit was done by AUC. The split ratio between training and validation of the viruses.STRING data is 80:20 (or 64,620 and 16,155 PPIs, respectively).</p>
+</sec>
+<sec id="S7">
+<title>Analysis of feature importance</title>
+<p id="P8">We used the impurity-based importance and the game-theoretic Shapley analysis to identify important features for prediction. Feature importance values are provided by the fitted classifiers in the <italic>sklearn</italic> and <italic>xgboost</italic> packages in Python based on mean decrease in impurity. For the Shapley analysis, we use the <italic>shap</italic> package in Python for analysis of SHAP (SHapley Additive exPlanations) values, as in our previous work (<xref ref-type="bibr" rid="R20">Smith et al., 2022</xref>).</p>
+</sec>
+<sec id="S8">
+<title>Functional analysis of human interacting proteins</title>
+<p id="P9">We analyzed biological pathways enriched among human proteins interacting with SARS-CoV-2 proteins from our predictions. To do this, we used a webtool, <italic>Enrichr</italic> (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/">https://maayanlab.cloud/Enrichr/</ext-link>) (<xref ref-type="bibr" rid="R22">Xie et al., 2021</xref>). We also performed protein-protein association analyses from the STRING database (STRING v11.5) (<xref ref-type="bibr" rid="R21">Szklarczyk et al., 2021</xref>). Network visualization was done using <italic>Cytoscape</italic> (<xref ref-type="bibr" rid="R19">Shannon et al., 2003</xref>).</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="results">
+<title>Results</title>
+<sec id="S10">
+<title>Model performance</title>
+<p id="P10">An overview of our modeling framework is shown in <xref ref-type="fig" rid="F1">Fig. 1A</xref>. The mean cross-validated AUC by the best RF model, denoted <italic>RF</italic>*, is 67% with the following parameters: n_estimators = 500, max_samples = 0.75, criterion = <italic>entropy</italic>, and max_features = <italic>sqrt</italic>. The mean cross-validated AUC by the best XGB model, denoted <italic>XGB</italic>*, is 74% with the following parameters: gamma = 0.0, learning_rate = 0.3, max_depth = 6, n_estimators = 1000, reg_alpha = 1.0, reg_lambda = 1.0, and subsample = 1.0. Details of example performances for a 20% test set of 16,511 PPIs (random seed = 1618) by <italic>RF</italic>* and <italic>XGB</italic>* are given in <xref ref-type="fig" rid="F1">Figs. 1B and 1C</xref>. The prediction accuracies for all 80,775 PPIs by <italic>RF</italic>* and <italic>XGB</italic>* are 92.0% and 93.5%, respectively.</p>
+</sec>
+<sec id="S11">
+<title>Feature importance</title>
+<p id="P11">As <italic>XGB</italic>* performed better than <italic>RF</italic>*, we focused on identifying important features for prediction by <italic>XGB</italic>*. We used both impurity-based importance and the SHAP analysis for all data. With impurity-based importance, the top 2 features are differences in cysteine and histidine fractions (C_minus and H_minus) (<xref ref-type="fig" rid="F2">Fig. 2A</xref>). The SHAP analysis shows that ratios in cysteine and histidine fractions (C_ratio and H_ratio) are the top 2 features with the highest impact on model outputs on average. C_ratio and H_ratio have most impact on prediction of PPIs with EC3 and EC1, respectively (<xref ref-type="fig" rid="F2">Figs. 2B and 2C</xref>). In particular, SHAP value distributions for each evidence class show that low C_ratio and low H_ratio have negative impact on EC3 and EC1 prediction for subsets of samples, respectively (<xref ref-type="fig" rid="F2">Fig. 2C</xref>).</p>
+</sec>
+<sec id="S12">
+<title>Prediction of experiments-based and text mining-based PPIs</title>
+<p id="P12">As most experiments-based PPIs are in EC3 and most text mining-based PPIs are in EC1 and EC2, we applied <italic>XGB</italic>* and <italic>RF</italic>* to the two PPI subsets as a control of model performance. <italic>XGB</italic>* predicts 6,684 experimental PPIs with higher accuracy of 94% than 40,465 text-mining-based PPIs of 90%. On the other hand, <italic>RF</italic>* predicts the experimental PPIs with lower accuracy of 88% than the text mining-based PPIs with 91% accuracy. The largest number of predictions for the experimental PPIs occurred with EC3 for both <italic>XGB</italic>* and <italic>RF</italic>* (92.1% and 85.5%, respectively), as expected (<xref ref-type="fig" rid="F3">Fig. 3A</xref>). The overlap of the EC3 predictions from both models is 85.4% (<xref ref-type="fig" rid="F3">Fig. 3A</xref>). The largest number of predictions for the text mining-based PPIs occurred with EC1 for both <italic>XGB</italic>* and <italic>RF</italic>* (51.1% and 58.1%, respectively), and similarly for EC2, as expected (<xref ref-type="fig" rid="F3">Fig. 3B</xref>). The overlap of the EC1 predictions from both models is 50.8% (<xref ref-type="fig" rid="F3">Fig. 3B</xref>). We also performed a control experiment where we predicted 100 sets of random 6,684 text-mining-based PPIs (the same number as that of the experimental PPIs) using both models. The largest number of predictions remained to occur with EC1 (<xref ref-type="fig" rid="F3">Fig. 3C</xref>). Therefore, despite the disadvantageous imbalance of experimental PPIs in the training data, predictions of EC3 are likely to suggest physical PPIs with experimental support.</p>
+</sec>
+<sec id="S13">
+<title>Prediction for SARS-CoV-2 virus-human PPIs</title>
+<p id="P13">Given the model performance and evaluation above, we applied <italic>RF</italic>* and <italic>XGB</italic>* to SARS-CoV-2 experimental PPI data from the IntAct database. <italic>RF</italic>* predicted 1,916 PPIs as EC1, 26 PPIs as EC2, and 56 PPIs as EC3 (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). <italic>XGB</italic>* predicted 1,072 PPIs as EC1, 426 PPIs as EC2, 487 PPIs as EC3, and 13 PPIs as EC4 (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). Predictions of 1,142 PPIs agree between the RF and XGB models (<xref ref-type="fig" rid="F4">Fig. 4A</xref>). In particular, 53 PPIs are predicted with EC3 by both models and all PPIs are involved with SARS-CoV-2 protein, Nsp7b. Those interacting human proteins are enriched in oxidative phosphorylation (ATP5F1A, ATP5F1B, and ATP6AP1) and SNARE interactions in vesicular transport (GOSR1, STX2, STX5, STX6, and VTI1A) (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/enrich?dataset=0120e7db0fb18ea9a357d7567c9b0003">https://maayanlab.cloud/Enrichr/enrich?dataset=0120e7db0fb18ea9a357d7567c9b0003</ext-link>). Those 13 PPI predictions with EC4 predicted by <italic>XGB</italic>*, but not by <italic>RF</italic>*, are between 6 SARS-CoV-2 proteins and 13 human proteins. The 13 human proteins are enriched in cholesterol/steroid biosynthesis (MSMO1) and Myc targets (SLC25A3 and SSBP1) (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/enrich?dataset=02c0c07b4eec715852411f6a93bc90d9">https://maayanlab.cloud/Enrichr/enrich?dataset=02c0c07b4eec715852411f6a93bc90d9</ext-link>). The prediction differences can be easily seen in network visualization (<xref ref-type="fig" rid="F4">Figs. 4B and 4C</xref>).</p>
+</sec>
+<sec id="S14">
+<title>A virus-human interactome landscape for SARS-CoV-2</title>
+<p id="P14">We next applied <italic>RF</italic>* and <italic>XGB</italic>* to all possible virus-human PPIs between the SARS-CoV-2 and human proteomes as described in Methods to obtain a comprehensive interactome landscape. <italic>RF</italic>* predicted 520,946 PPIs as EC1, 26,818 PPIs as EC2, and 2,226 PPIs as EC3 (<xref ref-type="supplementary-material" rid="SD1">Table S2</xref>). <italic>XGB</italic>* predicted 383,264 PPIs as EC1, 118,148 PPIs as EC2, 45,080 PPIs as EC3, 3,358 PPIs as EC4, and 140 PPIs as EC5 (<xref ref-type="supplementary-material" rid="SD1">Table S2</xref>). Prediction agreements between the two models are as follows: 377,001 PPIs for EC1, 20,397 PPIs for EC2, and 2,184 PPIs for EC3 (<xref ref-type="fig" rid="F4">Fig. 4D</xref>). There are 22,781 PPIs with EC &gt;= 2 by either <italic>RF</italic>* or <italic>XGB</italic>* (<xref ref-type="fig" rid="F4">Figs. 4D and 4E</xref>).</p>
+<p id="P15">To further support the experimental PPIs from the IntAct database analyzed above in view of the proteome-wide predictions, we compared the IntAct predictions to random subsets of the proteome-wide predictions of the same size. In other words, we performed Monte Carlo simulations for the fraction of each prediction class. With 1,000 simulations, EC3 predictions showed empirical p-value = 0 for both <italic>RF</italic>* (56 PPIs or 2.8%) and <italic>XGB</italic>* (487 PPIs or 24.4%). EC1 predictions by <italic>RF</italic>* (1,916 PPIs or 95.9%) showed empirical p-value = 0.016. All other predictions showed empirical p-values &gt; 0.4.</p>
+<p id="P16">For biological relevance of the exhaustive proteome-wide predictions, we first focus on the consensus 2,184 PPIs with EC3. Nsp7b interacts with 1,913 human proteins as the top SARS-CoV-2 protein, while two human proteins, H2AC6 and H2AC11 (histone H2A components), interact with 12 virus proteins each as the top human proteins. In fact, all of the top 15 human interacting proteins are histone H2A components. For 3,358 PPIs predicted as EC4 by <italic>XGB</italic>* alone, the top SARS-CoV-2 protein is Nsp3 which is predicted in 1,151 PPIs, while the top human proteins are ANKRD9 and MGAT3 which are predicted in 6 PPIs each. In the case of 140 PPIs predicted with the highest evidence of EC5 by <italic>XGB</italic>* alone (between 8 SARS-CoV-2 proteins and 137 human proteins) (<xref ref-type="fig" rid="F5">Fig. 5A</xref>), the top SARS-CoV-2 protein is Nsp7 predicted to interact with 79 human proteins, which are significantly enriched in vascular smooth muscle contraction (CALD1, NPR2, CALML3) and Myc targets (CBX3, PES1) among others (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/enrich?dataset=9b7e9bcf2ff5a92d54529dbcbc9bbf12">https://maayanlab.cloud/Enrichr/enrich?dataset=9b7e9bcf2ff5a92d54529dbcbc9bbf12</ext-link>). The second most interacting SARS-CoV-2 protein is Nsp1 predicted to interact with 28 human proteins, which are significantly enriched in Hedgehog signaling pathway (STK36) and Fas signaling pathway (NPPA) among others (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/enrich?dataset=b45c89e02e13a7ed4ef51f204f94c2b2">https://maayanlab.cloud/Enrichr/enrich?dataset=b45c89e02e13a7ed4ef51f204f94c2b2</ext-link>). The third most interacting SARS-CoV-2 protein is ORF14 predicted to interact with 25 human proteins, which are significantly enriched in VEGFA-VEGFR2 signaling (MYL2, AKT1S1, CALU) and LKB1 signaling (MAP2, AKT1S1) among others (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/enrich?dataset=1ef4f1d43780204d76bfeee3843cf7c7">https://maayanlab.cloud/Enrichr/enrich?dataset=1ef4f1d43780204d76bfeee3843cf7c7</ext-link>). The most frequent human interacting proteins are LYSMD2, CALU, and FAM114A1 which are predicted in 2 PPIs each. Analysis from the STRING database shows that 131 out of the 137 human proteins have 81 PPIs among themselves with an average node degree of 1.24 and a PPI enrichment p-value of 4.4e-5 (<xref ref-type="fig" rid="F5">Figs. 5A and 5B</xref>) (<ext-link ext-link-type="uri" xlink:href="https://version-11-5.string-db.org/cgi/network?networkId=bITYG9ekWabJ">https://version-11-5.string-db.org/cgi/network?networkId=bITYG9ekWabJ</ext-link>). Three proteins of mRNA capping, RNMT, FAM103A1, and C17orf85, shows the strongest association. The largest number of proteins (81) are annotated as phosphoproteins. Other proteins are annotated with Isopeptide bond (28), Coiled coil (30), or Ubl conjugation (31).</p>
+</sec>
+</sec>
+<sec id="S15" sec-type="discussion">
+<title>Discussion</title>
+<p id="P17">We have developed multi-label classifiers based on RF and XGB to predict 5 evidence classes for virus-human protein-protein interactions using the Viruses.STRING database and protein sequence profiles. We computed 72 distance or similarity measures between amino acid composition profiles of interacting protein pairs as model features. <italic>RF</italic>* and <italic>XGB</italic>* achieved the mean cross-validated AUC of 67% and 74%, respectively. Two analyses of feature importance showed that cysteine and histidine are two important amino acids for virus-human PPIs, either their fractional difference or ratio. More investigation is needed to understand underlying mechanisms.</p>
+<p id="P18">Importantly, <italic>XGB</italic>* showed higher prediction accuracy for experiments-based PPIs than for text mining-based PPIs, which suggests that our sequence-based features can predict physical PPIs with good accuracy. Note that the Viruses.STRING database is biased towards text mining-based PPIs, which is larger than experiments-based PPIs by more than 6-fold. Also, experiments-based PPIs are mostly in EC3, whereas text mining-based PPIs are mostly in EC1 and EC2. This means that text mining-based PPIs effectively serve as negative examples for experiments-based PPIs, which may be used for binary classification too. Hence, this allowed us to meaningfully apply our classifier to a new test set of virus-human PPIs for the new coronavirus species, SARS-CoV-2. A total of 500 SARS-CoV-2 virus-human PPIs out of 1,998 PPIs from the IntAct database has support from <italic>XGB</italic>* for physical PPIs with EC3 or EC4. 53 of them have additional support from <italic>RF</italic>* with EC3, all of which interact with Nsp7b. In addition, the fraction of EC3 predictions by either <italic>XGB</italic>* or <italic>RF</italic>* showed statistical significance by Monte Carlo simulations with respect to the exhaustive proteome-wide predictions, which gives those predictions higher priority for further investigation. Therefore, our methodology is a useful tool for predicting physical or functional virus-human PPIs, offering evidence for experimentally testable hypotheses.</p>
+<p id="P19">Given such meaningful results, we also applied <italic>RF</italic>* and <italic>XGB</italic>* to all protein pairs between the SARS-CoV-2 and human proteomes to identify PPIs with high evidence of physical interactions (i.e., EC &gt;= 3). There are 45,080 PPIs with EC3 and 3,498 PPIs with EC4 or EC5 predicted by <italic>XGB</italic>*. 2,184 of those 45,080 PPIs are also supported by <italic>RF</italic>* with EC3. This provides a draft landscape of the virus-human interactome for SARS-CoV-2 infection in a comprehensive and unbiased way, complementing experimentally measured PPIs. For example, <italic>XGB</italic>* predictions for 48,578 PPIs with EC &gt;= 3 could greatly enhance the IntAct data of 1,998 SARS-CoV-2 virus-human PPIs. This virus-human interactome landscape could be also useful for drug repurposing studies by providing higher coverage and hence novel candidates (<xref ref-type="bibr" rid="R14">Morselli Gysi et al., 2021</xref>).</p>
+<p id="P20">A limitation of our approach is lack of confidence in prediction of the low evidence classes, EC1 and EC2. They do not possess any intrinsic unique properties associated with each evidence level, unlike EC3 for experiments-based or physical PPIs. Further investigation is needed to characterize and interpret each evidence class and identify important features for each class. Alternatively, multi-class labeling might be done in different ways with different thresholds for individual evidence classes. On the other hand, one could use our tool as a binary classifier for physical PPIs as we demonstrated with EC &gt;= 3 vs. EC &lt; 3, or build binary classifiers based on a single threshold for combined scores. We could also benefit from data of negative controls such as decoy data. Comparative analysis with binary classifiers is beyond the scope of this study. Another limitation in this work is a subjective choice of the 72 edge features as model features. A significant model improvement might be achieved by better feature engineering for both nodes and edges.</p>
+<p id="P21">In conclusion, our protein sequence-based multi-label classifiers are useful tools to provide different evidence or confidence levels for virus-human PPIs and applicable to virus-human interactomes for new virus species such as SARS-CoV-2.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Tables S1 and S2</label>
+<media xlink:href="EMS139937-supplement-Supplementary_Tables_S1_and_S2.xlsx" mimetype="application" mime-subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="N66230" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S16">
+<title>Acknowledgements</title>
+<p>The author would like to thank Dr. Prashant Emani for helpful discussions and suggestions, Drs. Shrikant Mane and Mark Gerstein for helpful feedback and support, and the Yale Center for Research Computing for computational resources and help. This work was initiated as part of research in the author’s COVID HASTE working group at the Yale School of Engineering &amp; Applied Science in April 2020 and partially supported by the Northeast Big Data Innovation Hub Seed Grant Program 2020.</p>
+</ack>
+<sec id="S17" sec-type="data-availability">
+<title>Data and code availability</title>
+<p id="P22">Raw data are available from each of the public databases used. Full prediction results for SARS-CoV-2 are available in <xref ref-type="supplementary-material" rid="SD1">Supplementary Tables S1</xref> and <xref ref-type="supplementary-material" rid="SD1">S2</xref>. Codes are available upon reasonable request.</p>
+</sec>
+<fn-group>
+<fn id="FN1" fn-type="con">
+<p id="P23">
+<bold>Author Contributions</bold>
+</p>
+<p id="P24">HL contributed to all aspects of the study and wrote the manuscript.</p>
+</fn>
+<fn id="FN2" fn-type="conflict">
+<p id="P25">
+<bold>Conflict of Interest</bold>
+</p>
+<p id="P26">None declared.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alguwaizani</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>DS</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>Predicting Interactions between Virus and Host Proteins Using Repeat Patterns and Composition of Amino Acids</article-title>
+<source>J Healthc Eng 2018</source>
+<year>2018</year>
+<elocation-id>1391265</elocation-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Breiman</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Random Forests</article-title>
+<source>Machine Learning</source>
+<year>2001</year>
+<volume>45</volume>
+<fpage>5</fpage>
+<lpage>32</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Guestrin</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<source>XGboost: A Scalable Tree Boosting System</source>
+<conf-name>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</conf-name>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cook</surname>
+<given-names>HV</given-names>
+</name>
+<name>
+<surname>Doncheva</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Szklarczyk</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Von Mering</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>LJ</given-names>
+</name>
+</person-group>
+<article-title>Viruses.STRING: A Virus-Host Protein-Protein Interaction Database</article-title>
+<source>Viruses</source>
+<year>2018</year>
+<volume>10</volume>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cui</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>ZG</given-names>
+</name>
+</person-group>
+<article-title>Uncovering New Pathogen-Host Protein-Protein Interactions by Pairwise Structure Similarity</article-title>
+<source>PloS one</source>
+<year>2016</year>
+<volume>11</volume>
+<elocation-id>e0147612</elocation-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dey</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Chakraborty</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mukhopadhyay</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Machine learning techniques for sequence-based prediction of viral-host interactions between SARS-CoV-2 and human proteins</article-title>
+<source>Biomed J</source>
+<year>2020</year>
+<volume>43</volume>
+<fpage>438</fpage>
+<lpage>450</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ding</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Kihara</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Computational Methods for Predicting Protein-Protein Interactions Using Various Protein Features</article-title>
+<source>Curr Protoc Protein Sci</source>
+<year>2018</year>
+<volume>93</volume>
+<fpage>e62</fpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Du</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Hong</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Network-based virus-host interaction prediction with application to SARS-CoV-2</article-title>
+<source>Patterns (N Y)</source>
+<year>2021</year>
+<volume>2</volume>
+<elocation-id>100242</elocation-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>García-Pérez</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Navarro</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Aguilar</surname>
+<given-names>DAG</given-names>
+</name>
+<name>
+<surname>Lara-Ramírez</surname>
+<given-names>EE</given-names>
+</name>
+</person-group>
+<article-title>Proteome-wide analysis of human motif-domain interactions mapped on influenza a virus</article-title>
+<source>BMC bioinformatics</source>
+<year>2018</year>
+<volume>19</volume>
+<fpage>238</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Hiatt</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Ulferts</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Braberg</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jureka</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Batra</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comparative host-coronavirus protein interaction networks reveal pan-viral disease mechanisms</article-title>
+<source>Science</source>
+<year>2020a</year>
+<volume>370</volume>
+<elocation-id>eabe9403</elocation-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>DE</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>O’Meara</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>VV</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>JZ</given-names>
+</name>
+<name>
+<surname>Swaney</surname>
+<given-names>DL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020b</year>
+<volume>583</volume>
+<fpage>459</fpage>
+<lpage>468</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kshirsagar</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Tasnina</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Ward</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Law</surname>
+<given-names>JN</given-names>
+</name>
+<name>
+<surname>Murali</surname>
+<given-names>TM</given-names>
+</name>
+<name>
+<surname>Lavista Ferres</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Bowman</surname>
+<given-names>GR</given-names>
+</name>
+<name>
+<surname>Klein-Seetharaman</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Protein sequence models for prediction and comparative analysis of the SARS-CoV-2 -human interactome</article-title>
+<source>Pac Symp Biocomput</source>
+<year>2021</year>
+<volume>26</volume>
+<fpage>154</fpage>
+<lpage>165</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lee</surname>
+<given-names>H-J</given-names>
+</name>
+</person-group>
+<article-title>Network controllability enrichment analysis reveals that SARS-CoV-2 infection tends to target indispensable nodes of a directed human protein-protein interaction network</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<elocation-id>2021.2004.2018.440358</elocation-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Morselli Gysi</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>do Valle</surname>
+<given-names>Í</given-names>
+</name>
+<name>
+<surname>Zitnik</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ameli</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gan</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Varol</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Ghiassian</surname>
+<given-names>SD</given-names>
+</name>
+<name>
+<surname>Patten</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Davey</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Loscalzo</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Network medicine framework for identifying drug-repurposing opportunities for COVID-19</source>
+<conf-name>Proceedings of the National Academy of Sciences</conf-name>
+<year>2021</year>
+<volume>118</volume>
+<elocation-id>e2025581118</elocation-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nourani</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Khunjush</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Durmuş</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Computational approaches for prediction of pathogen-host protein-protein interactions</article-title>
+<source>Front Microbiol</source>
+<year>2015</year>
+<volume>6</volume>
+<fpage>94</fpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nourani</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Khunjush</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Durmuş</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Computational prediction of virus-human protein-protein interactions using embedding kernelized heterogeneous data</article-title>
+<source>Molecular bioSystems</source>
+<year>2016</year>
+<volume>12</volume>
+<fpage>1976</fpage>
+<lpage>1986</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sarkar</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Saha</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Machine-learning techniques for the prediction of protein-protein interactions</article-title>
+<source>J Biosci</source>
+<year>2019</year>
+<volume>44</volume>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sen</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Nayak</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>De</surname>
+<given-names>RK</given-names>
+</name>
+</person-group>
+<article-title>A review on host-pathogen interactions: classification and prediction</article-title>
+<source>Eur J Clin Microbiol Infect Dis</source>
+<year>2016</year>
+<volume>35</volume>
+<fpage>1581</fpage>
+<lpage>1599</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shannon</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Markiel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Ozier</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Baliga</surname>
+<given-names>NS</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Ramage</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Amin</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Schwikowski</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Ideker</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Cytoscape: a software environment for integrated models of biomolecular interaction networks</article-title>
+<source>Genome research</source>
+<year>2003</year>
+<volume>13</volume>
+<fpage>2498</fpage>
+<lpage>2504</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Smith</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>HJ</given-names>
+</name>
+<name>
+<surname>Chandrasekaran</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Metabolic signatures of regulation by phosphorylation and acetylation</article-title>
+<source>iScience</source>
+<year>2022</year>
+<elocation-id>103730</elocation-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szklarczyk</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gable</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Nastou</surname>
+<given-names>KC</given-names>
+</name>
+<name>
+<surname>Lyon</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kirsch</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pyysalo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Doncheva</surname>
+<given-names>NT</given-names>
+</name>
+<name>
+<surname>Legeay</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bork</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The STRING database in 2021: customizable protein-protein networks, and functional characterization of user-uploaded gene/measurement sets</article-title>
+<source>Nucleic acids research</source>
+<year>2021</year>
+<volume>49</volume>
+<fpage>D605</fpage>
+<lpage>d612</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xie</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Kuleshov</surname>
+<given-names>MV</given-names>
+</name>
+<name>
+<surname>Clarke</surname>
+<given-names>DJB</given-names>
+</name>
+<name>
+<surname>Evangelista</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Jenkins</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Lachmann</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wojciechowicz</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Kropiwnicki</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Jagodnik</surname>
+<given-names>KM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Gene Set Knowledge Discovery with Enrichr</article-title>
+<source>Current Protocols</source>
+<year>2021</year>
+<volume>1</volume>
+<fpage>e90</fpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wuchty</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Prediction of human-virus protein-protein interactions through a sequence embedding-based machine learning method</article-title>
+<source>Computational and Structural Biotechnology Journal</source>
+<year>2020</year>
+<volume>18</volume>
+<fpage>153</fpage>
+<lpage>161</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Prediction of GCRV virus-host protein interactome based on structural motif-domain interactions</article-title>
+<source>BMC bioinformatics</source>
+<year>2017</year>
+<volume>18</volume>
+<fpage>145</fpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>An overview of our modeling framework.</title>
+<p>(A) A flowchart of our pipeline. (B and C) Performance measures by <italic>RF</italic>* (B) and <italic>XGB</italic>* (C) for an example test set.</p>
+</caption>
+<graphic xlink:href="EMS139937-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Analysis of feature importance.</title>
+<p>(A) A histogram of impurity-based feature importance values. The top 2 features, <italic>C_minus</italic> and <italic>H_minus</italic>, are indicated. (B) A bar plot of the means of absolute SHAP values for the top 20 features. (C) Average impact (bar plots) and individual impact (dot plots) of the top 10 features on model outputs for each evidence class by SHAP analysis.</p>
+</caption>
+<graphic xlink:href="EMS139937-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Model performance for experiments-based and text mining-based PPIs.</title>
+<p>(A and B) Prediction distributions for experiments-based PPIs (A) and text mining-based PPIs (B) by <italic>XGB</italic>* and <italic>RF</italic>*, and heat maps of prediction agreements between the two models. Note that the evidence class values are 0-index based. (C) A control experiment of predictions of random subsets of text mining-based PPIs whose size is the same as that of experiments-based PPIs.</p>
+</caption>
+<graphic xlink:href="EMS139937-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Prediction agreement between <italic>RF</italic>* and <italic>XGB</italic>*.</title>
+<p>(A) A heatmap of a confusion matrix for predictions of 1,998 PPIs from the IntAct database. (B and C) Network visualization of the 1,998 PPIs with evidence level predictions by <italic>RF</italic>* (B) and <italic>XGB</italic>* (C) based on (A). (D) A heatmap of confusion matrix for predictions of 549,990 PPIs between the SARS-CoV-2 and human proteome. (E) Network visualization of 22,781 PPIs with EC &gt;= 1 by either <italic>XGB</italic>* or <italic>RF</italic>* from (D). Note that the EC values on the x and y axes in (A) and (D) are 0-index based. Predicted evidence levels are denoted by different edge widths and colors in (B-C) and (E): red for EC3, blue for EC2, dark grey for EC1, and light grey for EC0. Network layouts were yFiles Organic Layout for (B-C) and Circular Layout for (E) in Cytoscape.</p>
+</caption>
+<graphic xlink:href="EMS139937-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>SARS-CoV-2 virus-human PPIs with the highest evidence class by <italic>XGB</italic>*.</title>
+<p>(A) 140 virus-human PPIs predicted for EC5 between 8 SARS-CoV-2 proteins and 137 human proteins and 81 human-human PPIs (or associations) from the STRING database. The red diamond nodes are SARS-CoV-2 proteins and the purple circle nodes are human proteins. The network was generated based on a circular layout from Cytoscape. (B) The STRING protein-protein association network of 131 human proteins from (A) and 81 associations among them. Protein nodes are color-coded by functional annotations as shown. Edge colors represent different association evidence types. Details are found in <ext-link ext-link-type="uri" xlink:href="https://version-11-5.string-db.org/cgi/network?taskId=bw0zo15JMFRX">https://version-11-5.string-db.org/cgi/network?taskId=bw0zo15JMFRX</ext-link>.</p>
+</caption>
+<graphic xlink:href="EMS139937-f005"/>
+</fig>
+</floats-group>
+</article>

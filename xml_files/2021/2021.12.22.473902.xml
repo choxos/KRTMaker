@@ -1,0 +1,1080 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141193</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.22.473902</article-id>
+<article-id pub-id-type="archive">PPR436150</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Machine learning guided design of high affinity ACE2 decoys for SARS-CoV-2 neutralization</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>Matthew C.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>Kui. K.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Procko</surname>
+<given-names>Erik</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Shukla</surname>
+<given-names>Diwakar</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Chemical and Biomolecular Engineering, University of Illinois Urbana-Champaign, Urbana, IL 61081</aff>
+<aff id="A2">
+<label>2</label>Cyrus Biotechnology, Inc., Seattle, WA, 98101</aff>
+<aff id="A3">
+<label>3</label>Department of Biochemistry, University of Illinois Urbana-Champaign, Urbana, IL 61081</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>
+<email>diwakar@illinois.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>23</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">A potential therapeutic candidate for neutralizing SARS-CoV-2 infection is engineering high-affinity soluble ACE2 decoy proteins to compete for binding of the viral spike (S) protein. Previously, a deep mutational scan of ACE2 was performed and has led to the identification of a triple mutant ACE2 variant, named ACE22.v.2.4, that exhibits nanomolar affinity binding to the RBD domain of S. Using a recently developed transfer learning algorithm, TLmutation, we sought to identified other ACE2 variants, namely double mutants, that may exhibit similar binding affinity with decreased mutational load. Upon training a TLmutation model on the effects of single mutations, we identified several ACE2 double mutants that bind to RBD with tighter affinity as compared to the wild type, most notably, L79V;N90D that binds RBD with similar affinity to ACE22.v.2.4. The successful experimental validation of the double mutants demonstrated the use transfer and supervised learning approaches for engineering protein-protein interactions and identifying high affinity ACE2 peptides for targeting SARS-CoV-2.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<p id="P2">Severe acute respiratory syndrome coronavirus-2 (SARS-CoV-2) is a positive-sense RNA-enveloped virus that causes coronavirus disease 2019 (COVID-19) and has since emerged as a global pandemic<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup>. As of December 2021, the COVID-19 outbreak has resulted in over 250 million reported cases and claimed over 5 million deaths around the world<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup>. Even with the successful development of mRNA-based vaccines, issues regarding vaccine hesitancy, vaccine availability in low- and middle-income countries, and emerging variants of concern presents a dire need for alternative therapeutic options for COVID-19.</p>
+<p id="P3">Extensive work has characterized the primary mechanism of SARS-CoV-2 entry to be facilitated by the interactions involving the spike (S) protein and the angiotensin converting enzyme 2 (ACE2) receptor<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R4">4</xref>
+</sup>. S is trimeric class I viral fusion glycoprotein that consists of soluble S1 and membrane-tethered S2 subunits. The S1 subunit contains the receptor-binding domain (RBD) which, when directly binds with the peptidase domain of ACE2, initiates the cleavage and shedding of S1, thereby exposing the S2 subunit for membrane fusion and viral RNA release into the host cell<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. As such, S is a major target for anti-SARS-CoV-2 therapeutics, including monoclonal antibodies that compete with ACE2 for RBD binding and neutralize virus infection<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. However, mutations in S present in emerging variants of SARS-CoV-2, including B.1.1.7 (Alpha), B.1.351 (Beta), P.1 (Gamma), G.1.617.2 (Delta), and BA.1 (Omicron) enables SARS-CoV-2 to bind to ACE2 with greater affinity than the wild-type strain<sup>
+<xref ref-type="bibr" rid="R6">6</xref>,<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. The N501Y mutation identified in the Alpha, Beta, Gamma, and Omicron strains introduces additional π-π and cation-π interactions with ACE2 residues that increase the binding affinity by 10-fold as compared to the wild-type RBD<sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>. Furthermore, the E484K mutation in the Beta and Gamma variants introduces new electrostatic interactions with neighboring acidic residues on ACE2<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. Consequently, due to these altered molecular interactions, SARS-CoV-2 variants are more likely to evade the immune response and reduce the efficacy of neutralizing antibodies and vaccines<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup>.</p>
+<p id="P4">Efforts in developing therapeutic alternatives have focused on engineering soluble ACE2 (sACE2) constructs that acts as a high-affinity decoy for the viral S protein. sACE2, in which the transmembrane domain is removed, has been previously shown to be capable of binding to the S protein and is currently undergoing clinical trails for treating COVID-19<sup>
+<xref ref-type="bibr" rid="R3">3</xref>,<xref ref-type="bibr" rid="R11">11</xref>
+</sup>. Recently, Chan and colleagues performed a deep mutational scan of ACE2 and uncovered several amino acid substitutions throughout the ACE2 receptor that enhance the binding affinity to S of SARS-CoV-2<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup>. They further characterized a sACE2 derivative containing the three mutations T27Y, L79T, and N330Y, referred to as sACE22.v2.4 (<xref ref-type="fig" rid="F1">Figure 1A</xref>), to exhibit a 35-fold increase in binding affinity to SARS-CoV-2, and further tighter affinity for SARS-CoV-2 variants that contain the N501Y mutation<sup>
+<xref ref-type="bibr" rid="R12">12</xref>,<xref ref-type="bibr" rid="R13">13</xref>
+</sup>. <italic>In vivo</italic> characterization further demonstrates that inoculation of sACE22.v2.4 in mice prevents acute lung vascular endothelial injury induced by SARS-CoV-2 and improves survival<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup>. While the mutations introduced in sACE22.v2.4 were chosen intuitively, it presents an opportunity to identify other potential high-affinity sACE2 derivatives, specifically double mutants, with a decreased mutational load.</p>
+<p id="P5">Given that the search space of ACE2 double mutants consist of over two million combinations, it is impractical to experimental evaluate all possible mutants. Therefore, we employed an <italic>in silico</italic> screening using our previous described algorithm TLmutation<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup> to identify ACE2 double mutant derivatives that might achieve tight binding to the SARS-CoV-2 S protein. The TLmutation platform is an adaptation of the variant effect predictor EVmutation (part of the EVCoupling package) which uses sequence and evolutionary information to determine the effect of a mutation based on a residue’s site-specific conservation and coevolutionary coupled interactions<sup>
+<xref ref-type="bibr" rid="R16">16</xref>
+</sup>. However, as the effect of a mutation predicted by EVmutation is a measure of overall survivability, the native function of the protein may be masked and may not necessarily correlate to a specific function of study. To overcome this, the TLmutation platform implements a supervised algorithm to train a model with the experimental scores from a deep mutational scan. In doing so, the weights of the site-specific conservation and coevolutionary couplings are decoupled from a function of overall survival and fitted to the experimentally tested function of the protein. We have previously demonstrated the use of TLmutation to successfully incorporate deep mutational scanning data to decouple protein function from overall survival to enhance the prediction of variant effects in 13 individual proteins<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>. More applicable to this current study, the TLmutation algorithm supersedes the performance of the EVmutation for predicting the effect of higher order mutations<sup>
+<xref ref-type="bibr" rid="R15">15</xref>
+</sup>.</p>
+<p id="P6">We first constructed a EVmutation model trained on a multiple sequence alignment consists of sequences above 80% sequence identify and totaled in over 8,000 sequences. As we expect this model to gauge protein survival rather than binding function, we then construct a TLmutation model by training the preliminary model on the 2,340 single point mutation obtained from deep mutagenesis of the human ACE2 receptor scanned for enhanced binding of the RBD domain<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup>. The performance of the single mutation model was evaluated using a 5-fold cross validation in which the dataset was randomly split into an 80/20 train/test set. Across five folds, the experimental effect of ACE2 single mutations on RBD binding had the highest correlation with the TLmutation score compared to other variant effect predictors<sup>
+<xref ref-type="bibr" rid="R16">16</xref>–<xref ref-type="bibr" rid="R19">19</xref>
+</sup> (<xref ref-type="fig" rid="F1">Figure 1B</xref>). As such, the TLmutation algorithm demonstrates the ability to decouple overall survivability and predict a particular function of interest. We find that DeepSequence, which models the evolutionary information into a latent representation<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup> and is considered a top preforming method for predicting deep mutational scans<sup>
+<xref ref-type="bibr" rid="R20">20</xref>
+</sup>, performed subpar to TLMutation (<xref ref-type="fig" rid="F1">Figure 1B</xref>). We suspect that as ACE2 binding to S is not evolutionary favored, the multiple sequence alignment used to train DeepSequence and EVmutation does not discriminate mutations that may optimize RBD binding.</p>
+<p id="P7">As TLmutation utilizes coevolutionary couplings to make predictions, we used the model trained on single point mutations to predict the effect of ACE2 double mutants. To validate the predictions generated by the model, we selected 18 ACE2 double mutants from the following different categories: 9 double mutants that scored in the top 1% of TLmutation; 4 double mutants in which each single mutation independently enhances binding, but scored less than the top 1%; 2 double mutants with a TLmutation score in the lowest 1% to serve as negative controls; and 3 double mutants consisting of the combination of single mutations in sACE22.v2.4 (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). The ACE2 mutants were evaluated by expression of full-length, myc-tagged protein in human Expi293F cells, which were tested by flow cytometry for binding to superfolder GFP (sfGFP)-fused RBD (<xref ref-type="fig" rid="F2">Figure 2</xref>). The predicted constructs exhibited levels of expression similar with the wild-type ACE2, suggesting these mutants do not significantly alter the stability of the receptor (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). With the exception of the two negative controls, all the mutants tested were observed to bind better or on par with the wild type (<xref ref-type="fig" rid="F2">Figure 2</xref>). Additionally, the TLmutation scores correlated more to the experimental results as compared to EVmutation and DeepSequence (TLmutation R<sup>2</sup> = 0.52, EVmutation R<sup>2</sup> = 0.09, DeepSequence R<sup>2</sup> = 0.23, <xref ref-type="fig" rid="F3">Figure 3A-C</xref>).</p>
+<p id="P8">Double mutants containing the combination of sACE22.v2.4 mutations, T27Y;L79T, T27Y;N330Y, and L79T;N330Y, bound to RBD with greater affinity than the single mutant variants, and had similar affinity as sACE22.v2.4. When examining the <italic>in silico</italic> mutagenesis predictions for these double mutants, TLmutation score the sACE22.v2.4 double mutants in the top 14%, with T27Y;N330Y and L79T;N330Y scoring in the upper 5%. DeepSequence scored all three mutants in the top 11%, whereas in EVmutation, it was score in the top 25% of all double mutants. When incorporating the newly experimental results of double mutants to the original single mutation training set, TLmutation, EVmutation, and DeepSequence predicted sACE22.v2.4 to be highly deleterious in function. We hypothesize the limited dataset of double mutations was not adequate to distinguish critical couplings to accurately predict higher order mutations.</p>
+<p id="P9">For the nine mutants that scored in the top 1% of the TLmutation predictions, three mutants D67A;N387N, A387N;S511Q, and N394D;S511Q failed to be distinguishable from the wild type. The remaining mutants from the same group were observed to perform better than the wild type. Two ACE2 mutants exhibited over a two-fold relative binding increase over the wild type. For the L91P;N330Y mutant, both single mutations exhibited a relative binding fold enhancement of under two<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup>; however, when expressed together, the relative binding increased over 2.5 fold. We have previously conducted molecular dynamics simulations of sACE22.v2.4 with the RBD domain of SARS-CoV-2 and observed the N330Y mutation to interact with backbone carbonyls of P499 on RBD further to stabilize the associated complex<sup>
+<xref ref-type="bibr" rid="R14">14</xref>
+</sup> (<xref ref-type="fig" rid="F4">Figure 4A</xref>). Interestingly, L91P is not directly located on the ACE2 binding interface and may allosterically stabilize the α2 helix for favorable S binding<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup>. It is also possible that the proline introduction may alter the dynamics of the glycosylation motif at position 90. The best performing double mutant, L79V;N90D (<xref ref-type="fig" rid="F4">Figure 4B</xref>), bound RDB-sfGFP exceptionally well, equivalent to sACE22.v2.4. This double mutant scored within the top 0.7% of all TLmutation double mutants, whereas in EVmutation and DeepSequence, it scored in the top 5<sup>th</sup> and 2<sup>nd</sup> percentile, respectively. However, this mutant disrupts the N90 glycan which has been shown to interact with RBD<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup> and could impair glycosylation that is required for <italic>in vivo</italic> compatibility, solubility, and reduced drug immunogenicity in ways that are unpredictable. Overall, the TLmutation algorithm successfully predicted higher order ACE2 mutants with tight RBD binding activity from single mutation data, but nonetheless the sACE22.v2.4 derivative remains a top candidate for drug development as it combines high affinity spike protein binding and preserves the native glycosylation sites.</p>
+<p id="P10">With regards to engineering a soluble ACE2 peptide for high RBD binding activity, the search space of possible combination of mutations is unfathomable to experimentally evaluate. Furthermore, identifying variants of high activity cannot be solely obtained from intuition, sequence conservation, or single mutational data alone (<xref ref-type="supplementary-material" rid="SD1">Figure S2</xref>). Indeed, many high scoring (above a TLmutation score of 2 or the top 0.4% of all scored variants) ACE2 double mutants contains residues not involved at the interface (<xref ref-type="supplementary-material" rid="SD1">Figure S3</xref>). As such, computational techniques that employ <italic>in silico</italic> mutagenesis provide a powerful and attractive approach to systematically identify potential candidates for further validation. A recent <italic>in silico</italic> mutagenesis study employing the Rosetta based modeler for protein-protein association, Flex ddG, has successfully identified a quadruple ACE2 mutant, S19F;T27F;K31W;N330F, to exhibit nanomolar binding affinity similar to the sACE22.v2.4 designed mutant<sup>
+<xref ref-type="bibr" rid="R22">22</xref>
+</sup>. Similar in this study, the use of a supervised transfer learning algorithm implemented by TLmutation successfully identify several double mutations that enhances binding to the RBD domain of SARS-CoV-2. Though, while the mutations initially identified sACE22.v2.4 construct retains the very tight binding activity and provide the most <italic>in vivo</italic> compatibility, these works demonstrate the successful use of computational techniques to aid in the engineering of protein design. A current limitation of variant effect predictors, TLmutation included, is in its ability to predict higher order mutations due to the lack of training data to identify relevant residue couplings. As mentioned, TLmutation, EVmutation, and DeepSequence fail to predict sACE22.v2.4 variant to be functional in binding. However, as deep mutational datasets become more readily available, specifically double mutational scans, we expect the use of computational algorithms may not only improve <italic>in silico</italic> variant effect predictions, but further aid in the systematic design of protein function that considers <italic>in vivo</italic> compatibility with minimal mutational load.</p>
+<sec id="S1" sec-type="methods">
+<title>Methods</title>
+<sec id="S2">
+<title>In silico mutagenesis</title>
+<p id="P11">We performed an <italic>in silico</italic> screening of all possible ACE2 double mutants using our previous described machine learning algorithm TLmutation. The TLmutation algorithm utilizes the EVmutation platform in addition to deep mutational scanning data of single mutations to predict the ACE2 mutational landscape for RBD binding. The TLmutation algorithm was first trained on the experimental single mutations data<sup>
+<xref ref-type="bibr" rid="R12">12</xref>
+</sup> to decouple the weights from overall organismal survivability of fitness. The weights were then optimized to fit the function under investigation, i.e. RBD binding. The performance of the algorithm was evaluated with a 5-fold cross validation in which the data were split into 80/20 train/test sets. The TLmutation predictions were compared to predictions from the EVcouplings package<sup>
+<xref ref-type="bibr" rid="R16">16</xref>
+</sup>, Envision web server<sup>
+<xref ref-type="bibr" rid="R17">17</xref>
+</sup>, the SNAP2 web server<sup>
+<xref ref-type="bibr" rid="R18">18</xref>
+</sup>, and the DeepSequence package<sup>
+<xref ref-type="bibr" rid="R19">19</xref>
+</sup>. For construction of the EVmutation, TLmutation, and DeepSequence model, the multiple sequence alignment was constructed using the EVcouplings package. TLmutation and EVmutation was performed using Python 3.7 on CentosOS6.6 with access to AMD EPYC 7301 (1200 MHz, 126 GB RAM). DeepSequence was performed using Python 2.7 on Ubuntu 20.04.3 with access to an Nvidia GeForce RTX 2080TI (11GB RAM) and an Intel i9-10900K (3700 MHz, 32 GB RAM). The input human ACE2 sequence was truncated to contain only positions 10 to 529 to reduce computational cost.</p>
+</sec>
+<sec id="S3">
+<title>Assessment of ACE2 mutations from TLmutation</title>
+<p id="P12">Expi293F cells transfected with pCEP4-myc-ACE2 plasmids were collected 24 h posttransfection (600 × g, 60 s), washed with ice-cold Dulbecco’s phosphate buffered saline (PBS) containing 0.2% bovine serum albumin (BSA), and stained with 1:50 RBD-sfGFP expression medium (prepared as previously described and 1:250 anti-myc Alexa 647 (clone 9B11, Cell Signaling Technology) in PBS-BSA. After 30 minutes incubation on ice, cells were washed twice in PBS-BSA and analyzed on a BD Accuri C6 using instrument software. Gates were drawn around the main population based on forward and side scatter properties, followed by a gate for medium Alexa 647 fluorescence to control for any expression differences between mutants. Mean superfolder GFP (sfGFP) fluorescence was measured and background fluorescence of negative cells was subtracted. All replicates were from independent, distinct samples.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Results</label>
+<media xlink:href="EMS141193-supplement-Supplementary_Results.pdf" mimetype="application" mime-subtype="pdf" id="N66055" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S4">
+<title>Acknowledgements</title>
+<p>This work is supported by the C3.ai Digital Transformation Institute Research Award provided by C3.ai Inc and Microsoft Corporation, NIH grant R35GM142745, and intramural funds of the University of Illinois College of Medicine to D.S, and NIH grants R43-AI162329 to E.P. and K.K.C.</p>
+<sec id="S5">
+<title>Financial Interests</title>
+<p>E.P. is an inventor on a patent filing by the University of Illinois covering the use of engineered peptides targeting coronaviruses. E.P. and K.K.C. are cofounders of Orthogonal Biologics, which licenses the intellectual property and is in a business partnership with Cyrus Biotechnology.</p>
+</sec>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>(1)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Horby</surname>
+<given-names>PW</given-names>
+</name>
+<name>
+<surname>Hayden</surname>
+<given-names>FG</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>GF</given-names>
+</name>
+</person-group>
+<article-title>A Novel Coronavirus Outbreak of Global Health Concern</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>10223</issue>
+<fpage>470</fpage>
+<lpage>473</lpage>
+<pub-id pub-id-type="doi">10.1016/S0140-6736(20)30185-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>(2)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dong</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Gardner</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>An Interactive Web-Based Dashboard to Track COVID-19 in Real Time</article-title>
+<source>The Lancet Infectious Diseases</source>
+<year>2020</year>
+<volume>20</volume>
+<issue>5</issue>
+<fpage>533</fpage>
+<lpage>534</lpage>
+<pub-id pub-id-type="doi">10.1016/S1473-3099(20)30120-1</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>(3)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>MJ</given-names>
+</name>
+<name>
+<surname>Vasilieva</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Sui</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Berne</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Somasundaran</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sullivan</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Luzuriaga</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Greenough</surname>
+<given-names>TC</given-names>
+</name>
+<name>
+<surname>Choe</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Angiotensin-Converting Enzyme 2 Is a Functional Receptor for the SARS Coronavirus</article-title>
+<source>Nature</source>
+<year>2003</year>
+<volume>426</volume>
+<issue>6965</issue>
+<fpage>450</fpage>
+<lpage>454</lpage>
+<pub-id pub-id-type="doi">10.1038/nature02145</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>(4)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zamorano Cuervo</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Grandvaux</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<article-title>ACE2: Evidence of Role as Entry Receptor for SARS-CoV-2 and Implications in Comorbidities</article-title>
+<source>eLife</source>
+<year>2020</year>
+<volume>9</volume>
+<elocation-id>e61390</elocation-id>
+<pub-id pub-id-type="doi">10.7554/eLife.61390</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>(5)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Structural and Functional Properties of SARS-CoV-2 Spike Protein: Potential Antivirus Drug Development for COVID-19</article-title>
+<source>Acta Pharmacologica Sinica</source>
+<year>2020</year>
+<volume>41</volume>
+<issue>9</issue>
+<fpage>1141</fpage>
+<lpage>1149</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>(6)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ramanathan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ferguson</surname>
+<given-names>ID</given-names>
+</name>
+<name>
+<surname>Miao</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Khavari</surname>
+<given-names>PA</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 B. 1.1. 7 and B. 1.351 Spike Variants Bind Human ACE2 with Increased Affinity</article-title>
+<source>The Lancet Infectious Diseases</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>(7)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Han</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Su</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bai</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Qiao</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Molecular Insights into Receptor Binding of Recent Emerging SARS-CoV-2 Variants</article-title>
+<source>Nature communications</source>
+<year>2021</year>
+<volume>12</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>(8)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tian</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Tong</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>N501Y Mutation of Spike Protein in SARS-CoV-2 Strengthens Its Binding to Receptor ACE2</article-title>
+<source>Elife</source>
+<year>2021</year>
+<volume>10</volume>
+<elocation-id>e69091</elocation-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>(9)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Boorla</surname>
+<given-names>VS</given-names>
+</name>
+<name>
+<surname>Banerjee</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Chowdhury</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cavener</surname>
+<given-names>VS</given-names>
+</name>
+<name>
+<surname>Nissly</surname>
+<given-names>RH</given-names>
+</name>
+<name>
+<surname>Gontu</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Boyle</surname>
+<given-names>NR</given-names>
+</name>
+<name>
+<surname>Vandegrift</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Nair</surname>
+<given-names>MS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Computational Prediction of the Effect of Amino Acid Changes on the Binding Affinity between SARS-CoV-2 Spike RBD and Human ACE2</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2021</year>
+<volume>118</volume>
+<issue>42</issue>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>(10)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Harvey</surname>
+<given-names>WT</given-names>
+</name>
+<name>
+<surname>Carabelli</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Jackson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Gupta</surname>
+<given-names>RK</given-names>
+</name>
+<name>
+<surname>Thomson</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Harrison</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Ludden</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Reeve</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Peacock</surname>
+<given-names>SJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 Variants, Spike Mutations and Immune Escape</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2021</year>
+<volume>19</volume>
+<issue>7</issue>
+<fpage>409</fpage>
+<lpage>424</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>(11)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Monteil</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Kwon</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Prado</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Hagelkrüys</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wimmer</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Stahl</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Leopoldi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Garreta</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Del Pozo</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Prosper</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inhibition of SARS-CoV-2 Infections in Engineered Human Tissues Using Clinical-Grade Soluble Human ACE2</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<issue>4</issue>
+<fpage>905</fpage>
+<lpage>913</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>(12)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Dorosky</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Sharma</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Abbasi</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Dye</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Kranz</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Herbert</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Procko</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Engineering Human ACE2 to Optimize Binding to the Spike Protein of SARS Coronavirus 2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<issue>6508</issue>
+<fpage>1261</fpage>
+<lpage>1265</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>(13)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chan</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>TJ</given-names>
+</name>
+<name>
+<surname>Narayanan</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Procko</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>An Engineered Decoy Receptor for SARS-CoV-2 Broadly Binds Protein S Sequence Variants</article-title>
+<source>Science Advances</source>
+<year>2021</year>
+<volume>7</volume>
+<issue>8</issue>
+<elocation-id>eabf1738</elocation-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>(14)</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Dutta</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Xiong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Lindeblad</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cooper</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Rong</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Gugliuzza</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Engineered High-Affinity ACE2 Peptide Mitigates ARDS and Death Induced by Multiple SARS-CoV-2 Variants</article-title>
+<source>bioRxiv</source>
+<publisher-name>Nature Chemical Biology, In Press</publisher-name>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>(15)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shamsi</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Shukla</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>TLmutation: Predicting the Effects of Mutations Using Transfer Learning</article-title>
+<source>The Journal of Physical Chemistry B</source>
+<year>2020</year>
+<volume>124</volume>
+<issue>19</issue>
+<fpage>3845</fpage>
+<lpage>3854</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>(16)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hopf</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Ingraham</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Poelwijk</surname>
+<given-names>FJ</given-names>
+</name>
+<name>
+<surname>Schärfe</surname>
+<given-names>CP</given-names>
+</name>
+<name>
+<surname>Springer</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sander</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Marks</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Mutation Effects Predicted from Sequence Co-Variation</article-title>
+<source>Nature biotechnology</source>
+<year>2017</year>
+<volume>35</volume>
+<issue>2</issue>
+<fpage>128</fpage>
+<lpage>135</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>(17)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gray</surname>
+<given-names>VE</given-names>
+</name>
+<name>
+<surname>Hause</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Luebeck</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shendure</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Fowler</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<article-title>Quantitative Missense Variant Effect Prediction Using Large-Scale Mutagenesis Data</article-title>
+<source>Cell systems</source>
+<year>2018</year>
+<volume>6</volume>
+<issue>1</issue>
+<fpage>116</fpage>
+<lpage>124</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>(18)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hecht</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bromberg</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Rost</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Better Prediction of Functional Effects for Sequence Variants</article-title>
+<source>BMC genomics</source>
+<year>2015</year>
+<volume>16</volume>
+<issue>8</issue>
+<fpage>1</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>(19)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Riesselman</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Ingraham</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Marks</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Deep Generative Models of Genetic Variation Capture the Effects of Mutations</article-title>
+<source>Nature methods</source>
+<year>2018</year>
+<volume>15</volume>
+<issue>10</issue>
+<fpage>816</fpage>
+<lpage>822</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>(20)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>LIvesey</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Marsh</surname>
+<given-names>JA</given-names>
+</name>
+</person-group>
+<article-title>Using Deep Mutational Scanning to Benchmark Variant Effect Predictors and Identify Disease Mutations</article-title>
+<source>Molecular Systems Biology</source>
+<year>2020</year>
+<volume>16</volume>
+<issue>7</issue>
+<elocation-id>e9380</elocation-id>
+<pub-id pub-id-type="doi">10.15252/msb.20199380</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>(21)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mehdipour</surname>
+<given-names>AR</given-names>
+</name>
+<name>
+<surname>Hummer</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Dual Nature of Human ACE2 Glycosylation in Binding to SARS-CoV-2 Spike</article-title>
+<source>PNAS</source>
+<year>2021</year>
+<volume>118</volume>
+<issue>19</issue>
+<pub-id pub-id-type="doi">10.1073/pnas.2100425118</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>(22)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Havranek</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>KK</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Procko</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Islam</surname>
+<given-names>SM</given-names>
+</name>
+</person-group>
+<article-title>Computationally Designed ACE2 Decoy Receptor Binds SARS-CoV-2 Spike (S) Protein with Tight Nanomolar Affinity</article-title>
+<source>Journal of chemical information and modeling</source>
+<year>2021</year>
+<volume>61</volume>
+<issue>9</issue>
+<fpage>4656</fpage>
+<lpage>4669</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>(23)</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Humphrey</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Dalke</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Schulten</surname>
+<given-names>K</given-names>
+</name>
+</person-group>
+<article-title>VMD: Visual Molecular Dynamics</article-title>
+<source>Journal of Molecular Graphics</source>
+<year>1996</year>
+<volume>14</volume>
+<issue>1</issue>
+<fpage>33</fpage>
+<lpage>38</lpage>
+<pub-id pub-id-type="doi">10.1016/0263-7855(96)00018-5</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>(A) Model of ACE22.v.2.4-RBD complex based on the resolved ACE2-RBD structure (PDB: 6M17). ACE2 is shown in blue cartoon representation. RBD domain is shown as yellow cartoon. Introduced mutations (T27Y, L79T, N330Y) in ACE22.v.2.4 are shown in orange sticks. Figure was generated using VMD 1.9.3<sup>
+<xref ref-type="bibr" rid="R23">23</xref>
+</sup> (B) Performance of variant effector predictors in predicting ACE2 single mutants for RBD binding. Spearman’s rank correlation (ρ) is measured as the average correlation across a 20% test or withheld dataset, across five folds.</p>
+</caption>
+<graphic xlink:href="EMS141193-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Performance of ACE2 double mutants predicted by TLmutation. Expi293F cells expressing wild type or mutant myc-ACE2 were co-incubated with a fluorescent anti-myc antibody and with RBD-sfGFP expression medium at a sub-saturating dilution. After gating for a constant level of anti-myc fluorescence to control for expression differences, bound RBD-sfGFP was measured by flow cytometry. Data are mean, N=2, error bars represent range. The double mutants belonged to 4 groups and are colored accordingly: blue, mutants that scored in the top 1% of TLmutation; red, that scored in the lowest 1% of TLmutation; yellow, double mutants whose single mutations were previously validated to significantly enhance binding; green, double mutants of the mutations in ACE22.v2.4.</p>
+</caption>
+<graphic xlink:href="EMS141193-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Comparison of variant effect predictions TLmutation (B), EVmutaion (C) and DeepSequence (D) with experimental measurements. Points are colors according to the 4 groups of double mutants and are colored accordingly: blue, mutants that scored in the top 1% of TLmutation; red, that scored in the lowest 1% of TLmutation; yellow, double mutants whose single mutations were previously validated to significantly enhance binding; green, double mutants of the mutations in ACE22.v2.4..</p>
+</caption>
+<graphic xlink:href="EMS141193-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Structural models of the top two ACE2 double mutants of high RBD binding.</title>
+<p>(A) The L91P;N330Y variant. Y330 may interact with P499 of RBD, while P91 may enable helical kinks to allosterically stabilize the interfacial helices. Alternatively, P91 may also alter the dynamics of the N90 glycan, which has been shown to shield RBD binding to ACE2<sup>
+<xref ref-type="bibr" rid="R21">21</xref>
+</sup>. (B) The L79V;N90D variant. D90 disrupts the glycan which would promote RBD binding.</p>
+</caption>
+<graphic xlink:href="EMS141193-f004"/>
+</fig>
+</floats-group>
+</article>

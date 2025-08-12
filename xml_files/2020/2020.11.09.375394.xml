@@ -1,0 +1,3290 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS104088</article-id>
+<article-id pub-id-type="doi">10.1101/2020.11.09.375394</article-id>
+<article-id pub-id-type="archive">PPR237046</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Network-based Virus-Host Interaction Prediction with Application to SARS-CoV-2</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Du</surname>
+<given-names>Hangyu</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Chen</surname>
+<given-names>Feng</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Liu</surname>
+<given-names>Hongfu</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Hong</surname>
+<given-names>Pengyu</given-names>
+</name>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Computer Science, Brandeis University, Waltham, Massachusetts, United States</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence: <email>hongfuliu@brandeis.edu</email>, <email>hongpeng@brandeis.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>13</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>11</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">COVID-19, caused by Severe Acute Respiratory Syndrome Coronavirus 2 (SARS-CoV-2), has quickly become a global health crisis since the first report of infection in December of 2019. However, the infection spectrum of SARS-CoV-2 and its comprehensive protein-level interactions with hosts remain unclear. There is a massive amount of under-utilized data and knowledge about RNA viruses highly relevant to SARS-CoV-2 and their hosts' proteins. More in-depth and more comprehensive analyses of that knowledge and data can shed new insight into the molecular mechanisms underlying the COVID-19 pandemic and reveal potential risks. In this work, we constructed a multi-layer virus-host interaction network to incorporate these data and knowledge. A machine learning-based method, termed Infection Mechanism and Spectrum Prediction (IMSP), was developed to predict virus-host interactions at both protein and organism levels. Our approach revealed five potential infection targets of SARS-CoV-2, which deserved public health attention, and eight highly possible interactions between SARS-CoV-2 proteins and human proteins. Given a new virus, IMSP can utilize existing knowledge and data about other highly relevant viruses to predict multi-scale interactions between the new virus and potential hosts.</p>
+</abstract>
+<kwd-group>
+<kwd>Coronavirus</kwd>
+<kwd>COVID-19</kwd>
+<kwd>SARS-CoV-2</kwd>
+<kwd>Machine Learning</kwd>
+<kwd>Interaction Prediction</kwd>
+<kwd>Protein-Protein-Interaction</kwd>
+<kwd>virus-host interaction network</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Severe Acute Respiratory Syndrome Coronavirus-2 (SARS-CoV-2), a novel virus causing the COVID-19 disease, was first reported in Wuhan, China, in December of 2019. Since then, it has quickly become a global health crisis (<xref ref-type="bibr" rid="R1">1</xref>) with over 50 million people infected and 1,250,000 death over 200 countries as of November of 2020 (<xref ref-type="bibr" rid="R2">2</xref>). The impact of SARS-CoV-2 has significantly surpassed previous outbreakings of coronaviruses, such as Severe Acute Respiratory Syndrome Coronavirus (SARS-CoV) in 2003 and the Middle East Respiratory Syndrome Coronavirus (MERS-CoV) in 2012. Besides humans, SARS-CoV-2 has also been confirmed to infect several other mammals closely related to human activities, including dogs (<xref ref-type="bibr" rid="R3">3</xref>), cats (<xref ref-type="bibr" rid="R4">4</xref>), tigers (<xref ref-type="bibr" rid="R5">5</xref>), and golden Syrian hamsters (<xref ref-type="bibr" rid="R6">6</xref>). It is important to identify a comprehensive set of such mammals because they can potentially serve as covert means to exacerbate the spread of COVID-19. Moreover, identifying interactions between SARS-CoV-2 proteins and host proteins can deepen our understanding of the viral invasion processes and may help design treatments and vaccines. In general, we want to promptly achieve the above two goals for new zoonotic viruses, which we believe can be done by leveraging the knowledge and data about known viruses highly relevant to the new ones.</p>
+<p id="P3">The research community has accumulated a great deal of knowledge about several other human coronaviruses (including SARS-CoV (<xref ref-type="bibr" rid="R7">7</xref>–<xref ref-type="bibr" rid="R15">15</xref>), HCoV-HKU1 (<xref ref-type="bibr" rid="R15">15</xref>), HCoV-OC43 (<xref ref-type="bibr" rid="R16">16</xref>,<xref ref-type="bibr" rid="R17">17</xref>), HCoV-NL63 (<xref ref-type="bibr" rid="R18">18</xref>), MERS-CoV (<xref ref-type="bibr" rid="R19">19</xref>–<xref ref-type="bibr" rid="R23">23</xref>)) and has collected a large amount of data about them. For example, it was shown that human Angiotensin-Converting Enzyme 2 (ACE2) was the primary host receptor used by the S protein (S-protein) of SARS-CoV-2 for the virus to gain entry into human cells (<xref ref-type="bibr" rid="R24">24</xref>) (<xref ref-type=" supplementary-material" rid="SD2">Figure S1</xref>). ACE2 is also the host receptor used by SARS-CoV (<xref ref-type="bibr" rid="R14">14</xref>) and HCoV-NL63 (<xref ref-type="bibr" rid="R18">18</xref>). The S-protein of SARS-CoV-2 binds significantly tighter to ACE2 than its counterpart in SARS-CoV (<xref ref-type="bibr" rid="R25">25</xref>). After the virus enters host cells, interferon-stimulated genes (ISGs) are essential for a host to defend against viral infection (<xref ref-type=" supplementary-material" rid="SD2">Figure S2</xref>). This knowledge and data can be utilized to investigate the infection spectrum of SARS-CoV-2 and its interactions with hosts at the protein level. Finally, we built a Virus-Host Interaction Network (VHIN) of seven viruses and seventeen hosts that summarizes the existing protein-protein interaction (PPI) and infection relationships among them (<xref ref-type="fig" rid="F1">Figure 1A</xref>, more details in <xref ref-type=" supplementary-material" rid="SD2">Figures S3, S4 and S5</xref>).</p>
+<p id="P4">We have developed a network-based multi-level virus-host interaction modeling and prediction, termed Infection Mechanism and Spectrum Prediction (IMSP) (<xref ref-type="fig" rid="F1">Figure 1B</xref>, details in the <xref ref-type="sec" rid="S10">Method</xref> section), which uses machine learning technique to learn from the constructed VHIN and then predict novel virus-host interactions at both the protein (i.e., Mechanism) and organism (i.e., Spectrum) levels. IMSP predicts that the SARS-CoV-2 S-protein can bind well with ACE2 receptors in seven mammalian hosts, which have not been reported. Among those hosts, five of them are predicted to have high risks of being infected by SARS-CoV-2. Moreover, IMSP identifies eight new interactions between SARS-CoV-2 proteins and human proteins. To our best knowledge, our work is the first to apply machine learning techniques for predicting virus-host interactions at both protein and organism levels. Previous works (<xref ref-type="bibr" rid="R26">26</xref>, <xref ref-type="bibr" rid="R27">27</xref>) on predicting virus-host interactions focus on the relationships between SARS-CoV-2 proteins and human proteins, which ignore other hosts that might be infected by SARS-CoV-2.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P5">Here, we explain the construction of our virus-host interaction network in detail, highlight the predicted interactions by SARS-CoV-2, and present the overall performance evaluation of our interaction prediction model IMSP.</p>
+<sec id="S3">
+<title>The Virus-Host Interaction Network</title>
+<p id="P6">The Virus-Host Interaction Network consists of two layers (an organism layer and a protein layer). The organism layer contains a set of viruses (including SARS-CoV-2, SARS-CoV, HCoV-229E, HCoV-HKU1, HCoV-OC43, HCoV-NL63, and MERS-CoV) and a set of hosts (including human, mouse, rat, dog, cat, camel, squirrel, cattle, chimpanzee, red junglefowl, rabbit, horse, monkey, rat, sheep, pig, and golden Syrian hamster). At the protein layer, we focus on proteins that are known to be involved in viral invasion as well as immune system response and suppression. The network contains 17 host protein homolog groups obtained from NCBI: ACE2, Dipeptidyl Peptidase 4 (DPP4), IRF3, IRF7, IRF9, Mitochondrial Anti-Viral-signaling protein (MAVS), Melanoma Differentiation-Associated protein 5 (MDA5), Nuclear Factor Kappa-light-chain-enhancer of activated B (NF-<italic>κ</italic>B), Protein Kinase interferon-inducible double-stranded RNA dependent Activator (PRKRA), TANK Binding Kinase 1 (TBK1), Retinoic Acid-Inducible Gene I (RIG-I), Signal Transducer and Activator of Transcription 1 (STAT1) and Signal Transducer and Activator of Transcription 2 (STAT2)). The viral proteins include homologs of Sprotein, Membrane (M) protein, Nucleocapsid (N) protein, nsp1, nsp15, ORF3b, ORF4a, ORF4b, ORF6, and Papainlike protease (PLpro). There are four types of interactions between nodes: Protein-Protein Interactions, infection, belonging, and similarity between protein homologs. Similarities between homologs were calculated using the Protein BLAST algorithm provided by NCBI. PPIs and infection relationships are gathered from academic publications (<xref ref-type="bibr" rid="R7">7</xref>–<xref ref-type="bibr" rid="R23">23</xref>).</p>
+</sec>
+<sec id="S4">
+<title>SARS-CoV-2 – Host Interaction Predictions</title>
+<p id="P7">We applied IMSP on SARS-CoV-2 and other six human coronaviruses to get high-confidence predictions of PPIs and infections. <xref ref-type=" supplementary-material" rid="SD2">Figure S1</xref> shows the interactions between S proteins and ACE2. <xref ref-type=" supplementary-material" rid="SD2">Figure S2</xref> shows the interactions between virus proteins and IFN proteins in hosts. <xref ref-type=" supplementary-material" rid="SD2">Figure S3</xref> shows the network between the host group and the virus group in the organism layer. The virus-host network's complete information, built with two layers of data containing 246 nodes and 1,766 interactions, is displayed in Node <xref ref-type=" supplementary-material" rid="SD2">Table S4</xref> and Interaction <xref ref-type=" supplementary-material" rid="SD2">Table S5</xref>. All 65 infections and 457 PPIs predictions are shown in <xref ref-type=" supplementary-material" rid="SD2">Table S6 and S7</xref>.</p>
+<sec id="S5">
+<title>SARS-CoV-2 S-protein Binding Predictions</title>
+<p id="P8">The ability of SARS-CoV-2's S-protein to bind to the host ACE2 receptors is a key factor deciding the infection capability of SARS-CoV-2. IMSP predicts that the S-protein of SARS-CoV-2 has a high probability of binding well with the ACE2 receptors in mice, rats, sheep, chimpanzees, cattle, squirrels, and horses (<xref ref-type="fig" rid="F2">Figure 2a</xref>). Mice and rats have been recognized to be susceptible to several other human coronaviruses, such as, SARS-CoV (<xref ref-type="bibr" rid="R7">7</xref>), MERS-CoV (<xref ref-type="bibr" rid="R28">28</xref>), HCoV-OC43 (<xref ref-type="bibr" rid="R17">17</xref>) and HCoV-HKU1 (<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>). The chimpanzee has the ACE2 with 99.38% similarity with human ACE2, which has a high possibility to bind with the same S-protein. The overall similarity of ACE2 for the horse, squirrel, sheep, and cattle is 93.45%, 91.82%, 90.81%, and 90.56% compared to human ACE2, respectively. These predictions still require more practical research is required to determine the binding affinity of these mammals' ACE2 with SARS-CoV-2's S-protein. It has been shown that ACE2 can tolerate up to seven amino acids changes out of 20 critical ones that contact with the S-protein, without losing the functionality as SARS-CoV-2's receptor (<xref ref-type="bibr" rid="R31">31</xref>). This means that similarity might not be the only factor that influences the binding affinity between ACE2 and SARS-CoV-2's S-protein.</p>
+</sec>
+<sec id="S6">
+<title>SARS-CoV-2 and human interferon pathway interactome prediction</title>
+<p id="P9">The Interferon (IFN) pathway plays a critical role in the human immune response. After the virus infection is detected, the innate immune system will induce the IFN signaling, and the expression of IFN genes will increase the cellular resistance to viral invasion. Viruses have developed various strategies to inhibit IFN signaling to facilitate a successful viral invasion (<xref ref-type="bibr" rid="R32">32</xref>). SARS-CoV and MERS-CoV have been studied quite comprehensively in counteracting the IFN signaling responses compared with SARS-CoV-2. From IMSP, eight interactions between three SARS-CoV-2 proteins and human proteins in the innate immune pathway have been identified, shown in <xref ref-type="fig" rid="F2">Figure 2(b)-(d)</xref>. These interactions have a high probability of playing crucial roles in the SARS-CoV-2's suppression of the host's innate immune system.</p>
+<p id="P10">PLpro was predicted to interact with the nuclear factor kappa-light-chain-enhancer of activated B (NF-<italic>κ</italic>B) in humans, shown in <xref ref-type="fig" rid="F2">Figure 2(b)</xref>. In SARS-CoV (<xref ref-type="bibr" rid="R33">33</xref>) and MERS-CoV (<xref ref-type="bibr" rid="R34">34</xref>), PLpro have been identified a s b eing c apable of reducing the NF-<italic>κ</italic>B reporter activity and further suppressing IRF3. From our prediction, it might also be highly possible for SARS-CoV-2's PLpro to have similar functions.</p>
+<p id="P11">ORF6 and nsp15 in SARS-CoV-2 have been discovered as crucial viral interferon antagonists of SARS-CoV-2. These two proteins inhibit the localization of IRF3 by interacting with RIG-I (<xref ref-type="bibr" rid="R35">35</xref>), as a similar function is found for SARS-CoV ORF6 (<xref ref-type="bibr" rid="R36">36</xref>), shown in <xref ref-type="fig" rid="F2">Figure 2(c)&amp;(d)</xref>. ORF6 in SARS-CoV has also been shown to interact with STAT1 and STAT2 (<xref ref-type="bibr" rid="R37">37</xref>). From IMSP's prediction, ORF6 and nsp15 in SARS-CoV-2 were suggested to have potential interactions with MDA5 and MAVS. Since MAVS works as the adaptor molecule for MDA5 (<xref ref-type="bibr" rid="R38">38</xref>), it is possible that a viral protein interacts with either one of these two would also have the interaction with the other. Besides, MAVS and MDA5, ORF6 was also predicted to interact with STAT1 and STAT2, the same function as in the SARS-CoV. As nsp15 and ORF6 both function in nuclear transport machinery after the viral entry (<xref ref-type="bibr" rid="R26">26</xref>), it is reasonable that, for these two proteins, similar interactions with innate immune pathways are predicted. Careful experiments should be conducted to identify nsp15 and ORF6's impact on the innate immune system.</p>
+</sec>
+<sec id="S7">
+<title>SARS-CoV-2 infection prediction</title>
+<p id="P12">Based on the protein-level interaction prediction, we concluded five predicted infections for SARS-CoV-2 that is highly possible, as these mammals are not only predicted to be infected but also to have a successful SARS-CoV-2 virus binding with the host receptors. As shown in <xref ref-type="fig" rid="F3">Figure 3</xref>, these animals include mice, rats, sheep, cattle, and squirrels.</p>
+<p id="P13">Mice and rats are similar in every protein that we took into consideration in IMSP: all of the proteins have above 85% similarity, and the receptor ACE2 even has 94% similarity. Mouse has been identified as a host for all beta-coronaviruses: SASR-CoV (<xref ref-type="bibr" rid="R7">7</xref>), MERS-CoV (<xref ref-type="bibr" rid="R28">28</xref>), HCoV-OC43 (<xref ref-type="bibr" rid="R17">17</xref>) and HCoV-HKU1 (<xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>). SARS-CoV-2 also falls into the category of beta-coronavirus (<xref ref-type="bibr" rid="R39">39</xref>), which has a high possibility to infect mice and rats.</p>
+<p id="P14">Cattle are hosts for both MERS-CoV (<xref ref-type="bibr" rid="R21">21</xref>) and a bovine coronavirus which is exceptionally similar to HCoV-OC43 (over 94% similarity) (<xref ref-type="bibr" rid="R16">16</xref>). This means that cattle can be the host for other coronaviruses. Cattle, along with sheep and squirrels, are closely related to the human living environment or daily diet. They could be potential mammalian hosts that again transmit the virus back to human society. The investigation of these highly possible infections could help identify the virus's path and further control the transmission SARS-CoV-2 from mammalian hosts. Further research on these potential hosts might be crucial to social health and safety.</p>
+</sec>
+</sec>
+<sec id="S8">
+<title>Interaction Prediction Evaluation</title>
+<p id="P15">We compared IMSP to five other representative baseline models on our dataset in a cross-validation experiment. We conducted 30 runs in total for the experiment. The baseline models include two famous random-walk based models (Deepwalk (<xref ref-type="bibr" rid="R41">41</xref>) and Node2vec (<xref ref-type="bibr" rid="R43">43</xref>)), two neural-network-based models (Large-scale Information Network Embedding (LINE) (<xref ref-type="bibr" rid="R42">42</xref>) and Structural Deep Network Embedding (SDNE) (<xref ref-type="bibr" rid="R44">44</xref>)), and a classical matrix-based model, Graph Factorization (GF) (<xref ref-type="bibr" rid="R40">40</xref>). In each cross-validation run, we reserved 20% of each interaction type as the positive test set while ensuring the remaining network to be a connected one. To ensure input balance, we collected negative interactions (unconnected node pairs) to match the number of positive interactions in both training and testing sets. Firstly, we extracted known negative interactions as true negatives, which consisted of spike-receptor interactions that were demonstrated as not existed, such as between SARS-CoV-2's Sprotein and the host receptor DPP4 (the target host receptor of MERS-CoV). We split known negative interactions by a ratio of 8:2 to add to the training and testing sets. Then, since we still lack some number of negative interactions in both sets, we randomly selected unconnected node pairs as negative interactions to add to the training and testing sets. In this way, we confirmed that the training set's composition was the same as the test set's composition in terms of interaction type. We then applied IMSP and other models on the training set to perform network learning on the same training set and measure the test set's interaction prediction performances. We repeated the entire measurement process for 30 runs to minimize the measurement randomness. Finally, we performed two-sample heteroscedastic T-test at the 0.01 significance level to test the significance of our model's performance improvement compared to other models.</p>
+<p id="P16">
+<xref ref-type="table" rid="T1">Table 1</xref> shows the performance comparison, measured in several commonly used evaluation metrics, between IMSP and other existing tools. IMSP achieved an overall interaction prediction accuracy of 94.9% with a standard deviation of 0.004, which demonstrated a 6.0% gain compared to the second-best model. Our model also excelled in its weighted F1-score, achieving 0.944 with a standard deviation of 0.008, which transcended the second-best model by 7.3%. The pvalues for these two metrics were all smaller than 0.01, which indicated significant improvement for our model. In terms of the performance on specific types of interactions, i.e., infection and PPI predictions (See <xref ref-type="fig" rid="F4">Fig. 4</xref>), IMSP achieved an F1-score of 0.808 with 0.119 standard deviation for infection predictions, a 14.9% increase compared to the second-best model. The p-value was also smaller than 0.01, indicating a significant improvement in our model. For PPI predictions, our model achieved an F1-score of 0.909 with 0.029 standard deviation, a 6.6% increment compared to the second-best tool. The p-value also demonstrated a significant improvement for IMSP. In conclusion, our model showed statistically significant improvements compared to all existing models in all 12 evaluation metrics.</p>
+<p id="P17">IMSP's high performance might result from its ability to take full advantage of well-studied knowledge and data from previous biology research with protein-level variations being considered. Thanks to our virus-host interaction network's novel design, such cross-organism information and multi-class linkage information can be well-preserved. Another reason behind IMSP's performance improvement is that it factors essential biological metadata as textualized features for nodes. In this way, two connected nodes' vectorized content substantially helps the classifier o utput a correct predicted class when formulating interaction representations. However, around 10% PPI predictions were unlikely by our definition, such as PPIs between S-protein and nonreceptor proteins. To minimize unlikely predictions, we incorporated the node's function and existing biological metadata as part of the node feature. This change significantly reduced unlikely PPI predictions to around 2%. We further pushed the boundaries by utilizing known negative interactions in the protein layer to constitute part of the training and testing sets—this finally reduced the unlikely PPI predictions to less than 1%.</p>
+<p id="P18">In conclusion, IMSP exhibited robust and stable performance in both top-level and detailed evaluation metrics, which is substantially improved compared to existing tools. When analyzing newly emerged viruses with limited available information, namely SARS-CoV-2, IMSP can provide reasonable and reliable predictions.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="discussion">
+<title>Discussion</title>
+<p id="P19">This study assembled 246 nodes (viruses, virus proteins, hosts, and host proteins) and 1,766 known interactions among these nodes, including four types of interactions: similarities, infections, interactions, and belongings. Two main parts for virus-host protein-level interactions were taken into consideration: viral entry and innate immune pathway interactions. Accompanied by these two parts, we predicted the potential host for viruses and undiscovered novel PPIs. Among seven human coronaviruses, SARS-CoV and MERS-CoV were well studied about their binding with the receptors and interacting with the innate immune pathway, whereas HCoV-OC43, HCoV-NL63, HCov-HKU1, HCoV-229E, and newly emerged SARS-CoV-2 remained relatively unknown. Based on protein similarity and known interactions, 322 PPIs were predicted with this model. The actual PPIs need to be investigated further based on the prediction result.</p>
+<p id="P20">Established discoveries about SARS-CoV-2's viral interaction with host proteins are scarce. SARS-CoV-2 has been highly suspected of suppressing the innate immune response and reducing the production of IFN. In this way, IMSP's findings could help discover the relations between virus invasion and host response and therefore provide clues to developing therapeutic strategies for the treatment of this disease.</p>
+<p id="P21">More broadly, IMSP could be applied to any other analysis of the virus-host interaction network predictions. This network would be built based on the information of the protein-protein relations, protein-host relations, and host-host relations. Based on these attributes in the network and currently known relationships between some of the proteins, IMSP could predict the high-possibility interactions. We hope to use this pipeline as a tool to build a guideline for investigating various similar viruses and their mechanisms with hosts.</p>
+</sec>
+<sec id="S10" sec-type="methods">
+<title>Methods</title>
+<sec id="S11">
+<title>Infection Mechanism and Spectrum Prediction</title>
+<p id="P22">Our IMSP model requests three different inputs, including pairwise similarity matrices for all host proteins and virus proteins, a set of known PPIs and infection relationships, and proteins' biological metadata. For instance, appropriate protein metadata can include a protein's name, layer, host, and function. Given these three inputs, the model constructs a virus-host interaction network. Then, in the network learning phase, IMSP learns and combines the structural information and the content information of interactions to represent the heterogeneous network comprehensively. Lastly, in the prediction phase, IMSP trains a neural-network-based classifier, Multi-layer Perceptron classifier, along with strict filtering procedures, to output high-possibility undiscovered interactions. Specifically, our model generated PPI and infection predictions with each prediction's likelihood. In the following, we elaborated on the details of our IMSP model's two main steps in terms of network construction and learning, and interaction prediction with result validation.</p>
+</sec>
+<sec id="S12">
+<title>Virus-host interaction network construction and learning</title>
+<p id="P23">We utilized layers and groups to mark and separate different nodes during virus-host interaction network construction, and used interactions to represent PPI/infection/similarity/belonging relationship between nodes. For modeling the network, we constructed a weighted and undirected heterogeneous network using NetworkX (<xref ref-type="bibr" rid="R45">45</xref>). The network contained four groups of nodes: host, host proteins, virus proteins, and virus. We organize the virus group and the host group into the same layer, i.e., the organism layer, and we put two groups of proteins into the protein layer. By nature, the network contained four types of interactions: PPI (between virus proteins groups and host proteins groups), infection (between viruses group and hosts group), similarity (between homologs of proteins) and belonging (between organism layer and protein layer). Similarity and belonging relationships were innately connected. Other types of interactions were connected based on proven molecular level knowledge from existing research (<xref ref-type="bibr" rid="R7">7</xref>–<xref ref-type="bibr" rid="R23">23</xref>). The virus-host interaction network comprised of 246 nodes and 1,766 interactions. After the network structure was built, we used <italic>W<sub>i,j</sub>
+</italic> to represent the biological closeness between <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic>. Specifically, if <italic>I<sub>i,j</sub>
+</italic> denoted the relationship between two protein homologs, we used the full-sequence similarity between <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic> from pairwise similarity matrices to represent <italic>W<sub>i,j</sub>
+</italic>. For other types of relationship, we obtained the embeddings of node content, denoted as <inline-formula>
+<mml:math id="M1">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> for <italic>V<sub>i</sub>
+</italic> by passing textualized node content to the Word2vec model (<xref ref-type="bibr" rid="R46">46</xref>), a famous and powerful neural-network-based word embedding model. Then, we utilized the <italic>TS-SS</italic> similarity metric (<xref ref-type="bibr" rid="R47">47</xref>), a robust and reliable similarity measurement in the field of textual mining, to calculate the similarity between <inline-formula>
+<mml:math id="M2">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M3">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> to assign to <italic>W<sub>i,j</sub>
+</italic>. Precisely, for interactions other than similarity relations, we calculated the <italic>TS-SS<sub>i,j</sub>
+</italic> for all <italic>i</italic> and <italic>j</italic> if <italic>I<sub>i,j</sub>
+</italic> ⊂ <italic>E</italic> as the following: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M4">
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:mi>T</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mo>-</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">|</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>′</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:mi>θ</mml:mi>
+<mml:mo>′</mml:mo>
+<mml:mo>⋅</mml:mo>
+<mml:mi>π</mml:mi>
+<mml:mo>⋅</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mspace width="6em"/>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>E</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>M</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>/</mml:mo>
+<mml:mn>720</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M5">
+<mml:mi>M</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula> (<xref ref-type="bibr" rid="R47">47</xref>) is defined as the magnitude difference between <inline-formula>
+<mml:math id="M6">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M7">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula>, which is calculated as: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M8">
+<mml:mi>M</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>dim</mml:mtext>
+<mml:mspace width="0.1em"/>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mrow>
+<mml:msup>
+<mml:mi>C</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+<mml:mo>−</mml:mo>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mo>∑</mml:mo>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>dim</mml:mtext>
+<mml:mspace width="0.1em"/>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:munderover>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mrow>
+<mml:msup>
+<mml:mi>C</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> and <italic>θ</italic>′ is defined as: <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M9">
+<mml:mi>θ</mml:mi>
+<mml:mo>′</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mtext>cos</mml:mtext>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mtext>cos</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mn>10</mml:mn>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula> Note that <italic>θ'</italic> is increased by 10 degrees to overcome the problem of overlapping vectors. Then, <italic>W<sub>i,j</sub>
+</italic> is calculated as: <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M10">
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mo>-</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:msub>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>/</mml:mo>
+<mml:mover accent="true">
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mo>-</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+<mml:mo stretchy="true">¯</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>σ</italic> is the sigmoid function, and <inline-formula>
+<mml:math id="M11">
+<mml:mover accent="true">
+<mml:mrow>
+<mml:mi>T</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mo>-</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+<mml:mo stretchy="true">¯</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> denotes the average of <italic>TS-SS<sub>i,j</sub>
+</italic>, for all <italic>i, j</italic>, if <italic>i</italic> ≠ <italic>j</italic> and <italic>V<sub>i</sub>
+</italic>, <italic>V<sub>j</sub>
+</italic> ⊂ <italic>V</italic>.</p>
+<p id="P24">For network learning, we captured the network's heterogeneity by adding the network's heterogeneous content information to its structural information. Specifically, we performed network structural embedding assuming the network is homogeneous. Then, we added the content embedding on top of structural embedding to model its heterogeneity.</p>
+<p id="P25">Firstly, for network structural embedding, we used a powerful network feature learning model, Node2vec (<xref ref-type="bibr" rid="R43">43</xref>), to learn the structural embedding for nodes. Node2vec is a state-of-the-art model for homogeneous network embedding. We took full advantage of Node2vec's biased searching algo-rithm during our application. Precisely, the Node2vec model performed a fixed-length random walk for sampling, which takes weight into account. Let <italic>c<sub>m</sub>
+</italic> denote the <italic>m</italic>-th node in walk with <italic>c</italic>0 denoting the starting node of the current random walk. Nodes <italic>c<sub>m</sub>
+</italic> are generated by the following distribution: <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M12">
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">|</mml:mo>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:msub>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>/</mml:mo>
+<mml:mi>Z</mml:mi>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.3em"/>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>⊂</mml:mo>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>0</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>otherwise</mml:mtext>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where m ≥ 1, Z is the normalizing constant, and <inline-formula>
+<mml:math id="M13">
+<mml:msub>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</inline-formula> is the unnormalized transition probability between <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic>, which is calculated as <inline-formula>
+<mml:math id="M14">
+<mml:msub>
+<mml:mi>π</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>.</mml:mo>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</inline-formula> termed as search bias, is calculated as: <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M15">
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mn>1</mml:mn>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd>
+<mml:mrow>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.2em"/>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M16">
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>V</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:math>
+</inline-formula> denotes the shortest path between <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic>, assuming that we have just traversed from <italic>V<sub>t</sub>
+</italic> to <italic>V<sub>i</sub>
+</italic> and are now evaluating the transition probability leaving <italic>V<sub>i</sub>
+</italic>.</p>
+<p id="P26">In <xref ref-type="disp-formula" rid="FD6">Eq. (6)</xref>, p and q are Node2vec's hyperparameters that can be adjusted to influence the probability to go back to <italic>V<sub>i</sub>
+</italic> after visiting <italic>V<sub>j</sub>
+</italic> and the probability to explore undiscovered components of the network. In this way, we were able to fine-tune the structural embedding model, Node2vec, to generate a conclusive embedding for our network.</p>
+<p id="P27">Secondly, to create content representations, <italic>CE<sub>i,j</sub>
+</italic> for all <italic>I<sub>i,j</sub>
+</italic> in the network, we combined the textualized node content of <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic> along with expected interaction type such as interacts/infects/similar/belongs, and input them into the Word2vec model (<xref ref-type="bibr" rid="R46">46</xref>) to generate vectorized interaction representations. Then, the full interaction representations for interaction <italic>I<sub>i,j</sub>
+</italic> are formulated as follows: <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M17">
+<mml:mtable>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">[</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:mi>C</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">]</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>I</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">[</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:mi>C</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">]</mml:mo>
+</mml:mrow>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P28">Note that by Word2vec's nature, the input documents' order does not affect its output, meaning that <italic>CE<sub>i,j</sub>
+</italic> is the same as <italic>CE<sub>j,i</sub>
+</italic>. By finishing this step, we obtained all interaction representations, <italic>IE<sub>i,j</sub>
+</italic>, for all <italic>V<sub>i</sub>
+</italic> and <italic>V<sub>j</sub>
+</italic> ⊂ <italic>V</italic> and <italic>i</italic> ≠ <italic>j</italic>.</p>
+</sec>
+<sec id="S13">
+<title>Virus-host interaction prediction</title>
+<p id="P29">In the interaction prediction phase, we utilized a classifier to perform a multi-class classification task on the interaction representations to learn from the existing network and suggest potential undiscovered interactions. Specifically, for all <italic>I<sub>i,j</sub> ⊄ E</italic>, we classified <italic>IE<sub>i,j</sub>
+</italic> into three classes, i.e. PPI/infections/no-interaction. Scikit-learn's Multi-layer Perceptron (MLP) classification model (<xref ref-type="bibr" rid="R48">48</xref>) was used for this multi-class interaction classification.</p>
+<p id="P30">We conducted cross-validation experiments to fine-tune the model, where 20% of each interaction type was reserved as a positive test set. In this process, we also balanced the test set by inserting an equal number of negative interactions containing both known negatives and unknown negatives. Specifically, known negative interactions (true negatives) were generated from proven unconnected node pairs, such as the interaction between MERS-CoV's S-protein and mammalian hosts' ACE2 receptors. Unknown negative interactions were randomly sampled from the network, which was assumed as not existing. Then, by using the fine-tuned hyperparameters from cross-validation experiments, all positive interactions with an equal number of negative interactions were used for training the classifier. IMSP later took all other unused unconnected node pairs as input data and classified them into the class of PPI/infection/no interaction.</p>
+<p id="P31">During prediction result correction, we defined rules from both computational and biological perspectives to mark and remove unlikely predictions. Computationally, because there exist two representations for <italic>I<sub>i,j</sub>
+</italic>, i.e., <italic>IE<sub>i,j</sub>
+</italic> and <italic>IE<sub>j,i</sub>
+</italic>, we defined the prediction for <italic>I<sub>i,j</sub>
+</italic> as a strong one if and only if <italic>IE<sub>i,j</sub>
+</italic> and <italic>IE<sub>j,i</sub>
+</italic> were all classified into the same type of interaction other than the no-interaction. Biologically, we assumed that each virus's S-protein only interacts/binds with its target receptor. Thus, all other interactions with S-protein are considered unlikely. For example, the predicted interaction, if any, between SARS-CoV-2's S-protein and DPP4 (the target receptor for MERS-CoV's S-protein) would be eliminated. Thirdly, we also defined that an infection interaction was likely only when the corresponding interaction between the virus' S-protein and an appropriate host receptor was predicted. In this way, we ensured that all the remaining predictions are both computationally and biologically meaningful and practically useful to guide further research.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Latex Package</label>
+<media xlink:href="EMS104088-supplement-Latex_Package.zip" mimetype="application" mime-subtype="zip" id="N67559" position="anchor"/>
+</supplementary-material>
+<supplementary-material content-type="local-data" id="SD2">
+<label>Supplementary Information</label>
+<media xlink:href="EMS104088-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N67568" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S14">
+<title>Acknowledgement</title>
+<p>This work was partially supported NSF OAC 1920147.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<p id="P32">
+<bold>Resource Availability</bold>
+</p>
+<p id="P33">All data and codes are available at Github repositories: IMSP model, its predictions and performance evaluations can be found at <ext-link ext-link-type="uri" xlink:href="https://github.com/SupremeEthan/IMSP">https://github.com/SupremeEthan/IMSP</ext-link>; Data and data parsing code can be found at <ext-link ext-link-type="uri" xlink:href="https://github.com/SupremeEthan/IMSP-Parser">https://github.com/SupremeEthan/IMSP-Parser</ext-link>.</p>
+</fn>
+<fn id="FN2" fn-type="con">
+<p id="P34">
+<bold>Authors’ Contributions</bold>
+</p>
+<p id="P35">Conceptualization, P.H. and H.L.; Methodology, H.D., F.C., and H.L.; Software, H.D.; Formal Analysis: H.D.; Investigation, F.C. and H.D.; Writing - Original Draft, F.C. and H.D.; Writing - Review &amp; Editing, all authors; Visualization: F.C. and H.D.; Supervision, H.L. and P.H.</p>
+</fn>
+<fn id="FN3">
+<p id="P36">
+<bold>Lead Contact</bold>
+</p>
+<p id="P37">Further information and requests for code and data should be directed to and will be fulfilled by the Lead Contact, Pengyu Hong (<email>hongpeng@brandeis.edu</email>).</p>
+</fn>
+<fn id="FN4" fn-type="conflict">
+<p id="P38">
+<bold>Declaration of Interests</bold>
+</p>
+<p id="P39">The authors declare no competing interests.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Qun</given-names>
+</name>
+<name>
+<surname>Guan</surname>
+<given-names>Xuhua</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Peng</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Xiaoye</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Lei</given-names>
+</name>
+<name>
+<surname>Tong</surname>
+<given-names>Yeqing</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>Ruiqi</given-names>
+</name>
+<name>
+<surname>Leung</surname>
+<given-names>Kathy SM</given-names>
+</name>
+<name>
+<surname>Lau</surname>
+<given-names>Eric HY</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>Jessica Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Early transmission dynamics in wuhan, china, of novel coronavirus-infected pneumonia</article-title>
+<source>New England Journal of Medicine</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="web">
+<collab>World Health Organization</collab>
+<etal/>
+<article-title>Coronavirus disease (covid-19) situation dashboard</article-title>
+<source>World Health Organization website</source>
+<date-in-citation>Accessed April, 17, 2020</date-in-citation>
+<comment>
+<ext-link ext-link-type="uri" xlink:href="https://who.sprinklr.com/">https://who.sprinklr.com/</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sit</surname>
+<given-names>Thomas HC</given-names>
+</name>
+<name>
+<surname>Brackman</surname>
+<given-names>Christopher J</given-names>
+</name>
+<name>
+<surname>Ip</surname>
+<given-names>Sin Ming</given-names>
+</name>
+<name>
+<surname>Tam</surname>
+<given-names>Karina WS</given-names>
+</name>
+<name>
+<surname>Law</surname>
+<given-names>Pierra YT</given-names>
+</name>
+<name>
+<surname>To</surname>
+<given-names>Esther MW</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>Veronica YT</given-names>
+</name>
+<name>
+<surname>Sims</surname>
+<given-names>Leslie D</given-names>
+</name>
+<name>
+<surname>Tsang</surname>
+<given-names>Dominic NC</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>Daniel KW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Infection of dogs with sars-cov-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>6</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Halfmann</surname>
+<given-names>Peter J</given-names>
+</name>
+<name>
+<surname>Hatta</surname>
+<given-names>Masato</given-names>
+</name>
+<name>
+<surname>Chiba</surname>
+<given-names>Shiho</given-names>
+</name>
+<name>
+<surname>Maemura</surname>
+<given-names>Tadashi</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>Shufang</given-names>
+</name>
+<name>
+<surname>Takeda</surname>
+<given-names>Makoto</given-names>
+</name>
+<name>
+<surname>Kinoshita</surname>
+<given-names>Noriko</given-names>
+</name>
+<name>
+<surname>Hattori</surname>
+<given-names>Shin-ichiro</given-names>
+</name>
+<name>
+<surname>Sakai-Tagawa</surname>
+<given-names>Yuko</given-names>
+</name>
+<name>
+<surname>Iwatsuki-Horimoto</surname>
+<given-names>Kiyoko</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Transmission of sars-cov-2 in domestic cats</article-title>
+<source>New England Journal of Medicine</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Leyi</given-names>
+</name>
+<name>
+<surname>Mitchell</surname>
+<given-names>Patrick K</given-names>
+</name>
+<name>
+<surname>Calle</surname>
+<given-names>Paul P</given-names>
+</name>
+<name>
+<surname>Bartlett</surname>
+<given-names>Susan L</given-names>
+</name>
+<name>
+<surname>McAloose</surname>
+<given-names>Denise</given-names>
+</name>
+<name>
+<surname>Killian</surname>
+<given-names>Mary Lea</given-names>
+</name>
+<name>
+<surname>Yuan</surname>
+<given-names>Fangfeng</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>Ying</given-names>
+</name>
+<name>
+<surname>Goodman</surname>
+<given-names>Laura B</given-names>
+</name>
+<name>
+<surname>Fredrickson</surname>
+<given-names>Richard</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Complete genome sequence of sars-cov-2 in a tiger from a us zoological collection</article-title>
+<source>Microbiology Resource Announcements</source>
+<year>2020</year>
+<volume>9</volume>
+<issue>22</issue>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sia</surname>
+<given-names>Sin Fun</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Li-Meng</given-names>
+</name>
+<name>
+<surname>Chin</surname>
+<given-names>Alex WH</given-names>
+</name>
+<name>
+<surname>Fung</surname>
+<given-names>Kevin</given-names>
+</name>
+<name>
+<surname>Choy</surname>
+<given-names>Ka-Tim</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>Alvina YL</given-names>
+</name>
+<name>
+<surname>Kaewpreedee</surname>
+<given-names>Prathanporn</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>Ranawaka APM</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>Leo LM</given-names>
+</name>
+<name>
+<surname>Nicholls</surname>
+<given-names>John M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Pathogenesis and transmission of sars-cov-2 in golden hamsters</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>583</volume>
+<issue>7818</issue>
+<fpage>834</fpage>
+<lpage>838</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Channappanavar</surname>
+<given-names>Rudragouda</given-names>
+</name>
+<name>
+<surname>Fehr</surname>
+<given-names>Anthony R</given-names>
+</name>
+<name>
+<surname>Vijay</surname>
+<given-names>Rahul</given-names>
+</name>
+<name>
+<surname>Mack</surname>
+<given-names>Matthias</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Jincun</given-names>
+</name>
+<name>
+<surname>Meyerholz</surname>
+<given-names>David K</given-names>
+</name>
+<name>
+<surname>Perlman</surname>
+<given-names>Stanley</given-names>
+</name>
+</person-group>
+<article-title>Dysregulated type i interferon and inflammatory monocyte-macrophage responses cause lethal pneumonia in sars-cov-infected mice</article-title>
+<source>Cell host &amp; microbe</source>
+<year>2016</year>
+<volume>19</volume>
+<issue>2</issue>
+<fpage>181</fpage>
+<lpage>193</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>Matthew</given-names>
+</name>
+<name>
+<surname>Heise</surname>
+<given-names>Mark</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph</given-names>
+</name>
+</person-group>
+<article-title>Sars coronavirus and innate immunity</article-title>
+<source>Virus research</source>
+<year>2008</year>
+<volume>133</volume>
+<issue>1</issue>
+<fpage>101</fpage>
+<lpage>112</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matthews</surname>
+<given-names>Krystal</given-names>
+</name>
+<name>
+<surname>Schäfer</surname>
+<given-names>Alexandra</given-names>
+</name>
+<name>
+<surname>Pham</surname>
+<given-names>Alissa</given-names>
+</name>
+<name>
+<surname>Frieman</surname>
+<given-names>Matthew</given-names>
+</name>
+</person-group>
+<article-title>The sars coronavirus papain like protease can inhibit irf3 at a post activation step that requires deubiquitination activity</article-title>
+<source>Virology journal</source>
+<year>2014</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>209</fpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Totura</surname>
+<given-names>Allison L</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph S</given-names>
+</name>
+</person-group>
+<article-title>Sars coronavirus pathogenesis: host innate immune responses and viral antagonism of interferon</article-title>
+<source>Current opinion in virology</source>
+<year>2012</year>
+<volume>2</volume>
+<issue>3</issue>
+<fpage>264</fpage>
+<lpage>275</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>Yong</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Wei</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>Ting</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Cui</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>Yanwen</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Ping</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>Qingjun</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Xuan</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>Cheng</given-names>
+</name>
+</person-group>
+<article-title>Sars coronavirus nucleocapsid inhibits type i interferon production by interfering with trim25-mediated rig-i ubiquitination</article-title>
+<source>Journal of Virology</source>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Xiaojuan</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Xingxing</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>Yang</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Yudong</given-names>
+</name>
+<name>
+<surname>Xing</surname>
+<given-names>Yaling</given-names>
+</name>
+<name>
+<surname>Zhongbin</surname>
+<given-names>Chen</given-names>
+</name>
+</person-group>
+<article-title>Sars coronavirus papain-like protease inhibits the type i interferon signaling pathway through interaction with the sting-traf3-tbk1 complex</article-title>
+<source>Protein &amp; cell</source>
+<year>2014</year>
+<volume>5</volume>
+<issue>5</issue>
+<fpage>369</fpage>
+<lpage>381</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Chris Ka-fai</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Xiaoning</given-names>
+</name>
+</person-group>
+<chapter-title>Host immune responses to sars coronavirus in humans</chapter-title>
+<source>Molecular biology of the SARS-coronavirus</source>
+<publisher-name>Springer</publisher-name>
+<year>2010</year>
+<fpage>259</fpage>
+<lpage>278</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Wenhui</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>Michael J</given-names>
+</name>
+<name>
+<surname>Vasilieva</surname>
+<given-names>Natalya</given-names>
+</name>
+<name>
+<surname>Sui</surname>
+<given-names>Jianhua</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>Swee Kee</given-names>
+</name>
+<name>
+<surname>Berne</surname>
+<given-names>Michael A</given-names>
+</name>
+<name>
+<surname>Somasundaran</surname>
+<given-names>Mohan</given-names>
+</name>
+<name>
+<surname>Sullivan</surname>
+<given-names>John L</given-names>
+</name>
+<name>
+<surname>Luzuriaga</surname>
+<given-names>Katherine</given-names>
+</name>
+<name>
+<surname>Greenough</surname>
+<given-names>Thomas C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Angiotensin-converting enzyme 2 is a functional receptor for the sars coronavirus</article-title>
+<source>Nature</source>
+<year>2003</year>
+<volume>426</volume>
+<issue>6965</issue>
+<fpage>450</fpage>
+<lpage>454</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yu</surname>
+<given-names>Lei</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>Chris B</given-names>
+</name>
+<name>
+<surname>Liesman</surname>
+<given-names>Rachael M</given-names>
+</name>
+<name>
+<surname>O'Connor</surname>
+<given-names>Brian P</given-names>
+</name>
+<name>
+<surname>Bergstralh</surname>
+<given-names>Daniel T</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Zhijian J</given-names>
+</name>
+<name>
+<surname>Pickles</surname>
+<given-names>Raymond J</given-names>
+</name>
+<name>
+<surname>Ting</surname>
+<given-names>Jenny P-Y</given-names>
+</name>
+</person-group>
+<article-title>Mavs-mediated apoptosis and its inhibition by viral proteins</article-title>
+<source>PloS one</source>
+<year>2009</year>
+<volume>4</volume>
+<issue>5</issue>
+<fpage>e5466</fpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Szczepanski</surname>
+<given-names>Artur</given-names>
+</name>
+<name>
+<surname>Owczarek</surname>
+<given-names>Katarzyna</given-names>
+</name>
+<name>
+<surname>Bzowska</surname>
+<given-names>Monika</given-names>
+</name>
+<name>
+<surname>Gula</surname>
+<given-names>Katarzyna</given-names>
+</name>
+<name>
+<surname>Drebot</surname>
+<given-names>Inga</given-names>
+</name>
+<name>
+<surname>Ochman</surname>
+<given-names>Marek</given-names>
+</name>
+<name>
+<surname>Maksym</surname>
+<given-names>Beata</given-names>
+</name>
+<name>
+<surname>Rajfur</surname>
+<given-names>Zenon</given-names>
+</name>
+<name>
+<surname>Mitchell</surname>
+<given-names>Judy A</given-names>
+</name>
+<name>
+<surname>Pyrc</surname>
+<given-names>Krzysztof</given-names>
+</name>
+</person-group>
+<article-title>Canine respiratory coronavirus, bovine coronavirus, and human coronavirus oc43: receptors and attachment factors</article-title>
+<source>Viruses</source>
+<year>2019</year>
+<volume>11</volume>
+<issue>4</issue>
+<fpage>328</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Niu</surname>
+<given-names>Junwei</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>Liang</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Baoying</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>Fei</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Li</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Huijuan</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>Yao</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>Wenjie</given-names>
+</name>
+</person-group>
+<article-title>Non-invasive bioluminescence imaging of hcov-oc43 infection and therapy in the central nervous system of live mice</article-title>
+<source>Antiviral research</source>
+<year>2020</year>
+<volume>173</volume>
+<comment>104646</comment>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hofmann</surname>
+<given-names>Heike</given-names>
+</name>
+<name>
+<surname>Pyrc</surname>
+<given-names>Krzysztof</given-names>
+</name>
+<name>
+<surname>Van Der Hoek</surname>
+<given-names>Lia</given-names>
+</name>
+<name>
+<surname>Geier</surname>
+<given-names>Martina</given-names>
+</name>
+<name>
+<surname>Berkhout</surname>
+<given-names>Ben</given-names>
+</name>
+<name>
+<surname>Pöhlmann</surname>
+<given-names>Stefan</given-names>
+</name>
+</person-group>
+<article-title>Human coronavirus nl63 employs the severe acute respiratory syndrome coronavirus receptor for cellular entry</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2005</year>
+<volume>102</volume>
+<issue>22</issue>
+<fpage>7988</fpage>
+<lpage>7993</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Haagmans</surname>
+<given-names>Bart L</given-names>
+</name>
+<name>
+<surname>Al Dhahiry</surname>
+<given-names>Said HS</given-names>
+</name>
+<name>
+<surname>Reusken</surname>
+<given-names>Chantal BEM</given-names>
+</name>
+<name>
+<surname>Raj</surname>
+<given-names>V Stalin</given-names>
+</name>
+<name>
+<surname>Galiano</surname>
+<given-names>Monica</given-names>
+</name>
+<name>
+<surname>Myers</surname>
+<given-names>Richard</given-names>
+</name>
+<name>
+<surname>Godeke</surname>
+<given-names>Gert-Jan</given-names>
+</name>
+<name>
+<surname>Jonges</surname>
+<given-names>Marcel</given-names>
+</name>
+<name>
+<surname>Farag</surname>
+<given-names>Elmoubasher</given-names>
+</name>
+<name>
+<surname>Diab</surname>
+<given-names>Ayman</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Middle east respiratory syndrome coronavirus in dromedary camels: an outbreak investigation</article-title>
+<source>The Lancet infectious diseases</source>
+<year>2014</year>
+<volume>14</volume>
+<issue>2</issue>
+<fpage>140</fpage>
+<lpage>145</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mou</surname>
+<given-names>Huihui</given-names>
+</name>
+<name>
+<surname>Raj</surname>
+<given-names>V Stalin</given-names>
+</name>
+<name>
+<surname>Van Kuppeveld</surname>
+<given-names>Frank JM</given-names>
+</name>
+<name>
+<surname>Rottier</surname>
+<given-names>Peter JM</given-names>
+</name>
+<name>
+<surname>Haagmans</surname>
+<given-names>Bart L</given-names>
+</name>
+<name>
+<surname>Bosch</surname>
+<given-names>Berend Jan</given-names>
+</name>
+</person-group>
+<article-title>The receptor binding domain of the new middle east respiratory syndrome coronavirus maps to a 231-residue region in the spike protein that efficiently elicits neutralizing antibodies</article-title>
+<source>Journal of virology</source>
+<year>2013</year>
+<volume>87</volume>
+<issue>16</issue>
+<fpage>9379</fpage>
+<lpage>9383</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kandeil</surname>
+<given-names>Ahmed</given-names>
+</name>
+<name>
+<surname>Gomaa</surname>
+<given-names>Mokhtar</given-names>
+</name>
+<name>
+<surname>Shehata</surname>
+<given-names>Mahmoud</given-names>
+</name>
+<name>
+<surname>El-Taweel</surname>
+<given-names>Ahmed</given-names>
+</name>
+<name>
+<surname>Kayed</surname>
+<given-names>Ahmed E</given-names>
+</name>
+<name>
+<surname>Abiadh</surname>
+<given-names>Awatef</given-names>
+</name>
+<name>
+<surname>Jrijer</surname>
+<given-names>Jamel</given-names>
+</name>
+<name>
+<surname>Moatasim</surname>
+<given-names>Yassmin</given-names>
+</name>
+<name>
+<surname>Kutkat</surname>
+<given-names>Omnia</given-names>
+</name>
+<name>
+<surname>Bagato</surname>
+<given-names>Ola</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Middle east respiratory syndrome coronavirus infection in non-camelid domestic mammals</article-title>
+<source>Emerging microbes &amp; infections</source>
+<year>2019</year>
+<volume>8</volume>
+<issue>1</issue>
+<fpage>103</fpage>
+<lpage>108</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bailey-Elkin</surname>
+<given-names>Ben A</given-names>
+</name>
+<name>
+<surname>Knaap</surname>
+<given-names>Robert CM</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>Garrett G</given-names>
+</name>
+<name>
+<surname>Dalebout</surname>
+<given-names>Tim J</given-names>
+</name>
+<name>
+<surname>Ninaber</surname>
+<given-names>Dennis K</given-names>
+</name>
+<name>
+<surname>Van Kasteren</surname>
+<given-names>Puck B</given-names>
+</name>
+<name>
+<surname>Bredenbeek</surname>
+<given-names>Peter J</given-names>
+</name>
+<name>
+<surname>Snijder</surname>
+<given-names>Eric J</given-names>
+</name>
+<name>
+<surname>Marjolein</surname>
+<given-names>Kikkert</given-names>
+</name>
+<name>
+<surname>Mark</surname>
+<given-names>Brian L</given-names>
+</name>
+</person-group>
+<article-title>Crystal structure of the middle east respiratory syndrome coronavirus (merscov) papain-like protease bound to ubiquitin facilitates targeted disruption of deubiquitinating activity to demonstrate its role in innate immune suppression</article-title>
+<source>Journal of Biological Chemistry</source>
+<year>2014</year>
+<volume>289</volume>
+<issue>50</issue>
+<fpage>34667</fpage>
+<lpage>34682</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lui</surname>
+<given-names>Pak-Yin</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>Lok-Yin Roy</given-names>
+</name>
+<name>
+<surname>Fung</surname>
+<given-names>Cheuk-Lai</given-names>
+</name>
+<name>
+<surname>Siu</surname>
+<given-names>Kam-Leung</given-names>
+</name>
+<name>
+<surname>Yeung</surname>
+<given-names>Man-Lung</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>Kit-San</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>Chi-Ping</given-names>
+</name>
+<name>
+<surname>Woo</surname>
+<given-names>Patrick Chiu-Yat</given-names>
+</name>
+<name>
+<surname>Yuen</surname>
+<given-names>Kwok-Yung</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>Dong-Yan</given-names>
+</name>
+</person-group>
+<article-title>Middle east respiratory syndrome coronavirus m protein suppresses type i interferon expression through the inhibition of tbk1-dependent phosphorylation of irf3</article-title>
+<source>Emerging microbes &amp; infections</source>
+<year>2016</year>
+<volume>5</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Haibo</given-names>
+</name>
+<name>
+<surname>Penninger</surname>
+<given-names>Josef M</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Yimin</given-names>
+</name>
+<name>
+<surname>Zhong</surname>
+<given-names>Nanshan</given-names>
+</name>
+<name>
+<surname>Slutsky</surname>
+<given-names>Arthur S</given-names>
+</name>
+</person-group>
+<article-title>Angiotensin-converting enzyme 2 (ace2) as a sars-cov-2 receptor: molecular mechanisms and potential therapeutic target</article-title>
+<source>Intensive care medicine</source>
+<year>2020</year>
+<volume>46</volume>
+<issue>4</issue>
+<fpage>586</fpage>
+<lpage>590</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shang</surname>
+<given-names>Jian</given-names>
+</name>
+<name>
+<surname>Ye</surname>
+<given-names>Gang</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Ke</given-names>
+</name>
+<name>
+<surname>Wan</surname>
+<given-names>Yushun</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>Chuming</given-names>
+</name>
+<name>
+<surname>Aihara</surname>
+<given-names>Hideki</given-names>
+</name>
+<name>
+<surname>Geng</surname>
+<given-names>Qibin</given-names>
+</name>
+<name>
+<surname>Auerbach</surname>
+<given-names>Ashley</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>Li</given-names>
+</name>
+</person-group>
+<article-title>Structural basis of receptor recognition by sars-cov-2</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<issue>7807</issue>
+<fpage>221</fpage>
+<lpage>224</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>David E</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>Gwendolyn M</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>Mehdi</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Jiewei</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>Kirsten</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>Kris M</given-names>
+</name>
+<name>
+<surname>O'Meara</surname>
+<given-names>Matthew J</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>Veronica V</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Jeffrey Z</given-names>
+</name>
+<name>
+<surname>Swaney</surname>
+<given-names>Danielle L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A sars-cov2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>13</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Messina</surname>
+<given-names>Francesco</given-names>
+</name>
+<name>
+<surname>Giombini</surname>
+<given-names>Emanuela</given-names>
+</name>
+<name>
+<surname>Agrati</surname>
+<given-names>Chiara</given-names>
+</name>
+<name>
+<surname>Vairo</surname>
+<given-names>Francesco</given-names>
+</name>
+<name>
+<surname>Ascoli Bartoli</surname>
+<given-names>Tommaso</given-names>
+</name>
+<name>
+<surname>Al Moghazi</surname>
+<given-names>Samir</given-names>
+</name>
+<name>
+<surname>Piacentini</surname>
+<given-names>Mauro</given-names>
+</name>
+<name>
+<surname>Locatelli</surname>
+<given-names>Franco</given-names>
+</name>
+<name>
+<surname>Kobinger</surname>
+<given-names>Gary</given-names>
+</name>
+<name>
+<surname>Maeurer</surname>
+<given-names>Markus</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Covid-19: viral-host interactome analyzed by network based-approach model to study pathogenesis of sars-cov-2 infection</article-title>
+<source>Journal of Translational Medicine</source>
+<year>2020</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cockrell</surname>
+<given-names>Adam S</given-names>
+</name>
+<name>
+<surname>Yount</surname>
+<given-names>Boyd L</given-names>
+</name>
+<name>
+<surname>Scobey</surname>
+<given-names>Trevor</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>Kara</given-names>
+</name>
+<name>
+<surname>Douglas</surname>
+<given-names>Madeline</given-names>
+</name>
+<name>
+<surname>Beall</surname>
+<given-names>Anne</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>Xian-Chun</given-names>
+</name>
+<name>
+<surname>Marasco</surname>
+<given-names>Wayne A</given-names>
+</name>
+<name>
+<surname>Heise</surname>
+<given-names>Mark T</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph S</given-names>
+</name>
+</person-group>
+<article-title>A mouse model for mers coronavirus-induced acute respiratory distress syndrome</article-title>
+<source>Nature microbiology</source>
+<year>2016</year>
+<volume>2</volume>
+<issue>2</issue>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gorse</surname>
+<given-names>Geoffrey J</given-names>
+</name>
+<name>
+<surname>O'Connor</surname>
+<given-names>Theresa Z</given-names>
+</name>
+<name>
+<surname>Hall</surname>
+<given-names>Susan L</given-names>
+</name>
+<name>
+<surname>Vitale</surname>
+<given-names>Joseph N</given-names>
+</name>
+<name>
+<surname>Nichol</surname>
+<given-names>Kristin L</given-names>
+</name>
+</person-group>
+<article-title>Human coronavirus and acute respiratory illness in older adults with chronic obstructive pulmonary disease</article-title>
+<source>The Journal of infectious diseases</source>
+<year>2009</year>
+<volume>199</volume>
+<issue>6</issue>
+<fpage>847</fpage>
+<lpage>857</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lim</surname>
+<given-names>Yvonne Xinyi</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>Yan Ling</given-names>
+</name>
+<name>
+<surname>Tam</surname>
+<given-names>James P</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Ding Xiang</given-names>
+</name>
+</person-group>
+<article-title>Human coronaviruses: a review of virus-host interactions</article-title>
+<source>Diseases</source>
+<year>2016</year>
+<volume>4</volume>
+<issue>3</issue>
+<fpage>26</fpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhai</surname>
+<given-names>Xiaofeng</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Jiumeng</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Ziqing</given-names>
+</name>
+<name>
+<surname>Jie</surname>
+<given-names>Zhang</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>Zhao</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Zongzheng</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>Qi</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>Wan-Ting</given-names>
+</name>
+<name>
+<surname>Veit</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Su</surname>
+<given-names>Shuo</given-names>
+</name>
+</person-group>
+<article-title>Comparison of severe acute respiratory syndrome coronavirus 2 spike protein binding to ace2 receptors from human, pets, farm animals, and putative intermediate hosts</article-title>
+<source>Journal of virology</source>
+<year>2020</year>
+<volume>94</volume>
+<issue>15</issue>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schulz</surname>
+<given-names>Katharina S</given-names>
+</name>
+<name>
+<surname>Mossman</surname>
+<given-names>Karen L</given-names>
+</name>
+</person-group>
+<article-title>Viral evasion strategies in type i ifn signaling-a summary of recent developments</article-title>
+<source>Frontiers in immunology</source>
+<year>2016</year>
+<volume>7</volume>
+<fpage>498</fpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>Matthew</given-names>
+</name>
+<name>
+<surname>Ratia</surname>
+<given-names>Kiira</given-names>
+</name>
+<name>
+<surname>Johnston</surname>
+<given-names>Robert E</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>Andrew D</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph S</given-names>
+</name>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus papain-like protease ubiquitin-like domain and catalytic domain regulate antagonism of irf3 and nf-<italic>κ</italic>b signaling</article-title>
+<source>Journal of virology</source>
+<year>2009</year>
+<volume>83</volume>
+<issue>13</issue>
+<fpage>6689</fpage>
+<lpage>6705</lpage>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mielech</surname>
+<given-names>Anna M</given-names>
+</name>
+<name>
+<surname>Kilianski</surname>
+<given-names>Andy</given-names>
+</name>
+<name>
+<surname>Baez-Santos</surname>
+<given-names>Yahira M</given-names>
+</name>
+<name>
+<surname>Mesecar</surname>
+<given-names>Andrew D</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>Susan C</given-names>
+</name>
+</person-group>
+<article-title>Mers-cov papain-like protease has deisgylating and deubiquitinating activities</article-title>
+<source>Virology</source>
+<year>2014</year>
+<issue>450</issue>
+<fpage>64</fpage>
+<lpage>70</lpage>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yuen</surname>
+<given-names>Chun-Kit</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>Joy-Yan</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>Wan-Man</given-names>
+</name>
+<name>
+<surname>Mak</surname>
+<given-names>Long-Fung</given-names>
+</name>
+<name>
+<surname>Xiaohui</surname>
+<given-names>Wang</given-names>
+</name>
+<name>
+<surname>Hin</surname>
+<given-names>Chu</given-names>
+</name>
+<name>
+<surname>Cai</surname>
+<given-names>Jian-Piao</given-names>
+</name>
+<name>
+<surname>Jin</surname>
+<given-names>Dong-Yan</given-names>
+</name>
+<name>
+<surname>To</surname>
+<given-names>Kelvin Kai-Wang</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>Jasper Fuk-Woo</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Sars-cov-2 nsp13, nsp14, nsp15 and orf6 function as potent interferon antagonists</article-title>
+<source>Emerging Microbes &amp; Infections</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>29</lpage>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kopecky-Bromberg</surname>
+<given-names>Sarah A</given-names>
+</name>
+<name>
+<surname>Martínez-Sobrido</surname>
+<given-names>Luis</given-names>
+</name>
+<name>
+<surname>Frieman</surname>
+<given-names>Matthew</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph A</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>Peter</given-names>
+</name>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus open reading frame (orf) 3b, orf 6, and nucleocapsid proteins function as interferon antagonists</article-title>
+<source>Journal of virology</source>
+<year>2007</year>
+<volume>81</volume>
+<issue>2</issue>
+<fpage>548</fpage>
+<lpage>557</lpage>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>Matthew</given-names>
+</name>
+<name>
+<surname>Yount</surname>
+<given-names>Boyd</given-names>
+</name>
+<name>
+<surname>Heise</surname>
+<given-names>Mark</given-names>
+</name>
+<name>
+<surname>Kopecky-Bromberg</surname>
+<given-names>Sarah A</given-names>
+</name>
+<name>
+<surname>Palese</surname>
+<given-names>Peter</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>Ralph S</given-names>
+</name>
+</person-group>
+<article-title>Severe acute respiratory syndrome coronavirus orf6 antagonizes stat1 function by sequestering nuclear import factors on the rough endoplasmic reticulum/golgi membrane</article-title>
+<source>Journal of virology</source>
+<year>2007</year>
+<volume>81</volume>
+<issue>18</issue>
+<fpage>9812</fpage>
+<lpage>9824</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>Bin</given-names>
+</name>
+<name>
+<surname>Hur</surname>
+<given-names>Sun</given-names>
+</name>
+</person-group>
+<article-title>How rig-i like receptors activate mavs</article-title>
+<source>Current opinion in virology</source>
+<year>2015</year>
+<volume>12</volume>
+<fpage>91</fpage>
+<lpage>98</lpage>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lu</surname>
+<given-names>Roujian</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Xiang</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Juan</given-names>
+</name>
+<name>
+<surname>Niu</surname>
+<given-names>Peihua</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Bo</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Honglong</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Wenling</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Hao</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Baoying</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Na</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic characterisation and epidemiology of 2019 novel coronavirus: implications for virus origins and receptor binding</article-title>
+<source>The Lancet</source>
+<year>2020</year>
+<volume>395</volume>
+<issue>10224</issue>
+<fpage>565</fpage>
+<lpage>574</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Ahmed</surname>
+<given-names>Amr</given-names>
+</name>
+<name>
+<surname>Shervashidze</surname>
+<given-names>Nino</given-names>
+</name>
+<name>
+<surname>Narayanamurthy</surname>
+<given-names>Shravan</given-names>
+</name>
+<name>
+<surname>Josifovski</surname>
+<given-names>Vanja</given-names>
+</name>
+<name>
+<surname>Smola</surname>
+<given-names>Alexander J</given-names>
+</name>
+</person-group>
+<article-title>Distributed large-scale natural graph factorization</article-title>
+<conf-name>Proceedings of the 22nd international conference on World Wide Web</conf-name>
+<publisher-name>ACM</publisher-name>
+<year>2013</year>
+<fpage>37</fpage>
+<lpage>48</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Perozzi</surname>
+<given-names>Bryan</given-names>
+</name>
+<name>
+<surname>Al-Rfou</surname>
+<given-names>Rami</given-names>
+</name>
+<name>
+<surname>Skiena</surname>
+<given-names>Steven</given-names>
+</name>
+</person-group>
+<article-title>Deepwalk: Online learning of social representations</article-title>
+<conf-name>Proceedings of the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, KDD '14</conf-name>
+<publisher-loc>New York, NY, USA</publisher-loc>
+<publisher-name>ACM</publisher-name>
+<year>2014</year>
+<fpage>701</fpage>
+<lpage>710</lpage>
+<pub-id pub-id-type="doi">10.1145/2623330.2623732</pub-id>
+<comment>ISBN 978-1-4503-2956-9</comment>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>Jian</given-names>
+</name>
+<name>
+<surname>Qu</surname>
+<given-names>Meng</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Mingzhe</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Ming</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Jun</given-names>
+</name>
+<name>
+<surname>Mei</surname>
+<given-names>Qiaozhu</given-names>
+</name>
+</person-group>
+<article-title>Line: Large-scale information network embedding</article-title>
+<conf-name>WWW</conf-name>
+<publisher-name>ACM</publisher-name>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Grover</surname>
+<given-names>Aditya</given-names>
+</name>
+<name>
+<surname>Leskovec</surname>
+<given-names>Jure</given-names>
+</name>
+</person-group>
+<article-title>node2vec: Scalable feature learning for networks</article-title>
+<conf-name>Proceedings of the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining</conf-name>
+<year>2016</year>
+<fpage>855</fpage>
+<lpage>864</lpage>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Daixin</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>Peng</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Wenwu</given-names>
+</name>
+</person-group>
+<article-title>Structural deep network embedding</article-title>
+<conf-name>Proceedings of the 22Nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, KDD ’16</conf-name>
+<publisher-loc>New York, NY, USA</publisher-loc>
+<publisher-name>ACM</publisher-name>
+<year>2016</year>
+<fpage>1225</fpage>
+<lpage>1234</lpage>
+<pub-id pub-id-type="doi">10.1145/2939672.2939753</pub-id>
+<comment>ISBN 978-1-4503-4232-2</comment>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Hagberg</surname>
+<given-names>Aric A</given-names>
+</name>
+<name>
+<surname>Schult</surname>
+<given-names>Daniel A</given-names>
+</name>
+<name>
+<surname>Swart</surname>
+<given-names>Pieter J</given-names>
+</name>
+</person-group>
+<article-title>Exploring network structure, dynamics, and function using networkx</article-title>
+<person-group person-group-type="editor">
+<name>
+<surname>Varoquaux</surname>
+<given-names>Gaël</given-names>
+</name>
+<name>
+<surname>Vaught</surname>
+<given-names>Travis</given-names>
+</name>
+<name>
+<surname>Millman</surname>
+<given-names>Jarrod</given-names>
+</name>
+</person-group>
+<conf-name>Proceedings of the 7th Python in Science Conference</conf-name>
+<publisher-loc>Pasadena, CA USA</publisher-loc>
+<year>2008</year>
+<fpage>11</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mikolov</surname>
+<given-names>Tomas</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Kai</given-names>
+</name>
+<name>
+<surname>Corrado</surname>
+<given-names>Greg</given-names>
+</name>
+<name>
+<surname>Dean</surname>
+<given-names>Jeffrey</given-names>
+</name>
+</person-group>
+<article-title>Efficient estimation of word representations in vector space</article-title>
+<source>arXiv preprint arXiv:1301.3781</source>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Heidarian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dinneen</surname>
+<given-names>MJ</given-names>
+</name>
+</person-group>
+<article-title>A hybrid geometric approach for measuring similarity level among documents and document clustering</article-title>
+<conf-name>2016 IEEE Second International Conference on Big Data Computing Service and Applications (BigDataService)</conf-name>
+<publisher-loc>Los Alamitos, CA, USA</publisher-loc>
+<publisher-name>IEEE Computer Society</publisher-name>
+<year>2016</year>
+<month>apr</month>
+<fpage>142</fpage>
+<lpage>151</lpage>
+<pub-id pub-id-type="doi">10.1109/BigDataService.2016.14</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Buitinck</surname>
+<given-names>Lars</given-names>
+</name>
+<name>
+<surname>Louppe</surname>
+<given-names>Gilles</given-names>
+</name>
+<name>
+<surname>Blondel</surname>
+<given-names>Mathieu</given-names>
+</name>
+<name>
+<surname>Pedregosa</surname>
+<given-names>Fabian</given-names>
+</name>
+<name>
+<surname>Mueller</surname>
+<given-names>Andreas</given-names>
+</name>
+<name>
+<surname>Grisel</surname>
+<given-names>Olivier</given-names>
+</name>
+<name>
+<surname>Niculae</surname>
+<given-names>Vlad</given-names>
+</name>
+<name>
+<surname>Prettenhofer</surname>
+<given-names>Peter</given-names>
+</name>
+<name>
+<surname>Gramfort</surname>
+<given-names>Alexandre</given-names>
+</name>
+<name>
+<surname>Grobler</surname>
+<given-names>Jaques</given-names>
+</name>
+<name>
+<surname>Layton</surname>
+<given-names>Robert</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>API design for machine learning software: experiences from the scikit-learn project</article-title>
+<conf-name>ECML PKDD Workshop: Languages for Data Mining and Machine Learning</conf-name>
+<year>2013</year>
+<fpage>108</fpage>
+<lpage>122</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Fig. 1</label>
+<caption>
+<title>Infection Mechanism and Spectrum Prediction.</title>
+<p>
+<bold>(A)</bold> The virus-host interaction network. Nodes represent proteins, viruses, and hosts; interactions represent relationships (i.e., PPI, infect, similarity, belong). The color of a node indicates its organism. The thickness of a similarity relationship indicates its level of similarity. For the full network, refer to the viral entry graph (<xref ref-type=" supplementary-material" rid="SD2">Figure S3</xref>), interferon signaling pathway graph (<xref ref-type=" supplementary-material" rid="SD2">Figure S4</xref>), and infection graph (<xref ref-type=" supplementary-material" rid="SD2">Figure S5</xref>). <bold>(B)</bold> IMSP learns a representation for each potential interaction, which contains a structural embedding and a content embedding. The structural embedding captures the local structural features of an interaction. The content embedding captures the attributes that reveal biological aspects of an interaction. The representation of each interaction is derived by concatenating its structural and content embeddings, where S stands for a structural embedding element, and C stands for a content embedding element. A Multi-layer Perceptron (MLP) is trained to classify the relationship between two nodes into PPI, infection, or no interaction. See the <xref ref-type="sec" rid="S10">Methods</xref> section for calculating the structural and content embeddings. <bold>(C)</bold> Exemplar predicted interactions are highlighted and colored accordingly to their types. Existing interactions are dimmed.</p>
+</caption>
+<graphic xlink:href="EMS104088-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Fig. 2</label>
+<caption>
+<title>Interaction prediction for SARS-CoV-2.</title>
+<p>(A) shows the known and predicted bindings between the S-protein in SARS-CoV-2 and ACE2 in mammalian hosts. Host names are displayed in their abbreviation form: Hom.Sap. is Homo sapiens; Mus.Mus. is Mus musculus; Fel.Cat. is Felis catus; Can.Lup. is Canis lupus familiaris; Ovi.Ari. is Ovis aries; Rat.Nor. is Rattus norvegicus; Mac.Mul. is Macaca mulatta; Rhi.Fer. is Rhinolophus ferrumequinum; Mes.Aur. is Mesocricetus auratus; Bos.Tau. is Bos taurus; Ict.Tri. is Ictidomys tridecemlineatus; Equ.Cab. is Equus caballus; Pan.Tro. is Pan troglodytes. (B)-(D) show the known and predicted interactions of PLpro, nsp15, ORF6, and N protein in SARS-CoV-2 with proteins in the human IFN signaling pathway that contribute to the IFN signaling pathway suppression.</p>
+</caption>
+<graphic xlink:href="EMS104088-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Fig. 3</label>
+<caption>
+<title>Infection prediction for SARS-CoV-2.</title>
+<p>This figure shows SARS-CoV-2's known and predicted infected mammalian hosts. The predicted infected mammalian hosts without a predicted or proven corresponding receptor binding relationship with SARS-CoV-2's S-protein were excluded.</p>
+</caption>
+<graphic xlink:href="EMS104088-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Fig. 4</label>
+<caption>
+<title>Performance on PPI and Infection Predictions.</title>
+<p>This figure demonstrates IMSP's performance on PPI and infection predictions in comparison with five other models. The ocean-blue columns represent the performance of our IMSP model derived from the average of 30 independent runs. As a result, the IMSP model achieved 0.808 for the Infection F1-score and 0.910 for the PPI F1-score. Compared to other models, our model outperformed other models in all the evaluation metrics. Specifically, in terms of infection F1-score, our model outperformed the second-best model SDNE (<xref ref-type="bibr" rid="R44">44</xref>) by 14.9%. In terms of PPI F1-score. Our model also surpassed the second-best model Deepwalk (<xref ref-type="bibr" rid="R41">41</xref>) by 6.6%.</p>
+</caption>
+<graphic xlink:href="EMS104088-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Interaction Prediction Overall Performance Evaluation and Comparison.</title>
+<p>This table gives six evaluation metrics regarding interaction prediction. During performance measurement, we generated two independent sets, training and testing sets, from the network. We set the ratio between the training and the test set to be 8:2. We ensured that the composition of positive interactions in the training set was the same as the test set. To guarantee input balance, we gathered negative interactions (unconnected node pairs) to correspondingly match the number of positive interactions in both training and testing sets. Part of negative samples was extracted from known negative interactions (true negatives), which consisted of spike-receptor interactions that were demonstrated as not existed. The remaining part of negative samples was randomly selected from other unconnected node pairs which were assumed as not existed. To eliminate performance randomness, we executed the comparison algorithm by 30 runs and recorded each run's performance. We generated new training and test sets during each run and evaluated all models on the same test set. Then, we performed two-sample heteroscedastic T-tests for these six overall performance evaluation metrics to test the significance of IMSP's improvement. Lastly, we reported the average with standard deviation.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col span="2"/>
+</colgroup>
+<thead>
+<tr>
+<th align="center" valign="top">Model</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">Weighted Precision</th>
+<th align="center" valign="top">Weighted F1-score</th>
+<th align="center" valign="top">ROC Macro</th>
+<th align="center" valign="top">ROC Weighted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top" colspan="6"/>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">GF (<xref ref-type="bibr" rid="R40">40</xref>)</td>
+<td align="center" valign="top">0.885 ± 0.008</td>
+<td align="center" valign="top">0.864 ± 0.009</td>
+<td align="center" valign="top">0.872 ± 0.008</td>
+<td align="center" valign="top">0.913 ± 0.009</td>
+<td align="center" valign="top">0.934 ± 0.009</td>
+</tr>
+<tr>
+<td align="center" valign="top">Deepwalk (<xref ref-type="bibr" rid="R41">41</xref>)</td>
+<td align="center" valign="top">0.895 ± 0.006</td>
+<td align="center" valign="top">0.871 ± 0.006</td>
+<td align="center" valign="top">0.880 ± 0.005</td>
+<td align="center" valign="top">0.906 ± 0.011</td>
+<td align="center" valign="top">0.930 ± 0.009</td>
+</tr>
+<tr>
+<td align="center" valign="top">LINE (<xref ref-type="bibr" rid="R42">42</xref>)</td>
+<td align="center" valign="top">0.774 ± 0.011</td>
+<td align="center" valign="top">0.760 ± 0.012</td>
+<td align="center" valign="top">0.765 ± 0.012</td>
+<td align="center" valign="top">0.884 ± 0.012</td>
+<td align="center" valign="top">0.891 ± 0.010</td>
+</tr>
+<tr>
+<td align="center" valign="top">Node2vec (<xref ref-type="bibr" rid="R43">43</xref>)</td>
+<td align="center" valign="top">0.894 ± 0.006</td>
+<td align="center" valign="top">0.853 ± 0.009</td>
+<td align="center" valign="top">0.868 ± 0.007</td>
+<td align="center" valign="top">0.807 ± 0.010</td>
+<td align="center" valign="top">0.845 ± 0.010</td>
+</tr>
+<tr>
+<td align="center" valign="top">SDNE (<xref ref-type="bibr" rid="R44">44</xref>)</td>
+<td align="center" valign="top">0.823 ± 0.014</td>
+<td align="center" valign="top">0.811 ± 0.015</td>
+<td align="center" valign="top">0.815 ± 0.015</td>
+<td align="center" valign="top">0.937 ± 0.011</td>
+<td align="center" valign="top">0.947 ± 0.007</td>
+</tr>
+<tr>
+<td align="center" valign="top">IMSP</td>
+<td align="center" valign="top">
+<bold>0.949 ± 0.006</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.948 ± 0.006</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.944 ± 0.008</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.994 ± 0.002</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.993 ± 0.002</bold>
+</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top" colspan="6"/>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Notations.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col span="2"/>
+</colgroup>
+<thead>
+<tr>
+<th align="center" valign="top">Notion</th>
+<th align="center" valign="top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">
+<italic>V<sub>i</sub>
+</italic>
+</td>
+<td align="center" valign="top">Node <italic>i</italic> in the network</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>V</italic>
+</td>
+<td align="center" valign="top">The set of all Nodes</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>I<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">Edge (Interaction) between Node <italic>i</italic> and Node <italic>j</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>E</italic>
+</td>
+<td align="center" valign="top">The set of all Edges (Interactions) in the network</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M18">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula>
+</td>
+<td align="center" valign="top">Structure embedding vector for Node <italic>i</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M19">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula>
+</td>
+<td align="center" valign="top">Content embedding vector for Node <italic>i</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>CE<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">Content embedding vector for Interaction <italic>I<sub>i,j</sub>
+</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>IE<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">Full Interaction embedding vector for Interaction <italic>I<sub>i,j</sub>
+</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>W<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">Edge (Interaction) weight between Node <italic>i</italic> and Node <italic>j</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>D<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">Euclidean distance between Node <italic>i</italic> and Node <italic>j</italic>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<inline-formula>
+<mml:math id="M20">
+<mml:mi>M</mml:mi>
+<mml:mi>D</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</td>
+<td align="center" valign="top">Magnitude difference between Vector <inline-formula>
+<mml:math id="M21">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M22">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>TS-SS<sub>i,j</sub>
+</italic>
+</td>
+<td align="center" valign="top">TS-SS similarity between Vector <inline-formula>
+<mml:math id="M23">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M24">
+<mml:msubsup>
+<mml:mi>R</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mi>C</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,2085 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141156</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.15.472466</article-id>
+<article-id pub-id-type="archive">PPR433619</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Enrichment analysis on regulatory subspaces: a novel direction for the superior description of cellular responses to SARS-CoV-2</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Rodrigues</surname>
+<given-names>Pedro</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Costa</surname>
+<given-names>Rafael S.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">a</xref>
+<xref ref-type="aff" rid="A3">c</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Henriques</surname>
+<given-names>Rui</given-names>
+</name>
+<xref ref-type="aff" rid="A2">b</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>a</label>IDMEC, Instituto Superior Tecnico, Universidade de Lisboa, Lisbon, Portugal</aff>
+<aff id="A2">
+<label>b</label>INESC-ID and Instituto Superior Tecnico, Universidade de Lisboa, Lisbon, Portugal</aff>
+<aff id="A3">
+<label>c</label>LAQV-REQUIMTE, DQ, NOVA School of Science and Technology, Caparica, Portugal</aff>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>16</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<sec id="S1">
+<title>Statement</title>
+<p id="P1">The enrichment analysis of discriminative cell transcriptional responses to SARS-CoV-2 infection using biclustering produces a broader set of superiorly enriched GO terms and KEGG pathways against alternative state-of-the-art machine learning approaches, unraveling novel knowledge.</p>
+</sec>
+<sec id="S2">
+<title>Motivation and methods</title>
+<p id="P2">The comprehensive understanding of the impacts of the SARS-CoV-2 virus on infected cells is still incomplete. This work identifies and analyses the main cell regulatory processes affected and induced by SARS-CoV-2, using transcriptomic data from several infectable cell lines available in public databases and in vivo samples. We propose a new class of statistical models to handle three major challenges, namely the scarcity of observations, the high dimensionality of the data, and the complexity of the interactions between genes. Additionally, we analyse the function of these genes and their interactions within cells to compare them to ones affected by IAV (H1N1), RSV and HPIV3 in the target cell lines.</p>
+</sec>
+<sec id="S3">
+<title>Results</title>
+<p id="P3">Gathered results show that, although clustering and predictive algorithms aid classic functional enrichment analysis, recent pattern-based biclustering algorithms significantly improve the number and quality of the detected biological processes. Additionally, a comparative analysis of these processes is performed to identify potential pathophysiological characteristics of COVID-19. These are further compared to those identified by other authors for the same virus as well as related ones such as SARS-CoV-1. This approach is particularly relevant due to a lack of other works utilizing more complex machine learning tools within this context.</p>
+</sec>
+</abstract>
+<kwd-group>
+<kwd>COVID-19</kwd>
+<kwd>SARS-CoV-2</kwd>
+<kwd>discriminative regulatory patterns</kwd>
+<kwd>transcriptomics</kwd>
+<kwd>biclustering</kwd>
+<kwd>Machine Learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S4" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P4">The infection of humans by Severe Acute Respiratory Syndrome Corona Virus 2 (SARS-CoV-2) represents a major global health concern, with deaths having surpassed 5.3 million according to the World Health Organization<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup>. Worldwide initiatives to publicly share data related to the virus provides an opportunity to draw novel insights into the infectious disease, which has enabled continuous breakthroughs in the understanding of how the virus can enter and utilize the cellular machinery to replicate itself and infect other cells. The knowledge relating to these mechanisms has been pushed forward mainly by a generic understanding of the process of viral replication, the transcriptomic properties of the virus, and the study of differentially expressed genes after infection and subsequent comparison to ones affected by other viral strains. This later line of research is powered by the sequencing of RNA transcripts in infectable cell lines, chosen according to the level of permissivity to infection, as well as cells collected from organisms susceptible to infection, such as humans and ferrets [<xref ref-type="bibr" rid="R1">1</xref>].</p>
+<p id="P5">Despite the ongoing breakthroughs, the regulatory responses to SARS-CoV-2 infection are still not comprehensively known [<xref ref-type="bibr" rid="R2">2</xref>]. For instance, the role played by genes with moderate differential expression, or how interactions between multiple genes support or prevent viral replication, are still being actively updated [<xref ref-type="bibr" rid="R3">3</xref>]. In addition, most works in this field do not explore the role of machine learning approaches, such as clustering, predictive modeling and biclustering, to aid in the identification of differentially expressed genes and related biological processes [<xref ref-type="bibr" rid="R4">4</xref>].</p>
+<p id="P6">This work aims to assess to which extent can clustering, predictive modeling and biclustering stances aid the identification of biological functions and pathways from transcriptomic data. In addition, a comprehensive analysis of the produced processes and pathways using these stances is undertaken to better understand the viral life-cycle and interactions with the cell, as well as the defence mechanisms employed by the cell against the virus.</p>
+<p id="P7">The role of different machine learning approaches to produce gene sets for enrichment analysis is experimentally compared, showing that biclustering stances significantly aids the knowledge acquisition process. In particular, the recent class of pattern-based biclustering approaches show distinctive ability to produce a comprehensive set of superiorly enriched biological annotations in well-established knowledge bases.</p>
+<p id="P8">The manuscript is organized as follows: <xref ref-type="sec" rid="S2">section 2</xref> covers related contributions; <xref ref-type="sec" rid="S3">section 3</xref> explores the datasets; <xref ref-type="sec" rid="S4">section 4</xref> presents the proposed methodology; <xref ref-type="sec" rid="S5">section 5</xref> experimentally compares the role of state-of-the-art machine learning stances to aid enrichment analysis, together with the description of the identified biological processes. Finally, major concluding remarks are drawn.</p>
+</sec>
+<sec id="S5">
+<label>2</label>
+<title>Related Work</title>
+<p id="P9">Blanco-Melo et al. [<xref ref-type="bibr" rid="R1">1</xref>] profiled the transcriptional response of cells to infection by SARS-CoV-2 and other respiratory viruses, including RSV, IAV and HPIV3 from data collected by the authors and MERS-CoV and SARS-CoV-1 from data collected in [<xref ref-type="bibr" rid="R5">5</xref>]. The cells analysed consisted in three main groups: respiratory cell lines, including NHBE, A549 and Calu-3 cells; human respiratory tract cells extracted from infected and non-infected individuals; and cells extracted from infected and non-infected ferrets. The second and third groups were used to ascertain if the gene signatures matched the ones found <italic>in vitro.</italic> Additionally, the authors treated cells with universal IFN<italic>β</italic> to determine whether or not SARS-CoV-2 is sensitive to IFN-I. The treatment resulted in highly decreased viral replication, confirming the hypothesized sensitivity. To investigate how infection affects the cell transcriptome, the authors performed a differential expression analysis on NHBE cells, which revealed significant differences between the response to infection by SARS-CoV-2 and other viral strains. Functional enrichment was further performed on the differentially expressed genes to better understand the cellular functions affected by SARS-CoV-2 infection. The main factors consistent throughout the various models tested was the production of cytokines and the corresponding transcriptional response, as well as the induction of a subset of interferon stimulated genes (ISGs).</p>
+<p id="P10">Ochsner and co-workers [<xref ref-type="bibr" rid="R6">6</xref>] analyzed multiple datasets to better identify the transcriptional response of human cells to SARS-CoV-2 infection as well as comparing it with MERS-CoV, SARS-CoV-1 and IAV in order to identify possible common impacts between viral strains. The authors generated consensomes by analysing how frequently the corresponding genes were differentially expressed throughout the various datasets. Similarly to Blanco-Melo et al., the authors found ISGs to have significant induction levels.</p>
+<p id="P11">Wyler et al. [<xref ref-type="bibr" rid="R7">7</xref>] performed a comprehensive analysis of the transcriptional response of three cell lines, Caco-2 (a gut cell line), Calu-3 and H1299 (both lung cell lines). The authors began by identifying the susceptibility of each cell line to SARS-CoV-2 infection, which revealed H1299 cells had the lowest percentage of viral reads. Caco-2 and Calu-3 cells had comparable levels, despite the latter revealed visible signs of impaired growth and cellular death, as opposed to the former. Additionally, Calu-3 cells showed a strong induction of interferon-stimulated genes, with cytokines among these, in agreement with the findings of others.</p>
+<p id="P12">In [<xref ref-type="bibr" rid="R8">8</xref>], the authors performed a genome-wide CRISPR screen on an African green monkey cell line (Vero-E6), a method used for identifying genes or genetic sequences with a target physiological effect, in this case aiding (pro-viral) or preventing (anti-viral) infection. To this end, surviving cells from populations infected with SARS-CoV-2 were harvested 7 days post-infection. A genome-wide screen was performed and a z-score applied to identify genes associated with increased or decreased resistance to SARS-CoV-2-induced cell death. The gene with the strongest pro-viral effect was ACE2, the protein facilitating viral entry into the cell. TMPRSS2, another gene posited to play a role in the entry of SARS-CoV-2 into the cell, was not identified significantly as pro or anti-viral, whereas the CTSL gene, which encodes the Cathepsin L protease and can also play a role in viral entry, was identified as pro-viral.</p>
+<p id="P13">Due to thrombotic complications being common among COVID-19 patients, Manne et al. [<xref ref-type="bibr" rid="R9">9</xref>] investigated the functional and transcriptional changes elicited by SARS-CoV-2 infection in platelets. The data showed that SARS-CoV-2 infection does indeed alter the platelet transcriptome. To detect these changes, when comparing two groups with normal distributions, a paired t-test was used and when comparing two groups with non-normal distributions a Mann-Whitney test was used, considering a two-tailed <italic>p</italic>-value &lt; 0.05 as statistically significant. COVID-19 further induces functional and pathological changes to platelets, including thrombocytopenia (abnormally low numbers of platelets), despite the platelets not presenting detectable levels of ACE2. This may be a contributing factor to the pathophysiology of COVID-19.</p>
+<p id="P14">In [<xref ref-type="bibr" rid="R10">10</xref>], the authors tested the pathogenesis of the SARS-CoV-2 virus on transgenic mice presenting the human ACE2 gene. The infection of these mice by SARS-CoV-2 resulted in high mortality rates, especially in male mice. The transcriptional analysis of the lungs of infected animals revealed increases in transcripts involved in lung injury and inflammatory cytokines, in agreement with findings in humans.</p>
+<p id="P15">Though there are multiple authors applying machine learning and more complex statistical models to COVID-19 patient biometric data, in order to analyse the characteristics and the outcome of the disease, these approaches have been more scarcely applied to transcriptomic data. The objective of this work is to fill this gap, addressing the question of whether the application of these approaches to this data can assist function enrichment analysis, yielding novel insights into the disease.</p>
+</sec>
+<sec id="S6">
+<label>3</label>
+<title>Dataset</title>
+<p id="P16">In order to assess the proposed approach, we used the transcriptomic data (RNA-Seq) taken from the literatura (Gene Expression Omnibus, GEO accession GSE147507 <sup>2</sup>) [<xref ref-type="bibr" rid="R1">1</xref>]. A schematic of the structure of the publicly available dataset is presented in <xref ref-type="fig" rid="F1">Figure 1</xref>. The samples are divided into different <italic>series</italic> (a subset of samples), each comprising the behavior of a single cell line among different sets of experimental conditions. These also correspond to particular experiments being run, with each experiment containing multiple replicas of each experimental condition being tested. As such, the assumed independence between replicas is an important factor to test, since being able to use samples from multiple experiments simultaneously could significantly increase the amount of data available, and thus improve the reliability of the analysis.</p>
+<p id="P17">For NHBE (normal human bronchial epithelial) cells, there are a total of 9 samples of healthy cells (3 belonging to series 1 and 4 to <italic>series</italic> 9), 3 samples of SARS-CoV-2 infection (all part of <italic>series</italic> 1), 4 samples of IAV infection (all in <italic>series</italic> 9), 4 samples of infection by an IAV strain which lacks the NS1 protein and, finally, 2 samples of cells treated with IFNβ 4, 6 and 12 hours post treatment. For A549 (adenocarcinomic human alveolar basal epithelial) cells, there are 13 samples of healthy cells (3 each of <italic>series</italic> 2, 5 and 8, 2 each of <italic>series</italic> 3 and 4), 6 samples of SARS-CoV-2 infection (3 each of <italic>series</italic> 2 and 5), 2 samples of IAV infection (<italic>series</italic> 4), 2 samples of RSV infection <italic>(series</italic> 3) and 3 samples of HPIV3 infection <italic>(series</italic> 8). Blanco-Melo et al. [<xref ref-type="bibr" rid="R1">1</xref>] noted A549 cells had low viral counts, which was posited, in agreement with others, to be due to the low expression of ACE2 in these cells. Thus, data of A549 cells with added ACE2 (A549-ACE2) was also made available. In particular, 6 samples of healthy cells (3 each of <italic>series</italic> 6 and 16), 6 samples of cells infected by SARS-CoV-2 (3 each of <italic>series</italic> 6 and 16) and, finally, 3 samples of cells after treatment with Ruxolitinib (<italic>series</italic> 16). For Calu3 cells (generated from a bronchial adenocarcinoma), there are 3 samples of healthy cells and 3 samples of cells infected by SARS-CoV-2 (all belonging to <italic>series</italic> 7). There are an additional 2 samples from a lung biopsy of two healthy human donors (one male, one female), as well as 2 samples from a single deceased male patient of COVID-19.</p>
+<p id="P18">Since the original data is highly skewed, the datasets were adjusted by a log2-transform for all subsequent analysis. <xref ref-type="fig" rid="F2">Figure 2</xref> depicts the distribution of expression levels among <italic>in-vitro</italic> cell lines and lung biopsy was then undertaken. The standard deviation of gene expression within healthy and infected cells was subsquently computed to preliminarily verify if there are significant differences between healthy and infected cells (<xref ref-type="fig" rid="F3">Figure 3</xref>).</p>
+<p id="P19">In order to select an appropriate statistical test for the initial feature selection, a number of assumptions needs to be assessed. Firstly, we perform a median based Levene’s test [<xref ref-type="bibr" rid="R11">11</xref>], which is used, in the context of this work, to assess the equality of variances each pair of conditions (in particular for the pairs presented in <xref ref-type="table" rid="T1">Table 1</xref>). For these pairs, out of 19967 genes with non-null expression levels, 18990 had unequal variance for at least one pair of conditions, with <italic>p</italic> &lt; 0.01. Additionally, a Shapiro-Wilk test [<xref ref-type="bibr" rid="R12">12</xref>] is used to assess whether these genes follow a normal distribution, applied in this case only to healthy and SARS-CoV-2 infected cells for each cell type (since these will be the main focus of our analysis and this test is only defined for at least 3 samples), with <italic>p</italic> &lt; 0.05. It is important to note that overall 32.8%, 46.1% and 27.4% of genes for NHBE, A549 and Calu3 cells respectively are non-normal.</p>
+<p id="P20">The results of Levene’s test suggest that an assumption of equal variance cannot be made. As such, either an unequal variance (Welch) t-test or it’s non-parametric alternative, the Mann-Whitney U test [<xref ref-type="bibr" rid="R13">13</xref>], are more suitable for variable selection. With the results for non-normality still including a significant percentage of genes, Mann-Whitney U test is used.</p>
+</sec>
+<sec id="S7" sec-type="methods">
+<label>4</label>
+<title>Methods</title>
+<p id="P21">The present work aims to find relevant biological processes involved in the infection of cells by SARS-CoV-2 using discriminative transcriptional modules produced from the application of state-of-the-art machine learning. To this end, we propose a methodology for the selection and discovery of correlated groups of differentially expressed genes (DEG) composed of five major steps. First, preprocessing techniques and preliminary gene selection are undertaken. Then, we proceed to pattern detection techniques, namely clustering, predictive modeling and biclustering. For each of these techniques, we apply functional enrichment to the obtained groups of genes in order to identify related biological functions. Finally, we analyse and interpret the identified functions, relating them to known characteristics of the disease as well as work by other authors. These steps are summarized in <xref ref-type="fig" rid="F4">Figure 4</xref>.</p>
+<sec id="S8">
+<label>4.1</label>
+<title>Preprocessing and Gene Selection</title>
+<p id="P22">Given the highly skewed distribution of the data (with a vast majority of genes having low expression level), we first apply a log2 transform. Then, from the high-dimensional set of over 20.000 genes, we select a subset of DEG to be analysed. Due to the non-normal nature of data and unequal variance between control and test groups (as seen in <xref ref-type="sec" rid="S3">section 3</xref>), Mann-Whitney U test is applied with a <italic>p</italic> &lt; 0.05 and <italic>p</italic> &lt; 0.01. By default a <italic>p</italic> &lt; 0.01 is used, however for certain cell types <italic>p</italic> &lt; 0.05 is suggested to guarantee a better coverage of gene candidates to the subsequent learning stage. The Mann Whitney U test tests for the null hypothesis that the two populations tested are equal. Therefore, this test can only be applied for pairs of conditions. We define the following settings, in which this method is applied: <list list-type="bullet" id="L3">
+<list-item>
+<p id="P23">
+<italic>Paired setting</italic>: single pairs of conditions, e.g. healthy and SARS-CoV-2 infected NHBE cells or healthy and IAV infected A549 cells;</p>
+</list-item>
+<list-item>
+<p id="P24">
+<italic>Multi-condition setting</italic>: a set of pairs of conditions presented in <xref ref-type="table" rid="T1">Table 1</xref>. For each set of pairs, a Mann-Whitney U test is applied for each gene. Genes satisfying <italic>p</italic> &lt; 0.01 or <italic>p</italic> &lt; 0.05 are selected.</p>
+</list-item>
+</list>
+</p>
+<p id="P25">Additionally, ANOVA test [<xref ref-type="bibr" rid="R14">14</xref>] can be optionally applied to further ensure the discriminative power of the resulting differentially expressed genes. This is suggested if the subsequent learning step benefits from a space of reduced dimensionality by requiring to satisfy two distinct statistical criteria.</p>
+</sec>
+<sec id="S9">
+<label>4.2</label>
+<title>Pattern Detection</title>
+<p id="P26">The usage of complete data with a simple statistical pre-selection of genes yields results which, depending on the chosen level of statistical significance, can surpass 1.000 genes. Applying functional enrichment to these results delivers none or very few enriched processes, which, when present, tend to be very generic cell functions. In this context, the pursue of putative transcriptional modules given by smaller sets of DEG is attempted to obtain more specific biological processes, as well as better statistical significance for each one found. To achieve this goal, three major approaches are applied: <italic>clustering</italic>, <italic>predictive modeling</italic> and <italic>biclustering</italic>.</p>
+<sec id="S10">
+<label>4.2.1</label>
+<title>Clustering</title>
+<p id="P27">The notion of cluster in our data can assume two distinct forms. First, a subset of correlated genes along a given set of samples. Second, a subset of correlated samples along a given set of genes. The latter is mainly interesting to understand which samples may be more closely related, though since it does not subdivide genes it cannot identify which genes may be better at distinguishing between different conditions. The former is thus suggested to identify sets of co-expressed genes. Agglomerative clustering is considered in this work with Euclidean affinity and Ward linkage. This is due to two main reasons: the easy visualization of the proximity between genes using a dendrogram, which can also help in the selection of the number of clusters; and the flexibility of the algorithm, which allows for multiple parameters to be adjusted according to the provided data. Despite the relevance of clustering for enrichment analysis [<xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R16">16</xref>], it has considerable limitations. Namely, each gene set assesses expression similarly along all samples, which means, if multiple conditions are used simultaneously, this information will not be taken into account and will bias the detected patterns. However, by selecting different sets of conditions for each run of the algorithms, we can obtain relevant patterns for each specific condition and, though this doesn’t allow for a direct comparison between different conditions, it can provide sets of correlated genes which may have biological relevance.</p>
+</sec>
+<sec id="S11">
+<label>4.2.2</label>
+<title>Machine learning models for classification</title>
+<p id="P28">Classifiers generally use training data to produce predictive models, which are then used on test data to classify samples. In our work, since we seek to better understand potential signaling pathways and gene ontologies involved in the infection by SARS-CoV-2, we mainly focus on which genes are chosen to classify each of the samples, by inspecting the learned model. For this reason, we used associative classifiers given their easier explainability, namely decision trees [<xref ref-type="bibr" rid="R17">17</xref>], random forests [<xref ref-type="bibr" rid="R18">18</xref>] and XGBoost [<xref ref-type="bibr" rid="R19">19</xref>] in Python. While not directly interpretable, both random forests and XGBoost provide a metric of the relevance of each gene, which can be used to obtain the set of genes with the highest difference in expression level. In both cases, this metric corresponds to the impurity-based feature importances, which are calculated using the Gini criterion and then averaged across all trees within the model.</p>
+</sec>
+<sec id="S12">
+<label>4.2.3</label>
+<title>Biclustering</title>
+<p id="P29">Given a set of observations (conditions), <italic>X</italic>={<italic>x</italic>
+<sub>1</sub>,.., <italic>x<sub>n</sub>
+</italic>}, genes <italic>G</italic>={<italic>g</italic>
+<sub>1</sub>,.., <italic>g<sub>m</sub>
+</italic>}, a bicluster, <italic>B</italic>=(<italic>I</italic>, <italic>J</italic>), is a subspace defined by a subset genes, <italic>J</italic> ⊆ <italic>G</italic>, co-expressed on a subset of conditions, <italic>I</italic> ⊆ <italic>X</italic>. The <italic>biclustering</italic> task aims at identifying a set of biclusters, B, such that each bicluster, <italic>B<sub>k</sub>
+</italic>= (<italic>I<sub>k</sub>
+</italic>, <italic>J<sub>k</sub>
+</italic>), satisfies specific criteria of <italic>homogeneity, dissimilarity</italic> and <italic>statistical significance.</italic>
+</p>
+<p id="P30">
+<italic>Homogeneity</italic> criteria are commonly guaranteed through the use of a merit function, such as the variance of the values in a bicluster [<xref ref-type="bibr" rid="R20">20</xref>]. Merit functions are typically applied to guide the formation of biclusters in greedy and exhaustive searches. In stochastic approaches, a set of parameters that describe the biclustering solution are learned by optimizing a merit (likelihood) function. The pursued homogeneity determines the coherence (co-expression patterning), quality (noise tolerance) and structure (number, size and positioning) of the subspaces in the biclustering solution [<xref ref-type="bibr" rid="R21">21</xref>]. A putative regulatory module is in this context given by a subspace of co-expressed genes, i.e. expression pattern on observations (<xref ref-type="fig" rid="F5">Fig.5</xref>). A co-expressed subspace, <italic>B</italic>=(<italic>I</italic>, <italic>J</italic>), can be described by an <italic>order-preserving coherence</italic> when the ordering of a subset of genes according to their expression values, <italic>π<sub>J</sub>
+</italic>, is preserved for each sample in I. In alternative, co-expression can be defined by <italic>constant coherence</italic> where expression values in a bicluster, <italic>a<sub>ij</sub>
+</italic> ∈ <italic>B</italic>, are described by <italic>a<sub>ij</sub>
+</italic> = <italic>c<sub>j</sub>
+</italic>+<italic>η<sub>ij</sub>
+</italic>, where <italic>c<sub>j</sub>
+</italic> is the expected value of gene <italic>g<sub>j</sub>
+</italic> and <italic>η<sub>ij</sub>
+</italic> is the noise factor, generally a bounded deviation from expectations, <italic>η<sub>ij</sub>
+</italic> ∈ [–<italic>δ</italic>/2, <italic>δ</italic>/2].</p>
+<p id="P31">In addition to homogeneity criteria, <italic>dissimilarity</italic> criteria can be further placed to guarantee the discovery of non-redundant biclusters [<xref ref-type="bibr" rid="R22">22</xref>]. Finally, <italic>statistical significance</italic> criteria guarantee that the probability of a bicluster’s occurrence (against a null data model) deviates from expectations [<xref ref-type="bibr" rid="R23">23</xref>].</p>
+<p id="P32">With biclustering algorithms, we can detect gene sets co-expressed on particular subsets of conditions, allowing for a more comprehensive modular view of regulatory responses to infection by SARS-CoV-2 and other viruses. In particular, when compared to the other proposed methods, biclustering allows for the detection of more specific patterns, such as a set of genes with higher or lower expression levels for a particular set of conditions, which are in turn easier to interpret and provide better results with functional enrichment.</p>
+<p id="P33">To this end, we tested several algorithms to assess differences between the detected biclusters, namely the Cheng and Church [<xref ref-type="bibr" rid="R24">24</xref>], plaid [<xref ref-type="bibr" rid="R25">25</xref>] and xMotifs [<xref ref-type="bibr" rid="R26">26</xref>] algorithms. In recent years, a clearer understanding of the synergies between biclustering and pattern mining paved the rise of a new class of biclustering algorithms, generally referred to as <italic>pattern-based biclustering</italic> [<xref ref-type="bibr" rid="R21">21</xref>]. Pattern-based biclustering algorithms are inherently prepared to efficiently find exhaustive solutions of biclusters and offer the unprecedented possibility to affect their structure, coherency and quality [<xref ref-type="bibr" rid="R27">27</xref>]. This behavior explains why this class of biclustering algorithms are receiving an increasing attention in recent years [<xref ref-type="bibr" rid="R21">21</xref>]. In this context, we additionally assess the role of Bic-PAMS (Biclustering based on PAttern Mining Software), which consistently combines state-of-the-art contributions on pattern-based biclustering [<xref ref-type="bibr" rid="R22">22</xref>].</p>
+</sec>
+</sec>
+<sec id="S13">
+<label>4.3</label>
+<title>Functional Enrichment and Biological Analysis</title>
+<p id="P34">To obtain potential biological processes associated with the gene groups found using the aforementioned methods, we used the EnrichR tool [<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R29">29</xref>]. To assess enrichment of terms in the target knowledge bases, we focus on three major criteria: p-value from Fisher’s exact test; the q-value, which adjusts the p-value to control the False Discovery Rate; and the z-score, which takes into account that Fisher’s exact method to calculate the p-value produces lower values for longer lists even if they are random. Furthermore, we also consider the combines the z-score and the <italic>p</italic>-value as follows: <italic>c</italic> = ln(<italic>p</italic>) × <italic>z</italic>. We prioritize both the adjusted p-value and the combined score to compare the results of the enrichment analysis.</p>
+<p id="P35">Additionally, EnrichR web tool provides access to multiple knowledge bases (<ext-link ext-link-type="uri" xlink:href="https://maayanlab.cloud/Enrichr/libraries">https://maayanlab.cloud/Enrichr/libraries</ext-link>). For our analysis, we prioritize Gene Ontology (GO) Biological Process knowledge base [<xref ref-type="bibr" rid="R30">30</xref>, <xref ref-type="bibr" rid="R31">31</xref>] (ver. 2021) as it comprehensively characterizes a large amount of genes (14937) against 6036 terms, including recently augmented biological processes on viral infection and immune responses. Additionally, we use the Kyoto Encyclopedia of Genes and Genomes (KEGG) [<xref ref-type="bibr" rid="R32">32</xref>] to analyse enriched pathways and diseases. The identified biological processes are then analysed and compared to known characteristics of the disease and other previous studies, in order to identify potential new insights into the effects of the virus and verify existing ones.</p>
+</sec>
+</sec>
+<sec id="S14" sec-type="results | discussion">
+<label>5</label>
+<title>Results and Discussion</title>
+<p id="P36">To address the challenges of classic functional enrichment analyzes, we considered three approaches for identifying DEGs associated with modular regulatory views as highlighted in <xref ref-type="sec" rid="S4">section 4</xref>: clustering, predictive modeling and biclustering. In the present section, we present the key findings resulting from the application of each of these methods to the dataset, as well as an analysis of the identified biological processes within the context of viral infection. In particular, we will begin with clustering, then classification, and finally biclustering.</p>
+<p id="P37">To assess the effectiveness of the methods, we begin by presenting, in <xref ref-type="table" rid="T2">Table 2</xref>, the result of performing functional enrichment on the baseline set of genes obtained directly through preprocessing (using the Multi-Condition Setting, <italic>p</italic> &lt; 0.01 in accordance with <xref ref-type="sec" rid="S4">section 4</xref>). As we can see in <xref ref-type="table" rid="T2">Table 2</xref>, there is a considerable number of processes with low p-value. However, the c-score is significantly lower when compared to the same genes after clustering (see <xref ref-type="table" rid="T2">Table 2</xref>). This is likely due to the higher number of genes being analysed together when compared to the proposed methods, since clustering and biclustering identify smaller subgroups of genes with correlated expression and predictive models select a smaller number of genes. Additionally, terms such as <italic>negative regulation of bone remodeling</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0046851">GO:0046851</ext-link>) and <italic>negative regulation of bone resorption</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0045779">GO:0045779</ext-link>), which seem to be more generic and less related to the viral infection appear in this analysis, but do not seem to reoccur within the terms found for clustering, classification or biclustering.</p>
+<sec id="S15">
+<label>5.1</label>
+<title>Clustering analysis</title>
+<p id="P38">Considering the application of clustering in the Multi-Condition Setting (<italic>p</italic> &lt; 0.01) in <xref ref-type="table" rid="T3">Table 3</xref>, a high percentage of the top identified processes are related to response to viral infection, as well as to immune responses. The annotation <italic>cytoplasmic pattern recognition receptor (PRR) signaling pathway in response to virus,</italic> <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039528">GO:0039528</ext-link> (directly related to the annotations <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140546">GO:0140546</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0051607">GO:0051607</ext-link>, also within the top 25 enriched processes) corresponds to a set of molecular signals associated with the detection (by binding of viral RNA molecules to certain cytoplasmic receptors) of a virus. In particular, the detection seems to be performed by the RIG-I PRR, responsible for the detection of RNA synthesized during the process of viral replication, since there are 3 child processes (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039529">GO:0039529</ext-link> with <italic>p</italic> = 2.91 ×10<sup>-3</sup> and <italic>c</italic> = 905.29; <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039535">GO:0039535</ext-link> with <italic>p</italic> = 7.67×10<sup>-4</sup> and <italic>c</italic> = 526.08; <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039526">GO:0039526</ext-link> with <italic>p</italic> = 5.26× 10<sup>-3</sup> and <italic>c</italic> = 513.51) associated with this receptor which are still statistically relevant. This receptor, along with others, has been identified as part of the inflammatory response to SARS-CoV-2 as well as other coronaviruses [<xref ref-type="bibr" rid="R33">33</xref>]. Additionally, the signaling cascade resulting from the detection of viral proteins is associated with the production of Type I interferons and pro-inflammatory cytokines [34], which can also be observed within the top enriched processes (for instance, terms <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link>, <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071357">GO:0071357</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060333">GO:0060333</ext-link>).</p>
+<p id="P39">In particular, the term <italic>type I interferon signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link>), which has several related terms also present within the top 25 processes (for instance, <italic>type I interferon signaling pathway,</italic> <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link> and <italic>cytokine-mediated signaling pathway,</italic> <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0019221">GO:0019221</ext-link>, both direct ancestors) are related to type I interferons. The association between these and the process of viral infection is further bolstered by the presence of terms <italic>response to interferon-beta</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0035456">GO:0035456</ext-link>) and <italic>response to interferon-alpha</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0035455">GO:0035455</ext-link>), which are both type I interferons.</p>
+<p id="P40">It is also interesting to note the presence of the term <italic>negative regulation of type I interferon-mediated signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060339">GO:0060339</ext-link>) as well as <italic>negative regulation of chemokine production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0032682">GO:0032682</ext-link>). Chemokines are involved in inflammation and the control of viral infections, and they and their receptors are sometimes mimicked by viruses in order to evade host antiviral immune responses [35]. The presence of these is noteworthy mainly due to directly opposing the other processes related to the activation of an immune response.</p>
+<p id="P41">Additionally, there are multiple processes directly related to cellular response to viruses, namely <italic>defense response to symbiont</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140546">GO:0140546</ext-link>), <italic>defense response to virus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0051607">GO:0051607</ext-link>), <italic>negative regulation of viral genome replication</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0045071">GO:0045071</ext-link>, also associated with <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0045069">GO:0045069</ext-link>), <italic>antiviral innate immune response</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140374">GO:0140374</ext-link>), <italic>negative regulation of viral process</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0048525">GO:0048525</ext-link>) and <italic>cellular response to virus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0098586">GO:0098586</ext-link>). These indicate that NHBE cells were able to identify that they had been infected by a virus and induce an immune response.</p>
+<p id="P42">For A549 cells, the genes composing all detected processes have higher expression levels for infected cells than for control. Similarly to NHBE cells, there seems to be a prevalence of type I interferon and cytokine related terms. Multiple processes, such as <italic>cellular response to type I interferon</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071357">GO:0071357</ext-link>), <italic>type I interferon signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link>), <italic>response to interferon-beta</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0035456">GO:0035456</ext-link>) are repeated, with most of the common processes having to do with interferon and general cytokine response as well as responses to viral infection.</p>
+<p id="P43">The terms <italic>STAT cascade</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0097696">GO:0097696</ext-link>), <italic>positive regulation of JAK-STAT cascade</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0046427">GO:0046427</ext-link>) and <italic>JAK-STAT cascade</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0007259">GO:0007259</ext-link>), are not present for NHBE cells. These are all related to the JAK-STAT signaling pathway, which is associated with a wide variety of cytokines. Not triggering signaling or not regulating it properly, can lead to inflammatory disease [36], among other issues.</p>
+<p id="P44">Interestingly, similarly to the NHBE cells the process <italic>negative regulation of type I interferon production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0032480">GO:0032480</ext-link>) seems to suggest a potential attempt to reduce immune response. However, the opposite term, <italic>positive regulation of type I interferon production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0032481">GO:0032481</ext-link>) is also within the top 25 (though with higher p-value and lower c-score). This may be due to both pathways being active simultaneously, although it may also reveal overlap in the genes that produce each process (2 out of 5 genes in common between the two processes).</p>
+<p id="P45">In <xref ref-type="table" rid="T4">Table 4</xref> we present the pathways identified when using the KEGG Pathway database (ver. 2021). The results, similarly to the GO database, include multiple virus related pathways. These are all composed by genes with higher expression values for infected cells than control. Within the top identified terms, there is a prevalence of virus related pathways. <italic>Coronavirus disease</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05171">map05171</ext-link>), the sixth term, is directly associated with SARS-CoV-2, which provides more confidence that the terms identified thus far are indeed related to the viral infection.</p>
+<p id="P46">Additionally, the term <italic>RIG-I-like receptor signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04622">map04622</ext-link>), which is related to the previously mentioned RIG-I receptor, helps solidify the idea of it being involved in the anti-viral immune response.</p>
+<p id="P47">The KEGG pathways <italic>Antigen processing and presentation</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04612">map04612</ext-link>), <italic>JAK-STAT signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04630">map04630</ext-link>), the principal signaling mechanism for a variety of cytokines, <italic>IL-17 signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04657">map04657</ext-link>), a subset of cytokines with various roles related to inflammatory responses and defence against external pathogens, and <italic>NF-kappa B signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04064">map04064</ext-link>), a signaling pathway which is activated by the aforementioned cytokines and is related to immune responses, all support the processes identified previously in the role played by inflammatory cytokines and related signaling pathways in the infection by SARS-CoV-2.</p>
+</sec>
+<sec id="S16">
+<label>5.2</label>
+<title>Predictive modeling analysis</title>
+<p id="P48">For predictive models, we considered the top relevant genes selected by the Random Forest and xGBoost algorithms. With XGBoost, 94 genes are identified. With the Random Forest, 356 genes are selected. These algorithms have 69 genes in common. There are multiple terms present in both models, mostly related to immune system activity. However, there are several processes uniquely identified by each of the algorithms. Processes identified only by XGBoost are particularly interesting, since most genes selected by XGBoost are also selected by the Random Forest and the extra genes selected by the Random Forest may mask relevant information.</p>
+<p id="P49">
+<italic>ISG15-protein conjugation</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0032020">GO:0032020</ext-link>), a term identified only within XGBoost selected genes, is related to the cellular protein modification process of ISG15. This protein has an important role in host antiviral response, with several different actions depending on the infecting virus. Most significantly among these actions is the inhibition of viral replication in addition to the modulation of the damage and repair as well as the immune responses [37].</p>
+<p id="P50">Also within the terms identified only by XGBoost, there are multiple related to chemotaxis, the movement of a cell or organism towards a higher or lower concentration of a given substance, and migration of various types of immune cells. In particular, macrophages [38, 39] (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0048246">GO:0048246</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:1905517">GO:1905517</ext-link>), natural killer cells [40] (GO:2000501)), eosinophils [41] (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0072677">GO:0072677</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0048245">GO:0048245</ext-link>), neutrophils [42] (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0030593">GO:0030593</ext-link> and <ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:1990266">GO:1990266</ext-link>), which are all types of white blood cells involved with the innate immune response to viral infection.</p>
+<p id="P51">Additionally, there are multiple terms in both cases associated with cytokine production and related signaling pathways, as well as response to different types of interferons. In addition to these, terms such as <italic>regulation of fever generation</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0031620">GO:0031620</ext-link>), <italic>negative regulation of viral process</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0048525">GO:0048525</ext-link>), <italic>inflammatory response</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0006954">GO:0006954</ext-link>) and <italic>negative regulation of viral genome replication</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0045071">GO:0045071</ext-link>) are also associated with immune response. Together with the previously mentioned signaling of white blood cells, these results show the significant, both innate and adaptive, immune responses by cells infected by this virus.</p>
+<p id="P52">Among the top processes in both tables is <italic>chronic inflammatory response</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002544">GO:0002544</ext-link>). Similarly to what was mentioned for the combined data, there are multiple terms related to the recruitment of certain types of white blood cells. In particular, <italic>positive regulation of monocyte chemotactic protein-1 production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071639">GO:0071639</ext-link>), the top term for the Random Forest, is associated to a protein which plays a key role in the migration of monocytes [43].</p>
+<p id="P53">It is also important to note that multiple terms associated with the apoptotic process are present, namely <italic>positive regulation of intrinsic apoptotic signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:2001244">GO:2001244</ext-link>), <italic>regulation of intrinsic apoptotic signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:2001242">GO:2001242</ext-link>) and <italic>positive regulation of apoptotic signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:2001235">GO:2001235</ext-link>). This process, responsible for causing the death of a cell when a certain internal or external stimulus is received, may indicate that the cell was able to detect that it was infected by SARS-CoV-2. This hypothesis is further supported by the presence of the term <italic>pattern recognition receptor signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002221">GO:0002221</ext-link>). These receptors, as previously explained for the related term present in <xref ref-type="table" rid="T3">Table 3</xref>, have been associated with the inflammatory response to SARS-CoV-2 [<xref ref-type="bibr" rid="R33">33</xref>].</p>
+<p id="P54">There are several terms related to the response to virus by the host. In particular, <italic>positive regulation of defense response to virus by host</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002230">GO:0002230</ext-link>), <italic>regulation of defense response to virus by host</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0050691">GO:0050691</ext-link>), <italic>defense response to symbiont</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140546">GO:0140546</ext-link>) and <italic>defense response to virus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0051607">GO:0051607</ext-link>), although these are only present within the Random Forest selected genes. It is also worth noting once again the abundance of interferon related processes, as well as some cytokine related terms. Among these, <italic>negative regulation of cytokine production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0001818">GO:0001818</ext-link>) and <italic>positive regulation of cytokine production</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0001819">GO:0001819</ext-link>), which are contradicting, may indicate an attempt to modulate the immune response by the cell or potentially a mechanism of the virus to defend itself from the immune response.</p>
+<p id="P55">The term <italic>RIG-I signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039529">GO:0039529</ext-link>) which is associated with the Pattern Recognition Receptor RIG-I, and the term <italic>cytoplasmic pattern recognition receptor signaling pathway in response to virus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039528">GO:0039528</ext-link>) were also identified in <xref ref-type="table" rid="T3">Table 3</xref> as well as for NHBE cells using the Random Forest algorithm. These receptors play crucial roles in the detection of viruses by cells and the resulting signaling cascade, which in turn leads to the production of Type I interferons and pro-inflammatory cytokines [34].</p>
+</sec>
+<sec id="S17">
+<label>5.3</label>
+<title>Biclustering analysis</title>
+<p id="P56">In order to allow for the detection of more complex patterns, we now present the results of applying several biclustering algorithms to our data. In particular, these algorithms, unlike clustering, can identify patterns which span only certain conditions. This means that by analyzing the resulting biclusters and functionally enriching them, we can obtain processes associated with any particular subset of conditions.</p>
+<p id="P57">We begin in <xref ref-type="table" rid="T5">Table 5</xref> by presenting several metrics for each algorithm and preprocessing option used. BicPAMS and Cheng and Church present the highest average number of biclusters, with the Plaid and xMotifs algorithms significantly less for most preprocessing conditions. It is also important to note that BicPAMS presents delineatedly higher enrichments, and selects a larger amount of genes for a much smaller amount of conditions. Comparatively, this behavior is particularly relevant since having too many conditions can lead to the identification of more generic genes and having too few genes can lead to the identification of less significant processes.</p>
+<p id="P58">Using these methods, we obtain a set of biclusters, each consisting of a subset of genes and a subset of conditions. By performing functional enrichment on these genes, a set of biological processes associated with those genes is then produced. In order to analyze these results and obtain a more generic view of how often certain processes occur for each condition, a count is performed for each process identified. This allows for the identification of the most commonly occurring processes, and thus provides a better view of which processes are most closely related with a certain condition, while also potentially reducing the amount of more generic biological processes. In addition to this, it provides a direct element of comparison between different cell types for the same condition, or between the same cell type and different viruses. In addition to the number of occurrences of each process, the best c-score and p-value are also provided, in order to compare the statistical relevance of different processes.</p>
+<p id="P59">We now proceed to a comparative analysis of the biological processes associated with SARS-CoV-2 for all cell types, using biclustering. In order to provide an ordering for the processes taking into account all cell types, each enriched term is first ranked by the number of occurrences it has related to a given condition. Then a fused rank is computed by multiplying the resulting ranks. The multiplication allows for a higher penalization of terms which contain a single very low rank but high ranks for other cell types.</p>
+<p id="P60">There are several identified processes which have been previously described with clustering and predictive models. In particular, there are multiple terms related to cytokine activity, for instance <italic>cytokine-mediated signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0019221">GO:0019221</ext-link>), which possesses a high number of occurrences for A549 (1.00), NHBE (0.75) and Calu3 (1.00) cells and a lower count for Biopsy cells (0.60). It is interesting to note a seeming tendency for the normalized number of occurrences for Biopsy cells to be lower for most processes, with more generic DNA related processes, such as <italic>DNA metabolic process</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0006259">GO:0006259</ext-link>), <italic>DNA repair</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0006281">GO:0006281</ext-link>) and <italic>cellular response to DNA damage stimulus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0006974">GO:0006974</ext-link>), possessing higher values. This may be due to biopsy results possibly containing multiple cell types as well as due to the very low number of samples of this type of cell (2 healthy and 2 infected).</p>
+<p id="P61">Other cytokine associated processes include <italic>cellular response to cytokine stimulus</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071345">GO:0071345</ext-link>), <italic>chemokine-mediated signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0070098">GO:0070098</ext-link>) followed also by <italic>cellular response to chemokine</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:1990869">GO:1990869</ext-link>). Chemokines in particular play an important role in multiple processes related with host immune response against viral infection, namely the attraction of leukocytes to the infected tissue. The presence of the terms <italic>neutrophil mediated immunity</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002446">GO:0002446</ext-link>), <italic>neutrophil activation involved in immune response</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002283">GO:0002283</ext-link>) and <italic>neutrophil degranulation</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0043312">GO:0043312</ext-link>), further supports this hypothesis. Neutrophils are leukocytes which are the first responders to sites of infection, and have also been identified as the main infiltrating cell population in IAV infection [42]. Despite containing somewhat lower counts than other processes, this set of enriched terms still possess p-values and c-scores well within the range of statistical significance.</p>
+<p id="P62">Another previously identified set of processes which is also present is interferon related terms. Interferons are a potent type of cytokines which are associated with antiviral response, with most viruses having developed adaptations to at least partially avoid this mechanism [44]. In particular, <italic>cellular response to interferon-gamma</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071346">GO:0071346</ext-link>) and <italic>interferon-gamma-mediated signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060333">GO:0060333</ext-link>).</p>
+<p id="P63">We now proceed to a comparative analysis of the processes associated with different viruses. There are many processes in common with the SARS-CoV-2 analysis, which is to be expected, since most identified processes are related to immune response.</p>
+<p id="P64">
+<italic>Cellular response to interferon-gamma</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071346">GO:0071346</ext-link>) has somewhat fewer occurrences when compared to the other viruses (0.66 vs 0.85 for RSV, 0.92 for HPIV3 and 0.86 for IAV). <italic>Cytokine-mediated signaling pathway</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0019221">GO:0019221</ext-link>) has a somewhat higher number of occurrences for SARS-CoV-2 and HPIV than others (1.00 and 1.00 vs 0.74 for RSV and 0.92 for IAV). <italic>Inflammatory response</italic> (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0006954">GO:0006954</ext-link>) is somewhat muted for SARS-CoV-2 when compared to the other viruses, for both A549 (0.45 vs 0.97 for RSV, 0.92 for HPIV3, 1.00 for IAV) and NHBE cells (0.75 vs 0.91 for IAV, 1.00 for IAVdNS1). These differences are consistent with those found by Blanco-Melo D. et al. [<xref ref-type="bibr" rid="R1">1</xref>], who found SARS-CoV-2 to induce a limited interferon response when compared with the other viruses but a strong production of cytokines and resulting processes. Overall, there seems to be a tendency for the other viruses to have comparatively higher counts, especially IAV.</p>
+<p id="P65">In <xref ref-type="table" rid="T6">Table 6</xref>, we can see a compilation of the number of GO Biological Processes detected for each of the applied methods. As we can see, biclustering provided, by a considerable margin, a highest amount of biological processes, followed by clustering. The predictive models generally provided worse results, with Random Forests providing somewhat better results amongst predictors for the Multi-Condition Setting as well as for NHBE cells. Overall, these results provide initial empirical evidence in favor of pattern-based algorithms to promote the coverage and statistical significance of functional enrichment analysis, offering a way of unraveling less-trivial yet relevant regulatory behavior in knowledge bases.</p>
+</sec>
+</sec>
+<sec id="S18" sec-type="conclusions">
+<label>6</label>
+<title>Conclusion</title>
+<p id="P66">This work assesses the impact of different regulatory modules views for gene set enrichment analysis from gene expression responses to SARS-CoV-2 infection, while also presenting an analysis of non-trivial biological processes associated with virus infection. A particular focus is placed on the relevance of pattern-centric views given the observed role of subspace clustering stances to improve the coverage and quality of enriched terms from knowledge bases.</p>
+<p id="P67">A novel methodology is proposed, combining different approaches, which when consolidated provide a more robust view of the putative processes associated with virus infection. In particular, the complete gene set is initially filtered using a Mann-Whitney U Test, which allows for the selection of genes with statistically relevant differences in expression between healthy and infected cells. Other authors perform feature enrichment directly on the set of genes obtained using simplistic statistical tests. However, this stance results in a smaller amount of biological processes detected, as well as a decrease in their quality (measured using Fisher’s Exact Test and the combined c-score). So a three-fold, pattern-centric approach – composed by clustering, associative predictive modeling and biclustering algorithms – is suggested to identify DEGs with correlated expression.</p>
+<p id="P68">Under this methodology, we were able to validate and identify potentially novel biological processes associated with SARS-CoV-2 infection. Among the various enriched terms, the high cytokine induction, Type I interferon related terms, as well as signaling pathways related to these were reoccurring in all analysis performed. In particular, SARS-CoV-2 was found to induce a limited interferon response when compared with the other viruses but a strong production of cytokines and associated processes (namely interferon induction and response to these stimuli). These findings were consistent as in the previous case study [<xref ref-type="bibr" rid="R1">1</xref>]. Additionally, we found in multiple analysis the involvement of Pattern Recognition Receptors (with particular emphasis on RIG-I) in the process of infection. This was not identified in previous studies, however it is consistent with other literature on coronaviruses, and further supports the hypothesis that a pattern-centric view of the gene enrichment process can result in novel information.</p>
+<p id="P69">As directions for future work, we aim at: i) extending the conducted experimental analysis towards other transcriptomic data sources, in particular SARS-CoV-2 related sources, to cross-validate, expand and improve the robustness of the provided findings; ii) assessing the validity of the methodological contributions over proteomic and metabolomic data; iii) addressing the issue of sample interdependence by testing the underlying relationships and designing pattern-centric approaches tailored to the presence of replicates; and iv) explicitly combining available background knowledge [45] to guide the enrichment analysis towards novel findings.</p>
+<p id="P70">Finally, we believe that this proposed computational pipeline will prove to be a useful workflow for generating hypotheses in other biological datasets.</p>
+</sec>
+</body>
+<back>
+<ack id="S19">
+<title>Funding</title>
+<p>This work is supported by Fundação para a Ciência e Tecnologia (FCT) under IPOscore (DSAIPA/DS/0042/2018), LAETA (UIDB/50022/2020), and ILU (DSAIPA/DS/0111/2018). This work was further supported by LAQV, financed by national funds from FCT/MCTES (UIDB/50006/2020 and UIDP/50006/2020) and INESC-ID plurianual (UIDB/50021/2020). The FCT distinction (CEECIND/01399/2017) to RSC under the CEEC Individual program is also acknowledged.</p>
+</ack>
+<sec id="S20" sec-type="data-availability">
+<label>4.4</label>
+<title>Code Availability</title>
+<p id="P71">The code used to obtain the results can be obtained in the following GitHub repository: <ext-link ext-link-type="uri" xlink:href="https://github.com/PRodrigues98/Analysis-of-regulatory-response-to-SARS-CoV-2-infection">https://github.com/PRodrigues98/Analysis-of-regulatory-response-to-SARS-CoV-2-infection</ext-link>. Dependencies: Python version 3.8, NumPy, pandas, scikit-learn and matplotlib libraries.</p>
+</sec>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P72">
+<ext-link ext-link-type="uri" xlink:href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019">https://www.who.int/emergencies/diseases/novel-coronavirus-2019</ext-link>, accessed on Dec. 5th, 2021</p>
+</fn>
+<fn id="FN2">
+<label>2</label>
+<p id="P73">Available at <ext-link ext-link-type="uri" xlink:href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147507">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147507</ext-link>
+</p>
+</fn>
+<fn id="FN3">
+<label>4</label>
+<p id="P74">Previously defined in <xref ref-type="sec" rid="S2">subsection 4.1</xref>, <xref ref-type="table" rid="T1">Table 1</xref>
+</p>
+</fn>
+<fn id="FN4">
+<label>5</label>
+<p id="P75">some names have been shortened in favor of succinctness, with full definitions available in the accompanying hyperlink</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blanco-Melo</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Nilsson-Payant</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>W-C</given-names>
+</name>
+<name>
+<surname>Uhl</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hoagland</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Møller</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jordan</surname>
+<given-names>TX</given-names>
+</name>
+<name>
+<surname>Oishi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Panis</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sachs</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Imbalanced host response to sars-cov-2 drives development of covid-19</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Saccon</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Appelberg</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Mikaeloff</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Rodriguez</surname>
+<given-names>JE</given-names>
+</name>
+<name>
+<surname>Vinhas</surname>
+<given-names>BS</given-names>
+</name>
+<name>
+<surname>Frisan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Vegvári</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mirazimi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Neogi</surname>
+<given-names>U</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Type-i interferon signatures in sars-cov-2 infected huh7 cells</article-title>
+<source>Cell death discovery</source>
+<year>2021</year>
+<volume>7</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Taz</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Ahmed</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Paul</surname>
+<given-names>BK</given-names>
+</name>
+<name>
+<surname>Al-Zahrani</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Mahmud</surname>
+<given-names>SH</given-names>
+</name>
+<name>
+<surname>Moni</surname>
+<given-names>MA</given-names>
+</name>
+</person-group>
+<article-title>Identification of biomarkers and pathways for the sars-cov-2 infections that make complexities in pulmonary arterial hypertension patients</article-title>
+<source>Briefings in Bioinformatics</source>
+<year>2021</year>
+<volume>22</volume>
+<issue>2</issue>
+<fpage>1451</fpage>
+<lpage>1465</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Y-H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Cai</surname>
+<given-names>Y-D</given-names>
+</name>
+</person-group>
+<article-title>Identifying transcriptomic signatures and rules for sars-cov-2 infection</article-title>
+<source>Frontiers in Cell and Developmental Biology</source>
+<year>2021</year>
+<volume>8</volume>
+<elocation-id>1763</elocation-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Frieman</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Baric</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Mechanisms of severe acute respiratory syndrome pathogenesis and innate immunomodulation</article-title>
+<source>Microbiology and Molecular Biology Reviews</source>
+<year>2008</year>
+<volume>72</volume>
+<issue>4</issue>
+<fpage>672</fpage>
+<lpage>685</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ochsner</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Pillich</surname>
+<given-names>RT</given-names>
+</name>
+<name>
+<surname>McKenna</surname>
+<given-names>NJ</given-names>
+</name>
+</person-group>
+<article-title>Consensus transcriptional regulatory networks of coronavirus-infected human cells</article-title>
+<source>Scientific Data</source>
+<year>2020</year>
+<volume>7</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>20</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wyler</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Mösbauer</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Franke</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Diag</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gottula</surname>
+<given-names>LT</given-names>
+</name>
+<name>
+<surname>Arsie</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Klironomos</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Koppstein</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Ayoub</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buccitelli</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Bulk and single-cell gene expression profiling of sars-cov-2 infected human cell lines identifies molecular targets for therapeutic intervention</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Alfajaro</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Hanna</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>DeWeirdt</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Strine</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lu-Culligan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>S-M</given-names>
+</name>
+<name>
+<surname>Graziano</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Schmitz</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genome-wide crispr screen reveals host genes that regulate sars-cov-2 infection</article-title>
+<source>Biorxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Manne</surname>
+<given-names>BK</given-names>
+</name>
+<name>
+<surname>Denorme</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Middleton</surname>
+<given-names>EA</given-names>
+</name>
+<name>
+<surname>Portier</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Rowley</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Stubben</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Petrey</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Tolley</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Cody</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Platelet gene expression and function in patients with covid-19, Blood</article-title>
+<source>The Journal of the American Society of Hematology</source>
+<year>2020</year>
+<volume>136</volume>
+<issue>11</issue>
+<fpage>1317</fpage>
+<lpage>1329</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Golden</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Cline</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zeng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Garrison</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Carey</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Mucker</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Shamblin</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Brocato</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Human angiotensin-converting enzyme 2 transgenic mice infected with sars-cov-2 develop severe and fatal respiratory disease</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>MB</given-names>
+</name>
+<name>
+<surname>Forsythe</surname>
+<given-names>AB</given-names>
+</name>
+</person-group>
+<article-title>Robust tests for the equality of variances</article-title>
+<source>Journal of the American Statistical Association</source>
+<year>1974</year>
+<volume>69</volume>
+<issue>346</issue>
+<fpage>364</fpage>
+<lpage>367</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shapiro</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Wilk</surname>
+<given-names>MB</given-names>
+</name>
+</person-group>
+<article-title>An analysis of variance test for normality (complete samples)</article-title>
+<source>Biometrika</source>
+<year>1965</year>
+<volume>52</volume>
+<issue>3/4</issue>
+<fpage>591</fpage>
+<lpage>611</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mann</surname>
+<given-names>HB</given-names>
+</name>
+<name>
+<surname>Whitney</surname>
+<given-names>DR</given-names>
+</name>
+</person-group>
+<article-title>On a test of whether one of two random variables is stochastically larger than the other</article-title>
+<source>The annals of mathematical statistics</source>
+<year>1947</year>
+<fpage>50</fpage>
+<lpage>60</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tukey</surname>
+<given-names>JW</given-names>
+</name>
+</person-group>
+<article-title>Comparing individual means in the analysis of variance</article-title>
+<source>Biometrics</source>
+<year>1949</year>
+<fpage>99</fpage>
+<lpage>114</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Freudenberg</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Joshi</surname>
+<given-names>VK</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Medvedovic</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Clean: Clustering enrichment analysis</article-title>
+<source>BMC bioinformatics</source>
+<year>2009</year>
+<volume>10</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>15</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mclean</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>He</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Simpson</surname>
+<given-names>IT</given-names>
+</name>
+<name>
+<surname>Armstrong</surname>
+<given-names>DJ</given-names>
+</name>
+</person-group>
+<article-title>Improved functional enrichment analysis of biological networks using scalable modularity based clustering</article-title>
+<source>Journal of Proteomics &amp; Bioinformatics</source>
+<year>2016</year>
+<volume>9</volume>
+<issue>1</issue>
+<fpage>9</fpage>
+<lpage>18</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Quinlan</surname>
+<given-names>JR</given-names>
+</name>
+</person-group>
+<article-title>Induction of decision trees</article-title>
+<source>Machine learning</source>
+<year>1986</year>
+<volume>1</volume>
+<issue>1</issue>
+<fpage>81</fpage>
+<lpage>106</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fawagreh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Gaber</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Elyan</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Random forests: from early developments to recent advancements</article-title>
+<source>Systems Science &amp; Control Engineering: An Open Access Journal</source>
+<year>2014</year>
+<volume>2</volume>
+<issue>1</issue>
+<fpage>602</fpage>
+<lpage>609</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Guestrin</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<source>Xgboost: A scalable tree boosting system</source>
+<conf-name>Proceedings of the 22nd acm sigkdd international conference on knowledge discovery and data mining</conf-name>
+<year>2016</year>
+<fpage>785</fpage>
+<lpage>794</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Madeira</surname>
+<given-names>SC</given-names>
+</name>
+<name>
+<surname>Oliveira</surname>
+<given-names>AL</given-names>
+</name>
+</person-group>
+<source>Biclustering algorithms for biological data analysis: A survey</source>
+<conf-name>IEEE/ACM Transactions on Computational Biology and Bioinformatics</conf-name>
+<year>2004</year>
+<volume>1</volume>
+<issue>1</issue>
+<fpage>24</fpage>
+<lpage>45</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henriques</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Antunes</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Madeira</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>A structured view on pattern mining-based biclustering</article-title>
+<source>Pattern Recognition</source>
+<year>2015</year>
+<volume>4</volume>
+<issue>12</issue>
+<fpage>3941</fpage>
+<lpage>3958</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henriques</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Ferreira</surname>
+<given-names>FL</given-names>
+</name>
+<name>
+<surname>Madeira</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>Bicpams: software for biological data analysis with pattern-based biclustering</article-title>
+<source>BMC bioinformatics</source>
+<year>2017</year>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>16</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henriques</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Madeira</surname>
+<given-names>SC</given-names>
+</name>
+</person-group>
+<article-title>Bsig: evaluating the statistical significance of biclustering solutions</article-title>
+<source>Data Mining and Knowledge Discovery</source>
+<year>2018</year>
+<volume>32</volume>
+<issue>1</issue>
+<fpage>124</fpage>
+<lpage>161</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cheng</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Church</surname>
+<given-names>GM</given-names>
+</name>
+</person-group>
+<article-title>Biclustering of expression data</article-title>
+<source>Ismb</source>
+<year>2000</year>
+<volume>8</volume>
+<fpage>93</fpage>
+<lpage>103</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lazzeroni</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Owen</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Plaid models for gene expression data</article-title>
+<source>Statistica sinica</source>
+<year>2002</year>
+<fpage>61</fpage>
+<lpage>86</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Murali</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Kasif</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<chapter-title>Extracting conserved gene expression motifs from gene expression data</chapter-title>
+<source>Biocomputing</source>
+<publisher-name>World Scientific</publisher-name>
+<year>2003</year>
+<volume>2002</volume>
+<fpage>77</fpage>
+<lpage>88</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Henriques</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Madeira</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Bicpam: Pattern-based biclustering for biomedical data analysis</article-title>
+<source>Alg for Molecular Biology</source>
+<year>2014</year>
+<volume>9</volume>
+<issue>1</issue>
+<fpage>27</fpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>EY</given-names>
+</name>
+<name>
+<surname>Tan</surname>
+<given-names>CM</given-names>
+</name>
+<name>
+<surname>Kou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Duan</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Meirelles</surname>
+<given-names>GV</given-names>
+</name>
+<name>
+<surname>Clark</surname>
+<given-names>NR</given-names>
+</name>
+<name>
+<surname>Ma’ayan</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Enrichr: interactive and collaborative html5 gene list enrichment analysis tool</article-title>
+<source>BMC bioinformatics</source>
+<year>2013</year>
+<volume>14</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>14</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuleshov</surname>
+<given-names>MV</given-names>
+</name>
+<name>
+<surname>Jones</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Rouillard</surname>
+<given-names>AD</given-names>
+</name>
+<name>
+<surname>Fernandez</surname>
+<given-names>NF</given-names>
+</name>
+<name>
+<surname>Duan</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Koplev</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Jenkins</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Jagodnik</surname>
+<given-names>KM</given-names>
+</name>
+<name>
+<surname>Lachmann</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Enrichr: a comprehensive gene set enrichment analysis web server 2016 update</article-title>
+<source>Nucleic acids research</source>
+<year>2016</year>
+<volume>44</volume>
+<issue>W1</issue>
+<fpage>W90</fpage>
+<lpage>W97</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ashburner</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ball</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Blake</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Botstein</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Butler</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Cherry</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Davis</surname>
+<given-names>AP</given-names>
+</name>
+<name>
+<surname>Dolinski</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Dwight</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Eppig</surname>
+<given-names>JT</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Gene ontology: tool for the unification of biology</article-title>
+<source>Nature genetics</source>
+<year>2000</year>
+<volume>25</volume>
+<issue>1</issue>
+<fpage>25</fpage>
+<lpage>29</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="journal">
+<article-title>The gene ontology resource: enriching a gold mine</article-title>
+<source>Nucleic Acids Research</source>
+<year>2021</year>
+<volume>49</volume>
+<issue>D1</issue>
+<fpage>D325</fpage>
+<lpage>D334</lpage>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kanehisa</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Goto</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Kegg: kyoto encyclopedia of genes and genomes</article-title>
+<source>Nucleic acids research</source>
+<year>2000</year>
+<volume>28</volume>
+<issue>1</issue>
+<fpage>27</fpage>
+<lpage>30</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>M-L</given-names>
+</name>
+<name>
+<surname>Chien</surname>
+<given-names>C-S</given-names>
+</name>
+<name>
+<surname>Yarmishyn</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Y-P</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>W-Y</given-names>
+</name>
+<name>
+<surname>Luo</surname>
+<given-names>Y-H</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>Y-T</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Y-J</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>P-C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Highlight of immune pathogenic response and hematopathologic effect in sars-cov, mers-cov, and sars-cov-2 infection</article-title>
+<source>Frontiers in immunology</source>
+<year>2020</year>
+<volume>11</volume>
+<elocation-id>1022</elocation-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Overview of the structure of the dataset used in this study. Numbers between parentheses represent the number of data points.</p>
+</caption>
+<graphic xlink:href="EMS141156-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Distribution of gene expression (mean among samples) after applying a log2 transform (N = 21797 genes).</title>
+</caption>
+<graphic xlink:href="EMS141156-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Standard deviation of gene expression within healthy and within infected cells.</title>
+</caption>
+<graphic xlink:href="EMS141156-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Schematic diagram of the steps composing the proposed computational pipeline.</title>
+</caption>
+<graphic xlink:href="EMS141156-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Biclustering with constant and order-preserving coherence assumptions. Constant bicluster has pattern (value expectations) <italic>φ<sub>B</sub>
+</italic>={<italic>c</italic>
+<sub>1</sub> = 1.1, <italic>c</italic>
+<sub>2</sub>=0.45, <italic>c</italic>
+<sub>3</sub>=0.9} on <italic>x</italic>
+<sub>2</sub> and <italic>x</italic>
+<sub>3</sub> observations, while the order-preserving bicluster satisfies the <italic>g</italic>
+<sub>1</sub> ≥ <italic>g</italic>
+<sub>3</sub> ≥ <italic>g</italic>
+<sub>2</sub> permutation on {<italic>x</italic>
+<sub>1</sub>, <italic>x</italic>
+<sub>2</sub>, <italic>x</italic>
+<sub>3</sub>} observations.</p>
+</caption>
+<graphic xlink:href="EMS141156-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Tested pairs of conditions.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="top">First Condition</th>
+<th align="center" valign="top">Second Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">NHBE Healthy</td>
+<td align="center" valign="top" style="background-color:#efefef">NHBE SARS-CoV-2</td>
+</tr>
+<tr>
+<td align="center" valign="top">NHBE Healthy</td>
+<td align="center" valign="top">NHBE IAV</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">NHBE Healthy</td>
+<td align="center" valign="top" style="background-color:#efefef">NHBE IAVdNS1</td>
+</tr>
+<tr>
+<td align="center" valign="top">A549 Healthy</td>
+<td align="center" valign="top">A549 SARS-CoV-2</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">A549 Healthy</td>
+<td align="center" valign="top" style="background-color:#efefef">A549 IAV</td>
+</tr>
+<tr>
+<td align="center" valign="top">A549 Healthy</td>
+<td align="center" valign="top">A549 RSV</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">A549 Healthy</td>
+<td align="center" valign="top" style="background-color:#efefef">A549 HPIV3</td>
+</tr>
+<tr>
+<td align="center" valign="top">Calu3 Healthy</td>
+<td align="center" valign="top">Calu3 SARS-CoV-2</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">Biopsy Healthy</td>
+<td align="center" valign="top" style="background-color:#efefef">Biopsy SARS-CoV-2</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Top 8 GO biological processes ordered by combined score after single preprocessing (Multi-Condition Setting <xref ref-type="fn" rid="FN3">
+<sup>4</sup>
+</xref>, <italic>p</italic> &lt; 0.01).</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="top">GO Biological Process</th>
+<th align="left" valign="top">p-value</th>
+<th align="left" valign="top">c-score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">cellular response to type I interferon (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071357">GO:0071357</ext-link>)</td>
+<td align="left" valign="top">2.35E-10</td>
+<td align="left" valign="top">324.03</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">type I interferon signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">2.35E-10</td>
+<td align="left" valign="top" style="background-color:#efefef">324.03</td>
+</tr>
+<tr>
+<td align="left" valign="top">cytokine-mediated signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0019221">GO:0019221</ext-link>)</td>
+<td align="left" valign="top">3.80E-26</td>
+<td align="left" valign="top">319.38</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">protein mono-ADP-ribosylation (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140289">GO:0140289</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">3.22E-04</td>
+<td align="left" valign="top" style="background-color:#efefef">319.17</td>
+</tr>
+<tr>
+<td align="left" valign="top">receptor signaling pathway via STAT (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0097696">GO:0097696</ext-link>)</td>
+<td align="left" valign="top">2.73E-06</td>
+<td align="left" valign="top">299.82</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">receptor signaling pathway via JAK-STAT (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0007259">GO:0007259</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">2.50E-06</td>
+<td align="left" valign="top" style="background-color:#efefef">250.15</td>
+</tr>
+<tr>
+<td align="left" valign="top">exogenous peptide antigen, TAP-independent (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002480">GO:0002480</ext-link>)</td>
+<td align="left" valign="top">7.04E-03</td>
+<td align="left" valign="top">219.44</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">negative regulation of bone remodeling (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0046851">GO:0046851</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">2.62E-03</td>
+<td align="left" valign="top" style="background-color:#efefef">212.68</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>Top 8 GO biological processes ordered by combined score (Multi-Condition Setting, Clustering, <italic>p</italic> &lt; 0.01).</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">GO Biological Process</th>
+<th align="left" valign="top">p-value</th>
+<th align="left" valign="top">c-score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">type I interferon signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0060337">GO:0060337</ext-link>)</td>
+<td align="left" valign="top">4.40E-27</td>
+<td align="left" valign="top">9111.11</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">cellular response to type I interferon (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0071357">GO:0071357</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">4.40E-27</td>
+<td align="left" valign="top" style="background-color:#efefef">9111.11</td>
+</tr>
+<tr>
+<td align="left" valign="top">negative regulation of viral genome replication (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0045071">GO:0045071</ext-link>)</td>
+<td align="left" valign="top">1.10E-16</td>
+<td align="left" valign="top">3820.31</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">defense response to symbiont (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0140546">GO:0140546</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">7.74E-22</td>
+<td align="left" valign="top" style="background-color:#efefef">3260.22</td>
+</tr>
+<tr>
+<td align="left" valign="top">cytoplasmic PRR signaling pathway <sup>
+<xref ref-type="fn" rid="FN4">5</xref>
+</sup>(<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0039528">GO:0039528</ext-link>)</td>
+<td align="left" valign="top">1.74E-06</td>
+<td align="left" valign="top">3253.53</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">negative regulation of viral process (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0048525">GO:0048525</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">5.16E-17</td>
+<td align="left" valign="top" style="background-color:#efefef">3163.10</td>
+</tr>
+<tr>
+<td align="left" valign="top">defense response to virus (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0051607">GO:0051607</ext-link>)</td>
+<td align="left" valign="top">2.34E-21</td>
+<td align="left" valign="top">2930.10</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">endogenous peptide antigen, TAP-independent (<ext-link ext-link-type="uri" xlink:href="https://www.ebi.ac.uk/QuickGO/term/GO:0002486">GO:0002486</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">4.42E-05</td>
+<td align="left" valign="top" style="background-color:#efefef">2797.75</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>Top 8 KEGG pathways ordered by combined score (A549 cells, healthy vs SARS-CoV-2).</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">KEGG Pathway</th>
+<th align="center" valign="top">p-value</th>
+<th align="center" valign="top">c-score</th>
+<th align="center" valign="top">Cluster</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">Measles (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05162">map05162</ext-link>)</td>
+<td align="left" valign="top">1.02E-08</td>
+<td align="center" valign="top">295.14</td>
+<td align="center" valign="top">2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">Influenza A (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05164">map05164</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">1.02E-08</td>
+<td align="center" valign="top" style="background-color:#efefef">252.18</td>
+<td align="center" valign="top" style="background-color:#efefef">2</td>
+</tr>
+<tr>
+<td align="left" valign="top">Herpes simplex virus 1 infection (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05168">map05168</ext-link>)</td>
+<td align="left" valign="top">7.16E-10</td>
+<td align="center" valign="top">177.20</td>
+<td align="center" valign="top">2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">Epstein-Barr virus infection (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05169">map05169</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">4.82E-07</td>
+<td align="center" valign="top" style="background-color:#efefef">156.14</td>
+<td align="center" valign="top" style="background-color:#efefef">2</td>
+</tr>
+<tr>
+<td align="left" valign="top">TNF signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04668">map04668</ext-link>)</td>
+<td align="left" valign="top">1.11E-07</td>
+<td align="center" valign="top">153.86</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">Coronavirus disease (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map05171">map05171</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">3.78E-07</td>
+<td align="center" valign="top" style="background-color:#efefef">150.32</td>
+<td align="center" valign="top" style="background-color:#efefef">2</td>
+</tr>
+<tr>
+<td align="left" valign="top">RI0-I-like receptor signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04622">map04622</ext-link>)</td>
+<td align="left" valign="top">3.68E-04</td>
+<td align="center" valign="top">120.34</td>
+<td align="center" valign="top">2</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="background-color:#efefef">N0D-like receptor signaling pathway (<ext-link ext-link-type="uri" xlink:href="https://www.kegg.jp/entry/map04621">map04621</ext-link>)</td>
+<td align="left" valign="top" style="background-color:#efefef">9.37E-06</td>
+<td align="center" valign="top" style="background-color:#efefef">119.63</td>
+<td align="center" valign="top" style="background-color:#efefef">2</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" position="float" orientation="portrait">
+<label>Table 5</label>
+<caption>
+<p>Metrics for comparing the performance of the tested biclustering algorithms with different preprocessing techniques. Note: <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mi>ℬ</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> corresponds to the number of biclusters; <inline-formula>
+<mml:math id="M2">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mover accent="true">
+<mml:mi>I</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> is the average number of genes per bicluster; <italic>σ</italic>
+<sub>|<italic>I</italic>|</sub> the standard deviation of genes per bicluster; <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mover accent="true">
+<mml:mi>J</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula> the average number of conditions per bicluster; <italic>σ</italic>
+<sub>|<italic>J</italic>|</sub> the standard deviation of the number of conditions per bicluster; and finally <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mrow>
+<mml:mtext>Terms</mml:mtext>
+</mml:mrow>
+<mml:mo stretchy="true">¯</mml:mo>
+</mml:mover>
+</mml:mrow>
+</mml:math>
+</inline-formula> the average number of enriched terms per bicluster.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="left" valign="top">Algorithm</th>
+<th align="center" valign="top">Preprocessing</th>
+<th align="center" valign="top">
+<inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mi>ℬ</mml:mi>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</th>
+<th align="center" valign="top">
+<inline-formula>
+<mml:math id="M6">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mover accent="true">
+<mml:mi>I</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</th>
+<th align="center" valign="top">
+<italic>σ</italic>
+<sub>|<italic>I</italic>|</sub>
+</th>
+<th align="center" valign="top">
+<inline-formula>
+<mml:math id="M7">
+<mml:mrow>
+<mml:mrow>
+<mml:mo>|</mml:mo>
+<mml:mover accent="true">
+<mml:mi>J</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mo>|</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</th>
+<th align="center" valign="top">
+<italic>σ</italic>
+<sub>|<italic>J</italic>|</sub>
+</th>
+<th align="center" valign="top">
+<inline-formula>
+<mml:math id="M8">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mrow>
+<mml:mtext>Terms</mml:mtext>
+</mml:mrow>
+<mml:mo stretchy="true">¯</mml:mo>
+</mml:mover>
+</mml:mrow>
+</mml:math>
+</inline-formula>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">
+<italic>p</italic> &lt; 0.01</td>
+<td align="center" valign="top">80</td>
+<td align="center" valign="top">208.03</td>
+<td align="center" valign="top">18.54</td>
+<td align="center" valign="top">3.16</td>
+<td align="center" valign="top">0.53</td>
+<td align="center" valign="top">28.91</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">
+<italic>p</italic> &lt; 0.05</td>
+<td align="center" valign="top" style="background-color:#efefef">79</td>
+<td align="center" valign="top" style="background-color:#efefef">3526.66</td>
+<td align="center" valign="top" style="background-color:#efefef">301.50</td>
+<td align="center" valign="top" style="background-color:#efefef">3.24</td>
+<td align="center" valign="top" style="background-color:#efefef">0.64</td>
+<td align="center" valign="top" style="background-color:#efefef">341.70</td>
+</tr>
+<tr>
+<td align="center" valign="top">BicPAMS</td>
+<td align="center" valign="top">ANOVA (top 200)</td>
+<td align="center" valign="top">7</td>
+<td align="center" valign="top">188.29</td>
+<td align="center" valign="top">5.95</td>
+<td align="center" valign="top">10.00</td>
+<td align="center" valign="top">9.70</td>
+<td align="center" valign="top">10.57</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 1000)</td>
+<td align="center" valign="top" style="background-color:#efefef">20</td>
+<td align="center" valign="top" style="background-color:#efefef">676.05</td>
+<td align="center" valign="top" style="background-color:#efefef">29.13</td>
+<td align="center" valign="top" style="background-color:#efefef">5.00</td>
+<td align="center" valign="top" style="background-color:#efefef">4.22</td>
+<td align="center" valign="top" style="background-color:#efefef">55.75</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">ANOVA (top 5000)</td>
+<td align="center" valign="top">57</td>
+<td align="center" valign="top">2106.18</td>
+<td align="center" valign="top">128.36</td>
+<td align="center" valign="top">3.61</td>
+<td align="center" valign="top">1.25</td>
+<td align="center" valign="top">131.32</td>
+</tr>
+<tr>
+<td align="center" valign="middle" style="background-color:#efefef" rowspan="5">Cheng and Church</td>
+<td align="center" valign="top" style="background-color:#efefef">
+<italic>p</italic> &lt; 0.01</td>
+<td align="center" valign="top" style="background-color:#efefef">50</td>
+<td align="center" valign="top" style="background-color:#efefef">15.60</td>
+<td align="center" valign="top" style="background-color:#efefef">12.59</td>
+<td align="center" valign="top" style="background-color:#efefef">12.92</td>
+<td align="center" valign="top" style="background-color:#efefef">5.90</td>
+<td align="center" valign="top" style="background-color:#efefef">3.46</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>p</italic> &lt; 0.05</td>
+<td align="center" valign="top">100</td>
+<td align="center" valign="top">55.90</td>
+<td align="center" valign="top">16.23</td>
+<td align="center" valign="top">34.79</td>
+<td align="center" valign="top">9.96</td>
+<td align="center" valign="top">1.68</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 200)</td>
+<td align="center" valign="top" style="background-color:#efefef">8</td>
+<td align="center" valign="top" style="background-color:#efefef">25.00</td>
+<td align="center" valign="top" style="background-color:#efefef">23.49</td>
+<td align="center" valign="top" style="background-color:#efefef">21.38</td>
+<td align="center" valign="top" style="background-color:#efefef">12.56</td>
+<td align="center" valign="top" style="background-color:#efefef">6.50</td>
+</tr>
+<tr>
+<td align="center" valign="top">ANOVA (top 1000)</td>
+<td align="center" valign="top">56</td>
+<td align="center" valign="top">17.86</td>
+<td align="center" valign="top">15.27</td>
+<td align="center" valign="top">17.89</td>
+<td align="center" valign="top">10.67</td>
+<td align="center" valign="top">4.41</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 5000)</td>
+<td align="center" valign="top" style="background-color:#efefef">100</td>
+<td align="center" valign="top" style="background-color:#efefef">34.54</td>
+<td align="center" valign="top" style="background-color:#efefef">24.10</td>
+<td align="center" valign="top" style="background-color:#efefef">22.76</td>
+<td align="center" valign="top" style="background-color:#efefef">11.25</td>
+<td align="center" valign="top" style="background-color:#efefef">2.47</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">
+<italic>p</italic> &lt; 0. 01</td>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">64.70</td>
+<td align="center" valign="top">55.53</td>
+<td align="center" valign="top">14.20</td>
+<td align="center" valign="top">5.60</td>
+<td align="center" valign="top">29.90</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">
+<italic>p</italic> &lt; 0.05</td>
+<td align="center" valign="top" style="background-color:#efefef">10</td>
+<td align="center" valign="top" style="background-color:#efefef">776.40</td>
+<td align="center" valign="top" style="background-color:#efefef">922.43</td>
+<td align="center" valign="top" style="background-color:#efefef">11.60</td>
+<td align="center" valign="top" style="background-color:#efefef">6.89</td>
+<td align="center" valign="top" style="background-color:#efefef">24.10</td>
+</tr>
+<tr>
+<td align="center" valign="top">Plaid</td>
+<td align="center" valign="top">ANOVA (top 200)</td>
+<td align="center" valign="top">8</td>
+<td align="center" valign="top">44.00</td>
+<td align="center" valign="top">30.76</td>
+<td align="center" valign="top">12.88</td>
+<td align="center" valign="top">8.43</td>
+<td align="center" valign="top">9.88</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 1000)</td>
+<td align="center" valign="top" style="background-color:#efefef">10</td>
+<td align="center" valign="top" style="background-color:#efefef">159.50</td>
+<td align="center" valign="top" style="background-color:#efefef">100.72</td>
+<td align="center" valign="top" style="background-color:#efefef">12.20</td>
+<td align="center" valign="top" style="background-color:#efefef">7.29</td>
+<td align="center" valign="top" style="background-color:#efefef">18.70</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">ANOVA (top 5000)</td>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">739.20</td>
+<td align="center" valign="top">530.04</td>
+<td align="center" valign="top">13.10</td>
+<td align="center" valign="top">7.48</td>
+<td align="center" valign="top">43.40</td>
+</tr>
+<tr>
+<td align="center" valign="middle" style="background-color:#efefef" rowspan="7">xMotifs</td>
+<td align="center" valign="top" style="background-color:#efefef">
+<italic>p</italic> &lt; 0.01</td>
+<td align="center" valign="top" style="background-color:#efefef">10</td>
+<td align="center" valign="top" style="background-color:#efefef">31.90</td>
+<td align="center" valign="top" style="background-color:#efefef">17.17</td>
+<td align="center" valign="top" style="background-color:#efefef">8.20</td>
+<td align="center" valign="top" style="background-color:#efefef">2.86</td>
+<td align="center" valign="top" style="background-color:#efefef">1.70</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<italic>p</italic> &lt; 0.05</td>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">654.50</td>
+<td align="center" valign="top">365.82</td>
+<td align="center" valign="top">6.00</td>
+<td align="center" valign="top">0.00</td>
+<td align="center" valign="top">6.30</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 200)</td>
+<td align="center" valign="top" style="background-color:#efefef">6</td>
+<td align="center" valign="top" style="background-color:#efefef">30.33</td>
+<td align="center" valign="top" style="background-color:#efefef">34.30</td>
+<td align="center" valign="top" style="background-color:#efefef">24.50</td>
+<td align="center" valign="top" style="background-color:#efefef">9.73</td>
+<td align="center" valign="top" style="background-color:#efefef">10.67</td>
+</tr>
+<tr>
+<td align="center" valign="top">ANOVA (top 1000)</td>
+<td align="center" valign="top">10</td>
+<td align="center" valign="top">71.90</td>
+<td align="center" valign="top">103.54</td>
+<td align="center" valign="top">11.10</td>
+<td align="center" valign="top">4.28</td>
+<td align="center" valign="top">7.60</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">ANOVA (top 5000)</td>
+<td align="center" valign="top" style="background-color:#efefef">10</td>
+<td align="center" valign="top" style="background-color:#efefef">326.00</td>
+<td align="center" valign="top" style="background-color:#efefef">538.95</td>
+<td align="center" valign="top" style="background-color:#efefef">6.20</td>
+<td align="center" valign="top" style="background-color:#efefef">0.60</td>
+<td align="center" valign="top" style="background-color:#efefef">5.30</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" position="float" orientation="portrait">
+<label>Table 6</label>
+<caption>
+<title>Number of processes found, for different p values, for each of the methods applied (Multi-Condition Setting).</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="bottom" rowspan="2">Method</th>
+<th align="center" valign="bottom" rowspan="2">Setting</th>
+<th align="center" valign="top" colspan="3">number of GO biological processes</th>
+</tr>
+<tr>
+<th align="center" valign="top">
+<italic>p</italic> &lt; 0.05</th>
+<th align="center" valign="top">
+<italic>p</italic> &lt; 0.01</th>
+<th align="center" valign="top">
+<italic>p</italic> &lt; 0.001</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">MCS (p &lt;0.01)</td>
+<td align="center" valign="top">463</td>
+<td align="center" valign="top">215</td>
+<td align="center" valign="top">76</td>
+</tr>
+<tr>
+<td align="center" valign="top">Clustering</td>
+<td align="center" valign="top" style="background-color:#efefef">NHBE</td>
+<td align="center" valign="top" style="background-color:#efefef">234</td>
+<td align="center" valign="top" style="background-color:#efefef">75</td>
+<td align="center" valign="top" style="background-color:#efefef">20</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">A549</td>
+<td align="center" valign="top">182</td>
+<td align="center" valign="top">38</td>
+<td align="center" valign="top">19</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">MCS (p &lt;0.01)</td>
+<td align="center" valign="top" style="background-color:#efefef">215</td>
+<td align="center" valign="top" style="background-color:#efefef">109</td>
+<td align="center" valign="top" style="background-color:#efefef">44</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">Random Forests</td>
+<td align="center" valign="top">NHBE</td>
+<td align="center" valign="top">110</td>
+<td align="center" valign="top">22</td>
+<td align="center" valign="top">3</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef"/>
+<td align="center" valign="top" style="background-color:#efefef">A549</td>
+<td align="center" valign="top" style="background-color:#efefef">21</td>
+<td align="center" valign="top" style="background-color:#efefef">0</td>
+<td align="center" valign="top" style="background-color:#efefef">0</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">MCS (p &lt;0.01)</td>
+<td align="center" valign="top">60</td>
+<td align="center" valign="top">41</td>
+<td align="center" valign="top">15</td>
+</tr>
+<tr>
+<td align="center" valign="top">xGBoost</td>
+<td align="center" valign="top" style="background-color:#efefef">NHBE</td>
+<td align="center" valign="top" style="background-color:#efefef">34</td>
+<td align="center" valign="top" style="background-color:#efefef">0</td>
+<td align="center" valign="top" style="background-color:#efefef">0</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top">A549</td>
+<td align="center" valign="top">36</td>
+<td align="center" valign="top">0</td>
+<td align="center" valign="top">0</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">MCS (p &lt;0.01)</td>
+<td align="center" valign="top" style="background-color:#efefef">4440</td>
+<td align="center" valign="top" style="background-color:#efefef">2086</td>
+<td align="center" valign="top" style="background-color:#efefef">1184</td>
+</tr>
+<tr>
+<td align="center" valign="top" style="background-color:#efefef">BicPAMS</td>
+<td align="center" valign="top">NHBE</td>
+<td align="center" valign="top">2912</td>
+<td align="center" valign="top">685</td>
+<td align="center" valign="top">305</td>
+</tr>
+<tr>
+<td align="center" valign="top"/>
+<td align="center" valign="top" style="background-color:#efefef">A549</td>
+<td align="center" valign="top" style="background-color:#efefef">3926</td>
+<td align="center" valign="top" style="background-color:#efefef">779</td>
+<td align="center" valign="top" style="background-color:#efefef">273</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

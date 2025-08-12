@@ -1,0 +1,518 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS132732</article-id>
+<article-id pub-id-type="doi">10.1101/2021.08.11.455941</article-id>
+<article-id pub-id-type="archive">PPR382000</article-id>
+<article-version article-version-type="publisher-id">4</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Modeling the SARS-CoV-2 mutation based on geographical regions and time</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>Bomin</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>Yuzhe</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gong</surname>
+<given-names>Xiang</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Princeton International School of Mathematics and Science, 19 Lambert Dr, Princeton, NJ, U.S.A. 08540</aff>
+<aff id="A2">
+<label>2</label>The University of Hong Kong, Hong Kong, China</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding authors: Bomin Wei: <email>david.wei@prismsus.org</email>; Xiang Gong: <email>xiang.gong@prismsus.org</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>13</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>12</day>
+<month>08</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The Coronavirus Disease 2019 (COVID-19) epidemic was first detected in late<styled-content style-type="color" style="#d13438">-</styled-content>December 2019. So far, it has caused 203,815,431 confirmed cases and 4,310,623 deaths in the world. We collected sequences from 150,659 COVID-19 patients. Based on the previous phylogenomic analysis, we found three major branches of the virus RNA genomic mutation located in Asia, America, and Europe which is consistent with other studies. We selected sites with high mutation frequencies from Asia, America, and Europe. There are only 13 common mutation sites in these three regions. It infers that the viral mutations are highly dependent on their location and different locations have specific mutations. Most mutations can lead to amino acid substitutions, which occurred in 3/5’UTR, S/N/M protein, and ORF1ab/3a/8/10. Thus, the mutations may affect the pathogenesis of the virus. In addition, we applied an ARIMA model to predict the short-term frequency change of these top mutation sites during the spread of the disease. We tested a variety of settings of the ARIMA model to optimize the prediction effect of three patterns. This model can provide good help for predicting short-term mutation frequency changes.</p>
+</abstract>
+<kwd-group>
+<kwd>COVID-19</kwd>
+<kwd>SARS-CoV-2</kwd>
+<kwd>genomic mutation</kwd>
+<kwd>ARIMA model</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">The Coronavirus Disease 2019 (COVID-19) has become a severe epidemic, claiming 203,815,431 cases and 4,310,623 deaths worldwide until August 2021<sup>
+<xref ref-type="bibr" rid="R1">1</xref>
+</sup>. Modern transportation and more frequent personnel exchanges have accelerated the spread of COVID-19. The second outbreak of this disease has plagued many countries where the epidemic is not serious. One of the main reasons is the long-distance migration of the mutated viral host, causing the new types of COVID-19 to spread across regions.</p>
+<p id="P3">The COVID-19 is caused by a novel evolutionary divergent RNA virus, called severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), which triggers a respiratory tract infection and spreads mainly through person-to-person contact<sup>
+<xref ref-type="bibr" rid="R2">2</xref>
+</sup>. The genetic information of SARS-CoV-2 mutates much more dramatically than DNA due to RNA viruses’ mechanisms<sup>
+<xref ref-type="bibr" rid="R3">3</xref>
+</sup>. Until now, the new mutations of the virus. The worldwide outbreak happens to provide good environments for SARS-CoV-2 mutations. The accumulation of these mutations may cause the COVID-19 to develop in an uncertain direction, which will have a huge impact on society and personal life <sup>
+<xref ref-type="bibr" rid="R4">4</xref>
+</sup>.</p>
+<p id="P4">According to other epidemiological studies, mutations in the genome of an epidemic will be inherited from the spreader to the next generation of patients. The spread of the disease generally has regional characteristics, which leads to the diversity of the genome with regional traits. Thus, the SARS-CoV-2 genome mutation should have divergent mutation patterns in different geographic locations. Our purpose is to study the mutation patterns of SARS-CoV-2 in the world and try to predict the trend of the mutation so that to provide a reference for other researchers and may be helpful to the choice of the vaccine. To compare the mutation patterns quantitatively, we consider the cumulative mutation frequency on every single genome site as a time series. Previous studies in the aspect of mutation patterns and mutation predictions had focused on the protein mutation and functional changes of a certain genetic variant<sup>
+<xref ref-type="bibr" rid="R3">3</xref>
+</sup>, and there is no overview on the whole genomic sequence. Also, the studies had only limited prediction powers. They had not predicted all unknown mutations which could escape the vaccines already developed. Therefore, in this work we address this problem by employing a robust time series model, known as the ARIMA model for genetic mutation predictions. Finally, we shall develop a visualizing system to model the SARS-CoV-2 mutation trend based on geographical regions and time.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Sample data filtering</title>
+<p id="P5">As of January 31, 2021, the China National Center for Bioinformation (CNCB) database hosted 528,611 SARS-COV-2 sequences. Low-quality data (as assessed by the database) was removed. The data that required authorization by the submitting agencies were excluded. At last, 184,475 entries of the raw sequence were download<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. An entry of raw sequence data directly downloaded from the CNCB database does not contain all the necessary metadata information such as host, sampling location, or date. The information was documented in a set of sequence metadata information, which needed to be downloaded separately. We performed a complete paring search to match the raw sequence data to the sequence metadata information and obtained 183,850 data entries with metadata information.</p>
+<p id="P6">We discarded irrelevant metadata information and kept the following information for analysis and modeling: sequence name, detection time, detection region, base name before mutation, location of mutation site, base name after mutation. The base names and site also guarantee an easy retrieval of information needed for amino acid substitution analysis.</p>
+<p id="P7">The data was divided based on the continent of the detection region and then sorted by time. We performed a further data cleaning and dropped those data with the non-standard format or incomplete metadata information. For example, we dropped a group of data reported from Japan which labeled detection time with only the year and the month but not the date. After the cleaning, 150,659 data entries remained.</p>
+<p id="P8">We focused on data from Europe, Asia, and North America due to sufficient data quantity and high data quality in these regions. For analysis and modeling, we selected those sites which have more than 0.1% mutation rate on the last day and larger than 10% mutation rate on average.</p>
+</sec>
+<sec id="S4">
+<title>Development of prediction model</title>
+<p id="P9">For the prediction model, the ARIMA (i.e, Auto Regressive Integrated Moving Average) model is used because of its advantages in time series forecasting. An ARIMA model contains three parameters – <italic>p</italic>, <italic>d</italic>, and <italic>q</italic>, or written as ARIMA(<italic>p</italic>,<italic>d</italic>,<italic>q</italic>). The <italic>p</italic> represents the number of lag observations in the auto-regression (AR) part of the model, indicating a relation between an observation (or data) to the past observations. The <italic>q</italic> represents the size of the moving average window in the moving average (MA) part of the model, indicating the relation between an observation to the past error. The <italic>d</italic> represents the integration order of the I(Integrated) part of the model, indicating the number of times that the raw observations are differenced. If we let <italic>ŷ</italic> be the <italic>d<sup>th</sup>
+</italic> difference of Y (the observation or data), then the model can be expressed as <italic>ŷ<sub>t</sub>
+</italic> = <italic>μ</italic> + <italic>ϕ</italic>
+<sub>1</sub>
+<italic>y</italic>
+<sub>
+<italic>t</italic>−1</sub> + … <italic>ϕ<sub>p</sub>
+</italic> <italic>y<sub>t−p</sub>
+</italic> − <italic>θ</italic>
+<sub>1</sub> <italic>e<sub>t−1</sub>
+</italic> − … − <italic>θ</italic>
+<sub>q</sub> <italic>e<sub>t−q</sub>
+</italic>.</p>
+<p id="P10">We developed an automatic parameter scan for 87 groups of data so that each mutation site had its model parameters fitted independently. For the mutation rate data of each site, the program tests 5 different parameters for <italic>p</italic> and <italic>q</italic>, respectively, and number 1 or 2 for parameter <italic>d</italic>. In total, there were 50 parameter combinations tested for every of the high-frequency sites. Values of <italic>p</italic> are first determined from the ACF (autocorrelation function) of the mutation rate. The best parameter set (<italic>p</italic>, <italic>q</italic>, <italic>d</italic>) which has the lowest MSE value is used as parameter for the prediction.</p>
+</sec>
+</sec>
+<sec id="S5" sec-type="results">
+<title>Results</title>
+<sec id="S6">
+<title>Data collection and description</title>
+<p id="P11">Since COVID-19 has been circulating for more than a year, virus samples from many countries have been sequenced. The samples range from dozens of countries, and the sampling time covers several months. This gives us great convenience to study gene mutations in different regions and their changing trends over time. We downloaded mutation data of the disease from a public database: China National Center for Bioinformation, 2019nCoVR (<ext-link ext-link-type="uri" xlink:href="https://bigd.big.ac.cn/ncov/?lang=en">https://bigd.big.ac.cn/ncov/?lang=en</ext-link>)<sup>
+<xref ref-type="bibr" rid="R5">5</xref>
+</sup>. In total, mutation information from 150,659 patients was downloaded from the database. Weused the SARS-CoV-2 sequence, NC_045512, of the first COVID-19 patient as the reference sequence in this study. The genome is with the length of 29,903 bp ss-RNA <sup>
+<xref ref-type="bibr" rid="R6">6</xref>
+</sup>. We obtained the corresponding sample location (country) and sampling time as well. According to the sample source, 74% of the samples are from Europe, 15% of the samples are from North America, and 7% of the samples are from Asia (<xref ref-type="fig" rid="F1">Figure 1A</xref>). In terms of time span, the sample starts from January 2020 to January 2021 (<xref ref-type="fig" rid="F1">Figure 1B</xref>). The samples in Europe increase dramatically after July 2020, while samples in Asia and North America slightly increase from April 2020. Samples from Europe accounted for the largest proportion. Although some countries, such as the USA have carried out large-scale COVID-19 positive tests for their citizens, only a few whole-genome sequences were available. Although the proportion of the sequences in America and Asia are low, there are still 22,599 sequences in America and 10,546 sequences in Asia, and the mutation frequency calculation should be precise.</p>
+</sec>
+<sec id="S7">
+<title>Different patterns of single nucleotide polymorphisms (SNPs) in Asia, Europe, and North Americaus z</title>
+<p id="P12">We focused on the single-site mutation (SNP) and calculated the frequencies of all mutation sites (<xref ref-type="fig" rid="F2">Figure 2</xref>). The mutations are ubiquitous in most regions of the genome and the sites with the highest mutation frequencies are in Polyprotein (ORF1ab), S protein, ORF3a, M protein, ORF8, N protein, ORF10 (<xref ref-type="fig" rid="F2">Figure 2</xref>).</p>
+<p id="P13">We selected the sites with top mutation frequencies in Asia, Europe, and North America. There are 27 sites in Asia samples, 30 sites in Europe samples, and 30 sites in North America samples (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). Only 13 sites are shared by all three regions suggesting that the mutation patterns may be different in three regions. We also calculated the mutation frequency changes with time (<xref ref-type="supplementary-material" rid="SD1">Figure S2</xref>). Three main clusters can be observed: 1) The mutation frequency gradually increases with time, and finally reaches a plateau. This pattern likes a classic logistic curve. 2) The mutation frequency has a high peak at the beginning of the outbreak, and then the frequency decreases to a low level with time. 3) The mutation frequency has a high peak at the beginning of the outbreak, and then the frequency decreases with time but maintains a high level. Cluster 1 takes for a little more than 30% of each group. Cluster 2 takes about 30% of Asia and Europe samples, while it takes more than two-thirds of North America samples. Cluster 3 takes around 30% in Asia and 20% in Europe (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). It confirms the different patterns in Asia, Europe, and North America samples.</p>
+</sec>
+<sec id="S8">
+<title>Most of the mutation can lead to amino acid substitution</title>
+<p id="P14">Non-synonymous and synonymous mutations can lead to different results. Thirty-eight SNPs in the SARS-CoV-2 genome can contribute to amino acid substitution (<xref ref-type="supplementary-material" rid="SD1">Table S1</xref>). Three genes, ORF1ab, Spike protein, and N protein, contain the most non-synonymous mutations (<xref ref-type="table" rid="T1">Table 1</xref>). Spike protein mediates host cell receptor recognition and binding. It is the key for vaccine design and development against SARS-CoV-2 infection<sup>
+<xref ref-type="bibr" rid="R7">7</xref>
+</sup>. The enrichment of SNPs in the Spike protein gene could lead to the subsequent evolution of the virus. Three regions display different mutation directions which makes the prediction of the mutation valuable (<xref ref-type="table" rid="T1">Table 1</xref>).</p>
+</sec>
+<sec id="S9">
+<title>Model of predicting the mutation frequency</title>
+<p id="P15">Based on a regression method, we developed a model to predict the frequency change with time in a short period (<xref ref-type="supplementary-material" rid="SD1">Figure S1</xref>). The MSE values represent the accuracy and stability of the model (<xref ref-type="table" rid="T2">Table 2</xref>). The model proposes the mutation trends of each site in three regions. The method considers multiple factors: disease outbreak region, number of days in the training set, and number of days for out-of-sample prediction, and predicted the mutation frequency for specific sites. It could be a reference for researchers on different continents.</p>
+<p id="P16">The mutations in Spike protein may affect the off-target effect of the vaccine. We selected a few genome positions for detailed modeling analysis in the range 21,000 to 26,000, which is believed to encode the spike protein.</p>
+<p id="P17">We selected the A23403G mutation which is the D614G spike protein mutation. We used the ARIMA model to predict the short-term mutation frequency. The training data set was defined from the first day of non-zero mutation rate to the 200<sup>th</sup> day. We tested three ARIMA model parameters (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>), and d = 2 followed the rising trend of the real mutation rate data (<xref ref-type="supplementary-material" rid="SD1">Figure S3</xref>). The ARIMA model parameters (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>) = (2, 2, 3) were fitted on the training set and the optimized parameters were selected to minimize the MSE on the test set from the 201<sup>st</sup> day to the 280<sup>th</sup> day, between the out-of-sample forecast and the real data (<xref ref-type="fig" rid="F3">Figure 3</xref>). When the forecast is performed in a much longer period from the 201<sup>st</sup> day to the 360<sup>th</sup> day, the ARIMA model can only capture the rising trend but failed to fit the plateau of the real data (<xref ref-type="supplementary-material" rid="SD1">Figure S4</xref>). Another genome position is 22,227 (C-to-T, also called A222V), of which the mutation rate shows a logistic curve and reaches a steady rate beyond the 160<sup>th</sup> day. ARIMA models with parameters <italic>d</italic> = 1 can capture this steady rate and the best forecast occurs at (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>) = (3, 1, 1) (<xref ref-type="fig" rid="F4">Figure 4</xref>). The training set of this position had a different length compared to position 23403 because the mutation rate stabilizes much faster, and we used the time range from the first date of non-zero mutation rate to the 130<sup>th</sup> day after the first day. The optimized parameters are sensitive to the choice of the training set length, which invites further study into the modeling stability.</p>
+<p id="P18">Based on the similarity of genomes and the prediction of mutation trends, we hope that our work can provide an alternative reference for residents to choose vaccines produced in different brands and different countries. Overall, we expect our approach to be a fundamental solution in the literature and contribute as reliable quantitative benchmarks.</p>
+</sec>
+</sec>
+<sec id="S10" sec-type="discussion">
+<title>Discussion</title>
+<p id="P19">We focused on the Spike protein which is the most important region in the SARS-CoV-2 genome related to human immune response (<xref ref-type="fig" rid="F5">Figure 5</xref>) <sup>
+<xref ref-type="bibr" rid="R8">8</xref>
+</sup>. The angiotensin-converting enzyme 2 (ACE2) proteins can bind the glycosylated S proteins on the surface of SARS-CoV-2 and mediates the viral cell entry<sup>
+<xref ref-type="bibr" rid="R9">9</xref>
+</sup>. The SARS-CoV-2 S protein consists of 1273 amino acids, including a signal peptide in the N-terminus, the S1 and S2 subunits (<xref ref-type="fig" rid="F5">Figure 5</xref>). In the S1 subunit, a receptor-binding domain (RBD) is responsible for binding the ACE2. Fusion peptide (FP) plays an essential role in mediating membrane fusion<sup>
+<xref ref-type="bibr" rid="R10">10</xref>
+</sup>. HR1 and HR2 form the six-helical bundle (6-HB) with the entry function of the S2 subunit<sup>
+<xref ref-type="bibr" rid="R11">11</xref>
+</sup>. The transmembrane (TM) domain of the S protein anchors in the viral membrane.</p>
+<p id="P20">We found three patterns of the SARS-Cov-2 mutation patterns. We have tested the ARIMA model in cluster 1 and the model exhibits good performance in the short-term prediction. We further applied the ARIMA model mutation sites of the other two clusters. The genome mutation C27046T (T175M) is a typical cluster 2 cases in Europe. The prediction for the training data set fits well with the real data, and the short-term prediction with (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>) = (3, 1, 1) in the range from 116<sup>th</sup> day to the 176<sup>th</sup> day reproduces the correct real data (<xref ref-type="supplementary-material" rid="SD1">Figure S5</xref>). Another typical cluster 3 case in Asia is C28311T (P13L). With the settings (p, d, q) = (3, 1, 2), the short-term prediction from the 200<sup>th</sup> day to the 260<sup>th</sup> day reproduces the correct real data (<xref ref-type="supplementary-material" rid="SD1">Figure S6</xref>).</p>
+<p id="P21">In summary, we collected SARS-Cov-2 sequence mutations and summarized 3 mutation patterns. We screened out non-synonymous mutation sites and found that the patterns of mutations on different continents are different. We fitted the mutation frequencies to the ARIMA model, and the model can forecast well in the short term. It would be a good basis for other studies of COVID-19 in terms of genomic mutation patterns and prediction.</p>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Material</label>
+<media xlink:href="EMS132732-supplement-Supplementary_Material.pdf" mimetype="application" mime-subtype="pdf" id="N66167" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Giorgi</surname>
+<given-names>G</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-19-Related Mental Health Effects in the Workplace: A Narrative Review</article-title>
+<source>Int J Environ Res Public Health</source>
+<year>2020</year>
+<volume>17</volume>
+<pub-id pub-id-type="doi">10.3390/ijerph17217857</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure, Function, and Antigenicity of the SARS-CoV-2 Spike Glycoprotein</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<fpage>281</fpage>
+<lpage>292</lpage>
+<elocation-id>e286</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.02.058</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Abdullahi</surname>
+<given-names>IN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Implications of SARS-CoV-2 genetic diversity and mutations on pathogenicity of the COVID-19 and biomedical interventions</article-title>
+<source>J Taibah Univ Med Sci</source>
+<year>2020</year>
+<volume>15</volume>
+<fpage>258</fpage>
+<lpage>264</lpage>
+<pub-id pub-id-type="doi">10.1016/j.jtumed.2020.06.005</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Makizako</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Exercise and Horticultural Programs for Older Adults with Depressive Symptoms and Memory Problems: A Randomized Controlled Trial</article-title>
+<source>J Clin Med</source>
+<year>2019</year>
+<volume>9</volume>
+<pub-id pub-id-type="doi">10.3390/jcm9010099</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gong</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>An online coronavirus analysis platform from the National Genomics Data Center</article-title>
+<source>Zool Res</source>
+<year>2020</year>
+<volume>41</volume>
+<fpage>705</fpage>
+<lpage>708</lpage>
+<pub-id pub-id-type="doi">10.24272/j.issn.2095-8137.2020.065</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Author Correction: A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>580</volume>
+<elocation-id>E7</elocation-id>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2202-3</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shang</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cell entry mechanisms of SARS-CoV-2</article-title>
+<source>Proc Natl Acad Sci U S A</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>11727</fpage>
+<lpage>11734</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.2003138117</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sternberg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Naujokat</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Structural features of coronavirus SARS-CoV-2 spike protein: Targets for vaccination</article-title>
+<source>Life Sci</source>
+<year>2020</year>
+<volume>257</volume>
+<elocation-id>118056</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.lfs.2020.118056</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Letko</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Marzi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Munster</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Functional assessment of cell entry and receptor usage for SARS-CoV-2 and other lineage B betacoronaviruses</article-title>
+<source>Nat Microbiol</source>
+<year>2020</year>
+<volume>5</volume>
+<fpage>562</fpage>
+<lpage>569</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0688-y</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Millet</surname>
+<given-names>JK</given-names>
+</name>
+<name>
+<surname>Whittaker</surname>
+<given-names>GR</given-names>
+</name>
+</person-group>
+<article-title>Physiological and molecular triggers for SARS-CoV membrane fusion and entry into host cells</article-title>
+<source>Virology</source>
+<year>2018</year>
+<volume>517</volume>
+<fpage>3</fpage>
+<lpage>8</lpage>
+<pub-id pub-id-type="doi">10.1016/j.virol.2017.12.015</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xia</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Inhibition of SARS-CoV-2 (previously 2019-nCoV) infection by a highly potent pan-coronavirus fusion inhibitor targeting its spike protein that harbors a high capacity to mediate membrane fusion</article-title>
+<source>Cell Res</source>
+<year>2020</year>
+<volume>30</volume>
+<fpage>343</fpage>
+<lpage>355</lpage>
+<pub-id pub-id-type="doi">10.1038/s41422-020-0305-x</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Distribution of downloaded SARA-Cov-2 sequence mutation data.</title>
+</caption>
+<graphic xlink:href="EMS132732-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Distribution of SNPs on SARS-CoV-2 genome.</title>
+</caption>
+<graphic xlink:href="EMS132732-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>The ARIMA model fitting and forecast of the genome position 23403. The matrix of plots (<italic>p</italic>, <italic>q</italic>) all have a fixed difference order <italic>d</italic>=2. The real data (blue curve) and the in-sample prediction (black curve) for the training data set (from the date of the first mutation report to the 200th day after that data) fits well, and the out-of-sample forecast from the 201st to the 280th day (orange curve) achieves minimum MSE with parameters (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>) = (2, 2, 3).</p>
+</caption>
+<graphic xlink:href="EMS132732-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>ARIMA model fitting and forecast of the genome position 22227. The matrix of plots (<italic>p</italic>,<italic>q</italic>) all have a fixed difference order <italic>d</italic>=1. The real data (blue curve) and the in-sample prediction (black curve) for the training data set fits well, and the short period forecast (orange curve) from 131<sup>st</sup> day to the 210<sup>th</sup> day reproduces the correct real data for (<italic>p</italic>, <italic>d</italic>, <italic>q</italic>) = (3, 1, 1).</p>
+</caption>
+<graphic xlink:href="EMS132732-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>Structure of Spike protein in SARS-CoV-2 genome.</title>
+</caption>
+<graphic xlink:href="EMS132732-f005"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Non-synonymous mutations enriched in three gene loci.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="top">Gene</th>
+<th align="center" valign="top">Asia</th>
+<th align="center" valign="top">Europe</th>
+<th align="center" valign="top">America</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top">ORF1ab</td>
+<td align="center" valign="top">9</td>
+<td align="center" valign="top">9</td>
+<td align="center" valign="top">11</td>
+</tr>
+<tr>
+<td align="left" valign="top">Spike protein</td>
+<td align="center" valign="top">1</td>
+<td align="center" valign="top">3</td>
+<td align="center" valign="top">2</td>
+</tr>
+<tr>
+<td align="left" valign="top">N protein</td>
+<td align="center" valign="top">4</td>
+<td align="center" valign="top">4</td>
+<td align="center" valign="top">4</td>
+</tr>
+<tr>
+<td align="left" valign="top">Cluster (1/2/3)</td>
+<td align="center" valign="top">7/2/5</td>
+<td align="center" valign="top">6/5/5</td>
+<td align="center" valign="top">7/10/0</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>MSE of the prediction model.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th align="center" valign="middle">MSE</th>
+<th align="center" valign="middle">Average (-log<sub>10</sub>)</th>
+<th align="center" valign="middle">SD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">Asia</td>
+<td align="center" valign="middle">6.97</td>
+<td align="center" valign="middle">0.95</td>
+</tr>
+<tr>
+<td align="center" valign="middle">Europe</td>
+<td align="center" valign="middle">4.62</td>
+<td align="center" valign="middle">ı.50</td>
+</tr>
+<tr>
+<td align="center" valign="middle">America</td>
+<td align="center" valign="middle">6.93</td>
+<td align="center" valign="middle">0.86</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

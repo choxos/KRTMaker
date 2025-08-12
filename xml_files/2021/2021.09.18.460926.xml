@@ -1,0 +1,1564 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS135454</article-id>
+<article-id pub-id-type="doi">10.1101/2021.09.18.460926</article-id>
+<article-id pub-id-type="archive">PPR397330</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>A Genotype-to-Phenotype Modeling Framework to Predict Human Pathogenicity of Novel Coronaviruses</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Davis</surname>
+<given-names>Phillip</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Russell</surname>
+<given-names>Joseph A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>MRIGlobal, Life Sciences Resource Center – Applied Biology &amp; Bioinformatics Group 65 West Watkins Mill Road, Gaithersburg, MD, USA 20878</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding Author – <email>pdavis@mriglobal.org</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>20</day>
+<month>09</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Leveraging prior viral genome sequencing data to make predictions on whether an unknown, emergent virus harbors a ‘phenotype-of-concern’ has been a long-sought goal of genomic epidemiology. A predictive phenotype model built from nucleotide-level information alone has previously been considered un-tenable with respect to RNA viruses due to the ultra-high intra-sequence variance of their genomes, even within closely related clades. Building from our prior work developing a degenerate k-mer method to accommodate this high intra-sequence variation of RNA virus genomes for modeling frameworks, and leveraging a taxonomic ‘group-shuffle-split’ paradigm on complete coronavirus assemblies from prior to October 2018, we trained multiple regularized logistic regression classifiers at the nucleotide k-mer level capable of accurately predicting withheld SARS-CoV-2 genome sequences as human pathogens and accurately predicting withheld Swine Acute Diarrhea Syndrome coronavirus (SADS-CoV) genome sequences as non-human pathogens. LASSO feature selection identified several degenerate nucleotide predictor motifs with high model coefficients for the human pathogen class that were present across widely disparate classes of coronaviruses. However, these motifs differed in which genes they were present in, what specific codons were used to encode them, and what the translated amino acid motif was. This emphasizes the importance of a phenetic view of emerging pathogenic RNA viruses, as opposed to the canonical phylogenetic interpretations most-commonly used to track and manage viral zoonoses. Applying our model to more recent <italic>Orthocoronavirinae</italic> genomes deposited since October 2018 yields a novel contextual view of pathogen-potential across bat-related, canine-related, porcine-related, and rodent-related coronaviruses and critical adaptations which may have contributed to the emergence of the pandemic SARS-CoV-2 virus. Finally, we discuss the utility of these predictive models (and their associated predictor motifs) to novel biosurveillance protocols that substantially increase the ‘pound-for-pound’ information content of field-collected sequencing data and make a strong argument for the necessity of routine collection and sequencing of zoonotic viruses.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">To date, the applicability of genomic sequencing data to zoonotic viral outbreaks and pandemics has primarily served in <italic>post</italic>-outbreak genomic epidemiology roles. When a novel viral pathogen emerges, genome sequence data is compared against prior data from other close relatives. From these analyses, public health risk and resourcing (<italic>
+<xref ref-type="bibr" rid="R1">1</xref>,<xref ref-type="bibr" rid="R2">2</xref>
+</italic>), transmission chains (<italic>
+<xref ref-type="bibr" rid="R3">3</xref>
+</italic>), and other response-related information (<italic>
+<xref ref-type="bibr" rid="R4">4</xref>
+</italic>) is inferred. Several studies have begun to address the utility of viral genome sequencing data in a <italic>pre</italic>-outbreak, predictive methodology through development of increasingly complex machine learning techniques that attempt to understand the emergence of particular viral phenotypes (<italic>
+<xref ref-type="bibr" rid="R5">5</xref>–<xref ref-type="bibr" rid="R12">12</xref>
+</italic>). However, while these works provide important novel biological characterization methods, their immediate applied utility for biosurveillance is constrained by limited predictive power and the complexity of interpreting their outputs.</p>
+<p id="P3">The emergence of the SARS-CoV-2 virus, and the ensuing pandemic, has emphasized our continued vulnerability to zoonotic pathogens. Despite several smaller scale outbreaks of dangerous Betacoronaviruses (namely SARS and MERS), our preparedness and ability to forecast these emergent pathogens have made little advancement. Traditionally, the approach to understanding differences in viral phenotypes has involved problematic experimental evolution, or gain-of-function research through recombinant genetics system (<italic>
+<xref ref-type="bibr" rid="R13">13</xref>, <xref ref-type="bibr" rid="R14">14</xref>
+</italic>).</p>
+<p id="P4">Our previous work developed a feature-agglomeration method adapted to “bag-of-words” style feature extraction in RNA viruses (<italic>
+<xref ref-type="bibr" rid="R15">15</xref>
+</italic>). We used this method to fit a binary logistic regression model for <italic>Orthocoronavirinae</italic> around a response variable of human pathogen vs non-human pathogen. While this method focused on explanatory modeling by emphasizing numerical stability and training-set accuracy as the model selection criteria, the original feature extraction and model fitting implementation limited its predictive power and resulted in overfitting to the training data. This dilemma of model extrapolation is an old problem in statistical analysis and machine learning (<italic>
+<xref ref-type="bibr" rid="R16">16</xref>, <xref ref-type="bibr" rid="R17">17</xref>
+</italic>) and is still salient in biological data science applications. This has led to assertions that the goal of prediction for threat of viral emergence, directly from sequence data, is infeasible based on currently available data and biological knowledge (<italic>
+<xref ref-type="bibr" rid="R18">18</xref>
+</italic>).</p>
+<p id="P5">We provide a solution to these problems specifically in the case of <italic>Orthocoronavirinae</italic>, while also demonstrating techniques that could be applied across the viral kingdom. We have developed a protocol for feature extraction and cross-validation that is specific to the viral genomics domain to produce actionable and <italic>predictive</italic> genotype-to-phenotype information for global health and pandemic preparedness experts, directly from genomic data.</p>
+</sec>
+<sec id="S2" sec-type="methods">
+<title>Methods</title>
+<sec id="S3">
+<title>Data Labeling and Grouping</title>
+<p id="P6">We adopted the same data labeling assumptions regarding human-pathogen class membership that were stipulated in our previous work (<italic>
+<xref ref-type="bibr" rid="R15">15</xref>
+</italic>). To reiterate, bat coronaviruses are assumed to not be human coronaviruses. Civet SARS and camel MERS isolates are labeled as human coronaviruses (reflecting their suspected roles as facilitators of spillover), along with the rest of the known human coronaviruses. All other species of coronavirus are labeled as non-human pathogens.</p>
+<p id="P7">In the application of group labels for stratified resampling and cross-validation, we created a composite label that combined the species level taxid assigned for each virus sequence with its class label with regards to human-pathogen status. This approach attempts to capture the nuance in certain clades of coronaviruses, such as Betacoronavirus 1, where certain members of the species (e.g., PHEV and Bovine COV) appear to have well defined barriers with regards to their capabilities as human-pathogens but share a species designation with a known human-pathogen coronavirus like OC43 (<italic>
+<xref ref-type="bibr" rid="R19">19</xref>, <xref ref-type="bibr" rid="R20">20</xref>
+</italic>). This method results in 63 group labels applied across the training set.</p>
+</sec>
+<sec id="S4">
+<title>Feature Extraction</title>
+<p id="P8">We previously developed a feature extraction method (<italic>
+<xref ref-type="bibr" rid="R15">15</xref>
+</italic>), <italic>Vorpal</italic>, to reconcile the k-mer-based sequence representations with the inter-example variance in RNA virus genomes. This method worked by counting k-mers across the input sequences, removing k-mers that appear below a frequency quantile threshold, and performing hierarchical clustering on the remaining k-mers. Using hamming distance as the metric and producing flat clusters from the resulting k-mer tree at different branch lengths, we can produce de-facto k-mer alignments that can be re-encoded using International Union of Pure and Applied Chemistry (IUPAC) nucleic acid characters. This functions as a dimensionality-reduction technique that represents the higher dimensional k-mer space into a smaller vocabulary of degenerate motifs that retains information about observed variance in the training data. We can construct feature spaces using this technique that are influenced by three parameters: k size, k-mer frequency cutoff to proceed to clustering, and degeneracy cutoff for flat clustering of the k-mer tree. A simple example to illustrate this concept is depicted in <bold>
+<italic>
+<xref ref-type="fig" rid="F1">Figure 1</xref>
+</italic>
+</bold>.</p>
+</sec>
+<sec id="S5">
+<title>Cross-Validation and Resampling</title>
+<p id="P9">Expanding on this feature extraction technique, we employed several methods to transition this approach from an explanatory paradigm to a <italic>predictive</italic> one. To accomplish this, we utilized two key strategies to reduce possible sources of model variance. First, we used a cross-validation technique to guide model selection that leverages the intrinsic modal organization of genomics data imparted by phylogenetic relationships. This characterizes the problem of predictive phenotype modeling as one where generalization of the model would mean maintaining accuracy to a novel mode of the sample distribution, or in other words, a new species or clade of the viral family. Therefore, we leverage taxonomic organization of the training data to implement a group-shuffle-split (GSS) cross-validation approach (<italic>
+<xref ref-type="bibr" rid="R21">21</xref>
+</italic>). This simulates the problem of having several species of each class represented in the training set and allows a search over model parameters that maximize the ability to generalize to a withheld species in the validation set. In <bold>
+<italic>
+<xref ref-type="fig" rid="F2">Figure 2</xref>
+</italic>
+</bold>, a visualization of this modality in the sample space is demonstrated through a two-dimensional t-distributed Stocastic Neighbor Embedding (tSNE) using the features for the selected model discussed in the Results.</p>
+<p id="P10">The second key factor in this predictive modeling approach is the implementation of a stratified resampling technique. Since we chose to use a high-bias model such as logistic regression, what remained was the management of other possible sources of model variance. One substantial source of variance is the skewed representation of complete <italic>Orthocoronavirinae</italic> genomes from clades with clinical and/or other human-related interest. We combat this source of variance by a stratified resampling method (<italic>
+<xref ref-type="bibr" rid="R22">22</xref>
+</italic>). This resampling method is used at training time to uniformly resample instances from the training set based on the same taxonomic organization utilized in the GSS cross-validation strategy. Additionally, since the <italic>Vorpal</italic> feature extraction methodology is sensitive to this representation bias as a result of the quantile cutoff for k-mer clustering, we use this same resampling technique in the generation of the clustered k-mer motifs. Leveraging this taxonomically-guided resampling at all steps in the process where model variance could potentially be introduced as a side effect of sampling biases allows for effective model training routines to find a closer approximation of the “true” function relating the predictor variables with the response variable.</p>
+</sec>
+<sec id="S6">
+<title>Training and Test Set Data</title>
+<p id="P11">All viral genome sequences for feature extraction and model training were derived from RVDB14, published October 1<sup>st</sup>, 2018 (<italic>
+<xref ref-type="bibr" rid="R23">23</xref>
+</italic>). Of course, given the publication date cut-off, SARS-CoV-2 records were not present in this data. Additionally, Swine Acute Diarrhea Virus (SADS) sequences were removed from the training data, while bat-HKU2 sequences were left in and labeled non-human pathogens consistent with the rest of the labeling criteria.</p>
+<p id="P12">In the generation of the test set, SADS and SARS-CoV-2 sequences were downloaded from NCBI Virus (<italic>
+<xref ref-type="bibr" rid="R24">24</xref>
+</italic>). We subsampled 10 sequences representing each W.H.O. variant-of-concern (VOC) from these downloaded sequences. The test set was completed by adding the RefSeq SARS-CoV-2 reference sequence as well as WA1, to provide representative diversity of sequences across the duration of the COVID-19 pandemic. A total of 42 complete SARS-CoV-2 genomes comprised the full test set of ‘positive’ examples (i.e., human pathogen class label). A total of 34 complete SADS genomes comprised the full test set of ‘negative’ examples (i.e., non-human-pathogen class label). The designation of SADS as a true negative was supported by the apparent zoonotic barrier between humans and porcine coronaviruses in general, as well as reporting of SADS outbreaks in pig farms in China resulting in no documented human sickness in workers exposed to sick pigs (<italic>
+<xref ref-type="bibr" rid="R25">25</xref>
+</italic>).</p>
+<p id="P13">Models were fit in triplicate to estimate variance in model accuracy and test set probability as a result of training set resampling and random initialization of coordinate descent. Parameters for GSS were .10 splits, meaning 10% of groups were separated for validation with each split, with 100 training and validation splits produced for each training session. The training set of 2276 sequences was randomly super-sampled to 4000 instances using the stratified resampling method described above. P-values for coefficients were not estimated, as predictive power to withheld data is the preferred model evaluation criteria in this context.</p>
+<p id="P14">Model selection was performed by first producing degenerate motifs across combinations of two feature extraction parameters; k-mer size and degeneracy cutoff. Then, each of these feature sets was used to fit models with a grid search cross-validation routine that searched over the L1 regularization parameter <italic>C</italic> using GSS as the cross validator, where <italic>C</italic> is the inverse of the L1 regularization term λ. Quantile cutoff for k-mer clustering was selected for each k-size based on available system memory constraints (2TB) and are stipulated in <italic>
+<xref ref-type="supplementary-material" rid="SD1">Supplementary Table 1</xref>
+</italic>. The complete list of parameters and their values is summarized in <bold>
+<italic>
+<xref ref-type="table" rid="T1">Table 1</xref>
+</italic>
+</bold>. The best estimator was chosen using mean validation set score, where negative Brier score was the scoring function. Brier score is equivalent to mean squared error when the outcome is a binary probability estimate.</p>
+<p id="P15">The code for feature extraction and model fitting, training and test data sets, and corresponding metadata can be accessed at <ext-link ext-link-type="uri" xlink:href="https://github.com/mriglobal/vorpal">https://github.com/mriglobal/vorpal</ext-link>. The repository also contains a persistent version of the down-selected model highlighted in the <italic>Results</italic> (15mer_4.0) and a series of scripts to begin predicting on novel sequences. This software is provided under an MIT license. A complete list of accession numbers contained in the training and test sets can be found at <ext-link ext-link-type="uri" xlink:href="https://github.com/mriglobal/vorpal/tree/master/data">https://github.com/mriglobal/vorpal/tree/master/data</ext-link> in the tab-separated text files containing ‘label’ and ‘group’ assignments for each sequence.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="results">
+<title>Results</title>
+<p id="P16">Following an exhaustive search over feature extraction parameters and the L1 regularization-term hyperparameter, several models were identified that correctly classified the test set at 100% accuracy – specifically, the 15-mer models with 2.0 and 4.0 degeneracy cutoff, and the 17-mer models with 2.0 and 4.0 degeneracy cutoff for k-mer clustering (<bold>
+<italic>
+<xref ref-type="fig" rid="F3">Figure 3</xref>
+</italic>
+</bold>).</p>
+<p id="P17">Parameter search over L1 regularization terms was similar to our previous effort. Uniformly, models were selected by the Brier score criterion (<italic>
+<xref ref-type="bibr" rid="R26">26</xref>
+</italic>) for the strongest regularization term evaluated, which was .01. In <italic>
+<xref ref-type="supplementary-material" rid="SD1">Supplementary Figure 1</xref>
+</italic>, mean cross-validation score is shown to reach an inflection point at this value across all models. We selected one of the 15mer 4.0 model replicates to examine the model predictors in further detail and to provide an example of insights that might be gained from their interpretation about the genomic determinants of human pathogenicity in coronaviruses. Predictor motifs and their corresponding coefficients are provided in <bold>
+<italic>
+<xref ref-type="table" rid="T2">Table 2</xref>
+</italic>
+</bold>. The coefficients in logistic regression can be interpreted as the linear effect of each unit of the predictor variable on the log-odds of the response variable.</p>
+<p id="P18">A comparison between different coronaviruses and their respective utilization of the predictor motifs allows for interpretation of the functional origin. As an example, <bold>
+<italic>
+<xref ref-type="table" rid="T3">Table 3</xref>
+</italic>
+</bold> provides a comparative mapping of the model predictor motif, RATGTTRTTMDWCDA, across a variety of coronavirus species, the corresponding codons for that motif in its genomic context, and the amino acids encoded. The first observation is that these motifs appear in association with human pathogenicity across distantly related coronaviruses across several genera, but in varied genomic loci. Secondly, some motifs provide increased class probability mostly through a binary presence/absence (e.g., DTTGYTTHYTYTRAW), while others, such as NTRNWRNTSNWSHTA, act through frequency enrichment, appearing up to 45 times in some human-pathogen HKU1 isolates and as few as 4 times in Sparrow Coronavirus HKU17. The reuse of these motifs in various genomic contexts, while remaining consistently associated with human pathogenicity in these viruses, suggests phenetic similarity in their function, as well as underscores the importance of the alignment-free characterization of the prediction problem in identifying these phenomena.</p>
+<p id="P19">Interpretation of misclassified instances in the training set, especially for the models that correctly classified the test set sequences, show several interesting patterns. First, proximal phylogenetic ‘near-neighbors’ of known coronaviruses are also proximal in terms of class probability. For instance, WIV16 (<italic>
+<xref ref-type="bibr" rid="R27">27</xref>
+</italic>), which shares &gt;96% sequence identity to SARS-CoV-1, has a class probability of 0.78 while the civet SARS examples like HC/GZ/32/03 have class probabilities of 0.89 (<italic>
+<xref ref-type="supplementary-material" rid="SD1">Supplementary Data</xref>
+</italic>). This trend continues with late-SARS isolates such as WHU having a predicted class probability of 0.95. Of course, this relationship would be expected for the training data, but this relationship is maintained in the new SARS-CoV-2-related sequences published since the beginning of the pandemic. We used an ensemble of all of the models identified in <bold>
+<italic>
+<xref ref-type="fig" rid="F3">Figure 3</xref>,</italic>
+</bold> specifically the 15mer 2.0, 15mer 4.0, 17mer 2.0 and 17mer 4.0 models that successfully generalized to the test set, to predict the class probabilities of these, as well as other novel coronavirus sequences published throughout 2020 and 2021. These results are summarized in <bold>
+<italic>
+<xref ref-type="fig" rid="F4">Figure 4</xref>
+</italic>
+</bold>. Bat coronaviruses with proximity in sequence identity to SARS-CoV-2 (<italic>
+<xref ref-type="bibr" rid="R28">28</xref>, <xref ref-type="bibr" rid="R29">29</xref>, <xref ref-type="bibr" rid="R30">30</xref>
+</italic>), such as BANAL-52, RmYN02, RpYN06 and RaTG13, exhibit human pathogen class probabilities that are proximal to the class probability of SARS-CoV-2. However, while SARS-CoV-2 has the highest mean class probability, it is interesting to note that BANAL-52 has the highest overall sequence identity to SARS-CoV-2 at 96.8%, but is not the closest to SARS-CoV-2 in terms of mean human pathogen class probability.</p>
+<p id="P20">Another interesting pattern observed in the training set was a group of Bat SARS-like and MERS-like viruses that were routinely classified as human pathogens – specifically, members of Jinning cave group of viruses such as Rs4231 and Rs4874, as well as the MERS-likes NL13845 and NL140422 sampled from a cave in Guangdong (<italic>
+<xref ref-type="bibr" rid="R31">31</xref>,<xref ref-type="bibr" rid="R32">32</xref>
+</italic>). These class designations seem to be supported by serological evidence of positivity to SARS-likes reported in the area surrounding the Jinning cave from which these SARS-like viruses were sampled (<italic>
+<xref ref-type="bibr" rid="R31">31</xref>
+</italic>). Finally, human enteric coronavirus 4408 was classified as a non-human pathogen in 35 of the 45 trained models, including those that were 100% accurate on the test set. Complete tables of misclassified training set accession numbers and class probabilities for each model replicate are available in Supplementary data. The frequency of this misclassification is potentially explained by 4408’s status as a strictly child-associated coronavirus (<italic>
+<xref ref-type="bibr" rid="R33">33</xref>
+</italic>). Similarly, the novel Canine alphacoronavirus isolated from a child in Malaysia (<italic>
+<xref ref-type="bibr" rid="R34">34</xref>
+</italic>) in 2018 shares a similar, negative prediction as can been seen in <xref ref-type="fig" rid="F4">Figure 4</xref>. The implications of this nuance in data labeling and the characterization of the problem as a binary classification are examined in the <italic>Discussion</italic>.</p>
+</sec>
+<sec id="S8" sec-type="discussion">
+<title>Discussion</title>
+<p id="P21">Through examination of the model training results, it is possible to see the key determinants of the success of our approach. First, the choice of model – regularized logistic regression – is critical to the success of the models. The 17mer, 3.0 degeneracy models are examples where the models failed to generalize to the test set, but had highest accuracy scores on the training data (i.e., &gt;99%). Controlling this tendency to overfit, especially where certain nuance or ambiguity may exist regarding the virus phenotype that is not captured by the binary response variable, is much more difficult to achieve outside of high bias model families like generalized linear models. Second, the positionally-independent representation of the feature space provided by the <italic>Vorpal</italic> feature extraction methodology allows for identification of genome thematics that emerge as a result of convergent evolution. Finally, the degenerate characteristic of these motif representations introduced by the k-mer clustering clearly contribute to success in extrapolation. This is explained by observing several instances where the models did not successfully generalize to the test set. In many models that were fit with lower degeneracy cutoff parameters, test set probabilities for SARS-CoV-2 were 0.50 because none of the predictor motifs selected during training mapped to SARS-CoV-2 (<bold>
+<italic>
+<xref ref-type="fig" rid="F3">Figure 3</xref>
+</italic>
+</bold>). Higher degeneracy feature spaces still identified predictive motifs, and these motifs continued to be present in the test set.</p>
+<p id="P22">To understand the underlying biological function of the predictor motifs, we examined their genomic context. As an example, RATGTTRTTMDWCDA, shown in <bold>
+<italic>
+<xref ref-type="table" rid="T2">Table 2</xref>
+</italic>
+</bold>, is located in both SARS-CoV-1 and SARS-CoV-2 at the domain boundary in NSP5, the Main Protease (Mpro), between the catalytic domain and the dimerization domain. The arginine that is coded for in the motif has been demonstrated experimentally in SARS-CoV-1 as critical to dimerization (<italic>
+<xref ref-type="bibr" rid="R35">35</xref>
+</italic>). This motif appears a second time in SARS-CoV-1, in the same reading frame, but in the N-terminal domain of Spike protein, at a position immediately following an N-linked glycosylation site. We previously reported the association of N-linked glycosylation sites and motifs explanatory for host isolate phenotypes in Influenza A as a result of host specific rare codon selection (<italic>
+<xref ref-type="bibr" rid="R15">15</xref>
+</italic>). The identification of both N-linked glycosylation sites and protein domain boundaries as being sites of rare codon enrichment provides evidence of a translational efficiency adaptation to facilitate co-translational machinery (<italic>
+<xref ref-type="bibr" rid="R36">36</xref>, <xref ref-type="bibr" rid="R37">37</xref>
+</italic>). The identification of translational efficiency adaptations as critical to viral fitness has started to significantly expand in the scientific literature (38<italic>–40</italic>).</p>
+<p id="P23">Properties of the NTRNWRNTSNWSHTA motif that led to its association with human pathogens are not obvious, but examining its patterns of occurrence provides potential hints. As mentioned, this motif is most abundant in HKU1. However, in addition to this frequency, it also occurs concurrently in the genome with another unique feature of HKU1 for which the functional purpose is not understood – this motif tracks each instance of the Acid Tandem Repeats (ATRs) that occur at varying copy number in the hypervariable region of NSP3 in different strains of HKU1 (<italic>
+<xref ref-type="bibr" rid="R41">41</xref>
+</italic>). This motif also appears to be tracking the abundance of consecutive third-position-thymine codons. The preference of these codons is a well described phenomenon in coronaviruses, but its functional provenance is not well understood and its enrichment specifically in human coronaviruses has not been described (<italic>
+<xref ref-type="bibr" rid="R42">42</xref>, <xref ref-type="bibr" rid="R43">43</xref>
+</italic>).</p>
+<p id="P24">The models also appear to describe a human-pathogen class definition that only includes viruses that can readily transmit between adults. There are now a series of coronaviruses that appear to have the capability to cause clinical illness in children, but the children act as terminal hosts for the virus. This list now includes Canine Alphacoronaviruses observed in Thailand in the early 2000s (<italic>
+<xref ref-type="bibr" rid="R44">44</xref>
+</italic>) and Malaysia in 2018 (<italic>
+<xref ref-type="bibr" rid="R34">34</xref>
+</italic>), Murine Hepatitis Virus detected in SRA datasets from children with febrile illness (<italic>
+<xref ref-type="bibr" rid="R45">45</xref>
+</italic>), Porcine Deltacoronaviruses in children in Haiti in 2014 and 2015 (<italic>
+<xref ref-type="bibr" rid="R46">46</xref>
+</italic>), as well as human enteric coronavirus 4408 (<italic>
+<xref ref-type="bibr" rid="R33">33</xref>
+</italic>).</p>
+<sec id="S9">
+<title>Nuance to class labeling</title>
+<p id="P25">There is also a well-documented divide in the symptomology observed in juveniles and adults for SARS-CoV-2 (<italic>
+<xref ref-type="bibr" rid="R47">47</xref>
+</italic>), that is partially described by lower permissivity of infection not attributable to ACE2 or TMPRSS2 expression levels (<italic>
+<xref ref-type="bibr" rid="R48">48</xref>
+</italic>). The models, notably, do not contain predictor motifs that pertain to these child-specific coronaviruses as they are routinely classified as non-human. While we are modeling a binary response variable in this work, where ‘human pathogen’ is the positive class, a more accurate description of the class labels we have applied might include a likelihood of observance. There appears to be some stratification, where sustained transmission of the virus in humans is <italic>de facto</italic> included as part of the phenotype definition. Viruses that may be capable of spilling over into humans, but who are, for the virus, terminal hosts, have genotypic features which are not captured in our models.</p>
+</sec>
+<sec id="S10">
+<title>A Flexible Framework</title>
+<p id="P26">This characterization of the problem of genotype-to-phenotype prediction using this feature extraction and modeling approach has several distinct advantages. First, assumptions are minimized beyond the independence assumption about predictor interactions in the logistic regression model, and that the information about the phenotype can be contained in the window size of K. These models have the ability to learn predictors that could be in both non-coding and coding regions, and a result of either nucleic acid or amino acid selection processes. It requires nothing other than the complete genome sequence of the virus, and reduces uncertainty that may arise as a result of limitations in accurate annotation or functional proteome estimation. While this effort represents a specific procedure with respect to this feature extraction technique, the theoretical framework is one that can be generally applied any response variable of interest. The task for supervised learning on biological sequence data is to transform to a feature subspace where the learner is interpolating over the feature space as it pertains to the response variable, and is no longer extrapolating. We believe these methodologies are applicable not just across the RNA virus <italic>genome</italic> domain, but also across multiple feature spaces such as protein and RNA secondary structure. We will explore this in future work.</p>
+</sec>
+<sec id="S11">
+<title>Improving Biosurveillance Protocols</title>
+<p id="P27">The implications of the models support a potential reimagining of biosurveillance efforts and pandemic prevention. The ability to predict pathogenic phenotypes of viruses well ahead of spillover, directly from sequence data, can enable more effective focusing of resource allocation for ecological monitoring and prevention. The results described in this work are, to our knowledge, the first demonstration of this capability. Determination of the biological function of model predictors may yield a more detailed understanding of why certain organisms, such as Camels and Civets, seem to act as keystone species for the spillover of certain viral families like <italic>Orthocoronavirinae</italic>. This could produce a road map to understand the host genomic determinants that condition these viral genomes for emergence from their natural reservoirs.</p>
+<p id="P28">Leveraging predictive motifs in field-forward ‘sequence-search’ missions can enable genomic epidemiologists to identify problematic viruses more quickly on site. Despite the criticality of genome assembly and phylogenetic analyses during emerging outbreak scenarios, their cumbersome and time-consuming nature limits the utility and feasibility of sequencing operations in field-forward surveillance efforts and prevents investments in such infrastructure and programs. Predictive motifs can be modeled directly in raw voltage disturbance signals from nanopore platforms (<italic>
+<xref ref-type="bibr" rid="R49">49</xref>
+</italic>). Searching for predictive motifs from raw electrical signal obviates the need for in-field basecalling, enabling more streamlined field-forward sequencing infrastructure. Such infrastructure can alleviate sample bottlenecks at central reference laboratories and establish a more efficient public health response network.</p>
+<p id="P29">As the COVID-19 pandemic has made abundantly clear, the time is now for investments in these types of next-generation biosurveillance ecosystems. Predictive feature-extraction genome modeling frameworks, such as those described here, are poised to underwrite this emerging paradigm.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Information</label>
+<media xlink:href="EMS135454-supplement-Supplementary_Information.pdf" mimetype="application" mime-subtype="pdf" id="N66223" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Croxen</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Hasan</surname>
+<given-names>MR</given-names>
+</name>
+<name>
+<surname>Hsiao</surname>
+<given-names>WWL</given-names>
+</name>
+<name>
+<surname>Hoang</surname>
+<given-names>LM</given-names>
+</name>
+</person-group>
+<article-title>Infection control in the New Age of genomic epidemiology</article-title>
+<source>American Journal of Infection Control</source>
+<year>2017</year>
+<volume>45</volume>
+<fpage>170</fpage>
+<lpage>179</lpage>
+<pub-id pub-id-type="doi">10.1016/j.ajic.2016.05.015</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gardy</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Loman</surname>
+<given-names>NJ</given-names>
+</name>
+</person-group>
+<article-title>Towards a genomics-informed, real-time, Global Pathogen Surveillance System</article-title>
+<source>Nature Reviews Genetics</source>
+<year>2017</year>
+<volume>19</volume>
+<fpage>9</fpage>
+<lpage>20</lpage>
+<pub-id pub-id-type="doi">10.1038/nrg.2017.88</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alteri</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology of SARS-COV-2 reveals multiple lineages and early spread of SARS-COV-2 infections in Lombardy, Italy</article-title>
+<source>Nature Communications</source>
+<year>2021</year>
+<volume>12</volume>
+<pub-id pub-id-type="doi">10.1038/s41467-020-20688-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chakraborty</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Agrawal</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Maiti</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Rapid identification and tracking of SARS-COV-2 variants of concern</article-title>
+<source>The Lancet</source>
+<year>2021</year>
+<volume>397</volume>
+<fpage>1346</fpage>
+<lpage>1347</lpage>
+<pub-id pub-id-type="doi">10.1016/s0140-6736(21)00470-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mollentze</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Babayan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Identifying and prioritizing potential human-infecting viruses from their genome sequences</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<fpage>2020</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Young</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Rogers</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Predicting host taxonomic information from viral genomes: A comparison of feature representations</article-title>
+<source>PLOS Computational Biology</source>
+<year>2020</year>
+<volume>16</volume>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1007894</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Babayan</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Orton</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Streicker</surname>
+<given-names>DG</given-names>
+</name>
+</person-group>
+<article-title>Predicting reservoir hosts and arthropod vectors from evolutionary signatures in rna virus genomes</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>362</volume>
+<fpage>577</fpage>
+<lpage>580</lpage>
+<pub-id pub-id-type="doi">10.1126/science.aap9072</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pavlova</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Machine learning reveals the critical interactions for SARS-COV-2 spike protein binding to ACE2</article-title>
+<source>The Journal of Physical Chemistry Letters</source>
+<year>2021</year>
+<volume>12</volume>
+<fpage>5494</fpage>
+<lpage>5502</lpage>
+<pub-id pub-id-type="doi">10.1021/acs.jpclett.1c01494</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ferrarini</surname>
+<given-names>MG</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genome-wide bioinformatic analyses predict key host and viral factors in SARS-COV-2 pathogenesis</article-title>
+<source>Communications Biology</source>
+<year>2021</year>
+<volume>4</volume>
+<pub-id pub-id-type="doi">10.1038/s42003-021-02095-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hernandez-Alias</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Benisty</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Schaefer</surname>
+<given-names>MH</given-names>
+</name>
+<name>
+<surname>Serrano</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>Translational adaptation of human viruses to the tissues they infect</article-title>
+<source>Cell Reports</source>
+<year>2021</year>
+<volume>34</volume>
+<elocation-id>108872</elocation-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Randhawa</surname>
+<given-names>GS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Machine learning using intrinsic genomic signatures for rapid classification of novel pathogens: Covid-19 case study</article-title>
+<source>PLOS ONE</source>
+<year>2020</year>
+<volume>15</volume>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0232391</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gussow</surname>
+<given-names>AB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic determinants of pathogenicity in SARS-COV-2 and other human coronaviruses</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2020</year>
+<volume>117</volume>
+<fpage>15193</fpage>
+<lpage>15199</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.2008176117</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Grubaugh</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<article-title>Experimental evolution to study virus emergence</article-title>
+<source>Cell</source>
+<year>2017</year>
+<volume>169</volume>
+<fpage>1</fpage>
+<lpage>3</lpage>
+<pub-id pub-id-type="doi">10.1016/j.cell.2017.03.018</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Discovery of a rich gene pool of bat SARS-related coronaviruses provides new insights into the origin of SARS coronavirus</article-title>
+<source>PLOS Pathogens</source>
+<year>2017</year>
+<volume>13</volume>
+<pub-id pub-id-type="doi">10.1371/journal.ppat.1006698</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davis</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Vorpal: A novel RNA virus feature-extraction algorithm demonstrated through interpretable genotype-to-phenotype linear models</article-title>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.02.28.969782</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hahn</surname>
+<given-names>GJ</given-names>
+</name>
+</person-group>
+<article-title>The hazards of extrapolation in regression analysis</article-title>
+<source>Journal of Quality Technology</source>
+<year>1977</year>
+<volume>9</volume>
+<fpage>159</fpage>
+<lpage>165</lpage>
+<pub-id pub-id-type="doi">10.1080/00224065.1977.11980791</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Webb</surname>
+</name>
+<etal/>
+</person-group>
+<article-title>Learning Representations that Support Extrapolation</article-title>
+<source>arXiv:2007.05.059v2 [cs.CV]</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+</person-group>
+<article-title>Pandemics: Spend on surveillance, not prediction</article-title>
+<source>Nature</source>
+<year>2018</year>
+<volume>558</volume>
+<fpage>180</fpage>
+<lpage>182</lpage>
+<pub-id pub-id-type="doi">10.1038/d41586-018-05373-w</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Turlewicz-Podbielska</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Pomorska-Mol</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Porcine coronaviruses: Overview of the state of the art</article-title>
+<source>Virologica Sinica</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1007/s12250-021-00364-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Amer</surname>
+<given-names>HM</given-names>
+</name>
+</person-group>
+<article-title>Bovine-like coronaviruses in domestic and wild ruminants</article-title>
+<source>Animal Health Research Reviews</source>
+<year>2018</year>
+<volume>19</volume>
+<fpage>113</fpage>
+<lpage>124</lpage>
+<pub-id pub-id-type="doi">10.1017/s1466252318000117</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine Learning in Python</article-title>
+<source>The Journal of Machine Learning Research</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>2825</fpage>
+<lpage>2830</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Botev</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Ridder</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Variance reduction</article-title>
+<source>Wiley StatsRef: Statistics Reference Online</source>
+<year>2017</year>
+<fpage>1</fpage>
+<lpage>6</lpage>
+<pub-id pub-id-type="doi">10.1002/9781118445112.stat07975</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goodacre</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Aljanahi</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nandakumar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mikailov</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Khan</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>A reference viral database (RVDB) to enhance bioinformatics analysis of high-throughput sequencing for novel virus detection</article-title>
+<source>mSphere</source>
+<year>2018</year>
+<volume>3</volume>
+<pub-id pub-id-type="doi">10.1128/mspheredirect.00069-18</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hatcher</surname>
+<given-names>EL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Virus variation resource – improved response to emergent viral outbreaks</article-title>
+<source>Nucleic Acids Research</source>
+<year>2016</year>
+<volume>45</volume>
+<pub-id pub-id-type="doi">10.1093/nar/gkw1065</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Fatal swine acute diarrhoea syndrome caused by an HKU2-related coronavirus of Bat Origin</article-title>
+<source>Nature</source>
+<year>2018</year>
+<volume>556</volume>
+<fpage>255</fpage>
+<lpage>258</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-018-0010-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brier</surname>
+<given-names>GW</given-names>
+</name>
+</person-group>
+<article-title>Verification of forecasts expressed in terms of probability</article-title>
+<source>Monthly Weather Review</source>
+<year>1950</year>
+<volume>78</volume>
+<fpage>1</fpage>
+<lpage>2</lpage>
+<pub-id pub-id-type="doi">10.1175/1520-0493(1950)078&lt;0001:VOFEIT&gt;2.0.CO;2</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>X-L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Isolation and characterization of a novel bat coronavirus closely related to the direct progenitor of severe acute respiratory syndrome coronavirus</article-title>
+<source>Journal of Virology</source>
+<year>2016</year>
+<volume>90</volume>
+<fpage>3253</fpage>
+<lpage>3256</lpage>
+<pub-id pub-id-type="doi">10.1128/jvi.02582-15</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A novel bat coronavirus closely related to SARS-COV-2 contains natural insertions at the S1/S2 cleavage site of the spike protein</article-title>
+<source>Current Biology</source>
+<year>2020</year>
+<volume>30</volume>
+<pub-id pub-id-type="doi">10.1016/j.cub.2020.05.023</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Identification of novel Bat Coronaviruses sheds light on the evolutionary origins of SARS-COV-2 and related viruses</article-title>
+<source>Cell</source>
+<year>2021</year>
+<volume>184</volume>
+<pub-id pub-id-type="doi">10.1016/j.cell.2021.06.008</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Temmam</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Coronaviruses with a SARS-COV-2-like receptor-binding domain allowing ACE2-mediated entry into human cells isolated from bats of Indochinese Peninsula</article-title>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.21203/rs.3.rs-871965/v1</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Serological evidence of bat SARS-related coronavirus infection in humans, China</article-title>
+<source>Virologica Sinica</source>
+<year>2018</year>
+<volume>33</volume>
+<fpage>104</fpage>
+<lpage>107</lpage>
+<pub-id pub-id-type="doi">10.1007/s12250-018-0012-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Luo</surname>
+<given-names>C-M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Discovery of novel Bat Coronaviruses in South China that use the same receptor as Middle East respiratory syndrome coronavirus</article-title>
+<source>Journal of Virology</source>
+<year>2018</year>
+<volume>92</volume>
+<pub-id pub-id-type="doi">10.1128/jvi.00116-18</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Han</surname>
+<given-names>MG</given-names>
+</name>
+<name>
+<surname>Cheon</surname>
+<given-names>D-S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Saif</surname>
+<given-names>LJ</given-names>
+</name>
+</person-group>
+<article-title>Cross-protection against a human enteric coronavirus and a virulent bovine enteric coronavirus in Gnotobiotic Calves</article-title>
+<source>Journal of Virology</source>
+<year>2006</year>
+<volume>80</volume>
+<fpage>12350</fpage>
+<lpage>12356</lpage>
+<pub-id pub-id-type="doi">10.1128/jvi.00402-06</pub-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>34</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vlasova</surname>
+<given-names>AN</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Novel canine coronavirus isolated from a hospitalized pneumonia patient, East Malaysia</article-title>
+<source>Clinical Infectious Diseases</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1093/cid/ciab456</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>35</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Two adjacent mutations on the dimer interface of SARS coronavirus 3c-like protease cause different conformational changes in crystal structure</article-title>
+<source>Virology</source>
+<year>2009</year>
+<volume>388</volume>
+<fpage>324</fpage>
+<lpage>334</lpage>
+<pub-id pub-id-type="doi">10.1016/j.virol.2009.03.034</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>36</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chaney</surname>
+<given-names>JL</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Widespread position-specific conservation of synonymous rare codons within coding sequences</article-title>
+<source>PLOS Computational Biology</source>
+<year>2017</year>
+<volume>13</volume>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1005531</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>37</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ebrahimi</surname>
+<given-names>Honarmand K</given-names>
+</name>
+<name>
+<surname>West</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Flefil</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Mass spectrometry approach and Elisa reveal the effect of codon optimization on N-linked glycosylation of HIV-1 gp120</article-title>
+<source>Journal of Proteome Research</source>
+<year>2014</year>
+<volume>13</volume>
+<fpage>5801</fpage>
+<lpage>5811</lpage>
+<pub-id pub-id-type="doi">10.1021/pr500740n</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>38</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Woo</surname>
+<given-names>PC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Comparative analysis of 22 coronavirus HKU1 genomes reveals a novel genotype and evidence of natural recombination in Coronavirus HKU1</article-title>
+<source>Journal of Virology</source>
+<year>2006</year>
+<volume>80</volume>
+<fpage>7136</fpage>
+<lpage>7145</lpage>
+<pub-id pub-id-type="doi">10.1128/jvi.00509-06</pub-id>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>39</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Poon</surname>
+<given-names>LL</given-names>
+</name>
+</person-group>
+<article-title>Multivariate analyses of codon usage of SARS-COV-2 and other betacoronaviruses</article-title>
+<source>Virus Evolution</source>
+<year>2020</year>
+<volume>6</volume>
+<pub-id pub-id-type="doi">10.1093/ve/veaa032</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>40</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hou</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Characterization of codon usage pattern in SARS-COV-2</article-title>
+<source>Virology Journal</source>
+<year>2020</year>
+<volume>17</volume>
+<pub-id pub-id-type="doi">10.1186/s12985-020-01395-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>41</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Theamboonlers</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Human coronavirus infection among children with acute lower respiratory tract infection in Thailand</article-title>
+<source>Intervirology</source>
+<year>2006</year>
+<volume>50</volume>
+<fpage>71</fpage>
+<lpage>77</lpage>
+<pub-id pub-id-type="doi">10.1159/000097392</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>42</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Edgar</surname>
+<given-names>RC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Petabase-scale sequence alignment catalyses viral discovery</article-title>
+<year>2020</year>
+<pub-id pub-id-type="doi">10.1101/2020.08.07.241729</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>43</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lednicky</surname>
+<given-names>JA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence of porcine delta-coronavirus pathogenic infections among children in Haiti through independent zoonoses and convergent evolution</article-title>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.03.19.21253391</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>44</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Age-dependent risks of incidence and mortality of covid-19 in Hubei Province and other parts of China</article-title>
+<source>Frontiers in Medicine</source>
+<year>2020</year>
+<volume>7</volume>
+<pub-id pub-id-type="doi">10.3389/fmed.2020.00190</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>45</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Capraro</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ageing impairs the airway epithelium defence response to SARS-COV-2</article-title>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1101/2021.04.05.437453</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>46</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blanco</surname>
+<given-names>Delgado J</given-names>
+</name>
+<name>
+<surname>Hernandez-Alias</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Cianferoni</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Serrano</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>In silico mutagenesis of human ACE2 with S protein and translational efficiency explain SARS-COV-2 infectivity in different species</article-title>
+<source>PLOS Computational Biology</source>
+<year>2020</year>
+<volume>16</volume>
+<pub-id pub-id-type="doi">10.1371/journal.pcbi.1008450</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>47</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Aviner</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Frydman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Andino</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Cotranslational prolyl hydroxylation is essential for flavivirus biogenesis</article-title>
+<source>Nature</source>
+<year>2021</year>
+<volume>596</volume>
+<fpage>558</fpage>
+<lpage>564</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-021-03851-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>48</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Han</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Monitoring cotranslational protein folding in mammalian cells at codon resolution</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2012</year>
+<volume>109</volume>
+<fpage>12467</fpage>
+<lpage>12472</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1208138109</pub-id>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>49</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kovaka</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ni</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Timp</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Schatz</surname>
+<given-names>MC</given-names>
+</name>
+</person-group>
+<article-title>Targeted nanopore sequencing by real-time mapping of raw electrical signal with UNCALLED</article-title>
+<source>Nature Biotechnology</source>
+<year>2021</year>
+<volume>39</volume>
+<issue>4</issue>
+<fpage>431</fpage>
+<lpage>441</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Example clustering of hypothetical 11mers with a 2.0 degeneracy cutoff parameter. Dashed line indicates maximum distance for flat clustering. This distance cutoff is calculated by dividing degeneracy allowance by k-length. In this example 2.0/11 ≈ .182. The four k-mers of the top branches are collapsed into a single ‘degenerate’ k-mer by substituting ‘H’ for the variable T, A, and C bases in the first position and ‘W’ for the variable T and A bases in the second-to-last position.</p>
+</caption>
+<graphic xlink:href="EMS135454-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>tSNE embedding with features used in the 15mer 4.0 degeneracy-cutoff model examined in results. This visualizes the modality of virus sequences in the sample space.</p>
+</caption>
+<graphic xlink:href="EMS135454-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Human pathogen class probabilities for the test set virus genomes across each all model replicates for each combination of feature extraction parameters. Models are titled according to their k-mer length and allowable k-mer degeneracy (e.g.,“15-mer_4.0”). The classification threshold of 0.5 is shown as a dashed line. Models that correctly classified all 42 SARS-CoV-2 genome assemblies in the test set as a human pathogen are indicated by light-purple-shaded boxes. Ineffective models are gray-shaded. All models correctly classified all 34 SADS test-set genome assemblies as a non-human pathogen. Red asterisk identifies the feature extraction parameters from which the selected model described in the Results was drawn.</p>
+</caption>
+<graphic xlink:href="EMS135454-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Human pathogen class probability predictions from an ensemble of models identified in <xref ref-type="fig" rid="F3">Figure 3</xref>. The dashed line depicts the classification threshold of 0.5. Red-shaded box indicates viruses with mean human pathogen class probabilities across all models above 0.5. Yellow-shaded box indicates those viruses approaching 0.5 threshold. Green-shaded box indicates viruses well below threshold and unlikely to be a human pathogen according to the plurality of the models.</p>
+</caption>
+<graphic xlink:href="EMS135454-f004"/>
+</fig>
+<table-wrap id="T1" orientation="portrait" position="float">
+<label>Table 1</label>
+<caption>
+<p>Parameters for feature extraction and LASSO model hyperparameters. Combinations for k-size and degeneracy cutoff resulted in 15 extracted feature sets. These feature spaces were fit in triplicate with Grid Search over these values for C. This resulted in 45 fitted models for comparison.</p>
+</caption>
+<table frame="hsides" rules="rows">
+<thead>
+<tr>
+<th valign="top" align="left">Tested K-mer <italic>k</italic> size</th>
+<th valign="top" align="left">Tested Degeneracy Cutoffs</th>
+<th valign="top" align="left">Tested L1 Regularization Parameters (<italic>C</italic>)</th>
+</tr>
+</thead>
+<tbody style="background-color:#E7E6E6">
+<tr>
+<td valign="top" align="center">11</td>
+<td valign="top" align="left">1.0, 2.0</td>
+<td valign="top" align="left">.01, 0.1, 1, 10, 100, 1000, 10000</td>
+</tr>
+<tr>
+<td valign="top" align="center">13</td>
+<td valign="top" align="left">1.0, 2.0, 3.0, 4.0</td>
+<td valign="top" align="left">.01, 0.1, 1, 10, 100, 1000, 10000</td>
+</tr>
+<tr>
+<td valign="top" align="center">15</td>
+<td valign="top" align="left">1.0, 2.0, 3.0, 4.0</td>
+<td valign="top" align="left">.01, 0.1, 1, 10, 100, 1000, 10000</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" orientation="portrait" position="float">
+<label>Table 2</label>
+<caption>
+<p>Predictor motifs with non-zero coefficients after LASSO feature selection for the selected 15-mer with 4.0 degeneracy model. Positive coefficients correspond to an increase in the probability of human-pathogen class membership.</p>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr>
+<th valign="top" align="left">Predictor Motif</th>
+<th valign="top" align="left">Coefficient</th>
+</tr>
+</thead>
+<tbody style="background-color:#E7E6E6">
+<tr>
+<td valign="top" align="left">WWRATKTKGRVGDYB</td>
+<td valign="top" align="left">-0.509663863818094</td>
+</tr>
+<tr>
+<td valign="top" align="left">HKTWDKHWATTTRDA</td>
+<td valign="top" align="left">-0.458805349994644</td>
+</tr>
+<tr>
+<td valign="top" align="left">TGWYGHBRNNGYHGY</td>
+<td valign="top" align="left">-0.437080939216503</td>
+</tr>
+<tr>
+<td valign="top" align="left">NKTKGTNGAYGNNDT</td>
+<td valign="top" align="left">-0.114321994201719</td>
+</tr>
+<tr>
+<td valign="top" align="left">TBHTGRTRVHRYWGB</td>
+<td valign="top" align="left">-0.049309692085244</td>
+</tr>
+<tr>
+<td valign="top" align="left">NNVMAAAAAAAAAAA</td>
+<td valign="top" align="left">-0.01307914757284<bold>3</bold>
+</td>
+</tr>
+<tr>
+<td valign="top" align="left">NTRNWRNTSNWSHTA</td>
+<td valign="top" align="left">0.00161762886654</td>
+</tr>
+<tr>
+<td valign="top" align="left">WDGABGGYGKTVAWW</td>
+<td valign="top" align="left">0.008217364487264</td>
+</tr>
+<tr>
+<td valign="top" align="left">KWTWBTSTTTNTGTG</td>
+<td valign="top" align="left">0.046266885640273</td>
+</tr>
+<tr>
+<td valign="top" align="left">WSAHDTTTHTKNTKT</td>
+<td valign="top" align="left">0.161843716501627</td>
+</tr>
+<tr>
+<td valign="top" align="left">DTTWTGATTTTAARK</td>
+<td valign="top" align="left">0.162031904207787</td>
+</tr>
+<tr>
+<td valign="top" align="left">TYDMTRATKWHAAVC</td>
+<td valign="top" align="left">0.211909992935733</td>
+</tr>
+<tr>
+<td valign="top" align="left">BTDDTGYKGTHANAC</td>
+<td valign="top" align="left">0.214019319277427</td>
+</tr>
+<tr>
+<td valign="top" align="left">GRTWBWGATBTTRWK</td>
+<td valign="top" align="left">0.262700119920708</td>
+</tr>
+<tr>
+<td valign="top" align="left">KTACTGRTGMCAATG</td>
+<td valign="top" align="left">0.278025606363307</td>
+</tr>
+<tr>
+<td valign="top" align="left">ABTWBTKVTKKTAAR</td>
+<td valign="top" align="left">0.40624835993548</td>
+</tr>
+<tr>
+<td valign="top" align="left">RATGTTRTTMDWCDA</td>
+<td valign="top" align="left">0.54292346913228<bold>2</bold>
+</td>
+</tr>
+<tr>
+<td valign="top" align="left">DTTGYTTHYTYTRAW</td>
+<td valign="top" align="left">0.747300228144597</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" orientation="portrait" position="float">
+<label>Table 3</label>
+<caption>
+<p>Predictor motif ‘RATGTTRTTMDWCDA’ and the various genomic contexts in which it appears across Alpha-, Beta- and Gammacoronaviruses. The motif always appears in the same reading frame in Alpha- and Betacoronaviruses, while it appears in the +1 position in Turkey Gammacoronavirus (a non-human pathogen).</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th valign="top" align="left">Coronavirus</th>
+<th valign="top" align="left">Accession</th>
+<th valign="top" align="left">Position</th>
+<th valign="top" align="left">Sequence Level</th>
+<th valign="top" align="left">RATGTTRTTMDWCDA</th>
+<th valign="top" align="left">Gene/Domain</th>
+</tr>
+</thead>
+<tbody style="background-color:#E7E6E6">
+<tr>
+<td valign="bottom" align="left" rowspan="2">229E</td>
+<td valign="bottom" align="center" rowspan="2">NC 002645.1</td>
+<td valign="top" align="center" rowspan="2">23071</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   AAT   CAA</td>
+<td valign="top" align="center" rowspan="2">Spike HR1</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        N        Q</td>
+</tr>
+<tr>
+<td valign="bottom" align="left" rowspan="2">NL63</td>
+<td valign="bottom" align="center" rowspan="2">NC 005831.2</td>
+<td valign="top" align="center" rowspan="2">23516</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">Spike HR1</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        L        Q</td>
+</tr>
+<tr>
+<td align="left" valign="bottom" rowspan="6">MERS</td>
+<td align="center" valign="bottom" rowspan="6">NC 019843.3</td>
+<td valign="top" align="center" rowspan="2">5312</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP3 Plpro</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        L        Q</td>
+</tr>
+<tr>
+<td valign="top" align="center" rowspan="2">19594</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">AAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP15 NendoU</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   N        V        V        K        Q</td>
+</tr>
+<tr>
+<td valign="top" align="center" rowspan="2">20065</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP15 NendoU</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        K        Q</td>
+</tr>
+<tr>
+<td align="left" valign="bottom" rowspan="4">SARS-CoV-1</td>
+<td align="center" valign="bottom" rowspan="4">NC 004718.3</td>
+<td valign="top" align="center" rowspan="2">10866</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP5 Mpro</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        R        Q</td>
+</tr>
+<tr>
+<td valign="top" align="center" rowspan="2">21854</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">AAT   GTT   GTT   GTT   CGA</td>
+<td valign="top" align="center" rowspan="2">Spike NTD</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   N        V        V        I         R</td>
+</tr>
+<tr>
+<td valign="bottom" align="left" rowspan="2">SARS-CoV-2</td>
+<td valign="bottom" align="center" rowspan="2">NC 045512.2</td>
+<td valign="top" align="center" rowspan="2">10936</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">DAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP5 Mpro</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        R        Q</td>
+</tr>
+<tr>
+<td valign="bottom" align="left" rowspan="2">AcCOV-JC34</td>
+<td valign="bottom" align="center" rowspan="2">NC 034972.1</td>
+<td valign="top" align="center" rowspan="2">16560</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">GAT   GTT   GTT   GTT   CAA</td>
+<td valign="top" align="center" rowspan="2">NSP13 Helicase</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   D        V        V        K        Q</td>
+</tr>
+<tr>
+<td valign="bottom" align="left" rowspan="2">Turkey GammaCOV</td>
+<td valign="bottom" align="center" rowspan="2">NC 010800.1</td>
+<td valign="top" align="center" rowspan="2">11626</td>
+<td align="right" valign="bottom">Codon</td>
+<td valign="top" align="left">-AA   GTT   TAT   GTT   ACT   A--</td>
+<td valign="top" align="center" rowspan="2">NSP9</td>
+</tr>
+<tr>
+<td align="right" valign="bottom" style="border-top:hidden">Amino acid</td>
+<td valign="top" align="left" style="border-top:hidden">   K       C        Y       Y         T      N</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

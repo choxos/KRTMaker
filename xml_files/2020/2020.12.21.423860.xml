@@ -1,0 +1,1235 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS108924</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.21.423860</article-id>
+<article-id pub-id-type="archive">PPR257157</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Analyzing the vast coronavirus literature with CoronaCentral</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Lever</surname>
+<given-names>Jake</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Altman</surname>
+<given-names>Russ B.</given-names>
+</name>
+</contrib>
+<aff id="A1">Department of Bioengineering, Stanford University, 443 Via Ortega, Stanford, CA 94305, <email>rbaltman@stanford.edu</email>
+</aff>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>24</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>22</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The global SARS-CoV-2 pandemic has caused a surge in research exploring all aspects of the virus and its effects on human health. The overwhelming rate of publications means that human researchers are unable to keep abreast of the research.</p>
+<p id="P2">To ameliorate this, we present the CoronaCentral resource which uses machine learning to process the research literature on SARS-CoV-2 along with articles on SARS-CoV and MERS-CoV. We break the literature down into useful categories and enable analysis of the contents, pace, and emphasis of research during the crisis. These categories cover therapeutics, forecasting as well as growing areas such as “Long Covid” and studies of inequality and misinformation. Using this data, we compare topics that appear in original research articles compared to commentaries and other article types. Finally, using Altmetric data, we identify the topics that have gained the most media attention.</p>
+<p id="P3">This resource, available at <ext-link ext-link-type="uri" xlink:href="https://coronacentral.ai">https://coronacentral.ai</ext-link>, is updated multiple times per day and provides an easy-to-navigate system to find papers in different categories, focussing on different aspects of the virus along with currently trending articles.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Background</title>
+<p id="P4">The pandemic has led to the greatest surge in biomedical research on a single topic in documented history (<xref ref-type="fig" rid="F1">Fig 1</xref>). This research is valuable both to current researchers working to understand the virus and also to future researchers as they examine the long term effects of the virus on different aspects of society. Unfortunately, the vast scale of the literature makes it challenging to evaluate. Machine learning systems should be employed to make it navigable by human researchers and to analyze patterns in it.</p>
+<p id="P5">Several methods have been built to make it easier to search and explore the coronavirus literature. LitCovid broadly categories the literature into 8 large categories, integrates with PubTator, and offers search functionality [<xref ref-type="bibr" rid="R1">1</xref>]. Collabovid uses the category data from LitCovid along with custom search functionality to provide another means of navigating the literature (accessible at <ext-link ext-link-type="uri" xlink:href="https://www.collabovid.org">https://www.collabovid.org</ext-link>). Other methods have developed different search interfaces to the literature such as Covidex [<xref ref-type="bibr" rid="R2">2</xref>]. Topic modeling approaches have also been employed to provide an unsupervised overview of major clusters of published articles [<xref ref-type="bibr" rid="R3">3</xref>] but are unable to provide the same quality as a supervised approach. COVID-SEE integrates several natural language processing analyses including search, unsupervised topic modeling, and word clouds [<xref ref-type="bibr" rid="R4">4</xref>]. The TREC-COVID shared task provided a number of information retrieval challenges on specific COVID-19 topics [<xref ref-type="bibr" rid="R5">5</xref>]. Apart from LitCovid’s limited set of categories, most approaches have avoided categorization and focussed on a search mechanism.</p>
+<p id="P6">We present a detailed categorization system for coronavirus literature, integrated with search and esteem metrics to provide smooth navigation of the literature. We describe our efforts to maintain the CoronaCentral resource which currently categorizes 102,652 articles using machine learning systems based on manual curation of over 3000 articles and a custom category set. This work is designed to assist the research community in understanding the coronavirus literature and the continually-updated CoronaCentral dataset should help in analyzing a high-quality corpus of documents with cleaned metadata.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<p id="P7">To provide more detailed and higher quality topics, we pursue a supervised learning approach and have annotated over 3,200 articles with categories from a set of 38 (<xref ref-type="table" rid="T1">Table 1</xref>). These categories cover the main topics of the papers (e.g. Therapeutics, Forecasting, etc) as well as specific article types (e.g. Review, Comment/Editorial, etc). Using a BERT-based document multi-label classification method, we achieved a micro-F1 score of 0.68 with micro-precision of 0.76 and micro-recall of 0.62. <xref ref-type="table" rid="T2">Table 2</xref> provides a breakdown of the performance by category which shows varying quality of performance with some categories performing very well (e.g. contact tracing and forecasting) and others performing poorly (e.g. long haul) likely due to extremely low representation in the test set. Several other categories are identified using simple rule-based methods including the Book chapters, CDC Weekly Reports, Clinical Trials, and Retractions.</p>
+<p id="P8">As of 21 December 2020, CoronaCentral covers 102,652 papers with Clinical Reports and the Effect on Medical Specialties being the most frequent categories (<xref ref-type="fig" rid="F2">Fig 2</xref>). We made a specific effort to identify papers that discuss the effects on healthcare workers, the psychological aspects of the pandemic, the inequality that has been highlighted by the pandemic, and the long-term health effects of COVID. This final topic is covered by the Long Haul category which currently includes 239 papers. We find the first papers discussing the possible long-term consequences of COVID appeared in April 2020, for example, Kiekens et al [<xref ref-type="bibr" rid="R6">6</xref>]. Since then, there has been a slow steady increase in publications on the challenge of “Long COVID” with ~20 papers per month recently. While all the annotated Long Haul documents used to train our system focus on SARS-CoV-2, our system finds 12 papers for the long-term consequences of SARS-CoV and one for MERS-CoV.</p>
+<p id="P9">Identifying the type of publication is particularly important, given our estimate that 26.2% of coronavirus publications are comments or editorials and not original research. As well as the deep learning-based system for categorization, we use a web-crawling system to augment additional metadata including article type from PubMed and publishers’ websites. This automated categorization predicts papers as one of six types of article type, including Original Research, Meta-analysis, Review, Comment/Editorial, Book chapter, and News.</p>
+<p id="P10">
+<xref ref-type="fig" rid="F3">Figure 3</xref> shows that different topics have drastically different distributions of article types. While almost all papers that look at forecasting or modeling the pandemic are original research, about half of the health policy articles are commentary or editorials. Notable topics with larger proportions of reviews are the more science-focused topics including Molecular Biology, Drug Targets, Therapeutics, and Vaccines. Clinical Trials and papers examining risk factors for coronavirus have a larger proportion of meta-analysis papers than other topics.</p>
+<p id="P11">The predicted categories reveal the trend of publishing during the SARS-CoV-2 pandemic (<xref ref-type="fig" rid="F4">Fig 4</xref>). Early original research focused on disease forecasting and modeling and has steadily decreased as a proportion compared to other areas of research, such as the risk factors of coronavirus, which have increased. Clinical reports that document patient symptoms have been steady, as a proportion, throughout the pandemic. In commentaries and editorials, the main topic has been the effect on different medical specialties (e.g. neonatology) and discussion on how the disciplines should adapt to the pandemic. Other common commentary topics include implementation of health policy and the psychological impact of the pandemic.</p>
+<p id="P12">Along with the article types and topics, we extract 13 relevant types of biomedical entities from the text to make the literature easier to navigate and identify important subtopics. <xref ref-type="fig" rid="F4">Figure 4</xref> provides a summary of the most common for each entity type broken down by the three coronaviruses. This includes geographic locations which enable quick identification of clinical reports in specific areas.</p>
+<p id="P13">Preprint servers have proven incredibly important as <xref ref-type="fig" rid="F6">Figure 6</xref> shows with preprint servers leading the list of article sources. However, they only account for 5.7% of all articles. We find that the four indexed preprint servers have been used for dramatically different topics (<xref ref-type="fig" rid="F7">Fig 7</xref>). As might be expected the more mathematically focussed papers, such as Forecasting/Modelling have been submitted to arXiv. Molecular biology research tends to go to bioRxiv and therapeutics research to ChemRxiv. MedRxiv has a more diverse clinical focused set of topics with the majority of the Risk Factors papers being sent there.</p>
+<p id="P14">The previous research on the SARS and MERS outbreaks are valuable sources of knowledge for viral biology, health policy implications, and many other aspects. We integrate research literature of these previous viruses along with SARS-CoV-2 and <xref ref-type="fig" rid="F8">Figure 8</xref> shows the different time ranges as well as the dramatic scale of the SARS-CoV-2 literature compared to the other two viruses. Notably, we are over the peak of SARS-CoV-2 literature, with 12,076 publications in May 2020. As an example of the strength of integrating previous coronavirus research, we identify drug candidates explored for SARS-CoV and MERS-CoV that have not yet appeared in SARS-CoV-2 publications (<xref ref-type="table" rid="T3">Table 3</xref>). Loperamide (Imodium) was found to inhibit MERS-CoV in low-micromolar concentrations in-vitro [<xref ref-type="bibr" rid="R7">7</xref>]. Two antibiotics (oritavancin and telavancin) were found to inhibit SARS and MERS viral entry and have not been further explored for SARS-CoV-2 [<xref ref-type="bibr" rid="R8">8</xref>].</p>
+<p id="P15">We integrate Altmetric data into CoronaCentral to identify papers that have received wide coverage in mass and social media. This enables users to quickly identify high-profile papers in each category as well as see currently trending articles. <xref ref-type="fig" rid="F9">Figure 9</xref> shows the breakdown of topics in the papers with the 100 papers with highest Altmetric scores. The distribution looks very different from the overall distribution of coronavirus literature with topics like Therapeutics, Transmission, and Prevention being more highly represented, reflecting the interest in understanding treatments and prevention methods.</p>
+</sec>
+<sec id="S3" sec-type="methods">
+<title>Methods</title>
+<sec id="S4">
+<title>Data Collection</title>
+<p id="P16">The CORD-19 dataset [<xref ref-type="bibr" rid="R9">9</xref>] and PubMed articles containing relevant coronavirus keywords are downloaded daily. Articles are cleaned to fix Unicode issues, remove erroneous text from abstracts, and identify publication dates. Non-English language articles are filtered out using a rule-based system based on sets of stopwords in multiple languages. To remove duplicates, documents were merged using identifiers, combinations of title and journal, and other metadata. Metadata from the publishers’ websites is also integrated which enables normalization of consistent journal names and further abstract text fixes. Additional manual fixes to title, abstracts, and metadata are applied to the corpus. Altmetric data is updated regularly and integrated with the data.</p>
+</sec>
+<sec id="S5">
+<title>Categories</title>
+<p id="P17">Manual evaluation of an initial 1000 randomly selected articles was undertaken to produce a draft list of categories. These categories cover both the topic (e.g. Therapeutics) and the article type (e.g. Comment/Editorial). An iterative process was undertaken to adjust the category list to provide better coverage for the curated documents. A further 500 documents were sampled later in the pandemic and another iterative process was undertaken as new topics were appearing in larger quantities (e.g. contact tracing). Finally, several smaller topics that had not been captured by random sampling were identified and added to the category list (e.g. Long Haul). As the coronavirus literature grows, we may need to add new categories as new topics become more prominent.</p>
+</sec>
+<sec id="S6">
+<title>Category Annotation</title>
+<p id="P18">Articles were manually annotated for categories using a custom web interface. The first 1500 randomly sampled articles were annotated during the iterative process that defined the set of categories. A further ~1200 articles have been identified for annotation through manual identification, their high Altmetric scores or uncertainty in the machine learning system. Some of the articles were flagged using the CoronaCentral “Flag Mistake” system while others were identified through manual searching to improve representation of different topics. A final 500 articles were randomly selected and annotated for use as a held-out test set.</p>
+</sec>
+<sec id="S7">
+<title>Category Prediction</title>
+<p id="P19">Cross-validation using a 75%/25% training/validation split was used to evaluate BERT-based document classifier as well as traditional methods as a baseline. Multi-label classifiers were implemented using ktrain [<xref ref-type="bibr" rid="R10">10</xref>] and HuggingFace models for BERT models and scikit-learn for others [<xref ref-type="bibr" rid="R11">11</xref>]. Hyperparameter optimization involved a grid search over parameters shown in <xref ref-type="table" rid="T4">Table 4</xref> and selecting for the highest macro F1 score. The best model used the microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract BERT model [<xref ref-type="bibr" rid="R12">12</xref>] with 32 epochs, a learning rate of 5e-05, and a batch size of 8. This model was then evaluated on the held-out test set for final performance and a full model was retrained using these parameters with all annotated documents and applied to the full coronavirus literature</p>
+</sec>
+<sec id="S8">
+<title>Additional Category Identification</title>
+<p id="P20">The BERT system predicts five article types but not Original Research. Documents are tagged as Original Research if not predicted as another article type. Clinical trials are identified through regular expression search for trial identifiers and book chapters for chapter headings in the title. The metadata provided by the publisher’s website is combined with PubMed metadata to identify some article types, e.g. documents tagged as Commentary or Viewpoints on publisher’s websites were categorized as Comment/Editorial. Retractions are identified through PubMed flags and titles beginning with “Retraction”, “Retracted” or “Withdrawn”.</p>
+</sec>
+<sec id="S9">
+<title>Entity Extraction</title>
+<p id="P21">A set of entity types that would improve search across the literature was developed, e.g. drug names, locations, and more. This set was refined based on entities that would be particularly relevant for different categories (e.g. Drug for Therapeutics, Symptom for Clinical Reports, etc). A final 13 entity types were chosen and lists of entities were sourced from WikiData or built manually. Entities of types Drug, Location, Symptom, Medical Specialty, and Gene/Protein are gathered from Wikidata using a series of SPARQL queries. A custom list of Prevention Methods, Risk Factors, Test Types, Transmission Types, and Vaccine Types is also constructed based on Wikidata entities. Additional customizations are made to remove incorrect synonyms. A custom list of coronavirus proteins was added to the Gene/Protein list. Exact string matching is used to identify mentions of entities in text using the Wikidata set of synonyms and a custom set of stopwords. A simple disambiguation method was used to link virus proteins with the relevant virus based on mentions of the virus elsewhere in the document. This meant that a mention of a “Spike protein” in a MERS paper would correctly link it to the MERS-CoV spike protein and not to the SARS-CoV-2 spike protein. If multiple viruses were mentioned, no disambiguation was made.</p>
+</sec>
+<sec id="S10">
+<title>Interface</title>
+<p id="P22">The data is presented through a website built using NextJS with a MySQL database backend. Visualizations are generated using ChartJS and mapping using Leaflet.</p>
+</sec>
+<sec id="S11">
+<title>PubTator Concept Analysis</title>
+<p id="P23">To find the concepts that have had the largest difference in frequency, PubTator Central [<xref ref-type="bibr" rid="R13">13</xref>] was used as it covers a broad range of biomedical entity types such as disease, drug, and gene. It was aligned with PubMed and PubMed Central articles to link publication dates to entity annotations. This used the BioText project (<ext-link ext-link-type="uri" xlink:href="https://github.com/jakelever/biotext">https://github.com/jakelever/biotext</ext-link>). Concept counts were calculated per publication year and the differences between these ordered. Entity mentions of the type “Species” were removed due to lack of value as “human” dominated the data.</p>
+</sec>
+<sec id="S12">
+<title>Drug Analysis</title>
+<p id="P24">To identifying drugs of interest from SARS and MERS research, SARS/MERS papers that were predicted to have the topic Therapeutics were filtered and drug mentions were extracted. These drug mentions were cross-referenced against all drug references in SARS-CoV-2 papers and those with a match were kept. The remaining drugs were manually reviewed using their source SARS/MERS papers to identify those that had shown efficacy in a SARS/MERS model.</p>
+</sec>
+<sec id="S13">
+<title>Other Analyses</title>
+<p id="P25">All other analyses were implemented in Python and visualized using R and ggplot2.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S14">
+<title>Acknowledgements</title>
+<p>This project has been supported by the Chan Zuckerberg Biohub and through the National Library of Medicine LM05652 grant (RBA).</p>
+</ack>
+<sec id="S15" sec-type="data-availability">
+<title>Code Availability</title>
+<p id="P26">The code for the machine learning system and paper analysis are available at <ext-link ext-link-type="uri" xlink:href="https://github.com/jakelever/corona-ml">https://github.com/jakelever/corona-ml</ext-link>. The code for the web interface is available at <ext-link ext-link-type="uri" xlink:href="https://github.com/jakelever/corona-web">https://github.com/jakelever/corona-web</ext-link>.</p>
+</sec>
+<sec id="S16" sec-type="data-availability">
+<title>Data availability</title>
+<p id="P27">The data is hosted on Zenodo and available at <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.4383289">https://doi.org/10.5281/zenodo.4383289</ext-link>.</p>
+</sec>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Allot</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>Keep up with the latest coronavirus research</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<fpage>193</fpage>
+<lpage>193</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Gupta</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Pradeep</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Covidex: Neural ranking models and keyword search infrastructure for the covid-19 open research dataset</article-title>
+<source>arXiv preprint arXiv:200707846</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Doanvo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Qian</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Ramjee</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Piontkivska</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Desai</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Majumder</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Machine learning maps research needs in covid-19 literature</article-title>
+<source>Patterns</source>
+<year>2020</year>
+<comment>100123</comment>
+<pub-id pub-id-type="doi">10.1016/j.patter.2020.100123</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Verspoor</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Šuster</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Otmakhova</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Mendis</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhai</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>COVID-see: Scientific evidence explorer for covid-19 related research</article-title>
+<source>arXiv preprint arXiv:200807880</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roberts</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Alam</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bedrick</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Demner-Fushman</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Soboroff</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>TREC-covid: Rationale and structure of an information retrieval shared task for covid-19</article-title>
+<source>Journal of the American Medical Informatics Association</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kiekens</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Boldrini</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Andreoli</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Avesani</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Gamna</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Grandi</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Rehabilitation and respiratory management in the acute and early post-acute phase.”Instant paper from the field” on rehabilitation answers to the covid-19 emergency</article-title>
+<source>Eur J Phys Rehabil Med</source>
+<year>2020</year>
+<fpage>06305</fpage>
+<lpage>4</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>De Wilde</surname>
+<given-names>AH</given-names>
+</name>
+<name>
+<surname>Jochmans</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Posthuma</surname>
+<given-names>CC</given-names>
+</name>
+<name>
+<surname>Zevenhoven-Dobbe</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Van Nieuwkoop</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Bestebroer</surname>
+<given-names>TM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Screening of an fda-approved compound library identifies four small-molecule inhibitors of middle east respiratory syndrome coronavirus replication in cell culture</article-title>
+<source>Antimicrobial agents and chemotherapy</source>
+<year>2014</year>
+<volume>58</volume>
+<fpage>4875</fpage>
+<lpage>4884</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Bai</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Glycopeptide antibiotics potently inhibit cathepsin l in the late endosome/lysosome and block the entry of ebola virus, middle east respiratory syndrome coronavirus (mers-cov), and severe acute respiratory syndrome coronavirus (sars-cov)</article-title>
+<source>Journal of Biological Chemistry</source>
+<year>2016</year>
+<volume>291</volume>
+<fpage>9218</fpage>
+<lpage>9232</lpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>LL</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Reas</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Burdick</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>CORD-19: The COVID-19 open research dataset</article-title>
+<source>Proceedings of the 1st workshop on NLP for COVID-19 at ACL</source>
+<year>2020</year>
+<comment>Online: Association for Computational Linguistics; Available: <ext-link ext-link-type="uri" xlink:href="https://www.aclweb.org/anthology/2020.nlpcovid19-acl.1">https://www.aclweb.org/anthology/2020.nlpcovid19-acl.1</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maiya</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Ktrain: A low-code library for augmented machine learning</article-title>
+<source>arXiv</source>
+<year>2020</year>
+<comment>arXiv:2004.10703 [cs.LG]</comment>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pedregosa</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Varoquaux</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Gramfort</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Michel</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Thirion</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Grisel</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Scikit-learn: Machine learning in Python</article-title>
+<source>Journal of Machine Learning Research</source>
+<year>2011</year>
+<volume>12</volume>
+<fpage>2825</fpage>
+<lpage>2830</lpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tinn</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Lucas</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Usuyama</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Domain-specific language model pretraining for biomedical natural language processing</article-title>
+<source>arXiv preprint arXiv:200715779</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wei</surname>
+<given-names>C-H</given-names>
+</name>
+<name>
+<surname>Allot</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Leaman</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>Z</given-names>
+</name>
+</person-group>
+<article-title>PubTator central: Automated concept annotation for biomedical full text articles</article-title>
+<source>Nucleic acids research</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>W587</fpage>
+<lpage>W593</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>The change in focus of research on different biomedical concepts is measured using mentions of biomedical entities in PubTator. The greatest increase is seen by COVID research and unfortunately followed by death, infection, stress, and anxiety in the same time period.</p>
+</caption>
+<graphic xlink:href="EMS108924-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>Frequency of each category across the entire coronavirus literature.</p>
+</caption>
+<graphic xlink:href="EMS108924-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Different proportions of article types for each topic category</p>
+</caption>
+<graphic xlink:href="EMS108924-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>The trajectories of the top five topics for original research and comment/editorial articles for SARS-CoV-2.</p>
+</caption>
+<graphic xlink:href="EMS108924-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Top 15 entities for each entity type extracted from published literature for each virus.</p>
+</caption>
+<graphic xlink:href="EMS108924-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>Top journals and preprint servers</p>
+</caption>
+<graphic xlink:href="EMS108924-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<p>Topic breakdown for each preprint server and non-preprint peer-reviewed journals. Infrequent topics in preprints are grouped in Other.</p>
+</caption>
+<graphic xlink:href="EMS108924-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<p>Publication rate for each virus</p>
+</caption>
+<graphic xlink:href="EMS108924-f008"/>
+</fig>
+<fig id="F9" position="float">
+<label>Figure 9</label>
+<caption>
+<p>The number of papers categorized with each topic in the 100 papers with highest Altmetric scores</p>
+</caption>
+<graphic xlink:href="EMS108924-f009"/>
+</fig>
+<table-wrap id="T1" orientation="portrait" position="float">
+<label>Table 1</label>
+<caption>
+<title>Each article is labelled with multiple categories for their main topics and article type.</title>
+</caption>
+<table frame="hsides" rules="rows">
+<tbody>
+<tr style="border-top:hidden">
+<td align="left" valign="top">Category</td>
+<td align="left" valign="top">Description</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Book Chapters</td>
+<td align="left" valign="top">Book chapters that provide reviews or research on coronaviruses</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">CDC Weekly Reports</td>
+<td align="left" valign="top">CDC Weekly Reports that provide a summary of the latest information about the pandemic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Clinical Reports</td>
+<td align="left" valign="top">Clinical reports of patients discussing their symptoms or clinical course</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Clinical Trials</td>
+<td align="left" valign="top">Registered clinical trials for treating the virus</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Comments &amp; Editorials</td>
+<td align="left" valign="top">Commentary, editorials and other short articles that are not original research</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Communication</td>
+<td align="left" valign="top">Research examining health messaging and communication with the general public and health professionals</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Contact Tracing</td>
+<td align="left" valign="top">Research studying the implementation and effect of contact tracing</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Diagnostics</td>
+<td align="left" valign="top">Research developing and testing methods to diagnose the virus</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Drug Targets</td>
+<td align="left" valign="top">Research discussing potential therapeutic coronavirus targets</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Education</td>
+<td align="left" valign="top">Research examining the effect of the coronavirus on the education system and how it has changed</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Forecasting &amp; Modelling</td>
+<td align="left" valign="top">Research focussed on forecasting the spread or modelling the dynamics of the virus</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Health Policy</td>
+<td align="left" valign="top">Research discussing proposed and implemented health policy and its effect on the virus and society</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Healthcare Workers</td>
+<td align="left" valign="top">Research studying the effect of the virus on healthcare workers</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Imaging</td>
+<td align="left" valign="top">Research documenting CT and other scans of patients</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Immunology</td>
+<td align="left" valign="top">Research studying the interactions of the virus and the immune system</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Inequality</td>
+<td align="left" valign="top">Research studying the uneven health and economic outcomes for different groups</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Infection Reports</td>
+<td align="left" valign="top">Research documenting cases of virus spread through and between communities or countries</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Long Haul</td>
+<td align="left" valign="top">Research examining the long-term effects on coronavirus patients</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Medical Devices</td>
+<td align="left" valign="top">Research investigating medical devices used to treat the virus</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Medical Specialties</td>
+<td align="left" valign="top">Research examining the effect on and mitigations required by different medicial specialties</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Misinformation</td>
+<td align="left" valign="top">Research studying the challenges of misinformation and deceptive communications involving the pandemic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Model Systems &amp; Tools</td>
+<td align="left" valign="top">Research proposing new model systems, tools and assays to study the virus</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Molecular Biology</td>
+<td align="left" valign="top">Research studying the molecular biology of the virus or host</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">News</td>
+<td align="left" valign="top">News articles from academic journals and other sources indexed by PubMed or CORD-19</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Non-human</td>
+<td align="left" valign="top">Research examining the effect of the virus in animals</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Non-medical</td>
+<td align="left" valign="top">Research examining the effect of the virus on other research areas (e.g. economics)</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Pediatrics</td>
+<td align="left" valign="top">Research studying the effect of the virus on children</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Prevalence</td>
+<td align="left" valign="top">Research studying the level of infections in different communities</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Prevention</td>
+<td align="left" valign="top">Research examining tools for slowing the spread of the virus (e.g. PPE)</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Psychology</td>
+<td align="left" valign="top">Research studying the effect on patients and healthcare workers mental health and understanding of risk</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Recommendations</td>
+<td align="left" valign="top">Research providing recommendations to medical professionals and others related to coronavirus</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Retractions</td>
+<td align="left" valign="top">Articles that have been withdrawn by the authors or the journal</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Reviews</td>
+<td align="left" valign="top">Review articles focussing on a variety of topics related to the virus</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Risk Factors</td>
+<td align="left" valign="top">Research examining risk factors for infection and severe symptoms</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Surveillance</td>
+<td align="left" valign="top">Research developing methods for surveillance of the disease spread</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Therapeutics</td>
+<td align="left" valign="top">Research studying the use of new and existing drugs for combating the virus</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Transmission</td>
+<td align="left" valign="top">Research studying the means of transmission of the virus</td>
+<td align="left" valign="top"/>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Vaccines</td>
+<td align="left" valign="top">Research examining the development of vaccines</td>
+<td align="left" valign="top"/>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" orientation="portrait" position="float">
+<label>Table 2</label>
+<caption>
+<title>Machine learning results on different categories for held-out test set of 500 documents.</title>
+</caption>
+<table frame="hsides" rules="rows">
+<tbody>
+<tr style="border-top:hidden">
+<td align="left" valign="top">Category</td>
+<td align="right" valign="top">Precision</td>
+<td align="right" valign="top">Recall</td>
+<td align="right" valign="top">F1</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Clinical Reports</td>
+<td align="right" valign="top">0.84</td>
+<td align="right" valign="top">0.63</td>
+<td align="right" valign="top">0.72</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Comment/Editorial</td>
+<td align="right" valign="top">0.73</td>
+<td align="right" valign="top">0.69</td>
+<td align="right" valign="top">0.71</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Communication</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.25</td>
+<td align="right" valign="top">0.33</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Contact Tracing</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">1.00</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Diagnostics</td>
+<td align="right" valign="top">0.93</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.88</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Drug Targets</td>
+<td align="right" valign="top">0.67</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.57</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Education</td>
+<td align="right" valign="top">0.63</td>
+<td align="right" valign="top">0.71</td>
+<td align="right" valign="top">0.67</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Effect on Medical Specialties</td>
+<td align="right" valign="top">0.79</td>
+<td align="right" valign="top">0.49</td>
+<td align="right" valign="top">0.61</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Forecasting &amp; Modelling</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.88</td>
+<td align="right" valign="top">0.93</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Health Policy</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.32</td>
+<td align="right" valign="top">0.39</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Healthcare Workers</td>
+<td align="right" valign="top">0.80</td>
+<td align="right" valign="top">0.89</td>
+<td align="right" valign="top">0.84</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Imaging</td>
+<td align="right" valign="top">0.93</td>
+<td align="right" valign="top">0.72</td>
+<td align="right" valign="top">0.81</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Immunology</td>
+<td align="right" valign="top">0.44</td>
+<td align="right" valign="top">0.44</td>
+<td align="right" valign="top">0.44</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Inequality</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.71</td>
+<td align="right" valign="top">0.77</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Infection Reports</td>
+<td align="right" valign="top">0.75</td>
+<td align="right" valign="top">0.30</td>
+<td align="right" valign="top">0.43</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Long Haul</td>
+<td align="right" valign="top">0.00</td>
+<td align="right" valign="top">0.00</td>
+<td align="right" valign="top">0.00</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Medical Devices</td>
+<td align="right" valign="top">0.71</td>
+<td align="right" valign="top">0.63</td>
+<td align="right" valign="top">0.67</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Meta-analysis</td>
+<td align="right" valign="top">0.75</td>
+<td align="right" valign="top">0.86</td>
+<td align="right" valign="top">0.80</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Misinformation</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.67</td>
+<td align="right" valign="top">0.80</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Model Systems &amp; Tools</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.20</td>
+<td align="right" valign="top">0.33</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Molecular Biology</td>
+<td align="right" valign="top">0.72</td>
+<td align="right" valign="top">0.68</td>
+<td align="right" valign="top">0.70</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">News</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.40</td>
+<td align="right" valign="top">0.44</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Non-human</td>
+<td align="right" valign="top">0.83</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.63</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Non-medical</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.43</td>
+<td align="right" valign="top">0.61</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Pediatrics</td>
+<td align="right" valign="top">0.79</td>
+<td align="right" valign="top">0.79</td>
+<td align="right" valign="top">0.79</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Prevalence</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.56</td>
+<td align="right" valign="top">0.71</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Prevention</td>
+<td align="right" valign="top">0.72</td>
+<td align="right" valign="top">0.56</td>
+<td align="right" valign="top">0.63</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Psychology</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.64</td>
+<td align="right" valign="top">0.78</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Recommendations</td>
+<td align="right" valign="top">0.70</td>
+<td align="right" valign="top">0.54</td>
+<td align="right" valign="top">0.61</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Review</td>
+<td align="right" valign="top">0.57</td>
+<td align="right" valign="top">0.75</td>
+<td align="right" valign="top">0.65</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Risk Factors</td>
+<td align="right" valign="top">0.65</td>
+<td align="right" valign="top">0.51</td>
+<td align="right" valign="top">0.57</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Surveillance</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.50</td>
+<td align="right" valign="top">0.67</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Therapeutics</td>
+<td align="right" valign="top">0.70</td>
+<td align="right" valign="top">0.68</td>
+<td align="right" valign="top">0.69</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Transmission</td>
+<td align="right" valign="top">0.75</td>
+<td align="right" valign="top">0.75</td>
+<td align="right" valign="top">0.75</td>
+</tr>
+<tr>
+<td align="left" valign="top">Vaccines</td>
+<td align="right" valign="top">1.00</td>
+<td align="right" valign="top">0.33</td>
+<td align="right" valign="top">0.50</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">MICRO</td>
+<td align="right" valign="top">0.76</td>
+<td align="right" valign="top">0.62</td>
+<td align="right" valign="top">0.68</td>
+</tr>
+<tr>
+<td align="left" valign="top">MACRO</td>
+<td align="right" valign="top">0.76</td>
+<td align="right" valign="top">0.58</td>
+<td align="right" valign="top">0.64</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" orientation="portrait" position="float">
+<label>Table 3</label>
+<caption>
+<title>Drugs discussed in SARS/MERS Therapeutics papers that have not appeared in SARS-CoV-2 papers</title>
+</caption>
+<table frame="hsides" rules="rows">
+<tbody>
+<tr style="border-top:hidden">
+<td align="left" valign="top">Drug</td>
+<td align="right" valign="top"># of SARS/MERS Papers</td>
+<td align="left" valign="top">Effective in SARS/MERS screening</td>
+<td align="left" valign="top">Description</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">enfuvirtide</td>
+<td align="right" valign="top">5</td>
+<td align="left" valign="top">No</td>
+<td align="left" valign="top">HIV fusion inhibitor</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Interferon alfacon-1</td>
+<td align="right" valign="top">4</td>
+<td align="left" valign="top">Unclear</td>
+<td align="left" valign="top">Interferons</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">hexachlorophene</td>
+<td align="right" valign="top">3</td>
+<td align="left" valign="top">Yes</td>
+<td align="left" valign="top">Disinfectant</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">alendronic acid</td>
+<td align="right" valign="top">2</td>
+<td align="left" valign="top">Not relevant</td>
+<td align="left" valign="top">Used for osteonecrosis</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">ethacrynic acid</td>
+<td align="right" valign="top">2</td>
+<td align="left" valign="top">Yes, for derivations</td>
+<td align="left" valign="top">Loop diuretic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">promazine</td>
+<td align="right" valign="top">2</td>
+<td align="left" valign="top">No</td>
+<td align="left" valign="top">Antipsychotic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">triclosan</td>
+<td align="right" valign="top">2</td>
+<td align="left" valign="top">No</td>
+<td align="left" valign="top">Antibacterial/antifungal</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Interferon Alfa-2a, Recombinant</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Unclear, with ribavirin</td>
+<td align="left" valign="top">Interferons</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">L-phenylalanine</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes, for derivations</td>
+<td align="left" valign="top">Isomer of amino acid</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Nitroprusside</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">No</td>
+<td align="left" valign="top">Blood pressure med</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Palivizumab</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Not relevant</td>
+<td align="left" valign="top">Monoclonal antibody for RSV</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">adefovir dipivoxil</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Not relevant</td>
+<td align="left" valign="top">RTI for HepB</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">givosiran</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Not relevant</td>
+<td align="left" valign="top">Used for hepatic porphyria</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">loperamide</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes</td>
+<td align="left" valign="top">Diarrhea treatment</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">oritavancin</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes</td>
+<td align="left" valign="top">Antibiotic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">phenazopyridine</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes, for other coronaviruses</td>
+<td align="left" valign="top">Analgesic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">saracatinib</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes</td>
+<td align="left" valign="top">Kinase inhibitor</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">telavancin</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Yes</td>
+<td align="left" valign="top">Antibiotic</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">tobramycin</td>
+<td align="right" valign="top">1</td>
+<td align="left" valign="top">Not relevant</td>
+<td align="left" valign="top">Antibiotic</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" orientation="portrait" position="float">
+<label>Table 4</label>
+<caption>
+<title>Parameter values searched for different classifier types</title>
+</caption>
+<table frame="hsides" rules="rows">
+<tbody>
+<tr style="border-top:hidden">
+<td align="left" valign="top">Classifier</td>
+<td align="left" valign="top">Parameter</td>
+<td align="left" valign="top">Options</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">BERT</td>
+<td align="left" valign="top">Epochs</td>
+<td align="left" valign="top">4, 8, 12, 16, 24, 32, 48, 64, 80, 96</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">BERT</td>
+<td align="left" valign="top">Learning Rate</td>
+<td align="left" valign="top">1e-3, 5e-4, 1e-4, 5e-5, 1e-5, 5e-6</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">BERT</td>
+<td align="left" valign="top">Model</td>
+<td align="left" valign="top">BlueBert, dmis-lab/biobert-v1.1, microsoft/BiomedNLP- PubMedBERT-base-uncased-abstract-fulltext, microsoft/BiomedNLP-PubMedBERT-base-uncased- abstract, allenai/scibert_scivocab_uncased, allenai/scibert_scivocab_cased’</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Logistic Regression / Linear SVC / Random Forests</td>
+<td align="left" valign="top">SVD Dimensionality Reduction</td>
+<td align="left" valign="top">None, 8, 16, 32, 64, 128</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Logistic Regression / Linear SVC</td>
+<td align="left" valign="top">C</td>
+<td align="left" valign="top">0.1, 1, 10, 20</td>
+</tr>
+<tr style="border-bottom:hidden">
+<td align="left" valign="top">Random Forests</td>
+<td align="left" valign="top">No of Estimators</td>
+<td align="left" valign="top">50, 100, 200</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,2468 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS107792</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.03.409755</article-id>
+<article-id pub-id-type="archive">PPR249162</article-id>
+<article-version article-version-type="publisher-id">3</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Multi-Level Attention Graph Neural Network for Clinically Interpretable Pathway-Level Biomarkers Discovery</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Xing</surname>
+<given-names>Xiaohan</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Yang</surname>
+<given-names>Fan</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Hang</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>Jun</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Zhao</surname>
+<given-names>Yu</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A4">4</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>Junzhou</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Meng</surname>
+<given-names>Max Q.-H.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Yao</surname>
+<given-names>Jianhua</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>The Chinese University of Hong Kong</aff>
+<aff id="A2">
+<label>2</label>Tencent AI Lab</aff>
+<aff id="A3">
+<label>3</label>Xiamen University</aff>
+<aff id="A4">
+<label>4</label>Technical University of Munich</aff>
+<author-notes>
+<corresp id="CR1">Jianhua Yao is the corresponding author (<email>jianhuayao@tencent.com</email>).</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>06</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>04</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Precision medicine, regarded as the future of healthcare, is gaining increasing attention these years. As an essential part of precision medicine, clinical omics have been successfully applied in disease diagnosis and prognosis using machine learning techniques. However, existing methods mainly make predictions based on genelevel individual features or their random combinations, none of the previous work has considered the activation of signaling pathways. Therefore, the model interpretability and accuracy are limited, and reasonable signaling pathways are yet to be discovered. In this paper, we propose a novel multi-level attention graph neural network (MLA-GNN), which applies weighted correlation network analysis (WGCNA) to format the omic data of each patient into graph-structured data, and then constructs multi-level graph features, and fuses them through a well-designed multi-level graph feature fully fusion (MGFFF) module to conduct multitask prediction. Moreover, a novel full-gradient graph saliency mechanism is developed to make the MLA-GNN interpretable. MLA-GNN achieves state-of-the-art performance on transcriptomic data from TCGA-LGG/TCGA-GBM and proteomic data from COVID-19/non-COVID-19 patient sera. More importantly, the proposed model's decision can be interpreted in the signaling pathway level and is consistent with the clinical understanding.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Precision medicine aims at enhancing the treatment effect compared to one-fits-all products by providing personalized treatment plans, medical decisions, and products (<xref ref-type="bibr" rid="R27">Yau 2019</xref>). One natural way to assign patients into customized subgroups is through clinical omic data, such as the data from genomics, transcriptomics, and proteomics. Among the omic data, biomarkers which indicate the biological state or disease progression are generally applied for disease diagnosis and prognosis. Researchers usually detect gene mutations or specific individual gene expression profiles (GEPs) to discover biomarkers. The GEPs can be represented either at the transcription level using transcriptomics or at the protein level using proteomics. In addition to the above biomarkers, pathway-level biomarkers have recently been proposed and proven to have unique advantages in medical outcome predictions (<xref ref-type="bibr" rid="R1">Ben-Hamo et al. 2020</xref>).</p>
+<p id="P3">Although omic data have been studied in disease diagnosis and prognosis (<xref ref-type="bibr" rid="R29">Zhang et al. 2018</xref>; <xref ref-type="bibr" rid="R19">Shen et al. 2020</xref>; <xref ref-type="bibr" rid="R3">Chen et al. 2017</xref>), there remain some problems to be solved. First, existing methods mainly make predictions based on individual GEPs or their random combinations, which cannot correctly reflect the complex disease mechanism, thus yielding limited performance. Second, relying on random combinations of GEPs, the methods have poor generalizability due to the batch effects (<xref ref-type="bibr" rid="R10">Haghverdi et al. 2018</xref>), which are caused by the instability of GEPs on different batches of data due to the differences in experiment times, handlers, reagent lots, etc. Third, the biological regulatory network is a cascading amplification process. A small change in the transcription factor can amplify its signal, and result in a great change of functional proteins. Statistical analysis can only discover functional proteins with great changes while ignoring the driven factor of the disease, which are clinically relevant and usually used as the drug target. Furthermore, current research mainly focuses on transcriptomics while ignoring the irreplaceability of proteomics. In fact, some disease development (e.g., the infectious disease COVID-19) can only be reflected and detected by proteomics (e.g., sera GEPs). Without enough proteomics researches, current methods cannot comprehensively reveal the underlying disease mechanism.</p>
+<p id="P4">To solve these problems, we thoroughly inspect the omic data and delicately design our method. The omic data is non-Euclidean since the GEPs do not form grid-structures like image data, meaning the convolutional neural networks (CNNs) that achieve great success in computer vision are not suitable for processing the omic data. Instead, the omic data can be represented in a graph structure since the transcription factors and the functional proteins make up a hierarchical regulatory network in biology. Considering these characteristics, we employ graph neural networks (GNNs) to exploit the information contained in the non-Euclidean graph-structured omic data. Specifically, we format the omic data into WGCNA graphs, which connect the GEPs that perform similar functions or on the same signaling pathway, to mimic the GEP connections in the organism. Then, we propose a multi-level attention graph neural network (MLA-GNN) to imitate the hierarchical regulatory network. As the layer deepens, the MLA-GNN gradually integrates the GEPs on the same signaling pathway, and amplify the contribution of the driven factors, thus can better reveal the underlying disease mechanism or biological process. Further-more, we develop a full-gradient graph saliency mechanism to interpret the model performance and discover pathway-level biomarkers. By imitating the biological regulatory process and identifying pathway-level biomarkers, the proposed MLA-GNN is robust to batch effects, resulting in efficiency and accuracy on prediction tasks on the transcriptomic data as well as the proteomic data. Our contributions in this work can be summarized as follows: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P5">We propose a concise and robust MLA-GNN on omic data to imitate biological processes and discover pathway-level biomarkers, supporting survival prediction and classification. To the best of our knowledge, MLA-GNN is the first work that utilizes GNNs to explore the prior structured information contained in the WGCNA graphs.</p>
+</list-item>
+<list-item>
+<p id="P6">We develop a novel full-gradient graph saliency (FGS) mechanism for the interpretation of GNN-based models and validate its superiority on the proposed MLA-GNN.</p>
+</list-item>
+<list-item>
+<p id="P7">Using the FGS mechanism, the MLA-GNN can discover clinically interpretable pathway-level biomarkers, which are relevant but cannot be discovered by existing methods.</p>
+</list-item>
+<list-item>
+<p id="P8">We perform extensive experiments on different tasks using transcriptomic data and proteomic data. The results demonstrate that the superiority and robustness of the MLA-GNN compared to state-of-the-art methods.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S2">
+<title>Related Work</title>
+<p id="P9">In this section, we introduce the existing methods for clinical omics analysis.</p>
+<sec id="S3">
+<title>Statistical Approaches for GEP Analysis</title>
+<p id="P10">At present, most of the clinical analysis on GEPs are based on statistical approaches (<xref ref-type="bibr" rid="R3">Chen et al. 2017</xref>; <xref ref-type="bibr" rid="R29">Zhang et al. 2018</xref>; <xref ref-type="bibr" rid="R26">Yang et al. 2018</xref>), where differentially expressed proteins are calculated using a certain fold change and p-value threshold by t-test or its variants. Unsupervised learning methods, especially hierarchical clustering, are often used for disease subtyping. For instance, comprehensive LUAD proteogenomics exposes multi-omic clusters and immune subtypes (<xref ref-type="bibr" rid="R9">Gillette et al. 2020</xref>). However, it cannot provide a specific decision bound to predict the efficacy or the subtype of each patient, and often has a high false discovery rate due to the “large p, small n” problem (<xref ref-type="bibr" rid="R7">Diao and Vidyashankar 2013</xref>), hindering its clinical application.</p>
+</sec>
+<sec id="S4">
+<title>Machine Learning-based GEP Analysis Methods</title>
+<p id="P11">In recent years, machine learning has been widely employed in the medical field (<xref ref-type="bibr" rid="R30">Zhao et al. 2020</xref>; <xref ref-type="bibr" rid="R25">Wang et al. 2020</xref>; <xref ref-type="bibr" rid="R15">Liang et al. 2020</xref>). Encouraged by these studies, an increasing number of machine learning-based methods are applied to omic data. Random forest is reported to successfully predict the risk of preterm delivery of pregnant women based on cell-free RNA (<xref ref-type="bibr" rid="R17">Ngo et al. 2018</xref>). Support Vector Machine (SVM) using single-cell transcriptomic data is applied to predict brain development through distinguishing neocortical cells and neural progenitor cells (<xref ref-type="bibr" rid="R11">Hu et al. 2016</xref>). However, these methods require great efforts in hand-crafted feature engineering and have limited generalizability.</p>
+</sec>
+<sec id="S5">
+<title>Deep Learning-based GEP Analysis Methods</title>
+<p id="P12">Deep learning, as the most recent iteration of the machine learning method, has been applied to GEP analysis. Self-Normalizing Network (SNN), as a variant of fully connected neural networks, achieves state-of-the-art performance on cancer diagnosis and prognosis tasks using RNAseq data (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>). However, the features in SNN are randomly combined based on the weight matrix between adjacent layers, such random combination cannot fully exploit the inherent structure information of the omic data. Recently, GNNs (<xref ref-type="bibr" rid="R13">Kipf and Welling 2016</xref>; <xref ref-type="bibr" rid="R22">Veličković et al. 2017</xref>) have been applied to predict the node-level embeddings of Protein-Protein Interaction (PPI) graphs. However, graph-level predictions, which have great clinical significance in predicting the phenotype or survival time of each patient, are under-studied.</p>
+</sec>
+</sec>
+<sec id="S6" sec-type="methods">
+<title>Methods</title>
+<p id="P13">The overview of the proposed MLA-GNN is illustrated in <xref ref-type="fig" rid="F1">Figure 1</xref>. Given the training data <italic>X<sup>N×K</sup>
+</italic> for <italic>N</italic> patients (<italic>K</italic> GEPs for each patient), we first construct the edge matrix <italic>E<sup>K×K</sup>
+</italic> through WGCNA analysis (<xref ref-type="bibr" rid="R14">Langfelder and Horvath 2008</xref>). Then, each patient can be represented by a graph <italic>G</italic>
+<sub>1</sub> = <italic>G</italic>(<italic>V <sup>K×</sup>
+</italic>
+<sup>1</sup>
+<italic>, E<sup>K×K</sup>
+</italic>), where <italic>V <sup>K×</sup>
+</italic>
+<sup>1</sup> represents the features of <italic>K</italic> nodes and the edge matrix <italic>E<sup>K×K</sup>
+</italic> denotes the edge connections in the graph. We then utilize several graph attention (GAT) layers (<xref ref-type="bibr" rid="R22">Veličković et al. 2017</xref>) to construct hierarchical graph features <italic>G</italic>
+<sub>2</sub> and <italic>G</italic>
+<sub>3</sub> from the WGCNA graph <italic>G</italic>
+<sub>1</sub>. In the proposed multi-level graph feature fully fusion (MGFFF) module, the multi-level graph features are fused after linear projection (LP) and vectorization. Then, the fused feature is sent to the last stage of the pipeline, a sequential network for multi-task prediction, such as disease classification and survival prediction. Furthermore, we propose a novel full-gradient graph saliency (FGS) mechanism to reveal the importance of each node on the graph, thus providing clinical interpretation for the proposed model.</p>
+<sec id="S7">
+<title>Gene Co-expression Computation</title>
+<p id="P14">In order to employ GNNs for omics analysis, the first step is to format the omic data of each patient into a graph which is specified by an input feature <italic>V</italic> and an edge matrix <italic>E</italic>. Suppose each patient is represented by <italic>K</italic> GEPs, the feature can be represented by <italic>V <sup>K×</sup>
+</italic>
+<sup>1</sup>, which corresponds to a graph with <italic>K</italic> nodes, with each node contains the expression of a gene. As shown in <xref ref-type="fig" rid="F1">Figure 1 (a)</xref>, we perform gene co-expression computation through WGCNA analysis to calculate the edge matrix <italic>E</italic>. Specifically, for the training data <italic>X<sup>N×K</sup>
+</italic> (where <italic>N</italic> denotes the number of patients in the training set), the expression profile of each gene (node) is characterized by an <italic>N</italic>-dimension vector. For any two nodes <italic>v<sub>i</sub>
+</italic> and <italic>v<sub>j</sub>
+</italic> ∈ <italic>R<sup>N</sup>
+</italic>, their pairwise correlation <italic>A<sub>ij</sub>
+</italic> is calculated as <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+<mml:msqrt>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msubsup>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>N</mml:mi>
+</mml:msubsup>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>n</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M2">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M3">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>v</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:math>
+</inline-formula> are the average features of the node <italic>v<sub>i</sub>
+</italic> and <italic>v<sub>j</sub>
+</italic>. In this way, the nodes with similar gene expressions are a connected with larger adjacency values.</p>
+<p id="P15">To construct the edge matrix <italic>E</italic>, we binarize the continuous values in the adjacency matrix <italic>A</italic> through <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M4">
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:msub>
+<mml:mi>A</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>&gt;</mml:mo>
+<mml:mi>a</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>j</mml:mi>
+<mml:mo>_</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mi>h</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>o</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>h</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where the hyper parameter <italic>adj_thresh</italic> is optimized by an automated machine learning (<xref ref-type="bibr" rid="R24">Waldrop, Youn, and Patterson 2014</xref>) algorithm. Note that the edge matrix <italic>E</italic> is calculated based on all training data, thus is not patient-specific and does not need to be computed repeatedly.</p>
+<p id="P16">Utilizing the edge matrix <italic>E</italic>, we format each patient into a WGCNA graph <italic>G</italic>
+<sub>1</sub> = <italic>G</italic>(<italic>V <sup>K×</sup>
+</italic>
+<sup>1</sup>
+<italic>, E<sup>K×K</sup>
+</italic>). In the WGCNA graph, nodes with similar gene expressions are connected by edges, while others are not. It is reported in (<xref ref-type="bibr" rid="R14">Langfelder and Horvath 2008</xref>) that genes with similar expressions usually conduct similar functions and are more likely to be mapped to the same signaling pathway. Therefore, the genes on a signaling pathway are naturally connected in the WGCNA graph, thus could be processed to extract pathway-level information that cannot be discovered by existing methods.</p>
+</sec>
+<sec id="S8">
+<title>Multi-Level Graph Construction</title>
+<p id="P17">For each patient, the constructed WGCNA graph <italic>G</italic>
+<sub>1</sub> = <italic>G</italic>(<italic>V <sup>K×</sup>
+</italic>
+<sup>1</sup>
+<italic>, E<sup>K×K</sup>
+</italic>) is fed into a stack of GAT layers to construct multi-level graph features. GAT layer is an advanced graph convolutional layer which outputs each node feature as the weighted combination of its neighboring nodes and the node itself. A self-attention mechanism is performed to compute the attention coefficient between the node and its neighbors. For example, the attention coefficient between the node <italic>v<sub>i</sub>
+</italic> ∈ <italic>R<sup>h</sup>
+</italic> and its neighbor <italic>v<sub>j</sub>
+</italic> ∈ <italic>R<sup>h</sup>
+</italic> is computed as <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M5">
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>‖</mml:mo>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>W</italic>
+<sub>1</sub> is the weight parameter of fully connected layer, denotes the concatenation operation, and a fully connected layer with weight parameter <italic>W</italic>
+<sub>2</sub> ∈ <italic>R</italic>
+<sup>2<italic>h</italic>
+</sup> encodes the corre-lation between the node <italic>i</italic> and node <italic>j</italic>. Then, the attention coefficients are normalized using the softmax function <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M6">
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>e</mml:mi>
+<mml:mi>x</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:msub>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mrow>
+<mml:mi>e</mml:mi>
+<mml:mi>x</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> there <italic>k</italic> ∈ <italic>N<sub>i</sub>
+</italic> denotes all first-order neighbors of the node <italic>i</italic> and the node itself. After that, the normalized attention coefficients <italic>α<sub>ij</sub>
+</italic> are used to compute a linear combination of the corresponding features as the output features for the node <italic>i</italic>: <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M7">
+<mml:msubsup>
+<mml:mi>v</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mi>E</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mi>U</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi>N</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mstyle>
+<mml:msub>
+<mml:mi>W</mml:mi>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:msub>
+<mml:mi>v</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where ELU, a combination of Sigmoid and ReLU, is the non-linear activation function. According to <xref ref-type="disp-formula" rid="FD5">Eq. 5</xref>, the features of neighboring nodes with high similarity are integrated into the target node with large weights.</p>
+<p id="P18">As aforementioned, GEPs on the same signaling pathway are more likely to be connected in the WGCNA graphs. Therefore, the output feature of each node in the graph after the GAT layer is the weighted combination of the GEP features on the signaling pathway, which is a natural way to extract the feature representations in the pathway-level. To the best of our knowledge, this work is the first to utilize GNNs to explicitly explore the prior structured information contained in the WGCNA graphs.</p>
+</sec>
+<sec id="S9">
+<title>Multi-Level Graph Feature Fully Fusion</title>
+<p id="P19">As shown in <xref ref-type="fig" rid="F1">Figure 1</xref>, there are three different levels of graphs, including the input graph <italic>G</italic>
+<sub>1</sub>, and the generated high-level graphs <italic>G</italic>
+<sub>2</sub> and <italic>G</italic>
+<sub>3</sub>. These graphs, although having the same number of nodes, contain hierarchical information. Specifically, the feature of a node in <italic>G</italic> <sub>1</sub> represents the expression of a specific gene, while each node in <italic>G</italic> <sub>2</sub> or <italic>G</italic>
+<sub>3</sub> contains features from many GEPs in a signaling pathway. Therefore, we denote the features from <italic>G</italic>
+<sub>1</sub> as local GEP features and those from <italic>G</italic>
+<sub>2</sub> and <italic>G</italic>
+<sub>3</sub> as global pathway features.</p>
+<p id="P20">Since both local GEP features and global pathway features are important in omics representation learning and phenotype prediction (<xref ref-type="bibr" rid="R1">Ben-Hamo et al. 2020</xref>), we fuse the multi-level graph features to produce more discriminative feature representation. However, due to the different node dimensions in multi-level features, direct concatenation would put more weights on the graph at a higher level. To this end, we first perform linear projection by a fully connected layer to generate high-level graph features <inline-formula>
+<mml:math id="M8">
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>2</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M9">
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>3</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:math>
+</inline-formula> with reduced node dimension. Then, the features <italic>G</italic>
+<sub>1</sub>, <inline-formula>
+<mml:math id="M10">
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>2</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+<mml:mspace width="0.3em"/>
+<mml:mtext>and</mml:mtext>
+<mml:mspace width="0.3em"/>
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>3</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:math>
+</inline-formula> are vectorized to generate three same-dimension feature vectors <italic>F</italic>
+<sub>1</sub>, <italic>F</italic>
+<sub>2</sub>, <italic>F</italic>
+<sub>3</sub> ∈ <italic>R<sup>K</sup>
+</italic>, which are concatenated to pro-duce the fused feature <italic>F ∈ R</italic>
+<italic>
+<sup>3K</sup>
+</italic>. By this design, the net-work could adaptively select the most meaningful informa-tion during the training process and find the desired repre-sentation for each node, which will lead to a leap in model capacity. Benefiting from the global pathway-level informa-tion, the fused feature <italic>F ∈ R</italic>
+<italic>
+<sup>3K</sup>
+</italic> enables the model to dis-cover high-level biomarkers (e.g., transcription factors) that cannot be discovered by the original input feature <italic>F</italic>
+<sub>1</sub> ∈ <italic>R<sup>K</sup>
+</italic>. This is of great significance to bioinformatics research and clinical applications.</p>
+<p id="P21">It is noteworthy that different from the common methods which generate graph representations by pooling across all the nodes, our method compresses the features inside each node while keeping the node structure in the graph. This is a specific design in this work, and the reason is that each node corresponding to an individual GEP has its special biological meaning, thus cannot be compressed across nodes.</p>
+</sec>
+<sec id="S10">
+<title>Multi-Task Prediction</title>
+<p id="P22">The proposed MLA-GNN is designed to address multiple different clinical tasks. As shown in <xref ref-type="fig" rid="F1">Figure 1</xref>, the fused feature <italic>F</italic> is encoded by a sequential fully connected layers to perform disease classification and survival prediction in the multi-task prediction module.</p>
+<p id="P23">For the disease classification task, the output <italic>y ∈ R<sup>c</sup>
+</italic> denotes the probability scores of <italic>c</italic> classes. This task is optimized by the cross-entropy loss. For the survival prediction task, the output <italic>y ∈ R</italic>
+<sup>1</sup> denotes “hazard ratio”. And the cox loss is calculated as <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M11">
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>x</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>C</mml:mi>
+<mml:mo>(</mml:mo>
+<mml:mi>p</mml:mi>
+<mml:mo>)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:msub>
+<mml:mo>≥</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munder>
+<mml:mrow>
+<mml:mi>exp</mml:mi>
+</mml:mrow>
+</mml:mstyle>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>q</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>C</italic>(<italic>p</italic>) = 1 means the <italic>p</italic>-th patient is censored, and only censored patients are included in the cox loss computation.</p>
+<p id="P24">Note that the proposed model degrades to SNN (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>) if we utilize the input feature <italic>F</italic>
+<sub>1</sub> rather than the fused feature <italic>F</italic> for multi-task prediction.</p>
+</sec>
+<sec id="S11">
+<title>Full-Gradient Graph Saliency</title>
+<p id="P25">Currently, increasing concern regarding the interpretability of deep neural networks has been raised. A clinically interpretable model, which can reveal the working mechanism and improve the credibility of the model, is especially demanded in the clinical community. In this paper, considering the success of full-gradient saliency in CNNs (<xref ref-type="bibr" rid="R20">Srinivas and Fleuret 2019</xref>), we develop a novel full-gradient graph saliency (FGS) mechanism to interpret GNNs and provide clinical explanations for the proposed MLA-GNN.</p>
+<p id="P26">In the MLA-GNN, the node on the input graph <italic>G</italic>
+<sub>1</sub> represents the expression of an individual gene and may have limited importance (local importance). However, the node on <italic>G</italic>
+<sub>2</sub> and <italic>G</italic>
+<sub>3</sub> combining a group of GEPs may be critical if they form an important signaling pathway (global importance). From the view of the clinical community, the local importance could reveal low-level functional biomarkers, and the global importance help discovers high-level regulatory factors. Thus, they are both crucial in clinical interpretation and biological research. To this end, the FGS mechanism is designed to reveal node importance by integrating the gradients of multi-level graph features.</p>
+<p id="P27">First, for the <italic>p</italic>-th patient, we deduce level-wise feature importance by computing the gradients of target <italic>t<sub>p</sub>
+</italic> over the input graph <italic>G</italic>
+<sub>1</sub> and over the intermediate graphs <inline-formula>
+<mml:math id="M12">
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>2</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>3</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+<mml:mo>.</mml:mo>
+</mml:math>
+</inline-formula> Specifically, for <italic>l</italic> ∈ {1, 2, 3} corresponding to the graph features of different levels (i.e., <italic>G</italic>
+<sub>1</sub>, <inline-formula>
+<mml:math id="M13">
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>2</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mi>G</mml:mi>
+<mml:mn>3</mml:mn>
+<mml:mo>′</mml:mo>
+</mml:msubsup>
+</mml:math>
+</inline-formula>), the gradient for the <italic>i</italic>-th node of the <italic>p</italic>-th patient is calculated by <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M14">
+<mml:msubsup>
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+<mml:mi>l</mml:mi>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mi>R</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>L</mml:mi>
+<mml:mi>U</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>∂</mml:mo>
+<mml:msub>
+<mml:mi>t</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>∂</mml:mo>
+<mml:msubsup>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+<mml:mi>l</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M15">
+<mml:msubsup>
+<mml:mi>v</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+<mml:mi>l</mml:mi>
+</mml:msubsup>
+</mml:math>
+</inline-formula> is the feature of the <italic>i</italic>-th node in the <italic>l</italic>-th level of the <italic>p</italic>-th patient, ReLU is the activation function which is utilized to remove negative gradient response. According to the different tasks, the target <italic>t<sub>p</sub>
+</italic> in <xref ref-type="disp-formula" rid="FD7">Eq. 7</xref> is defined as <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M16">
+<mml:msub>
+<mml:mi>t</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mrow>
+<mml:mtable columnalign="left">
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mi>u</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>v</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr columnalign="left">
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>×</mml:mo>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <italic>y<sub>p</sub>
+</italic> and <italic>g<sub>p</sub>
+</italic> are the prediction and ground-truth labels of the <italic>p</italic>-th patient.</p>
+<p id="P28">Then, we compute the saliency score <italic>s<sub>i</sub>
+</italic> for the <italic>i</italic>-th node by aggregating the gradients cross three levels and all patients, which is defined as <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M17">
+<mml:msub>
+<mml:mi>s</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mn>3</mml:mn>
+</mml:munderover>
+<mml:mrow>
+<mml:mstyle displaystyle="true">
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:munder>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>s</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>p</mml:mi>
+</mml:mrow>
+<mml:mi>l</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P29">The FGS mechanism would reveal the contribution of each GEP to the final prediction. The top GEPs with high saliency scores are recognized as biomarkers and will be analyzed by biological methods for further biological insights.</p>
+</sec>
+</sec>
+<sec id="S12">
+<title>Experiment</title>
+<p id="P30">To comprehensively evaluate the performance of MLA-GNN, we conduct experiments on two public datasets, including transcriptomic data and proteomic data separately, for the tasks of survival prediction, histological grading, and COVID-19 diagnosis. Moreover, taking the TCGA-LGG/TCGA-GBM dataset as an example, we show the paradigm of the model interpretability which is an important breakthrough in clinical omics.</p>
+<sec id="S13">
+<title>Datasets</title>
+<p id="P31">The summary of the datasets used in the experiments is shown in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+<sec id="S14">
+<title>Glioma Dataset: RNAseq of glioma patients for survival prediction and histological grading</title>
+<p id="P32">The glioma cases are collected from the TCGA-GBM and TCGA-LGG projects. The dataset contains a total of 769 patients. Each case contains 240-dimensional RNAseq data curated from the TCGA and cBioprotal platforms (<xref ref-type="bibr" rid="R2">Cerami et al. 2012</xref>). The corresponding clinical information includes survival outcomes and histological grading (grade II, grade III, and grade IV), as the labels to be predicted by the models.</p>
+</sec>
+<sec id="S15">
+<title>COVID-19 Dataset: Proteomic data of the COVID-19 patients sera for diagnosis</title>
+<p id="P33">The outbreak of the COVID-19 pandemic has brought a global crisis. Recently, the sera proteomic data from some COVID-19 cases have been released (<xref ref-type="bibr" rid="R19">Shen et al. 2020</xref>). We also apply MLA-GNN to the classification of COVID-19 patients, contributing to the understanding and auxiliary diagnosis of COVID-19. The dataset contains 34 COVID-19 patients and 36 non-COVID-19 patients, with 791 proteins identified in the sera samples.</p>
+</sec>
+</sec>
+<sec id="S16">
+<title>Implementation Details</title>
+<p id="P34">We implement the proposed MLA-GNN with Pytorch (<xref ref-type="bibr" rid="R18">Paszke et al. 2017</xref>) and Pytorch Geometric library (<xref ref-type="bibr" rid="R8">Fey and Lenssen 2019</xref>). The model is trained in an end-to-end manner utilizing Adam optimizer and with batch size set to 8. The learning rate is initialized as 0.002 and linearly decayed in the training process. For the COVID-19 dataset, we employ the SelectKBest function in the scikit-learn package to reduce the feature dimensions and use the selected features as input to the proposed model. To tackle the class imbalance problem, we employ the “WeightedRandomSampler” strategy to prepare each training batch data.</p>
+<p id="P35">To validate the effectiveness and robustness of the proposed method, we conduct cross-validation in the experiments. Specifically, 15-fold cross-validation is performed on the glioma dataset, to be consistent with (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>) for a fair comparison. For the COVID-19 dataset, we perform 5-fold cross-validation considering the relatively small amount of data.</p>
+</sec>
+<sec id="S17">
+<title>Evaluation</title>
+<p id="P36">For the survival prediction task, performance of the MLA-GNN is compared with the SNN (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>), cox-PH model (<xref ref-type="bibr" rid="R6">Cox 1972</xref>), and cox-nnet (<xref ref-type="bibr" rid="R5">Ching and Garmire 2018</xref>). The performances of these models are evaluated with c-index, which is generally employed to measure the performance of survival prediction.</p>
+<p id="P37">For the histological grading and COVID-19 diagnosis tasks, the performance of the MLA-GNN is compared with the SNN (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>), SVM (<xref ref-type="bibr" rid="R21">Suykens and Vandewalle 1999</xref>), and Random Forest (<xref ref-type="bibr" rid="R16">Liaw, Wiener et al. 2002</xref>). These models are evaluated by overall accuracy, precision, recall, and F1-score.</p>
+<p id="P38">To evaluate the effectiveness of feature fusion in the MGFFF module, we conduct ablation studies to compare the performance of the fused feature <italic>F</italic> and the single-level feature <italic>F</italic>
+<sub>1</sub>, <italic>F</italic>
+<sub>2</sub>, and <italic>F</italic>
+<sub>3</sub>. For clarity, we denote the model with a single-level feature as Single-Level Attention Graph Neural Network (SLA-GNN). Therefore, the models with feature <italic>F</italic>
+<sub>1</sub>, <italic>F</italic>
+<sub>2</sub>, and <italic>F</italic>
+<sub>3</sub> are named as SLA-GNN-level1 (which is the same as the SNN model), SLA-GNN-level2, and SLA-GNN-level3, respectively.</p>
+</sec>
+</sec>
+<sec id="S18" sec-type="results | discussion">
+<title>Results and Discussion</title>
+<sec id="S19">
+<title>Experimental Results</title>
+<sec id="S20">
+<title>Performance on the glioma dataset for survival prediction and histological grading</title>
+<p id="P39">
+<xref ref-type="table" rid="T2">Table 2</xref> shows the model performance on the survival prediction task of the glioma dataset. The MLA-GNN achieves the c-index of 0.7620, out-performing the cox-PH, cox-nnet, and the current state-of-the-art SNN by a large margin. This result validates the superiority of the proposed MLA-GNN. Furthermore, we can observe performance gains of the MLA-GNN over SLA-GNNs at different levels. This indicates that the fused feature <italic>F</italic> (used in MLA-GNN) is more discriminative than the single-level features (used in SLA-GNNs), thus demonstrating the effectiveness of feature fusion in the MGFFF module.</p>
+<p id="P40">For the histological grading task, we present the model performance in <xref ref-type="table" rid="T3">Table 3</xref>. Our proposed MLA-GNN achieves an accuracy of 0.6920, significantly outperforming two commonly used machine learning methods (i.e., SVM and Random Forest), and the deep neural network SNN. Further-more, compared with SLA-GNNs which make predictions based on single-level features, the MLA-GNN achieves better performance since more comprehensive information is represented by the multi-level fused feature <italic>F</italic>.</p>
+</sec>
+<sec id="S21">
+<title>Performance on the COVID-19 dataset for diagnosis</title>
+<p id="P41">Comparing with the histological grading of the glioma dataset, the binary classification of the COVID-19 dataset is an easier task since the features of COVID-19 patients and non-COVID-19 patients are very different. The model performance is shown in <xref ref-type="table" rid="T4">Table 4</xref>. Compared with existing methods (i.e., SVM, Random Forest, and SNN) and SLAGNNs, our proposed MLA-GNN achieves state-of-the-art performance with an accuracy of 0.9305, which further validates the effectiveness of the MLA-GNN and the MGFFF module on a different task and a different omic dataset.</p>
+<p id="P42">These results are of great significance since this is the first work to explore and validate the capability of GNNs on proteomic data. With satisfying performance, the MLA-GNN can serve as a tool to assist COVID-19 diagnosis and disease mechanism discovery.</p>
+</sec>
+</sec>
+<sec id="S22" sec-type="discussion">
+<title>Discussion</title>
+<p id="P43">As aforementioned, MLA-GNN achieves the best performance on three different tasks and two different omic datasets. By comparing the results comprehensively, we can gain several insights: <list list-type="simple" id="L2">
+<list-item>
+<label>(1)</label>
+<p id="P44">Although deep learning-based methods have shown great promises in medical applications, the deep network SNN did not show obvious improvements comparing with other shallow methods. This suggests that the proper design of deep learning algorithms specific to omic data is required to achieve superior performance.</p>
+</list-item>
+<list-item>
+<label>(2)</label>
+<p id="P45">In all experiments, the MLA-GNN consistently out-performs SLA-GNNs, thus suggesting the superiority of the fused feature <italic>F</italic> over single-level features. We further take the grading task of the glioma dataset as an example to visualize the feature distributions. As shown in <xref ref-type="fig" rid="F2">Figure 2</xref>, the fused feature <italic>F</italic> tends to be more separable than single-level features, which is consistent with the quantitative results. We conjecture the underlying reason is: Different levels of features may characterize different aspects of a disease. Specifically, low-level graph feature <italic>F</italic>
+<sub>1</sub> describes the expression of individual genes (functional GEPs), while high-level features <italic>F</italic>
+<sub>2</sub> and <italic>F</italic>
+<sub>3</sub> reflect the expressions of a group of genes on a signaling pathway. The development of a disease is a complex mechanism regulated by millions of genes and proteins (which form signaling pathways), thus it cannot be well represented by gene expressions at a single level. In our method, the fused feature <italic>F</italic> integrates information from both the local gene-level and the global pathway-level thus can better reveal the biological mechanism behind diseases.</p>
+</list-item>
+<list-item>
+<label>(3)</label>
+<p id="P46">Among the three SLA-GNN models, SLA-GNN-level2 achieves the best performance on the survival prediction of the glioma dataset, SLA-GNN-level3 performs better on glioma grading, while SLA-GNN-level1 (same as SNN) is more accurate for COVID-19 diagnosis. This indicates that features at different levels may be suitable for different tasks and fused features make our model more generalizable.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S23">
+<title>Model Interpretability</title>
+<p id="P47">We use the histological grading task of the glioma dataset as an example to demonstrate the model interpretability.</p>
+<p id="P48">First, we distinguish the most important nodes utilizing the proposed FGS saliency and perform layer-by-layer analysis. As indicated in <xref ref-type="fig" rid="F3">Figure 3</xref>, the most important node in <italic>F</italic>
+<sub>1</sub> is the functional GEP, MKI67, also known as an important biomarker in glioma (<xref ref-type="bibr" rid="R28">Zeng et al. 2015</xref>). As the level deepens, the most important node in <italic>F</italic>
+<sub>3</sub> becomes the transcription factor, EGFR, which is reported by previous clinical studies as the driven factor for glioma initiation and progression (<xref ref-type="bibr" rid="R12">Huang, Xu, and White 2009</xref>). These results show that the existing methods based on the feature <italic>F</italic>
+<sub>1</sub> cannot discover the driven factor EGFR. By fusing multi-level graph features through the MGFFF module in the forward propagation and integrating the gradients of multi-level features through the FGS mechanism, our method can discover both the functional GEP (MKI67) and the driven factor (EGFR), thus proving the superiority of our MLA-GNN.</p>
+<p id="P49">To discover pathway-level biomarkers, we use the Metascape platform (<xref ref-type="bibr" rid="R31">Zhou et al. 2019</xref>) to enrich signaling pathways from the most important nodes (GEPs). As shown in <xref ref-type="fig" rid="F4">Figure 4</xref>, the most significant nervous system development and L1CAM interactions are discovered as pathway-level biomarkers. They have been proven to be the most important signaling pathways in glioma progression (<xref ref-type="bibr" rid="R23">Wachowiak et al. 2018</xref>). For further verification, we calculate the activation scores of these pathway-level biomarkers in each patient and find that their distributions are significantly different in patients with different histological gradings (i.e., nervous system development: grade II vs grade III p-value 2.21 × 10<sup>−4</sup>, L1CAM interactions: grade II vs grade III p-value 3.33 × 10<sup>−4</sup>). In this way, we prove that the enriched signaling pathways can be used as biomarkers instead of a random combination of individual GEP, throwing light on pathway-level biomarkers discovery using deep learning.</p>
+</sec>
+</sec>
+<sec id="S24" sec-type="conclusions">
+<title>Conclusions</title>
+<p id="P50">In this paper, we propose the pioneer MLA-GNN model on omic data to imitate biological processes and explicitly explore the structured information contained in the WGCNA graphs. On both transcriptomic and proteomic data, extensive experimental results show that MLA-GNN achieves state-of-the-art performance in survival prediction, histological grading, and COVID-19 diagnosis. For model interpretation, we propose a novel full-gradient graph saliency module to distinguish the most important GEPs and discover pathway-level biomarkers. In the future, we will apply our model to more clinical omic data to discover novel pathway-level biomarkers, which will promote the application and interpretation of deep learning in clinical omics. Furthermore, we will explore the application of multi-modality model fusion in precision medicine.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ben-Hamo</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Berger</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Gavert</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Miller</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pines</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Oren</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pikarsky</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Benes</surname>
+<given-names>CH</given-names>
+</name>
+<name>
+<surname>Neuman</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Zwang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Predicting and affecting response to cancer therapy based on pathway-level biomarkers</article-title>
+<source>Nature communications</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>16</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cerami</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Gao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Dogrusoz</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Gross</surname>
+<given-names>BE</given-names>
+</name>
+<name>
+<surname>Sumer</surname>
+<given-names>SO</given-names>
+</name>
+<name>
+<surname>Aksoy</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Jacobsen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Byrne</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Heuer</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Larsson</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The cBio cancer genomics portal: an open platform for exploring multidimensional cancer genomics data</article-title>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Rao</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>N-N</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>J-P</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>S-S</given-names>
+</name>
+</person-group>
+<article-title>Comprehensive myocardial proteogenomics profiling reveals C/EBPα as the key factor in the lipid storage of ARVC</article-title>
+<source>Journal of Proteome Research</source>
+<year>2017</year>
+<volume>16</volume>
+<issue>8</issue>
+<fpage>2863</fpage>
+<lpage>2876</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>MY</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Williamson</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Rodig</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Lindeman</surname>
+<given-names>NI</given-names>
+</name>
+<name>
+<surname>Mahmood</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Pathomic Fusion: An Integrated Framework for Fusing Histopathology and Genomic Features for Cancer Diagnosis and Prognosis</article-title>
+<source>arXiv preprint arXiv:1912.08937</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ching</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Garmire</surname>
+<given-names>LX</given-names>
+</name>
+</person-group>
+<article-title>Cox-nnet: an artificial neural network method for prognosis prediction of highthroughput omics data</article-title>
+<source>PLoS computational biology</source>
+<year>2018</year>
+<volume>14</volume>
+<issue>4</issue>
+<comment>e1006076</comment>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cox</surname>
+<given-names>DR</given-names>
+</name>
+</person-group>
+<article-title>Regression models and life-tables</article-title>
+<source>Journal of the Royal Statistical Society: Series B (Methodological)</source>
+<year>1972</year>
+<volume>34</volume>
+<issue>2</issue>
+<fpage>187</fpage>
+<lpage>202</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Diao</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Vidyashankar</surname>
+<given-names>AN</given-names>
+</name>
+</person-group>
+<article-title>Assessing genome-wide statistical significance for large p small n problems</article-title>
+<source>Genetics</source>
+<year>2013</year>
+<volume>194</volume>
+<issue>3</issue>
+<fpage>781</fpage>
+<lpage>783</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fey</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lenssen</surname>
+<given-names>JE</given-names>
+</name>
+</person-group>
+<article-title>Fast graph representation learning with PyTorch Geometric</article-title>
+<source>arXiv preprint arXiv:1903.02428</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gillette</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Satpathy</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Dhanasekaran</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Vasaikar</surname>
+<given-names>SV</given-names>
+</name>
+<name>
+<surname>Krug</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Petralia</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>W-W</given-names>
+</name>
+<name>
+<surname>Reva</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Proteogenomic characterization reveals therapeutic vulnerabilities in lung adenocarcinoma</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<issue>1</issue>
+<fpage>200</fpage>
+<lpage>225</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Haghverdi</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Lun</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Morgan</surname>
+<given-names>MD</given-names>
+</name>
+<name>
+<surname>Marioni</surname>
+<given-names>JC</given-names>
+</name>
+</person-group>
+<article-title>Batch effects in single-cell RNA-sequencing data are corrected by matching mutual nearest neighbors</article-title>
+<source>Nature biotechnology</source>
+<year>2018</year>
+<volume>36</volume>
+<issue>5</issue>
+<fpage>421</fpage>
+<lpage>427</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hase</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>HP</given-names>
+</name>
+<name>
+<surname>Prabhakar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kitano</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ng</surname>
+<given-names>SK</given-names>
+</name>
+<name>
+<surname>Ghosh</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wee</surname>
+<given-names>LJK</given-names>
+</name>
+</person-group>
+<article-title>A machine learning approach for the identification of key markers involved in brain development from single-cell transcriptomic data</article-title>
+<source>BMC genomics</source>
+<year>2016</year>
+<volume>17</volume>
+<issue>13</issue>
+<fpage>1025</fpage>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huang</surname>
+<given-names>PH</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>FM</given-names>
+</name>
+</person-group>
+<article-title>Oncogenic EGFR signaling networks in glioma</article-title>
+<source>Science signaling</source>
+<year>2009</year>
+<volume>2</volume>
+<issue>87</issue>
+<fpage>re6</fpage>
+<lpage>re6</lpage>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kipf</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Welling</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Semi-supervised classification with graph convolutional networks</article-title>
+<source>arXiv preprint arXiv:1609.02907</source>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Langfelder</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Horvath</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>WGCNA: an R package for weighted correlation network analysis</article-title>
+<source>BMC bioinformatics</source>
+<year>2008</year>
+<volume>9</volume>
+<issue>1</issue>
+<fpage>559</fpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lv</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Zanin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Liang</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Early triage of critically ill COVID-19 patients using deep learning</article-title>
+<source>Nature Communications</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>7</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Liaw</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Wiener</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Classification and regression by randomForest</article-title>
+<source>R news</source>
+<year>2002</year>
+<volume>2</volume>
+<issue>3</issue>
+<fpage>18</fpage>
+<lpage>22</lpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ngo</surname>
+<given-names>TT</given-names>
+</name>
+<name>
+<surname>Moufarrej</surname>
+<given-names>MN</given-names>
+</name>
+<name>
+<surname>Rasmussen</surname>
+<given-names>M-LH</given-names>
+</name>
+<name>
+<surname>Camunas-Soler</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Okamoto</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Neff</surname>
+<given-names>NF</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wong</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Downes</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Noninvasive blood tests for fetal development predict gestational age and preterm delivery</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>360</volume>
+<issue>6393</issue>
+<fpage>1133</fpage>
+<lpage>1136</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Paszke</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Gross</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chintala</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chanan</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>DeVito</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Lin</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Desmaison</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Antiga</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Lerer</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Automatic differentiation in pytorch</article-title>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Shen</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Yi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Du</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Quan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Qian</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Proteomic and metabolomic characterization of COVID-19 patient sera</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Srinivas</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Fleuret</surname>
+<given-names>F</given-names>
+</name>
+</person-group>
+<article-title>Full-gradient representation for neural network visualization</article-title>
+<source>Advances in Neural Information Processing Systems</source>
+<year>2019</year>
+<fpage>4124</fpage>
+<lpage>4133</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Suykens</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Vandewalle</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Least squares support vector machine classifiers</article-title>
+<source>Neural processing letters</source>
+<year>1999</year>
+<volume>9</volume>
+<issue>3</issue>
+<fpage>293</fpage>
+<lpage>300</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Veličković</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Cucurull</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Casanova</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Romero</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lio</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Bengio</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>Graph attention networks</article-title>
+<source>arXiv preprint arXiv:1710.10903</source>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wachowiak</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Krause</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Mayer</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Peukert</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Suttkus</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Müller</surname>
+<given-names>WC</given-names>
+</name>
+<name>
+<surname>Lacher</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Meixensberger</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Nestler</surname>
+<given-names>U</given-names>
+</name>
+</person-group>
+<article-title>Increased L1CAM (CD171) levels are associated with glioblastoma and metastatic brain tumors</article-title>
+<source>Medicine</source>
+<year>2018</year>
+<volume>97</volume>
+<issue>38</issue>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="patent">
+<person-group person-group-type="author">
+<name>
+<surname>Waldrop</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Youn</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Patterson</surname>
+<given-names>LG</given-names>
+</name>
+</person-group>
+<article-title>Network to network interface (NNI) for multiple private network service providers</article-title>
+<source>US Patent 8,756,344</source>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Huan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Microsatellite Instability Prediction of Uterine Corpus Endometrial Carcinoma Based on H&amp;E Histology Whole-Slide Imaging</article-title>
+<conf-name>2020 IEEE 17th International Symposium on Biomedical Imaging (ISBI)</conf-name>
+<publisher-name>IEEE</publisher-name>
+<year>2020</year>
+<fpage>1289</fpage>
+<lpage>1292</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Yi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>Glutaredoxin-1 silencing induces cell senescence via p53/p21/p16 signaling axis</article-title>
+<source>Journal of proteome research</source>
+<year>2018</year>
+<volume>17</volume>
+<issue>3</issue>
+<fpage>1091</fpage>
+<lpage>1100</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yau</surname>
+<given-names>TO</given-names>
+</name>
+</person-group>
+<article-title>Precision treatment in colorectal cancer: Now and the future</article-title>
+<source>JGH Open</source>
+<year>2019</year>
+<volume>3</volume>
+<issue>5</issue>
+<fpage>361</fpage>
+<lpage>369</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zeng</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hu</surname>
+<given-names>Q</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Cui</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>You</surname>
+<given-names>Y</given-names>
+</name>
+</person-group>
+<article-title>IDH1/2 mutation status combined with Ki-67 labeling index defines distinct prognostic groups in glioma</article-title>
+<source>Oncotarget</source>
+<year>2015</year>
+<volume>6</volume>
+<issue>30</issue>
+<fpage>30232</fpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Nie</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Fung</surname>
+<given-names>M-L</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>Y</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The contribution of chronic intermittent hypoxia to OSAHS: From the perspective of serum extracellular microvesicle proteins</article-title>
+<source>Metabolism</source>
+<year>2018</year>
+<volume>85</volume>
+<fpage>97</fpage>
+<lpage>108</lpage>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Menze</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>X</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Predicting Lymph Node Metastasis Using Histopathological Images Based on Multiple Instance Learning With Deep Graph Convolution</article-title>
+<conf-name>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</conf-name>
+<year>2020</year>
+<fpage>4837</fpage>
+<lpage>4846</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Pache</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Khodabakhshi</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Tanaseichuk</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Benner</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Chanda</surname>
+<given-names>SK</given-names>
+</name>
+</person-group>
+<article-title>Metascape provides a biologist-oriented resource for the analysis of systems-level datasets</article-title>
+<source>Nature communications</source>
+<year>2019</year>
+<volume>10</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Overview of the proposed Multi-Level Attention Graph Neural Network (MLA-GNN). (a) Gene Co-expression Computation module performs weighted correlation network analysis (WGCNA) on the training data to produce the edge matrix. (b) Multi-Level Graph Construction module builds multi-level graphs through GAT layers. (c) Multi-Level Graph Feature Fully Fusion (MGFFF) module integrates local gene-level features and global pathway-level features. (d) Multi-Task Prediction module conducts multiple medical tasks, such as disease classification and survival prediction.</p>
+</caption>
+<graphic xlink:href="EMS107792-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>UMAP visualization of the features at different levels for the grading task of the glioma dataset. The fused feature <italic>F</italic> is more separable among different classes (Grade II, Grade III, and Grade IV) than the single-level features <italic>F</italic>
+<sub>1</sub>, <italic>F</italic>
+<sub>2</sub>, and <italic>F</italic>
+<sub>3</sub>.</p>
+</caption>
+<graphic xlink:href="EMS107792-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Visualization of the TOP10 important GEPs and their gradient-based saliency scores in each layer and after fusion.</p>
+</caption>
+<graphic xlink:href="EMS107792-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Signaling pathways enriched by the most important GEPs. Larger −<italic>log</italic>(p-value) indicates greater significance in distinguishing different classes.</p>
+</caption>
+<graphic xlink:href="EMS107792-f004"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<p>Data summary</p>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col/>
+</colgroup>
+<thead>
+<tr>
+<th align="center" valign="top">Dataset</th>
+<th align="center" valign="top">Data source</th>
+<th align="center" valign="top"># Patients</th>
+<th align="center" valign="top"># GEPs</th>
+<th align="center" valign="top">Type of omics</th>
+<th align="center" valign="top">Tasks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">Glioma</td>
+<td align="center" valign="top">TCGA-LGG &amp; TCGA-GBM</td>
+<td align="center" valign="top">769</td>
+<td align="center" valign="top">240</td>
+<td align="center" valign="top">transcriptomics</td>
+<td align="center" valign="top">survival outcome &amp; histological</td>
+<td align="center" valign="top">grading</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">COVID-19</td>
+<td align="center" valign="top">COVID-19 patients sera</td>
+<td align="center" valign="top">70</td>
+<td align="center" valign="top">791</td>
+<td align="center" valign="top">proteomics</td>
+<td align="center" valign="top">COVID-19 diagnosis</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<p>Model performance on the survival prediction task of the glioma dataset</p>
+</caption>
+<table frame="hsides" rules="cols">
+<thead>
+<tr style="border-bottom:solid thin">
+<th align="center" valign="top">Model</th>
+<th align="center" valign="top">c-index</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">cox-PH (<xref ref-type="bibr" rid="R6">Cox 1972</xref>)</td>
+<td align="center" valign="top">0.6911 ± 0.0748</td>
+</tr>
+<tr>
+<td align="center" valign="top">cox-nnet (<xref ref-type="bibr" rid="R5">Ching and Garmire 2018</xref>)</td>
+<td align="center" valign="top">0.7152 ± 0.0730</td>
+</tr>
+<tr>
+<td align="center" valign="top">SNN<xref ref-type="table-fn" rid="TFN1">*</xref> (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>)</td>
+<td align="center" valign="top">0.7286 ± 0.0744</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">MLA-GNN (Ours)</td>
+<td align="center" valign="top">
+<bold>0.7620</bold> ± <bold>0.0682</bold>
+</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">SLA-GNN-level2</td>
+<td align="center" valign="top">0.7382 ± 0.0674</td>
+</tr>
+<tr>
+<td align="center" valign="top">SLA-GNN-level3</td>
+<td align="center" valign="top">0.7266 ± 0.0723</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN1">
+<label>*</label>
+<p id="P51">The SNN can also be called as SLA-GNN-level1.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<p>Model performance on the histological grading task of glioma dataset</p>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col/>
+</colgroup>
+<thead>
+<tr>
+<th align="center" valign="top">Model</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">Precision</th>
+<th align="center" valign="top">Recall</th>
+<th align="center" valign="top">F1-score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">SVM (<xref ref-type="bibr" rid="R11">Hu et al. 2016</xref>)</td>
+<td align="center" valign="top">0.5391 ± 0.0632</td>
+<td align="center" valign="top">0.6879 ± 0.0692</td>
+<td align="center" valign="top">0.5546 ± 0.0739</td>
+<td align="center" valign="top">0.5808 ± 0.0736</td>
+</tr>
+<tr>
+<td align="center" valign="top">Random Forest (<xref ref-type="bibr" rid="R17">Ngo et al. 2018</xref>)</td>
+<td align="center" valign="top">0.6297 ± 0.0601</td>
+<td align="center" valign="top">0.7087 ± 0.0442</td>
+<td align="center" valign="top">0.7065 ± 0.0716</td>
+<td align="center" valign="top">0.6993 ± 0.0424</td>
+</tr>
+<tr>
+<td align="center" valign="top">SNN<xref ref-type="table-fn" rid="TFN2">*</xref> (<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>)</td>
+<td align="center" valign="top">0.6303 ± 0.0716</td>
+<td align="center" valign="top">0.6716 ± 0.0694</td>
+<td align="center" valign="top">0.6572 ± 0.0638</td>
+<td align="center" valign="top">0.6559 ± 0.0645</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">MLA-GNN (Ours)</td>
+<td align="center" valign="top">
+<bold>0.6920</bold> ± <bold>0.0645</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.7483</bold> ± <bold>0.0582</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.7247</bold> ± <bold>0.0553</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.7299</bold> ± <bold>0.0553</bold>
+</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">SLA-GNN-level2</td>
+<td align="center" valign="top">0.5765 ± 0.0610</td>
+<td align="center" valign="top">0.5847 ± 0.0720</td>
+<td align="center" valign="top">0.6180 ± 0.0549</td>
+<td align="center" valign="top">0.5832 ± 0.0588</td>
+</tr>
+<tr>
+<td align="center" valign="top">SLA-GNN-level3</td>
+<td align="center" valign="top">0.6625 ± 0.0489</td>
+<td align="center" valign="top">0.7173 ± 0.0469</td>
+<td align="center" valign="top">0.7140 ± 0.0369</td>
+<td align="center" valign="top">0.7079 ± 0.0418</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN2">
+<label>*</label>
+<p id="P52">The SNN can also be called as SLA-GNN-level1.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<p>Model performance on the diagnosis of the COVID-19 dataset</p>
+</caption>
+<table frame="hsides" rules="groups">
+<colgroup>
+<col/>
+</colgroup>
+<thead>
+<tr>
+<th align="center" valign="top">Model</th>
+<th align="center" valign="top">Accuracy</th>
+<th align="center" valign="top">Precision</th>
+<th align="center" valign="top">Recall</th>
+<th align="center" valign="top">F1-score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">SVM(<xref ref-type="bibr" rid="R11">Hu etal.2016</xref>)</td>
+<td align="center" valign="top">0.8710 ± 0.0843</td>
+<td align="center" valign="top">0.8982 ± 0.0532</td>
+<td align="center" valign="top">0.8893 ± 0.0510</td>
+<td align="center" valign="top">0.8860 ± 0.0537</td>
+</tr>
+<tr>
+<td align="center" valign="top">Random Forest (<xref ref-type="bibr" rid="R17">Ngo et al. 2018</xref>)</td>
+<td align="center" valign="top">0.8456 ± 0.0764</td>
+<td align="center" valign="top">0.8530±0.0716</td>
+<td align="center" valign="top">0.8482 ± 0.0753</td>
+<td align="center" valign="top">0.8450 ± 0.0769</td>
+</tr>
+<tr>
+<td align="center" valign="top">SNN<xref ref-type="table-fn" rid="TFN3">*</xref>(<xref ref-type="bibr" rid="R4">Chen et al. 2019</xref>)</td>
+<td align="center" valign="top">0.8600 ± 0.0882</td>
+<td align="center" valign="top">0.8653 ± 0.0869</td>
+<td align="center" valign="top">0.8589 ± 0.0891</td>
+<td align="center" valign="top">0.8588 ± 0.0891</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">MLA-GNN (Ours)</td>
+<td align="center" valign="top">
+<bold>0.9305</bold> ± <bold>0.0618</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.9385</bold> ± <bold>0.0553</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.9304</bold> ± <bold>0.0620</bold>
+</td>
+<td align="center" valign="top">
+<bold>0.9297</bold> ± <bold>0.0627</bold>
+</td>
+</tr>
+<tr style="border-top:solid thin">
+<td align="center" valign="top">SLA-GNN-level2</td>
+<td align="center" valign="top">0.7884 ± 0.0859</td>
+<td align="center" valign="top">0.8030 ± 0.0880</td>
+<td align="center" valign="top">0.7911 ± 0.0867</td>
+<td align="center" valign="top">0.7864±0.0866</td>
+</tr>
+<tr>
+<td align="center" valign="top">SLA-GNN-level3</td>
+<td align="center" valign="top">0.8190 ±0.1417</td>
+<td align="center" valign="top">0.8344 ± 0.1376</td>
+<td align="center" valign="top">0.8214 ± 0.1392</td>
+<td align="center" valign="top">0.8168 ± 0.1433</td>
+</tr>
+</tbody>
+</table>
+<table-wrap-foot>
+<fn id="TFN3">
+<label>*</label>
+<p id="P53">The SNN can also be called as SLA-GNN-level1.</p>
+</fn>
+</table-wrap-foot>
+</table-wrap>
+</floats-group>
+</article>

@@ -1,0 +1,1646 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141084</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.03.470766</article-id>
+<article-id pub-id-type="archive">PPR428769</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Pandemic-scale phylogenetics</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Ye</surname>
+<given-names>Cheng</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Thornlow</surname>
+<given-names>Bryan</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Kramer</surname>
+<given-names>Alexander</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>McBroome</surname>
+<given-names>Jakob</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Hinrichs</surname>
+<given-names>Angie</given-names>
+</name>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Corbett-Detig</surname>
+<given-names>Russell</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Turakhia</surname>
+<given-names>Yatish</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>University of California, San Diego; San Diego, CA 92093, USA</aff>
+<aff id="A2">
+<label>2</label>University of California, Santa Cruz; Santa Cruz, CA 95064, USA</aff>
+<aff id="A3">
+<label>3</label>Genomics Institute, University of California, Santa Cruz; Santa Cruz, CA 95064, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Correspondence to: <email>rucorbet@ucsc.edu</email> and <email>yturakhia@ucsd.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>06</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Phylogenetics has been central to the genomic surveillance, epidemiology and contact tracing efforts during the COVD-19 pandemic. But the massive scale of genomic sequencing has rendered the pre-pandemic tools inadequate for comprehensive phylogenetic analyses. Here, we discuss the phylogenetic package that we developed to address the needs imposed by this pandemic. The package incorporates several pandemic-specific optimization and parallelization techniques and comprises four programs: UShER, matOptimize, RIPPLES and matUtils. Using high-performance computing, UShER and matOptimize maintain and refine daily a massive mutation-annotated phylogenetic tree consisting of all SARS-CoV-2 sequences available in online repositories. With UShER and RIPPLES, individual labs – even with modest compute resources – incorporate newly-sequenced SARS-CoV-2 genomes on this phylogeny and discover evidence for recombination in real-time. With matUtils, they rapidly query and visualize massive SARS-CoV-2 phylogenies. These tools have empowered scientists worldwide to study the SARS-CoV-2 evolution and transmission at an unprecedented scale, resolution and speed.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1">
+<label>2</label>
+<title>Justification</title>
+<p id="P2">Our package: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P3">helps maintain possibly the largest-ever phylogenetic tree with millions of SARS-CoV-2 sequences, thus providing an unprecedented resolution for studying the pathogen’s evolutionary and transmission dynamics</p>
+</list-item>
+<list-item>
+<p id="P4">incorporates a new sequence on the phylogeny and sensitively identifies its recombination history within seconds, thereby enabling real-time monitoring of the virus</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S2">
+<label>3</label>
+<title>Performance attributes</title>
+<table-wrap id="T2" orientation="portrait" position="anchor">
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="left" valign="middle">Performance Attribute</th>
+<th align="left" valign="middle">Our Submission</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">Category of achievement</td>
+<td align="left" valign="middle">peak performance, scalability</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Type of method used</td>
+<td align="left" valign="middle">N/A</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Results reported on the basis of</td>
+<td align="left" valign="middle">whole application including I/O</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Precision reported</td>
+<td align="left" valign="middle">N/A</td>
+</tr>
+<tr>
+<td align="left" valign="middle">System scale</td>
+<td align="left" valign="middle">results measured on full-scale system</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Measurement mechanism</td>
+<td align="left" valign="middle">timers</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</sec>
+<sec id="S3">
+<label>4</label>
+<title>Overview of the problem</title>
+<p id="P5">As the SARS-CoV-2 virus spreads in the human population, it acquires new mutations. These mutations can render the virus more contagious, virulent or capable of evading the vaccines and antibody-based therapies (<xref ref-type="bibr" rid="R6">Campbell et al., 2021</xref>; <xref ref-type="bibr" rid="R7">Challen et al., 2021</xref>; <xref ref-type="bibr" rid="R17">Harvey et al., 2021</xref>). Therefore, from the early days of the pandemic, the global scientific community mobilized to monitor the viral mutations and the evolutionary dynamics with the help of genome sequencing (<xref ref-type="bibr" rid="R28">Lo and Jamrozy, 2020</xref>; <xref ref-type="bibr" rid="R33">Maxmen, 2021</xref>). The first SARS-CoV-2 genome sequence was deposited on an online database in January 2020 (<xref ref-type="bibr" rid="R49">Wu et al., 2020</xref>), and since then, over 4 million additional sequences have been shared through an extraordinary worldwide effort, with tens of thousands more being shared every day (<xref ref-type="bibr" rid="R33">Maxmen, 2021</xref>; <xref ref-type="bibr" rid="R34">McBroome et al., 2021</xref>). This vast volume of genomic data has provided invaluable insights into the evolution and spread of the virus, and has allowed public health officials and governments to respond to it in a timely fashion (<xref ref-type="bibr" rid="R27">Lam-Hine et al., 2021</xref>; <xref ref-type="bibr" rid="R37">Oude Munnink et al., 2020</xref>).</p>
+<p id="P6">Phylogenetics has been a foundational tool in analyzing the genomic data for a public health response (<xref ref-type="bibr" rid="R18">Hodcroft et al., 2021</xref>). COVID-19 phylogenetics aims to infer the evolutionary relationships between the different SARS-CoV-2 genome sequences sampled from infected people and represent this information in the form of a tree, with individual sequences occupying the leaves of this tree (<xref ref-type="bibr" rid="R26">Lam et al., 2010</xref>). Sequences that are similar to each other tend to be grouped together in the tree, since they are likely to share a recent common ancestor. Phylogenetic trees play a crucial role in genomic surveillance, which involves tracking SARS-CoV-2 <italic>variants</italic> – each representing a different lineage in a phylogenetic tree – circulating in a given geographic region (<xref ref-type="bibr" rid="R9">da Silva Filipe et al., 2021</xref>; <xref ref-type="bibr" rid="R10">Deng et al., 2020</xref>), as well as for identifying and naming new variants (<xref ref-type="bibr" rid="R40">Rambaut et al., 2020</xref>). They also provide a powerful tool in establishing transmission links between seemingly unrelated infections, and in disambiguating community transmission from outside introductions (<xref ref-type="bibr" rid="R9">da Silva Filipe et al., 2021</xref>; <xref ref-type="bibr" rid="R10">Deng et al., 2020</xref>; <xref ref-type="bibr" rid="R23">Komissarov et al., 2021</xref>). Moreover, phylogenetic trees complement experimental techniques to identify the mutations that might have conferred increased transmissibility to the virus (<xref ref-type="bibr" rid="R24">Korber et al., 2020</xref>; <xref ref-type="bibr" rid="R41">Richard et al., 2021</xref>). Phylogenetic trees also find numerous other applications in epidemiology, including in estimating the reproduction number (R0) of the virus or its particular variant (<xref ref-type="bibr" rid="R25">Lai et al., 2020</xref>; <xref ref-type="bibr" rid="R48">Volz et al., 2021</xref>).</p>
+<sec id="S4">
+<label>4.1</label>
+<title>Phylogenetic placement</title>
+<p id="P7">Many of these far-reaching phylogenetic applications require a comprehensive tree – without sub-sampling sequences – in order to unravel the true potential of the available genomic data. For example, transmission links with a sequence missing in the sub-sampled phylogenetic tree cannot be established. Likewise, sub-sampled phylogenetic trees could omit important lineages or sub-lineages corresponding to different variants. This can have adverse consequences on the downstream evolutionary and epidemiological studies. But maintaining a comprehensive phylogenetic tree of over 4 million available SARS-CoV-2 sequences, with tens of thousands of new sequences becoming available each day, is computationally prohibitive with pre-pandemic phylogenetic tools. We therefore developed UShER – an ultrafast, parallel <italic>phylogenetic placement</italic> tool that can maintain a comprehensive phylogenetic tree by incorporating new sequences (also referred to as samples) as they become available onto an existing phylogenetic tree (<xref ref-type="bibr" rid="R46">Turakhia, Thornlow, AS Hinrichs, et al., 2021</xref>).</p>
+</sec>
+<sec id="S5">
+<label>4.2</label>
+<title>Tree Optimization</title>
+<p id="P8">The greedy strategy in phylogenetic placement of sequentially incorporating new sequences onto an existing tree can occasionally lead to a suboptimal tree structure. This can be mitigated by <italic>tree optimization</italic> programs, which use tree rearrangement to find a more optimal tree. Here too, previous programs are inadequate to handle the vast scale and speed of SARS-CoV-2 genome data. We therefore developed matOptimize – a low-memory, high-performance computing (HPC) software for fast optimization of trees based on pandemic-scale data. To date, UShER and matOptimize have managed to maintain and refine the phylogenetic tree consisting of all SARS-CoV-2 sequences.</p>
+</sec>
+<sec id="S6">
+<label>4.3</label>
+<title>Recombination detection</title>
+<p id="P9">The COVID-19 pandemic has intensified the need for individual labs worldwide having primary access to sequencing data to respond rapidly to the emergence of new variants. One worrisome mechanism through which the virus can produce new variants is <italic>recombination</italic> (<xref ref-type="bibr" rid="R44">Simon-Loriere and Holmes, 2011</xref>). Through recombination, different variants of the virus that co-infect a host cell can exchange genetic material to form novel variants with drastic “jumps” in fitness (<xref ref-type="bibr" rid="R5">Burke, 1997</xref>; <xref ref-type="bibr" rid="R44">Simon-Loriere and Holmes, 2011</xref>). Detecting recombination from viral genomes is so computationally demanding that prior tools could only handle up to a few thousand viral sequences – a far cry from the scale of millions that is needed to study SARS-CoV-2 recombination comprehensively. We show here how our tools UShER and RIPPLES (<xref ref-type="bibr" rid="R46">Turakhia, Thornlow, A Hinrichs, et al., 2021</xref>) empower individual research labs to provide a real-time response, not only in incorporating their sequences onto a global phylogeny, but also in uncovering evidence for recombination from a massive search space. RIPPLES can also be used in an HPC setting to comprehensively detect recombination events from the entire SARS-CoV-2 phylogeny within a few hours.</p>
+</sec>
+</sec>
+<sec id="S7">
+<label>5</label>
+<title>Current state of the art</title>
+<sec id="S8">
+<label>5.1</label>
+<title>Phylogenetic placement</title>
+<p id="P10">In the recent decades, phylogenetic tools have been hugely focused on probabilistic approaches, namely maximum likelihood (ML) and Bayesian inference (BI). These approaches are guided by a probabilistic model of evolution (<xref ref-type="bibr" rid="R11">Durbin, 1998</xref>). For comparative genomics or molecular epidemiology of rapidly evolving pathogens, ML and BI techniques are indeed more accurate than the simplistic, model-free approaches of maximum parsimony (MP) or distance-based clustering (<xref ref-type="bibr" rid="R38">Page and Holmes, 1998</xref>). This is because when the sequence divergence is high, model-free approaches are more susceptible to <italic>long branch attraction</italic> (<xref ref-type="bibr" rid="R4">Bergsten, 2005</xref>; <xref ref-type="bibr" rid="R12">Felsenstein, 1978</xref>). State-of-the-art phylogenetic placement tools, including EPA-NG (<xref ref-type="bibr" rid="R3">Barbera et al., 2019</xref>), PPLACER (<xref ref-type="bibr" rid="R32">Matsen et al., 2010</xref>) and IQ-TREE2 (<xref ref-type="bibr" rid="R35">Minh et al., 2020</xref>), are all based on maximum likelihood. Each tool accepts (i) a reference tree and (ii) a FASTA-formatted file containing the multiple-sequence alignment (MSA) of all sequences, including the sequences to be placed on the reference tree. Placement typically starts with a pre-placement phase that uses fast heuristics to select promising candidate branches in the reference tree for each query sequence, followed by a detailed placement phase which evaluates the likelihood scores for candidates in detail through a thorough numerical optimization (<xref ref-type="bibr" rid="R3">Barbera et al., 2019</xref>). Ample parallelism available in the form of independent candidate branches is exploited. Despite highly-efficient implementations, ML-based placement tools have a high compute and memory requirement and cannot scale beyond a few tens of thousands of sequences – making them highly inadequate in the context of the COVID-19 pandemic. Recently, distance-based placement algorithms are also being explored (<xref ref-type="bibr" rid="R2">Balaban et al., 2020</xref>).</p>
+</sec>
+<sec id="S9">
+<label>5.2</label>
+<title>Tree optimization</title>
+<p id="P11">Unlike phylogenetic placement, tree optimization has been widely studied for both maximum likelihood (<xref ref-type="bibr" rid="R35">Minh et al., 2020</xref>; <xref ref-type="bibr" rid="R39">Price et al., 2010</xref>) and maximum parsimony (<xref ref-type="bibr" rid="R16">Goloboff and Catalano, 2016</xref>). TNT (<xref ref-type="bibr" rid="R16">Goloboff and Catalano, 2016</xref>) is the most efficient parsimony-based tree optimization tool and scales well beyond the limits of likelihood-based tools. TNT (i) takes as input an existing tree in Newick format and the MSA of its sequences in FASTA format, (ii) computes the parsimonious state assignments for every node of the tree for every alignment site, and (iii) uses tree rearrangement in the form of tree bisection and reconnection (TBR) to improve parsimony score. TNT keeps multiple equally parsimonious candidate trees and uses tree drifting during the optimization to avoid getting stuck in local optima. TNT also provides several heuristics, such as ratchet search, to speed up the search (<xref ref-type="bibr" rid="R15">Goloboff, 1999</xref>). We found the <italic>sectorial search</italic> mode in TNT (<xref ref-type="bibr" rid="R15">Goloboff, 1999</xref>), which splits the original tree into subtrees to be optimized independently and merged back, to be the most computationally efficient heuristic for optimizing the SARS-CoV-2 phylogenies. TNT does not provide a multithreaded implementation, but we were able to adapt its scripts (see Section 7) to parallelize the optimization over several processes.</p>
+</sec>
+<sec id="S10">
+<label>5.3</label>
+<title>Recombination detection</title>
+<p id="P12">Viral recombination has been studied widely in the past for a variety of viruses, including coronaviruses (<xref ref-type="bibr" rid="R1">Anthony et al., 2017</xref>; <xref ref-type="bibr" rid="R19">Hon et al., 2008</xref>; <xref ref-type="bibr" rid="R22">Koelle et al., 2017</xref>). Recombination Detection Program (RDP) is a widely-used program for recombination detection in viruses and provides implementation for a number of well-studied techniques in the literature (<xref ref-type="bibr" rid="R30">Martin et al., 2015</xref>; <xref ref-type="bibr" rid="R29">Martin and Rybicki, 2000</xref>). Broadly, RDP accepts a multiple alignment of sequences and scans each triplet of sequences in the alignment to discover whether one sequence of the triplet (viz., the putative recombinant) is a mosaic of the other two (viz., the parents of the recombinant). Specifically, RDP finds the recombination-informative signal in the alignment, i.e. sites in which two sequences share an allele that is different in the third, and then uses a number of heuristics to infer the recombination breakpoints that would best explain the signal. Because of the complexity of its search space, RDP analysis is limited to a few thousand viral sequences (<xref ref-type="bibr" rid="R30">Martin et al., 2015</xref>: 4).</p>
+</sec>
+</sec>
+<sec id="S11">
+<label>6</label>
+<title>Innovations realized</title>
+<p id="P13">Our phylogenetic package achieves orders of magnitude speedup over the prior art through several domain-specific optimizations in the algorithms and data structures and efficient implementation of our parallel algorithms. <xref ref-type="fig" rid="F1">Figure 1</xref> illustrates these innovations.</p>
+<sec id="S12">
+<label>6.1</label>
+<title>Algorithmic innovations</title>
+<p id="P14">Pandemic-specific algorithmic innovations form the basis of our phylogenetic package efficiency. For example, we observed that in SARS-CoV-2 phylogenetics, long branch attraction is not an issue – a newly-sequenced SARS-CoV-2 genome is separated by less than one mutation, on average, from its closest neighbor in the global phylogeny. Unsurprisingly, we found ML and MP trees to be practically consistent, but the MP trees had better interpretability since individual mutations could be confidently labelled on internal branches, as done in our package using a novel data object called mutation-annotated tree (MAT) (<xref ref-type="bibr" rid="R47">Turakhia, Thornlow, AS Hinrichs, et al., 2021</xref>). MAT is a protocol buffer based file format as well as an internal data structure used in our package (<xref ref-type="bibr" rid="R47">Turakhia, Thornlow, AS Hinrichs, et al., 2021</xref>). Our phylogenetic package leverages the MAT and MP algorithms to avoid the expensive likelihood computations in probabilistic approaches.</p>
+<p id="P15">A key algorithmic innovation that the MAT format enables is <italic>pre-processing,</italic> which is critical for the speedup of phylogenetic placement in UShER. MAT can be stored as a space-efficient pre-processed object (see Section 6.2), obviating the need to load the bulky sequence or variation data files for existing samples during each execution. It also avoids the need to recompute the parsimony state assignments internal to the tree using the computationally-intensive, dynamic programming-based Fitch-Sankoff algorithm (<xref ref-type="bibr" rid="R13">Fitch, 1971</xref>; <xref ref-type="bibr" rid="R42">Sankoff, 1975</xref>). The parallel Fitch-Sankoff algorithm using 20 CPU threads takes 18 minutes for a 3 million sample tree, approximately 50x slower than simply loading its MAT. Once the MAT is loaded and the new samples incorporated, the resulting MAT data structure could be stored to an output file within seconds to allow another round of placement over and above the current round. Besides pre-processing, UShER uses several additional algorithmic optimizations to speed up the placement, including condensing identical sequences into a single node and early termination of the symmetric set difference computation. These techniques are described in more detail in our previous publication (<xref ref-type="bibr" rid="R46">Turakhia, Thornlow, A Hinrichs, et al., 2021</xref>).</p>
+<p id="P16">Our package also makes extensive use of <italic>search space pruning</italic> based on phylogenomic insights. At first, it may seem that RIPPLES has an intractable search space. An arbitrary choice of recombinant sequence, two parent sequences and two breakpoints would result in a search space that is cubic to the number of sequences – in millions – and quadratic to the sequence length – in tens of thousands. RIPPLES leverages the insight that a detectable recombinant sequence must have a long branch in its phylogenetic ancestry to greatly reduce the search space. RIPPLES also restricts the breakpoints to mutated sites in the recombinant and parent sequences. Parents are restricted to a small number of nodes – typically in tens – that reduce the parsimony score of partial phylogenetic placement (i.e. on ignoring sites outside the breakpoint regions) above an appropriate minimum threshold for detectable recombination.</p>
+</sec>
+<sec id="S13">
+<label>6.2</label>
+<title>Efficient data structures</title>
+<p id="P17">The mutation-annotated tree (MAT) is a highly efficient data structure and key performance driver in our tools. Previous phylogenetic packages have typically relied on FASTA or VCF formats to store sequence and variation data. An uncompressed MAT file of 3 million SARS-CoV-2 sequence requires only 136 MB to encode basically the same information that is contained in an 88 GB FASTA or 174 GB VCF file. With MAT, matOptimize can start optimizing this tree after a small 22-second delay of loading the MAT file. In comparison, TNT can spend hours to load the alignment file and compute the internal state assignments before starting optimization (see Results, <xref ref-type="fig" rid="F3">Figure 3B</xref>). Likewise, with mutations pre-annotated on the phylogenetic tree, RIPPLES can avoid scanning through the entire alignment file and focus solely on mutated sites.</p>
+</sec>
+<sec id="S14">
+<label>6.3</label>
+<title>Parallel implementation</title>
+<p id="P18">We designed the algorithms to be embarrassingly parallel with limited synchronization overheads. Our package uses Intel’s TBB library (<ext-link ext-link-type="uri" xlink:href="https://github.com/oneapi-src/oneTBB">https://github.com/oneapi-src/oneTBB</ext-link>) to take advantage of available parallelism in multicore processors. In UShER, the placement search is parallelized over millions of internal nodes and leaves of the tree where a new sample could be placed. In matOptimize, tree arrangement is explored starting from all possible source nodes, in millions. This contrasts TNT, where each process optimizes the entire tree, and broadcasts the best tree to all other processes. Since the tree object remains immutable throughout the search phase in matOptimize, each thread can find profitable rearrangements independently, with minimal inter-thread communication. In RIPPLES, the partial phylogenetic placement of individual segments, as well as the parent and breakpoint search, is parallelized as well.</p>
+<p id="P19">We also parallelized our tools for use in a CPU cluster. For parallelizing UShER over CPU nodes, we had to implement a <italic>merge</italic> operation in matUtils (<xref ref-type="bibr" rid="R34">McBroome et al., 2021</xref>). Briefly, this operation accepts two input MATs, checks if the subtrees resulting from common samples are consistent (i.e. have the same topology and mutation annotations), and then places the remaining samples in the common subtree using placement information derived from input MATs to narrowly restrict the search. This allows new samples to be independently placed on a MAT using UShER and the resulting MATs can then be rapidly merged together using a parallel reduction tree of matUtils merge to produce the final MAT (<xref ref-type="fig" rid="F2">Figure 2</xref>). In matOptimize, the search for profitable moves is parallelized across nodes using MPI (<ext-link ext-link-type="uri" xlink:href="https://www.mpich.org/">https://www.mpich.org/</ext-link>) during iterations. An iteration begins with the main process distributing source nodes to worker processes. Then, the worker processes evaluate all possible subtree pruning and grafting (SPR) moves (without applying moves) from the assigned source nodes and periodically return the profitable moves to the main process, which applies those moves to update the tree and begin the next iteration. For RIPPLES, we implemented an option to restrict the search to a specific range of potentially recombinant nodes that allowed us to trivially parallelize it over the cluster without any communication or synchronization requirements.</p>
+</sec>
+</sec>
+<sec id="S15">
+<label>7</label>
+<title>How performance was measured</title>
+<sec id="S16">
+<label>7.1</label>
+<title>Reference tree and sequence data</title>
+<p id="P20">We collected SARS-CoV-2 genome sequence data from major online databases: GISAID (<xref ref-type="bibr" rid="R43">Shu and McCauley, 2017</xref>), COG-UK (<xref ref-type="bibr" rid="R36">Nicholls et al., 2020</xref>), GenBank (<xref ref-type="bibr" rid="R8">Clark et al., 2016</xref>) and CNCB (<ext-link ext-link-type="uri" xlink:href="https://bigd.big.ac.cn/ncov/release_genome">https://bigd.big.ac.cn/ncov/release_genome</ext-link>), and used it to build a comprehensive SARS-CoV-2 phylogeny based on the methodology described in (<xref ref-type="bibr" rid="R34">McBroome et al., 2021</xref>). We used the GenBank MN908947.3 (RefSeq NC_045512.2) sequence as the reference for rooting the tree, as well as for calling variants in individual samples. We used mafft (version v.7.471) (<xref ref-type="bibr" rid="R21">Katoh and Standley, 2013</xref>) for aligning the sequences and faToVcf utility included in the UShER package to produce the required VCF files for our analyses. For our experiments, we used the sampling date metadata to derive from our comprehensive tree two subtrees containing the earliest 100K and 1M samples, referred to as 100K-sample tree and 1M-sample tree, respectively.</p>
+</sec>
+<sec id="S17">
+<label>7.2</label>
+<title>Experimental setup and comparison baseline</title>
+<p id="P21">All experiments were performed on the Google Cloud Platform (GCP) and are easily reproducible. We used a recent version (commit e83dc5) of our package available at <ext-link ext-link-type="uri" xlink:href="https://github.com/yatisht/usher">https://github.com/yatisht/usher</ext-link> for comparison against state-of-the-art tools with similar functionality as well as scaling analysis. Since our phylogenetic package is memory-efficient, we could use CPU-optimized E2 instances for our package but were required to use memory-optimized instances for some competing tools. In such cases, we opted for iso-cost comparison such that the hourly cost was roughly the same for both instances.</p>
+<p id="P22">For phylogenetic placement, we compared UShER with IQ-TREE2 (version 2.1.3). Since IQ-TREE2’s memory requirement is prohibitively high for the 1M-sample tree, we compared the performance of placing 1000 new SARS-CoV-2 samples on the 100K-sample tree using the command options <monospace>-n 0 -m JC --suppress-list-of-sequences -nt 16</monospace>. We used the e2-highmem-16 instance (16 vCPUs, 128 GB, $0.72/hour) for IQ-TREE2 and e2-highcpu-32 instance (32 vCPUs, 32 GB, $0.79/hour) for UShER. Both programs are multithreaded and used all available vCPUs on the instance.</p>
+<p id="P23">For tree optimization, we compared matOptimize with TNT (June 2021) using the 1M-sample tree. In particular, we used the sectorial search (<xref ref-type="bibr" rid="R15">Goloboff, 1999</xref>) in TNT, which we found to be the most efficient option for optimizing SARS-CoV-2 phylogeny, using the script at <ext-link ext-link-type="uri" xlink:href="https://github.com/yceh/matOptimize-experiments/blob/master/tnt_parallel_sect.run">https://github.com/yceh/matOptimize-experiments/blob/master/tnt_parallel_sect.run</ext-link>. TNT is not multithreaded, but we managed to adapt the combosearch script (<ext-link ext-link-type="uri" xlink:href="http://www.lillo.org.ar/phylogeny/tnt/scripts/combosearch.run">http://www.lillo.org.ar/phylogeny/tnt/scripts/combosearch.run</ext-link>) to parallelize it over several processes. We used m1-ultramem-40 instance (40 vCPUs, 961 GB, $6.30/hour) for TNT, with 8 processes, which we calculated to be the upper limit for the available memory on the instance. We used 7 e2-highcpu-32 instances for matOptimize that cumulatively have an hourly cost ($5.54/hour) comparable to the m1-ultramem-40 instance.</p>
+<p id="P24">For recombination detection, we compared RIPPLES with OpenRDP (<ext-link ext-link-type="uri" xlink:href="https://github.com/PoonLab/OpenRDP">https://github.com/PoonLab/OpenRDP</ext-link>), which is a Python adaptation of RDP5 (<xref ref-type="bibr" rid="R31">Martin et al., 2021</xref>), using the n2d-highcpu-224 instance. Due to prohibitively long runtimes of OpenRDP, we could only compare the two tools on a small dataset of 1000 SARS-CoV-2 sequences for the typical pandemic scenario of determining whether a new sequence is a recombinant of the previous sequences. Our recombinant sequences were based on the compelling evidence provided in (<xref ref-type="bibr" rid="R20">Jackson et al., 2021</xref>). We used these sequences to derive the 1000 SARS-CoV-2 sequences using <monospace>matUtils extract -k 50</monospace> for each node in each trio representing each instance of recombination found in our global tree that was ancestral to the samples cited in (<xref ref-type="bibr" rid="R20">Jackson et al., 2021</xref>). Since OpenRDP is not multithreaded, we parallelized it by creating 498,501 OpenRDP jobs (using options <monospace>-m openrdp -rdp</monospace>) for each sequence triplet formed by combining the new sequence with every unique pair of sequences (one for each parent) from the 1000 SARS-CoV-2 sequences. We ran 224 jobs, one per vCPU, in parallel using GNU parallel utility (<xref ref-type="bibr" rid="R45">Tange, 2011</xref>). Because RIPPLES requires the new sequence to be already placed in the phylogenetic tree, we included the time to place the sample on the existing tree using UShER in the RIPPLES runtime for an approximately level comparison.</p>
+<p id="P25">We also measured the peak memory usage of all programs using the proc filesystem (<ext-link ext-link-type="uri" xlink:href="https://man7.org/linux/man-pages/man5/proc.5.html">https://man7.org/linux/man-pages/man5/proc.5.html</ext-link>) in Linux.</p>
+</sec>
+<sec id="S18">
+<label>7.3</label>
+<title>Scaling analysis</title>
+<p id="P26">We performed strong and weak scaling analysis for UShER, matOptimize and RIPPLES using the 1M-sample tree and e2-highcpu-32 instances, varying the number of instances from 2 to 32. For UShER and RIPPLES, parallel GCP instances were launched using the dsub utility (<ext-link ext-link-type="uri" xlink:href="https://github.com/databiosphere/dsub">https://github.com/databiosphere/dsub</ext-link>). For UShER, scaling analysis was performed for placing 100K new samples on the reference tree. The time for parallel reduction merge using matUtils was included in the analysis and intermediate MAT files between the different stages of the reduction tree were communicated between instances through the Google Cloud Store (GCS) using the gsutil tool (<ext-link ext-link-type="uri" xlink:href="https://cloud.google.com/storage/docs/gsutil">https://cloud.google.com/storage/docs/gsutil</ext-link>), with the dependent instance waiting in a loop for its input MAT file to become available. RIPPLES was trivially parallelized through a static partitioning of the 9391 branches with 3 or more mutations and 5 or more mutations in the tree that were explored for a recombination event. For weak scaling, the problem size was also defined in terms of the number of long branches explored. For matOptimize, MPI (mpich 3.4.3; <ext-link ext-link-type="uri" xlink:href="https://www.mpich.org/">https://www.mpich.org/</ext-link>) was used for parallelizing search over multiple instances. A 1 million sample tree was optimized for 5 iterations with radius set to 1024, which amounts to SPR moves spanning the whole tree. Problem size was defined in terms of the number of source nodes explored for subtree pruning and regrafting (SPR) moves and for weak scaling, source nodes to search were randomized and divided uniformly between instances at each iteration.</p>
+</sec>
+</sec>
+<sec id="S19">
+<label>8</label>
+<title>Performance Results</title>
+<sec id="S20">
+<label>8.1</label>
+<title>Speedup analysis</title>
+<p id="P27">
+<xref ref-type="fig" rid="F3">Figure 3</xref> highlights the orders of magnitude improvement in runtime and a large factor improvement in peak memory that our phylogenetic package achieves relative to state-of-the-art tools. UShER placed 1000 new samples on the 100K-sample tree in just 15.4 seconds using 92 MB of RAM, achieving 1439-fold speedup and 1300-fold improved memory-efficiency compared to IQ-TREE2. On tree optimization, TNT spent over 8 hours in just loading the alignment and computing the parsimony states before beginning optimization. However, in just over one hour, matOptimize completed its optimization. Even after 24 hours (a limit we imposed for daily optimization required in the pandemic) of TNT execution, the matOptimize tree remained more parsimony-optimal. For recombination detection, placing a new sample on the 1K-tree using UShER and flagging it as a recombinant using RIPPLES took a fraction of a second, but required over an hour using OpenRDP. RIPPLES is also 3 times more memory-efficient and as sensitive as OpenRDP for this dataset. On the 1M-sample tree, a new sample could be placed using UShER and inferred for recombination using RIPPLES in 35.65 seconds on average, which enables real-time monitoring of the virus for recombination.</p>
+</sec>
+<sec id="S21">
+<label>8.2</label>
+<title>Strong scaling analysis</title>
+<p id="P28">
+<xref ref-type="fig" rid="F4">Figure 4</xref> shows the strong scaling analysis of UShER, matOptimize and RIPPLES.</p>
+<p id="P29">UShER, in placing 100K new samples on the 1M-sample tree, maintains a strong scaling efficiency of over 85% until 512 vCPUs are used, after which point it drops to 72.6% at 1024 vCPUs (<xref ref-type="fig" rid="F4">Figure 4A</xref>). <xref ref-type="fig" rid="F5">Figure 5</xref> illustrates the major factor behind UShER’s lost efficiency at high parallelism. The number of parallel reduction steps required for merging MATs increases with parallelism (<xref ref-type="fig" rid="F2">Figure 2</xref>) and starts dominating the runtime at higher levels of parallelism. At 1024-way parallelism, the merge phase requires over 8 minutes and constitutes 21.7% of the total runtime, compared to only 1% at 64-way parallelism. Faster heuristics for matUtils merge could ameliorate this issue, which we plan to explore in the future.</p>
+<p id="P30">For matOptimize, we found a rapid deterioration of strong scaling efficiency with parallelism (<xref ref-type="fig" rid="F4">Figure 4B</xref>). This is because through our highly efficient implementation of the union construct and incremental update methods (<xref ref-type="bibr" rid="R14">Goloboff, 1996</xref>), the parallel search for profitable moves was very fast for the 1M-sample tree relative to the sequential step of applying the moves, For example, with 1024 vCPUs, the entire matOptimize run required only 11.5 minutes, with the parallel search phase requiring less than 1.5 minutes on each iteration (7.5 minutes in total). We expect strong scaling efficiency to improve as the tree gets bigger.</p>
+<p id="P31">RIPPLES achieved a strong scaling efficiency of over 80% for comprehensively detecting recombinants from the 1M-sample tree at all parallelism levels (<xref ref-type="fig" rid="F4">Figure 4C</xref>). Parallel slack is the main factor behind lost efficiency at high parallelism – some long branches are 10-100 fold slower to analyze than the average and result in long tail latency jobs. Dynamic load balancing could improve the scaling efficiency of RIPPLES. Additionally, we also observed that some slack was created by the difference in time to spin up the GCP instances using dsub – some instances took over a minute longer to load than the rest.</p>
+</sec>
+<sec id="S22">
+<label>8.3</label>
+<title>Weak scaling analysis</title>
+<p id="P32">
+<xref ref-type="table" rid="T1">Table 1</xref> provides the weak scaling analysis for UShER, matOptimize and RIPPLES. All tools have a weak scaling efficiency above 70% and the causes behind the lost efficiency are the same as discussed in Section 8.2. The non-deterministic nature of our algorithms causes some non-monotonic variation of parallel efficiency in some cases.</p>
+</sec>
+</sec>
+</body>
+<back>
+<ack id="S23">
+<label>9</label>
+<title>Acknowledgments</title>
+<p>We thank Devika Torvi for her contributions to matUtils merge. We thank Sneha D. Goenka for helpful tips on using Google Cloud Platform. We thank Willi Henning Society, for the TNT software.</p>
+<p>This work was supported by funding from the National Institutes of Health (awards T32HG008345 and F31HG010584), the Centers for Disease Control and Prevention (BAA 200-2021-11554), University of California Office of the President Emergency COVID-19 Research Seed Funding Grant (award R00RG2456), Alfred P. Sloan Foundation and generous donations by the Eric and Wendy Schmidt Foundation.</p>
+</ack>
+<fn-group>
+<fn id="FN1">
+<p id="P33">
+<bold>Disclaimer:</bold> This paper was submitted for nomination to the Gordon Bell Special Prize for High Performance Computing-Based COVID-19 Research 2021. While our team was not selected as a finalist, we are posting this as pre-print since we think it could be of interest to the community. We expect modified and extended versions of this pre-print to appear in future publications.</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Anthony</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Gilardi</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Menachery</surname>
+<given-names>VD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Further Evidence for Bats as the Evolutionary Source of Middle East Respiratory Syndrome Coronavirus</article-title>
+<source>mBio</source>
+<person-group person-group-type="editor">
+<name>
+<surname>Schultz-Cherry</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<year>2017</year>
+<volume>8</volume>
+<issue>2</issue>
+<pub-id pub-id-type="doi">10.1128/mBio.00373-17</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Balaban</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Sarmashghi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mirarab</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>APPLES: Scalable Distance-Based Phylogenetic Placement with or without Alignments</article-title>
+<source>Systematic Biology</source>
+<year>2020</year>
+<volume>69</volume>
+<issue>3</issue>
+<fpage>566</fpage>
+<lpage>578</lpage>
+<pub-id pub-id-type="doi">10.1093/sysbio/syz063</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barbera</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Kozlov</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Czech</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>EPA-ng: Massively Parallel Evolutionary Placement of Genetic Sequences</article-title>
+<source>Systematic Biology</source>
+<year>2019</year>
+<volume>68</volume>
+<issue>2</issue>
+<fpage>365</fpage>
+<lpage>369</lpage>
+<pub-id pub-id-type="doi">10.1093/sysbio/syy054</pub-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bergsten</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>A review of long-branch attraction</article-title>
+<source>Cladistics</source>
+<year>2005</year>
+<volume>21</volume>
+<issue>2</issue>
+<fpage>163</fpage>
+<lpage>193</lpage>
+<pub-id pub-id-type="doi">10.1111/j.1096-0031.2005.00059.x</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Burke</surname>
+<given-names>DS</given-names>
+</name>
+</person-group>
+<article-title>Recombination in HIV: an important viral evolutionary strategy</article-title>
+<source>Emerging Infectious Diseases</source>
+<year>1997</year>
+<volume>3</volume>
+<issue>3</issue>
+<fpage>253</fpage>
+<lpage>259</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Campbell</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Archer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Laurenson-Schafer</surname>
+<given-names>H</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Increased transmissibility and global spread of SARS-CoV-2 variants of concern as at June 2021</article-title>
+<source>Eurosurveillance</source>
+<year>2021</year>
+<volume>26</volume>
+<issue>24</issue>
+<pub-id pub-id-type="doi">10.2807/1560-7917.ES.2021.26.24.2100509</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Challen</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Brooks-Pollock</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Read</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Risk of mortality in patients infected with SARS-CoV-2 variant of concern 202012/1: matched cohort study</article-title>
+<source>BMJ</source>
+<publisher-name>British Medical Journal Publishing Group</publisher-name>
+<year>2021</year>
+<volume>372</volume>
+<elocation-id>n579</elocation-id>
+<pub-id pub-id-type="doi">10.1136/bmj.n579</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clark</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Karsch-Mizrachi</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Lipman</surname>
+<given-names>DJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>GenBank</article-title>
+<source>Nucleic Acids Research</source>
+<year>2016</year>
+<volume>44</volume>
+<issue>D1</issue>
+<fpage>D67</fpage>
+<lpage>72</lpage>
+<pub-id pub-id-type="doi">10.1093/nar/gkv1276</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>da Silva Filipe</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Shepherd</surname>
+<given-names>JG</given-names>
+</name>
+<name>
+<surname>Williams</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology reveals multiple introductions of SARS-CoV-2 from mainland Europe into Scotland</article-title>
+<source>Nature Microbiology</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2021</year>
+<volume>6</volume>
+<issue>1</issue>
+<fpage>112</fpage>
+<lpage>122</lpage>
+<comment>1</comment>
+<pub-id pub-id-type="doi">10.1038/s41564-020-00838-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Deng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Gu</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Federman</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic surveillance reveals multiple introductions of SARS-CoV-2 into Northern California</article-title>
+<source>Science</source>
+<publisher-name>American Association for the Advancement of Science</publisher-name>
+<year>2020</year>
+<volume>369</volume>
+<issue>6503</issue>
+<fpage>582</fpage>
+<lpage>587</lpage>
+<pub-id pub-id-type="doi">10.1126/science.abb9263</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Durbin</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<source>Biological Sequence Analysis: Probabalistic Models of Proteins and Nucleic Acids</source>
+<year>1998</year>
+<publisher-name>Cambridge University Press</publisher-name>
+<publisher-loc>Cambridge, UK: New York</publisher-loc>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Felsenstein</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Cases in which Parsimony or Compatibility Methods will be Positively Misleading</article-title>
+<source>Systematic Biology</source>
+<year>1978</year>
+<volume>27</volume>
+<issue>4</issue>
+<fpage>401</fpage>
+<lpage>410</lpage>
+<pub-id pub-id-type="doi">10.1093/sysbio/27.4.401</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Fitch</surname>
+<given-names>WM</given-names>
+</name>
+</person-group>
+<chapter-title>Toward Defining the Course of Evolution: Minimum Change for a Specific Tree Topology</chapter-title>
+<source>Systematic Biology</source>
+<publisher-name>Oxford Academic</publisher-name>
+<year>1971</year>
+<volume>20</volume>
+<issue>4</issue>
+<fpage>406</fpage>
+<lpage>416</lpage>
+<pub-id pub-id-type="doi">10.1093/sysbio/20.4.406</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goloboff</surname>
+<given-names>PA</given-names>
+</name>
+</person-group>
+<article-title>Methods for Faster Parsimony Analysis</article-title>
+<source>Cladistics</source>
+<year>1996</year>
+<volume>12</volume>
+<issue>3</issue>
+<fpage>199</fpage>
+<lpage>220</lpage>
+<pub-id pub-id-type="doi">10.1111/j.1096-0031.1996.tb00009.x</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goloboff</surname>
+<given-names>PA</given-names>
+</name>
+</person-group>
+<article-title>Analyzing Large Data Sets in Reasonable Times: Solutions for Composite Optima</article-title>
+<source>Cladistics</source>
+<year>1999</year>
+<volume>15</volume>
+<issue>4</issue>
+<fpage>415</fpage>
+<lpage>428</lpage>
+<pub-id pub-id-type="doi">10.1111/j.1096-0031.1999.tb00278.x</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Goloboff</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Catalano</surname>
+<given-names>SA</given-names>
+</name>
+</person-group>
+<article-title>TNT version 1.5, including a full implementation of phylogenetic morphometrics</article-title>
+<source>Cladistics</source>
+<year>2016</year>
+<volume>32</volume>
+<issue>3</issue>
+<fpage>221</fpage>
+<lpage>238</lpage>
+<pub-id pub-id-type="doi">10.1111/cla.12160</pub-id>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Harvey</surname>
+<given-names>WT</given-names>
+</name>
+<name>
+<surname>Carabelli</surname>
+<given-names>AM</given-names>
+</name>
+<name>
+<surname>Jackson</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>SARS-CoV-2 variants, spike mutations and immune escape</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2021</year>
+<volume>19</volume>
+<issue>7</issue>
+<fpage>409</fpage>
+<lpage>424</lpage>
+<pub-id pub-id-type="doi">10.1038/s41579-021-00573-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Hodcroft</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Maio</surname>
+<given-names>ND</given-names>
+</name>
+<name>
+<surname>Lanfear</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Want to track pandemic variants faster? Fix the bioinformatics bottleneck</article-title>
+<source>Nature</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2021</year>
+<volume>591</volume>
+<issue>7848</issue>
+<fpage>30</fpage>
+<lpage>33</lpage>
+<comment>7848</comment>
+<pub-id pub-id-type="doi">10.1038/d41586-021-00525-x</pub-id>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Hon</surname>
+<given-names>C-C</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>T-Y</given-names>
+</name>
+<name>
+<surname>Shi</surname>
+<given-names>Z-L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Evidence of the Recombinant Origin of a Bat Severe Acute Respiratory Syndrome (SARS)-Like Coronavirus and Its Implications on the Direct Ancestor of SARS Coronavirus</article-title>
+<source>Journal of Virology</source>
+<publisher-name>American Society for Microbiology</publisher-name>
+<year>2008</year>
+<volume>82</volume>
+<issue>4</issue>
+<fpage>1819</fpage>
+<lpage>1826</lpage>
+<pub-id pub-id-type="doi">10.1128/JVI.01926-07</pub-id>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jackson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Bull</surname>
+<given-names>MJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Generation and transmission of interlineage recombinants in the SARS-CoV-2 pandemic</article-title>
+<source>Cell</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1016/j.cell.2021.08.014</pub-id>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<article-title>MAFFT Multiple Sequence Alignment Software Version 7:Improvements in Performance and Usability</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2013</year>
+<volume>30</volume>
+<issue>4</issue>
+<fpage>772</fpage>
+<lpage>780</lpage>
+<pub-id pub-id-type="doi">10.1093/molbev/mst010</pub-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Koelle</surname>
+<given-names>DM</given-names>
+</name>
+<name>
+<surname>Norberg</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Fitzgibbon</surname>
+<given-names>MP</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Worldwide circulation of HSV-2 × HSV-1 recombinant strains</article-title>
+<source>Scientific Reports</source>
+<year>2017</year>
+<volume>7</volume>
+<issue>1</issue>
+<elocation-id>44084</elocation-id>
+<pub-id pub-id-type="doi">10.1038/srep44084</pub-id>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Komissarov</surname>
+<given-names>AB</given-names>
+</name>
+<name>
+<surname>Safina</surname>
+<given-names>KR</given-names>
+</name>
+<name>
+<surname>Garushyants</surname>
+<given-names>SK</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology of the early stages of the SARS-CoV-2 outbreak in Russia</article-title>
+<source>Nature Communications</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2021</year>
+<volume>12</volume>
+<issue>1</issue>
+<fpage>649</fpage>
+<comment>1</comment>
+<pub-id pub-id-type="doi">10.1038/s41467-020-20880-z</pub-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Korber</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Gnanakaran</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tracking Changes in SARS-CoV-2 Spike:Evidence that D614G Increases Infectivity of the COVID-19 Virus</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>182</volume>
+<issue>4</issue>
+<fpage>812</fpage>
+<lpage>827</lpage>
+<elocation-id>e19</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.cell.2020.06.043</pub-id>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lai</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Bergna</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Acciarri</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Early phylogenetic estimate of the effective reproduction number of SARS-CoV-2</article-title>
+<source>Journal of Medical Virology</source>
+<year>2020</year>
+<volume>92</volume>
+<issue>6</issue>
+<fpage>675</fpage>
+<lpage>679</lpage>
+<pub-id pub-id-type="doi">10.1002/jmv.25723</pub-id>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam</surname>
+<given-names>TT-Y</given-names>
+</name>
+<name>
+<surname>Hon</surname>
+<given-names>C-C</given-names>
+</name>
+<name>
+<surname>Tang</surname>
+<given-names>JW</given-names>
+</name>
+</person-group>
+<article-title>Use of phylogenetics in the molecular epidemiology and evolutionary studies of viral infections</article-title>
+<source>Critical Reviews in Clinical Laboratory Sciences</source>
+<year>2010</year>
+<volume>47</volume>
+<issue>1</issue>
+<fpage>5</fpage>
+<lpage>49</lpage>
+<pub-id pub-id-type="doi">10.3109/10408361003633318</pub-id>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lam-Hine</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>McCurdy</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Santora</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Outbreak Associated with SARS-CoV-2B.1.617.2 (Delta) Variant in an Elementary School — Marin County, California, May–June 2021</article-title>
+<source>MMWR Morbidity and Mortality Weekly Report</source>
+<year>2021</year>
+<volume>70</volume>
+<issue>35</issue>
+<fpage>1214</fpage>
+<lpage>1219</lpage>
+<pub-id pub-id-type="doi">10.15585/mmwr.mm7035e2</pub-id>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lo</surname>
+<given-names>SW</given-names>
+</name>
+<name>
+<surname>Jamrozy</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Genomics and epidemiological surveillance</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2020</year>
+<volume>18</volume>
+<issue>9</issue>
+<fpage>478</fpage>
+<pub-id pub-id-type="doi">10.1038/s41579-020-0421-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Rybicki</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>RDP: detection of recombination amongst aligned sequences</article-title>
+<source>Bioinformatics (Oxford, England)</source>
+<year>2000</year>
+<volume>16</volume>
+<issue>6</issue>
+<fpage>562</fpage>
+<lpage>563</lpage>
+<pub-id pub-id-type="doi">10.1093/bioinformatics/16.6.562</pub-id>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Murrell</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Golden</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RDP4: Detection and analysis of recombination patterns in virus genomes</article-title>
+<source>Virus Evolution</source>
+<year>2015</year>
+<volume>1</volume>
+<issue>1</issue>
+<pub-id pub-id-type="doi">10.1093/ve/vev003</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Varsani</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Roumagnac</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>RDP5: a computer program for analyzing recombination in, and removing signals of recombination from, nucleotide sequence datasets</article-title>
+<source>Virus Evolution</source>
+<year>2021</year>
+<volume>7</volume>
+<issue>1</issue>
+<pub-id pub-id-type="doi">10.1093/ve/veaa087</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Matsen</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Kodner</surname>
+<given-names>RB</given-names>
+</name>
+<name>
+<surname>Armbrust</surname>
+<given-names>EV</given-names>
+</name>
+</person-group>
+<article-title>pplacer: linear time maximum-likelihood and Bayesian phylogenetic placement of sequences onto a fixed reference tree</article-title>
+<source>BMC Bioinformatics</source>
+<year>2010</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>538</fpage>
+<pub-id pub-id-type="doi">10.1186/1471-2105-11-538</pub-id>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Maxmen</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>One million coronavirus sequences: popular genome site hits mega milestone</article-title>
+<source>Nature</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2021</year>
+<volume>593</volume>
+<issue>7857</issue>
+<fpage>21</fpage>
+<pub-id pub-id-type="doi">10.1038/d41586-021-01069-w</pub-id>
+<comment>7857</comment>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McBroome</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Thornlow</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Hinrichs</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A Daily-Updated Database and Tools for Comprehensive SARS-CoV-2 Mutation-Annotated Trees</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2021</year>
+<elocation-id>msab264</elocation-id>
+<pub-id pub-id-type="doi">10.1093/molbev/msab264</pub-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Minh</surname>
+<given-names>BQ</given-names>
+</name>
+<name>
+<surname>Schmidt</surname>
+<given-names>HA</given-names>
+</name>
+<name>
+<surname>Chernomor</surname>
+<given-names>O</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>IQ-TREE 2: New Models and Efficient Methods for Phylogenetic Inference in the Genomic Era</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2020</year>
+<volume>37</volume>
+<issue>5</issue>
+<fpage>1530</fpage>
+<lpage>1534</lpage>
+<pub-id pub-id-type="doi">10.1093/molbev/msaa015</pub-id>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Nicholls</surname>
+<given-names>SM</given-names>
+</name>
+<name>
+<surname>Poplawski</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Bull</surname>
+<given-names>MJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>MAJORA: Continuous integration supporting decentralised sequencing for SARS-CoV-2 genomic surveillance</article-title>
+<source>bioRxiv</source>
+<publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+<year>2020</year>
+<elocation-id>2020.10.06.328328</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.10.06.328328</pub-id>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oude Munnink</surname>
+<given-names>BB</given-names>
+</name>
+<name>
+<surname>Nieuwenhuijse</surname>
+<given-names>DF</given-names>
+</name>
+<name>
+<surname>Stein</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Rapid SARS-CoV-2 whole-genome sequencing and analysis for informed public health decision-making in the Netherlands</article-title>
+<source>Nature Medicine</source>
+<year>2020</year>
+<volume>26</volume>
+<issue>9</issue>
+<fpage>1405</fpage>
+<lpage>1410</lpage>
+<pub-id pub-id-type="doi">10.1038/s41591-020-0997-y</pub-id>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Page</surname>
+<given-names>RDM</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<source>Molecular Evolution: A Phylogenetic Approach</source>
+<publisher-name>Blackwell Science</publisher-name>
+<publisher-loc>Oxford ;Malden, MA</publisher-loc>
+<year>1998</year>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Price</surname>
+<given-names>MN</given-names>
+</name>
+<name>
+<surname>Dehal</surname>
+<given-names>PS</given-names>
+</name>
+<name>
+<surname>Arkin</surname>
+<given-names>AP</given-names>
+</name>
+</person-group>
+<article-title>FastTree 2 – Approximately Maximum-Likelihood Trees for Large Alignments</article-title>
+<source>PLOS ONE</source>
+<publisher-name>Public Library of Science</publisher-name>
+<year>2010</year>
+<volume>5</volume>
+<issue>3</issue>
+<elocation-id>e9490</elocation-id>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0009490</pub-id>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A dynamic nomenclature proposal for SARS-CoV-2 lineages to assist genomic epidemiology</article-title>
+<source>Nature Microbiology</source>
+<publisher-name>Nature Publishing Group</publisher-name>
+<year>2020</year>
+<volume>5</volume>
+<issue>11</issue>
+<fpage>1403</fpage>
+<lpage>1407</lpage>
+<comment>11</comment>
+<pub-id pub-id-type="doi">10.1038/s41564-020-0770-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Richard</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Shaw</surname>
+<given-names>LP</given-names>
+</name>
+<name>
+<surname>Lanfear</surname>
+<given-names>R</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A phylogeny-based metric for estimating changes in transmissibility from recurrent mutations in SARS-CoV-2 preprint</article-title>
+<source>Genomics</source>
+<year>2021</year>
+<month>May</month>
+<day>7</day>
+<pub-id pub-id-type="doi">10.1101/2021.05.06.442903</pub-id>
+</element-citation>
+</ref>
+<ref id="R42">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Sankoff</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Minimal Mutation Trees of Sequences</article-title>
+<source>SIAM Journal on Applied Mathematics</source>
+<year>1975</year>
+<publisher-name>Society for Industrial and Applied Mathematics</publisher-name>
+<volume>28</volume>
+<issue>1</issue>
+<fpage>35</fpage>
+<lpage>42</lpage>
+<pub-id pub-id-type="doi">10.1137/0128004</pub-id>
+</element-citation>
+</ref>
+<ref id="R43">
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Shu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>McCauley</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>GISAID: Global initiative on sharing all influenza data – from vision to reality</article-title>
+<source>Eurosurveillance</source>
+<publisher-name>European Centre for Disease Prevention and Control</publisher-name>
+<year>2017</year>
+<volume>22</volume>
+<issue>13</issue>
+<elocation-id>30494</elocation-id>
+<pub-id pub-id-type="doi">10.2807/1560-7917.ES.2017.22.13.30494</pub-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Simon-Loriere</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+</person-group>
+<article-title>Why do RNA viruses recombine?</article-title>
+<source>Nature Reviews Microbiology</source>
+<year>2011</year>
+<volume>9</volume>
+<issue>8</issue>
+<fpage>617</fpage>
+<lpage>626</lpage>
+<pub-id pub-id-type="doi">10.1038/nrmicro2614</pub-id>
+</element-citation>
+</ref>
+<ref id="R45">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tange</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<source>GNU Parallel - The Command-Line Power Tool ;login: The USENIX Magazine</source>
+<year>2011</year>
+<volume>36</volume>
+<issue>1</issue>
+<fpage>42</fpage>
+<lpage>47</lpage>
+<pub-id pub-id-type="doi">10.5281/zenodo.16303</pub-id>
+</element-citation>
+</ref>
+<ref id="R46">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Turakhia</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Thornlow</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Hinrichs</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Pandemic-Scale Phylogenomics Reveals Elevated Recombination Rates in the SARS-CoV-2 Spike Region</source>
+<year>2021</year>
+<month>August</month>
+<day>5</day>
+<pub-id pub-id-type="doi">10.1101/2021.08.04.455157</pub-id>
+</element-citation>
+</ref>
+<ref id="R47">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Turakhia</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Thornlow</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Hinrichs</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Ultrafast Sample placement on Existing tRees (UShER) enables real-time phylogenetics for the SARS-CoV-2 pandemic</article-title>
+<source>Nature Genetics</source>
+<year>2021</year>
+<volume>53</volume>
+<issue>6</issue>
+<fpage>809</fpage>
+<lpage>816</lpage>
+<pub-id pub-id-type="doi">10.1038/s41588-021-00862-7</pub-id>
+</element-citation>
+</ref>
+<ref id="R48">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Volz</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Mishra</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chand</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Transmission of SARS-CoV-2 Lineage B.1.1.7 in England: Insights from linking epidemiological and genetic data</article-title>
+<source>preprint</source>
+<year>2021</year>
+<month>January</month>
+<day>4</day>
+<pub-id pub-id-type="doi">10.1101/2020.12.30.20249034</pub-id>
+<comment>Infectious Diseases (except HIV/AIDS)</comment>
+</element-citation>
+</ref>
+<ref id="R49">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A new coronavirus associated with human respiratory disease in China</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>579</volume>
+<issue>7798</issue>
+<fpage>265</fpage>
+<lpage>269</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2008-3</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Innovative optimizations realized in (A) UShER, (B) matOptimize and (C) RIPPLES for phylogenetic placement, tree optimization and recombination detection, respectively. The left side shows a representative illustration of the prior approaches and the right side illustrates the approach used in our tools.</p>
+</caption>
+<graphic xlink:href="EMS141084-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>For parallelizing phylogenetic placement over multiple CPU nodes, we split up the VCF containing new samples uniformly and distribute them over independent CPU nodes, each executing UShER to place the corresponding samples on the base mutation-annotated tree (MAT). The resulting MAT files are then merged using a parallel reduction tree of matUtils merge into a single output MAT containing new samples.</p>
+</caption>
+<graphic xlink:href="EMS141084-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Comparison of our phylogenetic package with previous state-of-the-art tools for (<bold>A</bold>) phylogenetic placement, (<bold>B</bold>) tree optimization and (<bold>C</bold>) recombination detection. Our tools achieve large improvements in runtime (left) as well as peak memory requirements (right).</p>
+</caption>
+<graphic xlink:href="EMS141084-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Strong scaling analysis for (<bold>A</bold>) UShER, (<bold>B</bold>) matOptimize and (<bold>C</bold>) RIPPLES.</p>
+</caption>
+<graphic xlink:href="EMS141084-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Total time (in orange) to place 100K new samples on the 1M-sample tree using UShER followed by parallel reduction using matUtils merge, with the merge component shown separately (in blue), for different levels of parallelism.</p>
+</caption>
+<graphic xlink:href="EMS141084-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<p>A comprehensive SARS-CoV-2 phylogeny as of October 3, 2021, containing 4,111,711 samples. The tree was built with the help of UShER and matOptimize and is visualized using CoV2Tree tool (<ext-link ext-link-type="uri" xlink:href="https://cov2tree.org/">https://cov2tree.org/</ext-link>). Each dot corresponds to a leaf, representing a single SARS-CoV-2 sample colored based on its Pango lineage assignment (<ext-link ext-link-type="uri" xlink:href="https://pangolin.cog-uk.io/">https://pangolin.cog-uk.io/</ext-link>).</p>
+</caption>
+<graphic xlink:href="EMS141084-f006"/>
+</fig>
+<table-wrap id="T1" orientation="portrait" position="float">
+<label>Table 1</label>
+<caption>
+<p>Weak scaling analysis for (<bold>A</bold>) UShER, (<bold>B</bold>) matOptimize and (<bold>C</bold>) RIPPLES.</p>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="top" colspan="3">A. UShER</th>
+</tr>
+<tr>
+<th align="center" valign="top">vCPU</th>
+<th align="center" valign="top">Samples placed</th>
+<th align="center" valign="top">Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">64</td>
+<td align="center" valign="top">6.25K</td>
+<td align="center" valign="top">26m 48s</td>
+</tr>
+<tr>
+<td align="center" valign="top">128</td>
+<td align="center" valign="top">12.5K</td>
+<td align="center" valign="top">28m 22s</td>
+</tr>
+<tr>
+<td align="center" valign="top">256</td>
+<td align="center" valign="top">25K</td>
+<td align="center" valign="top">30m 41s</td>
+</tr>
+<tr>
+<td align="center" valign="top">512</td>
+<td align="center" valign="top">50K</td>
+<td align="center" valign="top">33m 36s</td>
+</tr>
+<tr>
+<td align="center" valign="top">1024</td>
+<td align="center" valign="top">100K</td>
+<td align="center" valign="top">37m 07s</td>
+</tr>
+<tr>
+<td align="center" valign="top" colspan="3">
+<bold>B. matOptimize</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>vCPU</bold>
+</td>
+<td align="center" valign="top">
+<bold>Source nodes explored</bold>
+</td>
+<td align="center" valign="top">
+<bold>Time</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">64</td>
+<td align="center" valign="top">39789</td>
+<td align="center" valign="top">10m 45s</td>
+</tr>
+<tr>
+<td align="center" valign="top">128</td>
+<td align="center" valign="top">79577</td>
+<td align="center" valign="top">11m 54s</td>
+</tr>
+<tr>
+<td align="center" valign="top">256</td>
+<td align="center" valign="top">159154</td>
+<td align="center" valign="top">11m 51s</td>
+</tr>
+<tr>
+<td align="center" valign="top">512</td>
+<td align="center" valign="top">318308</td>
+<td align="center" valign="top">11m 58s</td>
+</tr>
+<tr>
+<td align="center" valign="top">1024</td>
+<td align="center" valign="top">636616</td>
+<td align="center" valign="top">11m 30s</td>
+</tr>
+<tr>
+<td align="center" valign="top" colspan="3">
+<bold>C. RIPPLES</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+<bold>vCPU</bold>
+</td>
+<td align="center" valign="top">
+<bold>Long branches explored</bold>
+</td>
+<td align="center" valign="top">
+<bold>Time</bold>
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">64</td>
+<td align="center" valign="top">587</td>
+<td align="center" valign="top">49m 29s</td>
+</tr>
+<tr>
+<td align="center" valign="top">128</td>
+<td align="center" valign="top">1174</td>
+<td align="center" valign="top">53m 33s</td>
+</tr>
+<tr>
+<td align="center" valign="top">256</td>
+<td align="center" valign="top">2348</td>
+<td align="center" valign="top">54m 33s</td>
+</tr>
+<tr>
+<td align="center" valign="top">512</td>
+<td align="center" valign="top">4696</td>
+<td align="center" valign="top">56m 18s</td>
+</tr>
+<tr>
+<td align="center" valign="top">1024</td>
+<td align="center" valign="top">9391</td>
+<td align="center" valign="top">55m 52s</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

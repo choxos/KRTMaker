@@ -258,11 +258,14 @@ class EuropePMCFetcher:
                             if descriptor_name is not None:
                                 keywords.append(descriptor_name.text)
                     
+                    # Extract authors as a proper list
+                    authors = self._extract_authors(result)
+                    
                     return {
                         'preprint_doi': doi,
                         'preprint_title': title_elem.text if title_elem is not None else 'Unknown title',
-                        'preprint_authors': authors_elem.text if authors_elem is not None else 'Unknown authors',
-                        'preprint_authors_detailed': authors_detailed if authors_detailed else None,
+                        'preprint_authors': authors,  # Now returns a list
+                        'preprint_authors_detailed': authors,  # Use the same list for consistency
                         'preprint_date': pub_date_elem.text if pub_date_elem is not None else None,
                         'preprint_abstract': abstract_elem.text if abstract_elem is not None else None,
                         'preprint_platform': journal_elem.text if journal_elem is not None else 'bioRxiv',
@@ -576,22 +579,29 @@ class EuropePMCFetcher:
             traceback.print_exc()
             return None
     
-    def _extract_authors(self, result_elem) -> str:
-        """Extract authors from result element"""
+    def _extract_authors(self, result_elem) -> List[str]:
+        """Extract authors from result element as a list"""
         # Try detailed author list first
         author_list_elem = result_elem.find('authorList')
         if author_list_elem is not None:
             authors = []
             for author in author_list_elem.findall('.//author'):
                 fullName = author.find('fullName')
-                if fullName is not None:
-                    authors.append(fullName.text)
+                if fullName is not None and fullName.text:
+                    authors.append(fullName.text.strip())
             if authors:
-                return ', '.join(authors)
+                return authors
         
-        # Fall back to author string
+        # Fall back to author string - split by comma and clean up
         authors_elem = result_elem.find('authorString')
-        return authors_elem.text if authors_elem is not None else 'Unknown authors'
+        if authors_elem is not None and authors_elem.text:
+            # Split by comma and clean up whitespace
+            authors = [author.strip() for author in authors_elem.text.split(',')]
+            # Filter out empty strings
+            authors = [author for author in authors if author]
+            return authors
+        
+        return ['Unknown authors']
     
     def _extract_abstract(self, result_elem) -> Optional[str]:
         """Extract abstract from result element"""

@@ -1,0 +1,5131 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS108624</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.14.422739</article-id>
+<article-id pub-id-type="archive">PPR254347</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Decomposing the sources of SARS-CoV-2 fitness variation in the United States</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Kepler</surname>
+<given-names>Lenora</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Hamins-Puertolas</surname>
+<given-names>Marco</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Rasmussen</surname>
+<given-names>David A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A3">3</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Bioinformatics Research Center, North Carolina State University, Raleigh, North Carolina, USA</aff>
+<aff id="A2">
+<label>2</label>Biomathematics Graduate Program, North Carolina State University, Raleigh, North Carolina, USA</aff>
+<aff id="A3">
+<label>3</label>Department of Entomology and Plant Pathology, North Carolina State University, Raleigh, North Carolina, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<email>drasmus@ncsu.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>19</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>14</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The fitness of a pathogen is a composite phenotype determined by many different factors influencing growth rates both within and between hosts. Determining what factors shape fitness at the host population-level is especially challenging because both intrinsic factors like pathogen genetics and extrinsic factors such as host behaviour influence between-host transmission potential. These challenges have been highlighted by controversy surrounding the population-level fitness effects of mutations in the SARS-CoV-2 genome and their relative importance when compared against non-genetic factors shaping transmission dynamics. Building upon phylodynamic birth-death models, we develop a new framework to learn how hundreds of genetic and non-genetic factors have shaped the fitness of SARS-CoV-2. We estimate the fitness effects of all amino acid variants and several structural variants that have circulated in the United States between February 2020 and March 2021 from viral phylogenies. We also estimate how much fitness variation among pathogen lineages is attributable to genetic versus non-genetic factors such as spatial heterogeneity in transmission rates. Before September 2020, most fitness variation between lineages can be explained by background spatial heterogeneity in transmission rates across geographic regions. Starting in late 2020, genetic variation in fitness increased dramatically with the emergence of several new lineages including B.1.1.7, B.1.427, B.1.429 and B.1.526. Our analysis also indicates that genetic variants in less well-explored genomic regions outside of Spike may be contributing significantly to overall fitness variation in the viral population.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">Determining what factors shape the overall fitness of a novel pathogen such as SARS-CoV-2 is a key to understanding the pathogen’s epidemiological and evolutionary dynamics. However, quantifying pathogen fitness poses a number of conceptual as well as practical challenges. The fitness of a pathogen within a host, usually defined in terms of replication or growth rates, may only have a tenuous relationship with fitness at the host population-level, which is normally defined in terms of a pathogen’s transmission potential (<xref ref-type="bibr" rid="R21">Handel and Rohani, 2015</xref>; <xref ref-type="bibr" rid="R78">Xue and Bloom, 2020</xref>). In addition to being scale-dependent, fitness is generally a composite phenotype determined by many different intrinsic (e.g. genetic) and extrinsic (e.g. environmental) factors. Several recent examples have highlighted how genetic mutations can dramatically increase the fitness of newly emerging viral pathogens including SARS-CoV, avian influenza and Ebola virus (<xref ref-type="bibr" rid="R4">Consortium et al., 2004</xref>; <xref ref-type="bibr" rid="R41">Long et al., 2016</xref>; <xref ref-type="bibr" rid="R69">Urbanowicz et al., 2016</xref>). At the same time, extrinsic factors such as climate and host behavior also strongly shape transmission dynamics and thereby pathogen fitness at the population-level (<xref ref-type="bibr" rid="R60">Shaman and Kohn, 2009</xref>; <xref ref-type="bibr" rid="R5">Dalziel et al., 2018</xref>; <xref ref-type="bibr" rid="R29">Kissler et al., 2020</xref>). Studying fitness only on one scale, or only a single component of fitness, may therefore distort our overall picture of what factors most strongly determine pathogen fitness and transmission potential.</p>
+<p id="P3">For SARS-CoV-2, reports of novel genetic variants with enhanced infectiousness or transmissibility emerged within the first months of the global pandemic and have since received considerable attention (<xref ref-type="bibr" rid="R31">Korber et al., 2020a</xref>; <xref ref-type="bibr" rid="R43">MacLean et al., 2020b</xref>; <xref ref-type="bibr" rid="R65">Tang et al., 2020</xref>). Early on, the most notable of these variants was the D614G mutation in the receptor binding domain of the Spike glycoprotein that binds human ACE2 receptors during cell entry. This variant spread rapidly around the globe in the spring of 2020 and apparently out-competed other viral genotypes that were already established in several locations (<xref ref-type="bibr" rid="R32">Korber et al., 2020b</xref>). While experimental studies showed that the D614G variant increases cellular infectivity and viral replication rates (<xref ref-type="bibr" rid="R32">Korber et al., 2020b</xref>; <xref ref-type="bibr" rid="R54">Plante et al., 2020</xref>; <xref ref-type="bibr" rid="R81">Zhang et al.,2020</xref>), its impact on population-level fitness remains less clear with fitness estimates ranging from low to moderately large benefits (<xref ref-type="bibr" rid="R38">Leung et al., 2020a</xref>; <xref ref-type="bibr" rid="R70">Volz et al., 2020</xref>).</p>
+<p id="P4">In late 2020, several new variants of SARS-CoV-2 with increased transmissibility and potential antigenic escape mutations emerged, including lineage B.1.1.7 in the UK (<xref ref-type="bibr" rid="R71">Volz et al., 2021</xref>; <xref ref-type="bibr" rid="R6">Davies et al.,2021</xref>), B.1.351 in South Africa (<xref ref-type="bibr" rid="R66">Tegally et al., 2020</xref>) and P.1 in Brazil (<xref ref-type="bibr" rid="R49">Naveca et al., 2021</xref>). All of these emerging variants were subsequently introduced into the United States as early as October or November, 2020 (<xref ref-type="bibr" rid="R36">Larsen and Worobey, 2021</xref>; <xref ref-type="bibr" rid="R73">Washington et al., 2021</xref>). However, quantifying the fitness of these lineages in the US and their impact on national-level epidemic dynamics poses a considerable challenge due to the rapidly evolving epidemic landscape in the US. In addition to introduced variants, new “domestic” variants have emerged such as B.1.427/B.1.429 in California and B.1.526 in New York (<xref ref-type="bibr" rid="R8">Deng et al., 2021</xref>; <xref ref-type="bibr" rid="R72">Walensky et al., 2021</xref>; <xref ref-type="bibr" rid="R82">Zhang et al., 2021</xref>). At the same time, older lineages like B.1.2 remain dominant across large geographic regions and have as yet not been replaced by newer variants (<xref ref-type="bibr" rid="R52">Pater et al., 2021</xref>). Furthermore, multiple lineages have independently acquired amino acid mutations suspected to increase transmission potential or escape immunity, including Spike E484K, Spike N501Y and Spike Q677P/H (<xref ref-type="bibr" rid="R22">Hodcroft et al., 2021</xref>; <xref ref-type="bibr" rid="R46">Martin et al., 2021</xref>), suggesting that lineages are adapting through convergent evolution.</p>
+<p id="P5">While the fitness effect of genetic variants can be precisely quantified within hosts in controlled lab experiments (<xref ref-type="bibr" rid="R69">Urbanowicz et al., 2016</xref>; <xref ref-type="bibr" rid="R47">Muth et al., 2018</xref>; <xref ref-type="bibr" rid="R81">Zhang et al., 2020</xref>), laboratory conditions may not faithfully mimic host environments and immune responses encountered during natural infections. Moreover, due the scale-dependence of fitness, increased cellular infectivity or replication rates may not scale up to increase transmission potential between hosts, especially if within-host growth rates already produce sufficient viral loads or optimize a tradeoff between virulence and transmission (<xref ref-type="bibr" rid="R15">Fraser et al., 2007</xref>; <xref ref-type="bibr" rid="R2">Alizon et al., 2009</xref>; <xref ref-type="bibr" rid="R27">Ke et al., 2020</xref>). Thus, in order to provide a definitive answer about the epidemiological significance of a novel pathogen variant, fitness also needs to be quantified at the between-host or population-level.</p>
+<p id="P6">Fitness at the population level can be inferred based on the evolutionary dynamics of pathogen variants in the host population. For example, the growth rate of alternate variants can be estimated from time series of variant frequencies or pathogen phylogenies as a surrogate for fitness (<xref ref-type="bibr" rid="R14">Foll et al., 2015</xref>; <xref ref-type="bibr" rid="R33">Kühnert et al., 2018</xref>). However, because fitness is a composite phenotype determined by multiple factors, inferring the fitness effect of a single feature such as a mutation can be easily confounded by other factors shaping pathogen fitness if these confounding factors are not accounted for. For example, a mutation of interest may be linked to other non-neutral mutations in the same genetic background and thereby confound estimates of the mutation’s fitness effect by altering the background fitness of pathogen lineages carrying the mutation (<xref ref-type="bibr" rid="R23">Illingworth and Mustonen, 2012</xref>; <xref ref-type="bibr" rid="R50">Neher, 2013</xref>). Extrinsic factors such as climate and host behavior also strongly shape transmission dynamics (<xref ref-type="bibr" rid="R5">Dalziel et al., 2018</xref>; <xref ref-type="bibr" rid="R29">Kissler et al., 2020</xref>), such that a novel variant may increase rapidly in frequency and appear to have a fitness advantage simply by being in the right host population at the right time.</p>
+<p id="P7">Viral phylogenies offer a promising way to estimate pathogen fitness while controlling for multiple confounding factors. On average, a pathogen lineage with increased population-level fitness will be transmitted more frequently and have a higher probability of persisting through time. More fit lineages will therefore have a higher branching rate in the phylogeny and leave behind more sampled descendants. The fitness of a viral lineage can therefore be inferred from its branching pattern in a phylogeny using phylodynamic approaches such as birth-death models (<xref ref-type="bibr" rid="R51">Neher et al., 2014</xref>). Multi-type birth-death (MTBD) models extend this basic idea by allowing the birth and death rate of lineages, and thereby fitness, to depend on a lineage’s state or type, which may represent its genotype or any other <italic>feature</italic> representing a discrete character trait (<xref ref-type="bibr" rid="R44">Maddison et al., 2007</xref>; <xref ref-type="bibr" rid="R62">Stadler and Bonhoeffer, 2013</xref>; <xref ref-type="bibr" rid="R33">Kuhnert et al., 2018</xref>). Here we develop a phylodynamic inference framework that builds on earlier MTBD models to allow the fitness of a lineage to depend on multiple evolving traits or features (<xref ref-type="bibr" rid="R57">Rasmussen and Stadler, 2019</xref>). In this framework, we first reconstruct ancestral states for all features that potentially predict fitness and then use a <italic>fitness mapping function</italic> to translate a lineage’s reconstructed ancestral features into its expected fitness. We also develop a new approach that combines recent advances in machine learning with likelihood-based statistical inference under a birth-death model to learn this fitness mapping function from a phylogeny with reconstructed ancestral features.</p>
+<p id="P8">We apply this new phylodynamic framework to learn what genetic as well as extrinsic features determine the fitness of SARS-CoV-2 at the host population-level in the United States. This approach allows us to estimate the fitness effects of a large number of genetic variants while accounting for confounding factors such as background spatial heterogeneity in transmission. This approach also allows us to explore the relative importance of different features to overall pathogen fitness by decomposing or partitioning fitness variation among lineages into parts attributable to different comp onents of fitness. We therefore obtain a clearer picture of what factors have most strongly shaped the fitness of SARS-CoV-2 lineages circulating in the US.</p>
+</sec>
+<sec id="S2" sec-type="results">
+<title>Results</title>
+<sec id="S3">
+<title>Phylogenetic and ancestral state reconstruction</title>
+<p id="P9">We originally analyzed a data set containing 22,416 SARS-CoV-2 whole genome sequences sampled in the United States prior to September 1st, 2020 (Pre-2020-09 data). Since the evolutionary dynamics of SARS-CoV-2 underwent a dramatic transition in late 2020, we subsequently performed an updated analysis on an additional 66,339 sequences sampled in the US between Sept 1st, 2020 and March 1st, 2021 (Post-2020-09 data). We combine these two data sets (Combined data) for some analyses below. Dated or time-calibrated maximum likelihood phylogenetic trees were reconstructed from whole genome sequences in each data set. For all sampled viruses, we also assembled a set of features that potentially predict fitness, including both genetic and non-genetic, environmental features. The genetic features include amino acid variants (AAVs) in coding regions spanning the SARS-CoV-2 genome as well as structural (deletion) variants. The non-genetic features include each sample’s spatial location both at the level of US state and geographic region as determined by the US Department of Health and Human Services. Ancestral states for all features were then reconstructed for each node in the ML phylogeny. Thus, for each lineage in the phylogeny we obtain a vector of categorical variables representing ancestral features which we use to predict a lineage’s fitness.</p>
+</sec>
+<sec id="S4">
+<title>Background sampling and transmission heterogeneity</title>
+<p id="P10">Because phylodynamic estimates will inevitably depend on what pathogens are sampled for genomic sequencing, we first estimated how sampling efforts varied across the US by time and geographic region. Sampling fractions were estimated based on the number of whole-genome sequences submitted to GISAID relative to the total number of COVID infections imputed based on reported COVID deaths (see <xref ref-type="sec" rid="S10">Methods</xref>). Overall, sampling fractions were extremely variable over the first eight months of the pandemic, but have become less variable and increased steadily over time since fall 2020 (<xref ref-type="fig" rid="F1">Figure 1A</xref>). When averaged across all times and regions, the mean sampling fraction is estimated to be 0.14%.</p>
+<p id="P11">Before considering models that include genetic variants as fitness-predicting features, we considered several models accounting for background spatial and temporal variability in transmission, which could otherwise confound fitness estimates. The best fitting model allowed transmission rates to vary by both monthly time interval and geographic region (see <xref ref-type="sec" rid="S21">Model Selection</xref>). We therefore use a model that directly accounts for time-varying regional transmission rates and time-varying regional sampling fractions (as estimated in <xref ref-type="fig" rid="F1">Figure 1A</xref>) in all subsequent analysis.</p>
+<p id="P12">Using our phylodynamic birth-death model, we estimated how background transmission rates varied across geographic regions from the SARS-CoV-2 phylogeny. <xref ref-type="fig" rid="F1">Figure 1B</xref> illustrates the changing transmission dynamics in terms of the effective reproductive number <italic>R<sub>e</sub>
+</italic> for each region. Estimated transmission rates and R<sub>e</sub> peak in February 2020, substantially earlier than peaks in reported cases. This pattern has been reported in other phylodynamic studies (<xref ref-type="bibr" rid="R11">Fauver et al., 2020</xref>; <xref ref-type="bibr" rid="R48">Nadeau et al., 2020</xref>; <xref ref-type="bibr" rid="R55">Ragonnet-Cronin et al., 2020</xref>), and may reflect considerable undetected transmission as well as lags in reporting before routine testing began. Transmission rates then remain low through the spring and early summer 2020 but are extremely variable across regions, likely reflecting the extreme variability in imputed sampling fractions during this same time period. Transmissions rates then steadily increase through late summer and fall of 2020 before declining in early 2021, consistent with trends observed in case report data.</p>
+</sec>
+<sec id="S5">
+<title>Fitness effects of genetic variants</title>
+<p id="P13">We next estimated the fitness effect of genetic variants while controlling for background heterogeneity in transmission rates and sampling fractions. We consider the fitness effect of 66 amino acid variants (AAVs) in the Pre-2020-09 data and 110 AAVs in the Post-2020-09 data. However, in both data sets several variants are tightly linked and nearly always co-occur together (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 1</xref>), leading to strong collinearity among features in our model. We therefore encode sets of linked variants with correlation coefficients greater than 0.95 as single features.</p>
+<p id="P14">Fitness effects were estimated under a model where each variant has a multiplicative effect on the base transmission rate of a lineage such that a neutral variant has a fitness effect of 1.0 and deleterious or beneficial mutants have fitness effects less than or greater than 1.0, respectively. These fitness effects therefore also directly quantify the variant’s effect on the <italic>R<sub>e</sub>
+</italic> of pathogen lineages with the variant. We only consider a variant to be significantly deleterious or beneficial if the estimated 95% credible interval (CI) does not overlap with 1.0.</p>
+<p id="P15">For the Pre-2020-09 data, most amino acid variants are inferred to be neutral, with maximum likelihood estimates (MLE) of fitness effects close to 1.0 and 95% CIs overlapping 1.0 (<xref ref-type="fig" rid="F2">Figure 2</xref>). Estimated fitness effects are generally consistent across 10 bootstrapped phylogeny replicates. Variants with larger positive fitness effects (&gt;1.05) are generally rare mutations or have wide confidence intervals surrounding the MLE. AAVs with large and significant positive effects are summarized in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+<p id="P16">The Spike D614G variant nearly always co-occurs with the P323L variant in nsp12 (RdRp), so we consider these two variants together as a single feature. Despite rapidly increasing in frequency in the spring of 2020 (<xref ref-type="fig" rid="F4">Figure 4A</xref>), the Spike D614G + nsp12 P323L variant is estimated to have only a modest fitness benefit of 1.095 with a fairly wide 95% CI of 0.89-1.29. Simulations using a two-strain epidemiological model show that a transmission fitness effect of this magnitude is insufficient to explain D614G’s rapid increase in frequency during the spring of 2020. Even if D614G entered the US through external introductions at a much higher rate than the ancestral 614D variant, D614G would have required a fitness advantage much larger than 10% to rise so rapidly in frequency (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 3</xref>). We therefore explore other plausible explanations for D614G’s rapid rise below.</p>
+<p id="P17">For the Post-2020-09 data, most individual AAVs are again estimated to be approximately neutral (<xref ref-type="fig" rid="F3">Figure 3</xref>). Only one AAV, Spike A701V, is estimated to be significantly deleterious with a fitness effect of 0.937 (95% CI: 0.91-0.98). However, there are a relatively large number of AAVs with significant positive fitness effects between 1.05 and 1.10, especially in nsp3, ORF3a and ORF9 (<xref ref-type="table" rid="T2">Table 2</xref>).</p>
+<p id="P18">Within the Spike domain, the putative antigenic escape mutation S E484K is estimated to have a significant fitness advantage (MLE: 1.117; 95% CI: 1.10-1.15). Two receptor binding domain mutations at position 501 with increased ACE2 binding avidity are also estimated to have significant positive fitness effects: S N501T (MLE: 1.091; 95% CI: 1.07-1.13) and S N501Y (MLE: 1.090; 95% CI: 1.05-1.11). The S Q677P variant, which has arisen in multiple genetic backgrounds (<xref ref-type="bibr" rid="R52">Pater et al., 2021</xref>; <xref ref-type="bibr" rid="R22">Hodcroft et al., 2021</xref>), linked with nsp6 Q160R is likewise estimated to have a significant fitness advantage (MLE: 1.109; 95% CI: 1.05-1.15), while the related mutation S Q677H is estimated to have a much smaller advantage (MLE: 1.026; 95% CI: 1.02-1.04). Finally, S P681H which has arisen multiple times including in B.1.1.7 and may aid cell entry by increasing the efficiency of furin cleavage (<xref ref-type="bibr" rid="R17">Garry et al., 2021</xref>), is estimated have a fitness effect of 1.069 (95% CI: 1.04-1.08).</p>
+<p id="P19">Overall, the genetic features with the largest positive fitness effects in the Post-2020-09 data are all sets of linked AAVs associated with major lineages. The B.1.526-linked variants are estimated to have the largest fitness effect (MLE: 1.322; 95% CI: 1.27-1.41), followed by the set of the nine B.1.1.7-linked variants (MLE: 1.183: 95% CI: 1.14-1.21) and then the B.1.427 and B.1.429-linked variants including Spike L452R (MLE: 1.159; 95% 1.08-1.229). Unfortunately, due to tight genetic linkage among these mutations, we are unable to determine whether individual amino acid variants contribute disproportionately to the fitness of these lineages.</p>
+</sec>
+<sec id="S6">
+<title>Explaining the dominance of the Spike D614G variant</title>
+<p id="P20">If the Spike D614G variant is not itself strongly beneficial as our fitness estimates suggest, what explains the rapid increase in the frequency of the D614G variant across the US? Stochastic processes including founder effects alone seem implausible given that the 614G variant appears to have out-competed and replaced the ancestral 614D variant even in geographic locations where the 614G variant arrived after the 614D variant (<xref ref-type="bibr" rid="R32">Korber et al., 2020b</xref>). We therefore consider two alternative hypotheses for the success of 614G: (<xref ref-type="disp-formula" rid="FD1">1</xref>) the 614G variant gained an advantage by occurring in genetic backgrounds with higher fitness on average than the 614D variant; or (<xref ref-type="disp-formula" rid="FD2">2</xref>) the 614G variant tended to occur in geographic locations with higher transmission rates on average.</p>
+<p id="P21">We estimated the average background fitness of lineages with either the 614D or 614G variant, discounting the fitness effects of the Spike 614 variants themselves. Lineages with the 614G variant have an average background fitness that is 10.6% higher than the 614D variant. After partitioning total background fitness into genetic and spatial components, the 614G variant occurs in genetic backgrounds with 7.1% higher fitness. The genetic background fitness advantage of 614G lineages derives mostly from the ORF8 S84L variant, which we estimate had a fitness advantage of 1.073 but with a high degree of uncertainty (95% CI: 0.87-1.26). However, the ORF8 S84L variant almost always occurs in the same genetic background as D614G, so it is unclear whether this fitness advantage should be attributed exclusively to S84L or to the overall genetic fitness background of lineages with 614G</p>
+<p id="P22">In addition to its genetic background, the 614G variant occurs in spatial backgrounds (i.e. geographic regions) with 3.4% higher fitness on average, although this average conceals the fact that the spatial background fitness advantage of the 614G variant was initially more than 10% due to being in geographic regions with higher average transmission rates during the earliest stages of the pandemic, but this spatial advantage dissipated over time (<xref ref-type="fig" rid="F4">Figure 4</xref>). Directly comparing phylogenies with reconstructed ancestral states for the 614 variants with ancestral geographic locations makes clear that lineages carrying the 614G variant tended to be in locations like Region 2 (NY and NJ) and Region 5 (upper Midwest) with the highest transmission rates during the earliest stages of the pandemic (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 4</xref>)..</p>
+<p id="P23">The above analysis suggests that while lineages carrying the 614G variant may have had a small genetic fitness advantage, the 614G variant’s rapid rise in frequency across the US was largely driven by establishing first in regions with higher average transmission rates. This can be seen by comparing the cumulative number of branching events in the phylogeny for lineages with the 614D or 614G variant. Using branching events as a proxy for transmission events, lineages with the 614G variant branch more often first in Region 2 and then subsequently in all other regions (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 5</xref>). Nevertheless, this pattern alone does not necessarily imply that the 614G variant has an intrinsic fitness advantage or elevated transmission rate as the 614G variant is also imported more frequently into each region than the D variant (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 6</xref>). To place the variants on more equitable footing, we therefore compare the branching/transmission rate of the variants <italic>per lineage</italic>, which accounts for the the fact that the total number of lineages with the 614G variant in a given region may be higher due to either a higher transmission rate or importation rate. Contextualizing variant dynamics in this way, it becomes very clear that neither variant has a consistently higher branching rate through time (<xref ref-type="fig" rid="F5">Figure 5</xref>), supporting our model-based inference that the 614G variant may not have a major intrinsic fitness advantage. Averaging over all regions and time intervals up to May 1st, after which the 614D variant is rarely sampled, the branching rate of the 614G variant (mean = 0.13 per week) is 13% higher than the 614D variant (mean = 0.115 per week), consistent with our model-based estimate of a ~10% fitness advantage, but these means are not significantly different (Welch’s t-test = -1.42; p-value = 0.15).</p>
+</sec>
+<sec id="S7">
+<title>Fitness of major lineages circulating in the US</title>
+<p id="P24">Because the genetic features with the largest fitness effects are all linked sets of AAVs associated with emerging lineages, we also estimated the fitness of major lineages circulating in the US as of March, 2021. Assignment of viruses to lineages is based on the Pangolin (PANGO) naming scheme (<xref ref-type="bibr" rid="R56">Rambaut et al., 2020</xref>). For our purposes, we only consider lineages with at least 1,000 samples in the Post-2020-09 data, plus B.1.526 (n=797). Note, that this excludes some variants of concern that are still rare in the US, including the “South African” variant B.1.351 and the “Brazilian” variant P.1.</p>
+<p id="P25">Similar to the AAVs considered above, we estimated a multiplicative fitness effect on the base transmission rate for each lineage. The estimated fitness of each lineage is shown in <xref ref-type="fig" rid="F6">Figure 6A</xref>. Relative to B.1, several common lineages are estimated to have moderate transmission fitness advantages, including B.1.2 (MLE: 1.085; 95% CI: 1.08-1.10), B.1.222 (MLE: 1.097; 95% CI: 1.05-1.12), B.1.234 (MLE: 1.076; 95% CI: 1.07-1.09) and B.1.243 (MLE: 1.041; 95% CI: 1.03-1.05).</p>
+<p id="P26">Four lineages are estimated to have a significant transmission fitness advantage. The order of these lineages’ fitness follows the same rank order as their associated sets of linked AAVs. B.1.427 and B.1.429, two sister lineages that first appeared in California and carry the Spike L452R mutation (<xref ref-type="bibr" rid="R82">Zhang et al., 2021</xref>), are estimated to have a transmission fitness effect of 1.232 (95% CI: 1.14-1.30) and 1.211 (95% CI: 1.13-1.28), respectively. B.1.1.7 has the second largest transmission fitness effect of 1.318 (95% CI: 1.27-1.35). B.1.526, which has spread rapidly in New York and carries the suspected antigenic escape mutation Spike E484K, is estimated to have the largest estimated transmission fitness effect (MLE: 1.397, 95% CI: 1.35-1.49) of all currently circulating lineages.</p>
+<p id="P27">The fitness advantage we estimate for B.1.1.7 is much smaller than the 50-70% increase in transmissibility estimated for B.1.1.7 in the UK (<xref ref-type="bibr" rid="R6">Davies et al., 2021</xref>; <xref ref-type="bibr" rid="R71">Volz et al., 2021</xref>). However, in the US, B.1.1.7 did not have the same explosive growth as it did in the UK and remained at relatively low frequencies in early 2021 despite arriving in the US as early as October or November, 2020 (<xref ref-type="bibr" rid="R36">Larsen and Worobey, 2021</xref>; <xref ref-type="bibr" rid="R73">Washington et al., 2021</xref>). Nevertheless, to ensure our phylodynamic model is not underestimating the fitness of B.1.1.7, we also estimated the fitness of B.1.1.7 from a phylogeny of 30,000 SARS-CoV-2 genomes sampled in England between Sept 1st, 2020 and Feb. 1st, 2021. In England, we estimate the transmission fitness effect of B.1.1.7 to be 1.634 (95% CI: 1.61-1.65) relative to B.1, on par with earlier estimates (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 7</xref>). Thus, using the parental lineage B.1 as a basis for comparison, we estimate that the fitness of B.1.1.7 is 63% higher than B.1 in England but only 32% higher in the US.</p>
+<p id="P28">Moreover, if anything, B.1.1.7 and other newly emerging variants are likely over-represented in the GISAID database due to preferential sequencing of variants of concern/interest. In particular, it is suspected that B.1.1.7 and other lineages with the Spike ΔH69/V70 deletion mutation are preferentially selected for sequencing in the US because this deletion leads to Spike gene target failure (SGTF) during diagnostic qPCR testing (<xref ref-type="bibr" rid="R74">Washington et al., 2020</xref>). Systematic oversampling of SGTF-associated variants with ΔH69/V70 could severely bias our phylodynamic fitness estimates. Indeed, a sensitivity analysis shows that the estimated fitness of B.1.1.7 declines exponentially as the assumed sampling fraction of B.1.1.7 increases (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 8</xref>).</p>
+<p id="P29">Because other lineages besides B.1.1.7 share the ΔH69/V70 deletion and are also likely oversampled, we consider models that allow lineages with ΔH69/V70 to have their own SGTF-specific sampling fraction. SGTF-specific sampling fractions were estimated based on the number of GISAID sequences with the ΔH69/V70 deletion relative to the total number of COVID infections caused by a ΔH69/V70 variant. The later was imputed based on the number of SGTF-positive samples relative to all positive COVID tests using Helix’s nation-wide diagnostic qPCR testing data (see <xref ref-type="sec" rid="S10">Methods</xref>). Nationally, we estimate that SGTF samples were oversampled 4.11 fold, although there is extreme spatiotemporal heterogeneity (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 9</xref>). Regionally, we estimate that SGTF variants were oversampled by less than 4 fold in most regions, but there were larger than 10 fold sampling biases in the Southeast (Region 4) and Southwest (Region 9).</p>
+<p id="P30">Accounting for SGTF-specific sampling fractions in our phylodynamic model did not substantially alter the estimated fitness of PANGO lineages (<xref ref-type="fig" rid="F6">Figure 6</xref>). For lineages with the the ΔH69/V70 deletion mutation, we estimate slightly lower transmission effects for B.1.427/B.1.429 but observe no change for B.1.1.7, suggesting that our fitness estimates are largely robust to SGTF-specific sampling biases.</p>
+</sec>
+<sec id="S8">
+<title>Decomposing the sources of fitness variation</title>
+<p id="P31">Finally, we fit a model that included genetic features, spatiotemporal effects and branch-specific random effects to account for additional fitness variation not attributable to any feature or modeled source of variation in the model. Fitting this model to the SARS-CoV-2 phylogeny yields a fitness mapping function that we can use to predict the fitness of all lineages in terms of their transmission rate (<xref ref-type="fig" rid="F7">Figure 7</xref>).</p>
+<p id="P32">Given the fitness of each lineage, we can compute how much fitness varies between lineages and then decompose total fitness variation into parts attributable to different components of fitness (<xref ref-type="fig" rid="F8">Figure 8</xref>). At the beginning of the pandemic, virtually all fitness variation is attributable to spatial heterogeneity in transmission among geographic regions or to random effects which cannot be explained by spatial or genetic features in our model (<xref ref-type="fig" rid="F8">Figure 8B</xref>). As expected, genetic variants explain little to no fitness variation at the beginning of the pandemic when the virus population was genetically homogeneous. However, the fraction of fitness variation attributable to genetic variation quickly rises and then falls with the rise of Spike D614G in spring 2020. Genetic fitness variation then rises again in late summer and plateaus in late 2020, during which time approximately 30% of fitness variation is explained by genetic variants. Genetic variation in fitness then declines in early 2021 as less fit lineages are gradually replaced by more fit variants.</p>
+<p id="P33">Most genetic fitness variation is in turn attributable ta a small subset of genetic features including AAVs in Spike and sets of AAVs linked to major PANGO lineages (<xref ref-type="fig" rid="F8">Figure 8C</xref>). We also included AAVs in nsp3, ORF3a, and ORF9 as we found these coding regions contain several AAVs with large positive fitness effects (<xref ref-type="fig" rid="F3">Figure 3</xref>). Unexpectedly, AAVs in ORF3a and ORF9 at times contribute more fitness variation than AAVs in Spike, although this occurs mainly during the fall of 2020 when overall fitness variation is low. Nevertheless, this does suggest that less well-characterized regions of the genome outside of Spike may be shaping viral fitness in ways that remain poorly understood.</p>
+</sec>
+</sec>
+<sec id="S9" sec-type="discussion">
+<title>Discussion</title>
+<p id="P34">Determining what factors shape viral fitness variation at the between host level poses a major challenge to understanding a pathogen’s transmission dynamics more generally. We therefore developed a new phylodynamic framework for learning how a large number of genetic and non-genetic features shape the overall fitness of SARS-CoV-2 at the host population-level. A major advantage of this framework is that it allows us to decompose or partition total fitness into different fitness components to learn how both intrinsic and extrinsic factors shape viral fitness. Applying this framework to over 88,000 viral whole genomes sampled in the United States over the first year of the pandemic, our results suggest that fitness variation among lineages was largely attributable to spatial heterogeneity in background transmission rates during the first months of the pandemic. The ability to partition fitness components between intrinsic genetic and non-genetic factors even revealed that the rapid rise of Spike D614G was due, at least in part, to a large spatial transmission advantage.</p>
+<p id="P35">However, since late 2020, an increasing fraction of fitness variation in the US is attributable to emerging variants, including the PANGO lineages B.1.1.7, B.1.526 and B.1.427/B.1.429. Although quantifying the relative fitness of these lineages is complicated by sampling biases, we estimate that these lineages have major transmission fitness advantages over earlier circulating lineages, and that our phylodynamic fitness estimates are largely robust to variant-specific sampling biases such as SGTF. In particular, we estimate that the “domestic” variants B.1.427/B.1.429 and B.1.526 have a 20 and 40% fitness advantage relative to the ancestral B.1 lineage, respectively. We also estimate that B.1.1.7 has a transmission advantage of about 32% in the US. While our estimate of B.1.1.7’s transmission advantage is not substantially lower than previous estimates of a 35-45% advantage in the US (<xref ref-type="bibr" rid="R73">Washington et al., 2021</xref>), these estimates are much smaller than the 50-70% transmission advantage estimated for B.1.1.7 in the UK using epidemiological data (<xref ref-type="bibr" rid="R6">Davies et al., 2021</xref>), coalescent-based methods (<xref ref-type="bibr" rid="R71">Volz et al., 2021</xref>), and our own phylodynamic birth-death methods. This smaller fitness advantage of B.1.1.7 is however consistent with its less explosive growth in the US. Despite arriving in the US as early as October or November, 2020 (<xref ref-type="bibr" rid="R36">Larsen and Worobey, 2021</xref>; <xref ref-type="bibr" rid="R73">Washington et al., 2021</xref>), B.1.1.7 remained at low frequencies in many regions until early spring 2021. B.1.1.7 may have also faced increased competition from nearly equally fit “domestic” variants, such that its growth rate in the US was impeded in an increasingly immunized population.</p>
+<p id="P36">Another major advantage of our phylodynamic framework is that we can go beyond estimating the fitness of entire lineages and estimate the fitness effects of individual mutations while controlling for the fitness effects of other linked mutations. Exploring a large number of amino acid variants across the entire SARS-CoV-2 genome revealed moderate to large fitness effects in both expected and unexpected regions of the genome. As expected, we found several AAVs in Spike with substantial positive fitness effects on the order of 5-10%. Most of these mutations are previously described variants that either increase cellular binding avidity (D614G), escape neutralizing antibodies (L452R and E484K) or both (N501Y/T) (<xref ref-type="bibr" rid="R8">Deng et al., 2021</xref>; <xref ref-type="bibr" rid="R19">Greaney et al., 2021</xref>; <xref ref-type="bibr" rid="R79">Zahradnik et al., 2021</xref>). Perhaps more surprisingly, we found several AAVs in coding regions outside of Spike with large positive fitness, inclduing nsp3, ORF3a and ORF9. While these proteins remain less well-studied than Spike, they nonetheless play important roles in the viral life cycle or host-virus interactions. Nsp3 is the largest protein encoded by the SARS-CoV-2 genome and functions both as a protease and in anchoring the viral replication/transcription complex to cellular membranes (<xref ref-type="bibr" rid="R37">Lei et al., 2018</xref>). ORF3a is a multifunctional protein involved in cell membrane trafficking, host innate immune responses and apoptosis (<xref ref-type="bibr" rid="R25">Issa et al., 2020</xref>). Among bat and other non-human betacoronaviruses, ORF3a was found to have the greatest number of sites under (positive) episodic diversifying selection outside of Spike and the nucleocapsid, suggesting that it may facilitate host adaptation across species (<xref ref-type="bibr" rid="R42">MacLean et al., 2020a</xref>). ORF9 encodes the nucleocapsid (N), a key structural protein that is also immunogenic, although it is unclear if antibodies that recognize epitopes in N provide any neutralization potential (<xref ref-type="bibr" rid="R16">Gao et al., 2015</xref>; <xref ref-type="bibr" rid="R34">Ladner et al., 2021</xref>).</p>
+<p id="P37">There is now considerable evidence that the Spike D614G mutation significantly alters viral fitness within individual hosts. Controlled experiments show that the D614G mutation allows the Spike glycoprotein to increase its binding affinity to the human ACE2 receptor, more than doubling cellular infectivity and viral replication rates in both cell culture and hamsters (<xref ref-type="bibr" rid="R32">Korber et al., 2020b</xref>; <xref ref-type="bibr" rid="R54">Plante et al., 2020</xref>). Higher viral replication rates could in turn explain why individuals infected with the 614G variant tend to have slightly higher viral loads (<xref ref-type="bibr" rid="R75">Wölfel et al., 2020</xref>; <xref ref-type="bibr" rid="R32">Korber et al., 2020b</xref>; <xref ref-type="bibr" rid="R71">Volz et al., 2020</xref>). Nevertheless, we estimate that D614G increases transmission fitness at the host-population level by only about 10%. Spike D614G therefore serves as an interesting case study to explore discrepancies in fitness estimated at the within and between scales. First, we note that increased replication rates and viral loads may not directly translate into increased infectiousness or transmission rates between hosts. While the relationship between viral load and infectiousness remains poorly understood for most respiratory viruses including SARS-CoV-2, recent work modeling clinical viral load data suggests that infectiousness does not increase linearly with viral load (<xref ref-type="bibr" rid="R27">Ke et al., 2020</xref>; <xref ref-type="bibr" rid="R75">Wölfel et al., 2020</xref>). Instead infectiousness increases with the logarithm of viral load such that it saturates at higher viral loads. This appears to fit a general pattern, as the amount of exhaled virus also saturates with increasing viral load for other seasonal coronaviruses (<xref ref-type="bibr" rid="R38">Leung et al., 2020b</xref>). Given that the ancestral 614D variant was already able to efficiently replicate to high viral loads (<xref ref-type="bibr" rid="R75">Wölfel et al., 2020</xref>), it is conceivable that any additional replication advantage provided by the 614G variant would not significantly increase transmission rates further. The enhanced cellular infectivity and replication rates of D614G within hosts is therefore not irreconcilable with our inference that the mutant had more modest population-level fitness effect.</p>
+<p id="P38">It does initially seem more challenging to reconcile the small estimated fitness advantage of D614G with its rapid spread and near universal rise in frequency around the world, especially as our simulations show that such a moderate fitness advantage would have been insufficient to explain the explosive growth of 614G observed in the US. Our phylogenetic analysis may partially explain this discrepency, at least in the US. The ancestral 614D variant was largely limited to the West Coast (Regions 9 and 10), whereas the 614G variant established early in the Eastern US, especially in New York and New Jersey (Region 2). Due to the disproportionately large number of infections in New York and New Jersey during the early stages of the pandemic, the overall prevalence of the 614G variant also increased rapidly. This scenario is strongly supported by our phylodynamic analysis, which revealed that lineages carrying the 614G variant had a higher average background fitness due to occurring in regions with higher transmission rates as well as a genetic background with slightly higher fitness. While the 614G variant subsequently increased to high frequencies in all geographic regions, this rapid increase can partially be explained by more lineages carrying the 614G variant being imported into each region (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 6</xref>). A rapid increase in the frequency of the 614G variant over the 614D variant therefore does not necessarily imply that the 614G variant had a large inherent transmission advantage. In fact, when comparing the relative branching rate of lineages with either variant as a surrogate for transmission rates, we find that 614G only had about a 13% higher transmission advantage than 614D, supporting our phylodynamic estimates of an approximatre 10% fitness increase.</p>
+<p id="P39">Borrowing the concept of gene surfing from spatial population genetics may help to explain the rapid rise of the D614G variant. Gene surfing describes a scenario where a mutation can rapidly expand its geographic range by occurring along the edge or wave front of a spatially expanding population and then “surf” to high frequencies by riding the wave of spatial expansion (<xref ref-type="bibr" rid="R9">Edmonds et al., 2004</xref>; <xref ref-type="bibr" rid="R30">Klopfstein et al., 2006</xref>; <xref ref-type="bibr" rid="R20">Hallatschek and Nelson, 2008</xref>). While perhaps not a perfect metaphor here because SARS-CoV-2 did not spread as a spatially cohesive wave across the US, the gene surfing analogy captures the idea of how even a neutral mutation can be propelled to high frequencies across a range of spatial locations as a result of rapid population expansion. Viewed from this prospective, one can see why spatially aggregated time series of variant frequencies can be positively misleading about the fitness of a variant during a rapidly spatially expanding epidemic. Phylogenetic analysis coupled with ancestral state reconstructions offer a means of avoiding these pitfalls because they allow us to first identify lineages in the same transmission environment (e.g. geographic region) and then quantify the relative transmission rate of lineages from their branching pattern in the phylogeny.</p>
+<p id="P40">While our phylodynamic inference framework accounts for many potentially confounding factors including background variation in transmission rates, our analysis still has a number of limitations. First, inferences of pathogen fitness from phylogenies will inevitably depend on what lineages are sampled and included in the phylogeny. We can partially correct for sampling biases using time, location and even variant-specific sampling fractions but our fitness estimates will be dependent on the assumed sampling fractions. Second, we chose a simple fitness mapping function that assumes each feature has a multiplicative effect on lineage fitness (such that log fitness is an additive linear function of features). In reality, the relationship between a pathogen’s genotype, environment and other features may be considerably more complex due to nonlinear relationships between features and fitness or interactions among genetic features (epistasis) and the environment (GxE interactions). It is therefore likely that some of the fitness variation attributed to random effects under our model are actually due to additional genetic sources such as epistatic interactions among mutations that cannot be captured under our simple multiplicative fitness model. Learning what types of functions are expressive enough to capture these complexities while remaining statistically tractable and biologically interpretable is a major challenge for future work. Finally, the computational efficiency of our approach relies on first reconstructing phylogenies and ancestral states before fitting our phylodynamic birth-death model. While we partially account for phylogenetic uncertainty by fitting models to replicate bootstrap phylogenies, using pseudoreplication to account for uncertainty is certainly a large step back from fully Bayesian phylodynamic methods that jointly infer key evolutionary and epidemiological parameters while simultaneously integrating over phylogenetic histories. New inference methods are clearly needed to fit complex phylodynamic models to genomic data sets as large as those currently available for SARS-CoV-2.</p>
+<p id="P41">As natural and vaccine-induced immunity continues to rise in the population, new antigenic escape mutations and other variants will likely continue to arise. Our phylodynamic framework can used to examine the epidemiological significance of such mutations by estimating their transmission potential while accounting for confounding sources of fitness variation. Another major advantage of our approach is that it allows us to learn the relative importance of different features to overall pathogen fitness by decomposing fitness variation into its component parts. In the future, this will allow us to determine the contribution of new genetic variants relative to extrinsic factors such as host mobility or immunity. Because fitness variation at the host population-level is essentially equivalent to variation in transmission potential, learning what features contribute the most to fitness variation is tantamount to learning what features most strongly regulate transmission. Thus, our phylodynamic learning framework not only allows us to estimate fitness, but understand what components of fitness shape both the evolutionary and epidemiological dynamics of viral pathogens.</p>
+</sec>
+<sec id="S10">
+<title>Models and Methods</title>
+<sec id="S11">
+<title>General approach</title>
+<p id="P42">Our primary goal is to learn how multiple different character traits or <italic>features,</italic> which may include genetic variants, phenotypic traits and environmental variables, all act together to determine the fitness of pathogen lineages in a phylogenetic tree. We assume here that the phylogeny as well as ancestral features corresponding to the ancestral state of each feature is reconstructed beforehand. The relationship between predictive features and fitness is modeled using a <italic>fitness mapping function</italic> that predicts the expected fitness of a lineage based on its reconstructed ancestral features. The fitness mapping function can then be used to compute the expected fitness a lineage in terms of its birth and/or death rate. For a pathogen phylogeny, birth events are assumed to correspond to transmission events and deaths correspond to recovery or removal from the infected population. Given the birth and death rates of each lineage in a phylogenetic tree, the likelihood of the tree evolving as observed can be computed analytically under a birth-death-sampling model (<xref ref-type="bibr" rid="R61">Stadler, 2009</xref>; <xref ref-type="bibr" rid="R3">Barido-Sottani et al., 2018</xref>). Our problem therefore reduces to finding the fitness mapping function that maximizes the likelihood of the phylogeny given the ancestral features of all lineages in the tree.</p>
+</sec>
+<sec id="S12">
+<title>Phylogenetic reconstruction</title>
+<p id="P43">For the original Pre-2020-09 data set, a total of 22,416 SARS-CoV-2 whole genome sequences from the United States were downloaded from GISAID (<xref ref-type="bibr" rid="R10">Elbe and Buckland-Merrett, 2017</xref>) on October 2nd, 2020 representing sequences that were sequenced prior to September 1st, 2020. Genomes were aligned against a reference genome (NC_045512.2) using MAFFT version 7.475 (<xref ref-type="bibr" rid="R26">Katoh and Standley, 2013</xref>). A maximum likelihood (ML) phylogenetic tree was reconstructed in RAxML (<xref ref-type="bibr" rid="R63">Stamatakis, 2014</xref>) using the rapid bootstrapping method with 10 bootstrap replicates assuming a GTR model of sequence evolution with Gamma-distributed rate variation among sites. The best ML and all bootstrapped trees were then dated using LSD (<xref ref-type="bibr" rid="R67">To et al., 2015</xref>) assuming a fixed clock rate of 0.0008 substitutions per site per year. A total of 93 sequences were discarded due to inconsistencies in sampling times or poor sequence quality.</p>
+<p id="P44">Due to the large number of viral samples in the Post-2020-09 data set, we extracted a maximum likelihood (ML) phylogeny from a precomputed global SARS-CoV-2 ML phylogeny provided by Rob Lanfear’s group on GISAID (<xref ref-type="bibr" rid="R35">Lanfear, 2020</xref>). For all analyses conducted here, we use the 2021-03-13 version of the global tree. A focal tree containing all 66,339 viruses sampled in the US between September 1st, 2020 and March 1st, 2021 was then extracted using the <italic>extract_tree_with_taxa</italic> function in Dendropy version 4.5.1 (<xref ref-type="bibr" rid="R64">Sukumaran and Holder, 2010</xref>). The extracted ML tree was then dated using LSD (<xref ref-type="bibr" rid="R67">To et al., 2015</xref>). For the fitness analysis of B.1.1.7 in the UK, we randomly sampled 30,000 viral isolates sampled in England between September 1st and February 1st. A focal tree containing these samples was then extracted from the global global SARS-CoV-2 ML phylogeny.</p>
+</sec>
+<sec id="S13">
+<title>Ancestral state reconstruction</title>
+<p id="P45">In the original analysis of the Pre-2020-09 data, ancestral states were reconstructed for each feature under a continuous-time Markov chain model of trait evolution using PastML (<xref ref-type="bibr" rid="R24">Ishikawa et al., 2019</xref>). PastML estimates the relative transition rate between each pair of states and the global (absolute) rate at which transitions occur. The relative transition rates are constrained to be proportional to the equilibrium frequencies of each state as under a F81 model of nucleotide substitution. Rate parameters were estimated independently for each feature. At each internal node, the state with the highest marginal posterior probability was taken to be the ancestral state for a given feature.</p>
+<p id="P46">For the larger Post-2020-09 data set, we reconstructed ancestral states using maximum parsimony (MP) to expedite analysis. This was motivated by the observation that there was typically little uncertainty surrounding the ML ancestral state reconstructions performed by PastML. For most genetic features, there was only a single or a small number of state transitions across the entire tree. In this case, MP and ML reconstructions are expected to agree as the most parsimonious and most likely reconstructions will be consistent given a slow rate of character evolution (<xref ref-type="bibr" rid="R68">Tuffley and Steel, 1997</xref>; <xref ref-type="bibr" rid="R80">Zhang and Nei, 1997</xref>). MP reconstructions were performed using Sankoff’s dynamic programming algorithm (<xref ref-type="bibr" rid="R59">Sankoff, 1975</xref>) implemented in Python (see AncestralReconstruction.py).</p>
+<p id="P47">Reconstructed ancestral features were then combined into a vector of categorical variables <italic>x<sub>n</sub>
+</italic> for each lineage <italic>n.</italic> For categorical variables with more than one state, we used one-hot binary encoding to yield a strictly binary feature vector. Ancestral features were reconstructed for each bootstrap phylogeny independently.</p>
+</sec>
+<sec id="S14">
+<title>Fitness mapping functions</title>
+<p id="P48">Our main goal is to learn the fitness mapping function <italic>F</italic>(<italic>x<sub>n</sub>
+</italic>) that maps the features of a lineage <italic>x<sub>n</sub>
+</italic> to that lineage’s expected fitness. While <italic>F</italic>(<italic>x<sub>n</sub>
+</italic>) could be any arbitrary function, we use a simple model that assumes the fitness effect <italic>β<sub>i</sub>
+</italic> of each feature <italic>i</italic> is multiplicative: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M1">
+<mml:mi>F</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <bold>
+<italic>X</italic>
+</bold> is the set of all features used to predict fitness. Each feature <italic>x<sub>n,i</sub>
+</italic> is assumed to be encoded as a binary variable or as the probability of the lineage having a particular feature.</p>
+<p id="P49">In order to decompose fitness into its component parts below we consider fitness effects on a log scale, which gives us the additive linear model: <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M2">
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> We also consider a fitness mapping function with random, branch-specific fitness effects <italic>u<sub>n</sub>:</italic> <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M3">
+<mml:mi>log</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>i</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>u</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P50">These random effects capture unmodeled sources of fitness variation such as genetic background effects at loci not included as features in the model.</p>
+<p id="P51">Estimating branch-specific random fitness effects without additional constraints leads to extreme variability in fitness among lineages. In particular, long branches are estimated to have low fitness and short branches are estimated to have high fitness as this maximizes the likelihood of each branch under a birth-death model. We therefore use a Brownian motion model of trait evolution that constrains the branch-specific random fitness effects to be correlated between parent and child branches. Because each branch is assumed to have a unique random effect, we only allow fitness to change at birth/transmission events in the tree. The probability of a child having random fitness effect <italic>u<sub>c</sub>
+</italic> given its parent’s random fitness effect <italic>u<sub>p</sub>
+</italic> is <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M4">
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>u</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>u</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mo>Δ</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>u</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>u</mml:mi>
+<mml:mi>p</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+</mml:mrow>
+<mml:mrow>
+<mml:mn>2</mml:mn>
+<mml:mi>α</mml:mi>
+<mml:msub>
+<mml:mo>Δ</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>ϵ</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>Δ<sub>t</sub>
+</italic> is the time elapsed between the parent and child node and <italic>α</italic> scales the variance of the child’s fitness distribution. For numerical stability, we include a small value <italic>ϵ</italic> to ensure the probability does not become infinitely small when <italic>σΔ<sub>t</sub>
+</italic> ≪ 1.0. This model is conceptually similar to the ClaDS model of <xref ref-type="bibr" rid="R45">Maliet et al. (2019)</xref> which estimates lineage-specific diversification rates by allowing for small shifts in birth and/or death rates at branching events, although the CLaDS model assumes a log-normal fitness distribution for child lineages independent of branch lengths.</p>
+<p id="P52">How much fitness is allowed to vary between parent-child lineage pairs due to random effects is controlled by the hyperparameter <italic>α</italic>. We estimate <italic>α</italic> using k-fold cross-validation. Inspired by crossvalidation techniques for time series data (<xref ref-type="bibr" rid="R58">Roberts et al., 2017</xref>), we longitudinally cross-section or block phylogenetic trees into training and test intervals. Random fitness effects are estimated for each branch in the tree during the training interval and then lineages in the test interval inherit their random fitness effects from their parent (or most recent ancestor) in the training interval. Thus, if the random fitness effects capture true fitness variation among lineages in the training interval, these fitness effects should more accurately predict the fitness of descendent lineages and improve the likelihood of the phylogeny in the test period. In contrast, a model with <italic>α</italic> set too high will overfit the fitness variation among lineages in the training period but will not improve performance in the test period. We can therefore use cross-validation to estimate an optimal value of a that maximizes the likelihood of trees in the test period while preventing the random fitness effects from overfitting fitness variation among lineages.</p>
+</sec>
+<sec id="S15">
+<title>The phylodynamic birth-death-sampling model</title>
+<p id="P53">The likelihood of a phylogenetic tree evolving as observed can be computed under a phylodynamic birthdeath-sampling model (<xref ref-type="bibr" rid="R61">Stadler, 2009</xref>) given the expected fitness of each lineage, which we predict based on a lineage’s ancestral features <italic>x<sub>n</sub>
+</italic> using a fitness mapping function <italic>F</italic>(<italic>x<sub>n</sub>
+</italic>). We assume throughout that fitness is directly proportional to a lineage’s birth or transmission rate <italic>λ<sub>n</sub>
+</italic> = <italic>f<sub>n</sub>
+</italic>
+<italic>λ</italic>
+<sub>0</sub>, where <italic>λ</italic>
+<sub>0</sub> is a base transmission rate which is scaled by a lineage’s fitness <italic>f<sub>n</sub>
+</italic>. We also assume that the removal rate <italic>μ</italic> and sampling fraction <italic>σ</italic> are constant across all lineages, although we consider models where <italic>σ</italic> is allowed to vary by time and region below. This dramatically simplifies the model, as instead of having a multi-type birth-death process we have a series of connected single-type birth-death processes along lineages who’s birth and death rates are piecewise constant.</p>
+<p id="P54">Under this model, it is possible to analytically compute the likelihood of the phylogeny evolving as observed, allowing for efficient statistical inference. Given the birth, death and sampling rates and the fitness mapping function to compute the expected fitness of each lineage, the likelihood of each lineage or subtree evolving is independent conditional upon knowing the ancestral features used to predict fitness. The total likelihood of a phylogenetic tree <bold>
+<italic>&#120035;</italic>
+</bold> can be decomposed into the likelihood of a set of sampling events <italic>S</italic>, a set of branching (transmission) events <italic>B</italic>, and a set of lineages <italic>N</italic>: <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M5">
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>μ</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>σ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>B</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>s</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:munder>
+<mml:mo>∏</mml:mo>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>N</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>l</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>n</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P55">The likelihood of an individual branching or transmission event is: <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M6">
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>b</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>c</mml:mi>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mi>F</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mrow>
+<mml:mi>n</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where we use the notation <italic>n</italic>(<italic>b</italic>) to refer the parent lineage involved in a paritcular branching event <italic>b</italic>. The likelihood of an individual sampling event at time <italic>t</italic> in the past is: <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M7">
+<mml:msub>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>m</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>l</mml:mi>
+<mml:mi>e</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>s</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>{</mml:mo>
+<mml:mtable columnalign="left">
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>σ</mml:mi>
+<mml:mi>μ</mml:mi>
+<mml:mspace width="1em"/>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.3em"/>
+<mml:mi>t</mml:mi>
+<mml:mo>&gt;</mml:mo>
+<mml:mn>0</mml:mn>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd>
+<mml:mrow>
+<mml:mi>ρ</mml:mi>
+<mml:mspace width="1em"/>
+<mml:mtext>if</mml:mtext>
+<mml:mspace width="0.3em"/>
+<mml:mi>t</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P56">Before the present, the probability of a sampling event depends on the removal rate <italic>μ</italic> and the probability <italic>σ</italic> that the lineage is sampled upon removal. At the present (<italic>t</italic> = 0), any extent (i.e. currently infected) individual is sampled with probability <italic>ρ</italic>.</p>
+<p id="P57">
+<italic>L<sub>line</sub>
+</italic>(<italic>n</italic>) gives the likelihood a lineage <italic>n</italic> evolved as observed; i.e. the probability that the lineage survived without giving rise to other sampled lineages. As shown in <xref ref-type="bibr" rid="R3">Barido-Sottani et al. (2018)</xref>, over a time interval of length Δ<sub>
+<italic>t</italic>
+</sub>, this likelihood can be computed as: <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M8">
+<mml:msub>
+<mml:mi>D</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mo>Δ</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:msub>
+<mml:mo>Δ</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msup>
+<mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mi>c</mml:mi>
+<mml:msub>
+<mml:mo>Δ</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msup>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> with <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M9">
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msqrt>
+<mml:mrow>
+<mml:msup>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>μ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:msup>
+<mml:mo>−</mml:mo>
+<mml:mn>4</mml:mn>
+<mml:mi>μ</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>−</mml:mo>
+<mml:mi>σ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>.</mml:mo>
+</mml:mrow>
+</mml:msqrt>
+</mml:math>
+</disp-formula> <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M10">
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>μ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M11">
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>μ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+<mml:mn>2</mml:mn>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P58">The <italic>E<sub>n</sub>
+</italic>(<italic>t</italic>) terms in (<xref ref-type="disp-formula" rid="FD8">8</xref>) represent the probability that a lineage at time <italic>t</italic> in the past produced no sampled descendants. Assuming that the birth, death and sampling rates do not change along unsampled lineages from their values at time <italic>t</italic>, these probabilities are given by: <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M12">
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mo>−</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mrow>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mfrac>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msup>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>y</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:msup>
+<mml:mi>e</mml:mi>
+<mml:mrow>
+<mml:mo>−</mml:mo>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msup>
+<mml:mo>−</mml:mo>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mi>n</mml:mi>
+</mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P59">
+<italic>E</italic>(0) is the initial condition or probability of lineage not being sampled at the present (<italic>t</italic> = 0). Given that the proportion of individuals sampled at present is <italic>ρ</italic>, we set <italic>E</italic>(0) = 1 — <italic>ρ</italic>. For simplicity we assume that <italic>ρ</italic> = <italic>σμ</italic>/365 so that the probability of a lineage being sampled on the final day of sampling is proportional to the probability of an individual being removed from the infectious population on that day, but the sampling fraction is the same as any point in the past.</p>
+</sec>
+<sec id="S16">
+<title>Model fitting and statistical inference</title>
+<p id="P60">Learning the fitness mapping function from a phylogenetic tree is a somewhat non-standard problem in that we do not have direct observations of a lineage’s fitness to which we can compare our predictions under <italic>F</italic>(<italic>x</italic>). Nevertheless, we can formulate statistical inference as an optimization problem where we seek to find the fitness mapping function <italic>F</italic>(<italic>x</italic>) with parameters <inline-formula>
+<mml:math id="M13">
+<mml:mover accent="true">
+<mml:mi>θ</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> that maximizes the overall likelihood of the phylogeny given the reconstructed ancestral features under the birth-death-sampling model: <disp-formula id="FD13">
+<label>(13)</label>
+<mml:math id="M14">
+<mml:mover accent="true">
+<mml:mi>θ</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mrow>
+<mml:mi>arg</mml:mi>
+<mml:mi>max</mml:mi>
+</mml:mrow>
+<mml:mi>θ</mml:mi>
+</mml:munder>
+<mml:mspace width="0.2em"/>
+<mml:mi>L</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>T</mml:mi>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mi>F</mml:mi>
+<mml:mi>θ</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>x</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>λ</mml:mi>
+<mml:mn>0</mml:mn>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:mi>μ</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>σ</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P61">Formulating the problem in this way opens the way to using efficient optimization algorithms developed in recent years to train neural networks and other machine learning models. Instead of optimizing a typical loss function (e.g. least-squares), we simply maximize the likelihood of the phylogeny under the birth-death-sampling model. In particular, we use the ADAM optimizer (<xref ref-type="bibr" rid="R28">Kingma and Ba, 2014</xref>), a form of stochastic gradient descent (SGD) which adapts learning rates based on gradients (i.e. first-order derivatives) of the likelihood function with respect to different parameters. Adapting the learning rates allows the algorithm to accelerate its momentum towards parameters that optimize the loss function. To make use of ADAM and other high-performance SGD algorithms, we implemented our fitness mapping function and birth-death likelihood function in TensorFlow 2 (<xref ref-type="bibr" rid="R1">Abadi et al., 2016</xref>). Gradients in the likelihood function are computed using TensorFlow’s auto-differentiation functionality, allowing us to efficiently fit complex models with hundreds of features or parameters. Using this approach, even fitting our most complex model with over 300 free parameters to a phylogeny with over 22,000 tips only takes a few minutes on a standard desktop computer.</p>
+<p id="P62">Learning the fitness mapping function through gradient descent provides maximum likelihood estimates (MLEs) of each parameter in the model. To quantify uncertainty surrounding the MLEs, we compute the likelihood of the phylogeny over a fixed grid of parameters values and then determine which values fall within the 95% credible intervals using an asymptotic chi-square approximation to the likelihood ratio test.</p>
+</sec>
+<sec id="S17">
+<title>Performance on simulated data</title>
+<p id="P63">To test the ability of our methods to correctly estimate fitness effects, we ran forward simulations where both genetic and spatiotemporal features influence viral fitness. Phylogenies were simulated under a birth-death-sampling model using the stochastic Gillespie algorithm (<xref ref-type="bibr" rid="R18">Gillespie, 2007</xref>) starting with a single infected individual. In all simulations we assume a constant base birth rate of 1.2 and death rate of 1.0 per time unit. A virus’s genotype is represented by ten binary sites where zeros indicate the ancestral state and ones indicate the mutant state. Each site has a random, multiplicative effect on fitness when mutated to the one state. Mutation occurs at a constant per site rate of 1.5 x 10<sup>−2</sup> per time unit. A lineage’s spatial location is encoded as an additional evolving character trait. To emulate background fitness variation due to spatiotemporal heterogeneity in transmission, each combination of region and time interval is assigned a background transmission rate. Individuals move from one region to another with a transition rate of 0.3 per time unit. Furthermore, in order to emulate an additional source of fitness variation not directly accounted for in the inference model, we added transmission heterogeneity by having each infected individual draw a random effect that rescales their transmission rate from a gamma distribution (<xref ref-type="bibr" rid="R40">Lloyd-Smith et al., 2005</xref>). Here the gamma distribution has a dispersion parameter 0.15 and scale parameter 10, such that on average, there is a branch-specific fitness of 1.5, but individually, fitness varied substantially.</p>
+<p id="P64">Performance was tested under both a high sampling regime (<italic>σ</italic> = <italic>ρ</italic> = 0.5) and a low sampling regime (<italic>σ</italic> = <italic>ρ</italic> = 0.05). A phylogeny was built from the true ancestral history of sampled individuals. True ancestral features (states) were assumed to be known for the purposes of validating the inference algorithm. Simulations were run for 8 time units and those that ended more than 0.2 time units before then, or that had less than 800 sampled individuals, were discarded. We then estimated background transmission rates and genetic fitness effects from each simulated phylogeny.</p>
+<p id="P65">Estimated spatiotemporal and genetic fitness effects are generally well correlated with the true values used in simulations (<xref ref-type="supplementary-material" rid="SD1">Supp. Figure 10</xref>). However, estimation accuracy depends largely on the overall sampling fraction and the number of individuals sampled with a given feature (spatial location or genotype). In particular, the fitness effects of rare features sampled at low frequencies tend to have the most variable and least accurate estimates. Because estimating the fitness of rare features under a birth-death model appears to be inherently difficult (<xref ref-type="bibr" rid="R57">Rasmussen and Stadler, 2019</xref>), we only estimate fitness effects for features with a sampling frequency above 0.5% from empirical SARS-CoV-2 phylogenies.</p>
+</sec>
+<sec id="S18">
+<title>Birth-death-sampling model parameters for SARS-CoV-2</title>
+<p id="P66">Because it is not possible to estimate all of the parameters in the birth-death-sampling model from a phylogeny alone, we fix some parameters at values based on prior knowledge. We assume individuals infected with SARS-CoV-2 stay infected (and infectious) for 7 days on average, leading to a removal rate <inline-formula>
+<mml:math id="M15">
+<mml:mi>μ</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mn>1</mml:mn>
+<mml:mn>7</mml:mn>
+</mml:mfrac>
+</mml:math>
+</inline-formula> per day.</p>
+<p id="P67">In several models we allow the base transmission rate <italic>λ</italic>
+<sub>0</sub> or sampling fraction <italic>σ</italic> to vary over time. In this case we have a time-varying transmission rate <italic>λ</italic>(<italic>t</italic>) and <italic>σ</italic>(<italic>t</italic>) that depends on the time t. However, this can easily be incorporated into the birth-death model above. If a lineage’s transmission rate or sampling fraction changes along a branch due to an underlying change in <italic>λ</italic>(<italic>t</italic>) or <italic>σ</italic>(<italic>t</italic>), we simply divide the branch into segments corresponding to the time intervals over which these parameters remain piece-wise constant and add each lineage segment to the set of lineages in <italic>N</italic>.</p>
+<p id="P68">We assume that the sampling fraction <italic>σ</italic> was zero before the first sample in our data set was collected in January 2020. After the first sampling date, we allow the sampling fraction to vary by time and region as described below.</p>
+</sec>
+<sec id="S19">
+<title>Modeling sampling heterogeneity</title>
+<p id="P69">In order to estimate how sampling fractions vary across space and time, we count the number of sequence samples <italic>g</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> submitted to GISAID within each geographic location <italic>i</italic> over each time interval <italic>t</italic>. An unbiased estimate of the sampling fraction <italic>σ</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> would therefore be: <disp-formula id="FD14">
+<label>(14)</label>
+<mml:math id="M16">
+<mml:msub>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where <italic>C</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> is the total number of infections or cumulative incidence in region <italic>i</italic> over time interval <italic>t</italic>.</p>
+<p id="P70">We of course do not know <italic>C</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> but can obtain a pseudo-empirical estimate <italic>ĉ</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> by considering the number of deaths attributed to SARS-CoV-2 <italic>d</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> and the estimated infection fatality ratio <italic>ø</italic>, which was assumed to be 0.5% (<xref ref-type="bibr" rid="R53">Perez-Saez et al., 2021</xref>). We can therefore approximate the total number of cases <italic>C</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> as: <disp-formula id="FD15">
+<label>(15)</label>
+<mml:math id="M17">
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>c</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mi>ϕ</mml:mi>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P71">Substituting <italic>ĉ</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> for <italic>C</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> in (<xref ref-type="disp-formula" rid="FD14">14</xref>), we arrive at a crude estimate of the sampling fraction.</p>
+<p id="P72">While the case fatality ratio likely also fluctuates over space and time due to changes in the age distribution of infections among other reasons, it seems reasonable to assume that the mortality rate fluctuates less than the testing or sequence sampling fraction (<xref ref-type="bibr" rid="R13">Flaxman et al., 2020</xref>). We can therefore roughly estimate the total number of cases based on the number of observed deaths. Using this approach, we estimate that there were a total of 35,134,400 cumulative cases in the US by September 1st, whereas the total number of positive cases reported by the COVID Project (<ext-link ext-link-type="uri" xlink:href="https://covidtracking.com/data/national">https://covidtracking.com/data/national</ext-link>) on the same date was 6,017,826. Our estimate for the total number of cases suggests that 83% of all infections were not detected in the US, which is consistent with recent estimates by <xref ref-type="bibr" rid="R77">Wu et al. (2020)</xref>, who estimated that up to 89% of all infections are unreported using an independent approach.</p>
+<p id="P73">Using data from the COVID Project to tabulate cumulative deaths <italic>d</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> for each region and time interval, we estimate how the sampling fraction <italic>σ</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> varied across regions and time (<xref ref-type="fig" rid="F1">Figure 1A</xref>). For these estimates we assume reported deaths lag behind reported cases by three weeks when estimating sampling fractions.</p>
+</sec>
+<sec id="S20">
+<title>Modeling variant-specific sampling biases</title>
+<p id="P74">An additional complication arises here because B.1.1.7 and other lineages carrying the Spike ΔH69/V70 deletion mutation are likely oversampled due to preferential sequencing of viral isolates suspected of being newly emerging variants based on Spike gene target failure (SGTF) during diagnostic qPCR testing (<xref ref-type="bibr" rid="R74">Washington et al., 2020</xref>). To account for SGTF-related sampling bias, we estimate a SGTF-specific sampling fraction for lineages with the ΔH69/V70 deletion. Note that we estimate sampling fractions for all lineages with the ΔH69/V70 deletion rather than just B.1.1.7 as other lineages share this deletion and are therefore likely also preferentially selected for sequencing. We estimate SGTF-specific sampling fractions based on the fraction of SGTF-positive samples <inline-formula>
+<mml:math id="M18">
+<mml:msubsup>
+<mml:mi>ξ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>G</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> relative to the total number of SARS-CoV-2 positive samples using Helix’s nation-wide diagnostic qPCR data (<ext-link ext-link-type="uri" xlink:href="https://github.com/myhelix/helix-covidl9db/blob/master/counts_by_state.csv">https://github.com/myhelix/helix-covidl9db/blob/master/counts_by_state.csv</ext-link>). We then modify (<xref ref-type="disp-formula" rid="FD14">14</xref>) by multiplying the total number of infections <italic>C</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub> by the SGTF-positive fraction <italic>ξ</italic>
+<sub>
+<italic>i</italic>,<italic>t</italic>
+</sub>: <disp-formula id="FD16">
+<label>(16)</label>
+<mml:math id="M19">
+<mml:msubsup>
+<mml:mi>σ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>G</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo>Δ</mml:mo>
+<mml:mi>H</mml:mi>
+<mml:mn>69</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mi>V</mml:mi>
+<mml:mn>70</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msubsup>
+<mml:mi>ξ</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>S</mml:mi>
+<mml:mi>G</mml:mi>
+<mml:mi>T</mml:mi>
+<mml:mi>F</mml:mi>
+</mml:mrow>
+</mml:msubsup>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>.</mml:mo>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P75">Here, <inline-formula>
+<mml:math id="M20">
+<mml:msubsup>
+<mml:mi>g</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>Δ</mml:mi>
+<mml:mi>H</mml:mi>
+<mml:mn>69</mml:mn>
+<mml:mo>/</mml:mo>
+<mml:mi>V</mml:mi>
+<mml:mn>70</mml:mn>
+</mml:mrow>
+</mml:msubsup>
+</mml:math>
+</inline-formula> is the number of sequence samples deposited to GISAID with the <italic>ΔH</italic>69/<italic>V</italic>70 deletion.</p>
+</sec>
+<sec id="S21">
+<title>Model selection</title>
+<p id="P76">We initially fit several different models that allowed background transmission rates to vary over space and time in different ways and compared their relative fit using AIC. This model selection step was performed only on the the Pre-2020-09 data set. Compared to our base model which assumes a constant transmission rate across both space and time, a model that allows transmission rates to vary by geographic region increases the likelihood of the phylogeny and model fit as quantified by AIC (<xref ref-type="table" rid="T4">Table 4</xref>). A similar model that allowed transmission rates to vary by US state instead of region further improves model fit.</p>
+<p id="P77">Allowing transmission rates to vary over time in a piece-wise constant manner using monthly time intervals improves model fit more than allowing transmission rates to vary by location. Using biweekly rather than monthly time intervals does not improve model fit further. In turn, all models with only spatial or temporal effects are vastly outperformed by a model that allows transmission rates to vary by both time interval and geographic location (spatiotemporal effects). Using states instead of geographic regions increases the likelihood of the spatiotemporal effects model and has lowest overall AIC value, but we continue to use the model with regional spatial resolution as several states are very poorly represented in the GISAID database. We therefore allow transmission rates to vary by geographic region over monthly time intervals in all subsequent analyses.</p>
+</sec>
+<sec id="S22">
+<title>Decomposing fitness variation</title>
+<p id="P78">Given the ancestral features <italic>x<sub>n</sub>
+</italic> of a lineage, we can compute the lineage’s fitness using the fitness mapping function. We can then partition or decompose total variation in fitness between lineages into sources attributable to different components of fitness. To do this, we first partition the features in <bold>
+<italic>χ</italic>
+</bold> into different disjoint, non-overlapping subsets <bold>χ</bold>
+<sub>
+<italic>k</italic>
+</sub> ⊂ <bold>χ</bold>; <bold>χ</bold>
+<sub>
+<italic>k</italic>
+</sub> ⋂ <italic>
+<bold>χ</bold>
+<sub>
+<italic>l</italic>
+</sub>
+</italic> = <italic>ϕ</italic> for all subsets <italic>k</italic> and <italic>l</italic>.</p>
+<p id="P79">In the fitness mapping functions presented above, each feature <italic>i</italic> has a fitness effect <italic>&#119891;<sub>n,i</sub>
+</italic> on a lineage’s fitness, where <italic>&#119891;<sub>n,i</sub>
+</italic> = <italic>β</italic>
+<sub>
+<italic>i</italic>
+</sub>
+<italic>x</italic>
+<sub>
+<italic>n</italic>,<italic>i</italic>
+</sub>. We let the vector <bold>
+<italic>&#119891;<sub>i</sub>
+</italic>
+</bold> hold the fitness effect of feature <italic>i</italic> for all lineages in the phylogeny and <bold>
+<italic>f</italic>
+</bold> hold the overall fitness of each lineage in the phylogeny. Under the additive model that considers fitness on the log scale (<xref ref-type="disp-formula" rid="FD2">2</xref>), <bold>
+<italic>&#119891;</italic>
+</bold> = Σ<sub>
+<italic>i</italic>
+</sub> <bold>&#119891;</bold>
+<sub>i</sub>. Using the general property that the variance in the sum of random variables is equal to the sum of their individual variances and covariances, we can partition the total variation in fitness into variances attributable to individual features and covariances attributable to pairs of features: <disp-formula id="FD17">
+<label>(17)</label>
+<mml:math id="M21">
+<mml:mtext>Var</mml:mtext>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>f</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mo>=</mml:mo>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>≠</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mi>cov</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mi>cov</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:math>
+</disp-formula> where the covariances account for the fact that the features may be correlated across lineages and therefore not independent.</p>
+<p id="P80">We can take advantage of the additive property of the variances to compute the fraction of total variance attributable to any particular subset of features <italic>
+<bold>χ</bold>
+</italic>
+<sub>
+<italic>k</italic>
+</sub>: <disp-formula id="FD18">
+<label>(18)</label>
+<mml:math id="M22">
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi>&#119987;</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>&#119987;</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P81">In our SARS-CoV-2 analysis, we partition features into three different components of fitness: genetic, spatial and random (unexplained) effects. To ensure that the fraction of variance attributable to each component sum to one, we compute the fraction of variation attributable to each fitness component as: <disp-formula id="FD19">
+<label>(19)</label>
+<mml:math id="M23">
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:munder>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:msub>
+<mml:mi>&#119987;</mml:mi>
+<mml:mi>k</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:munder>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mi>g</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mi>s</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>t</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>l</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mtext>Var</mml:mtext>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:msub>
+<mml:mi>f</mml:mi>
+<mml:mrow>
+<mml:mi>r</mml:mi>
+<mml:mi>a</mml:mi>
+<mml:mi>n</mml:mi>
+<mml:mi>d</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mfrac>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P82">In other words, we ignore the covariances among fitness components. We do this to ensure that negative covariances among components do not cause the variance attributable to a particular component to be greater than the total variance.</p>
+</sec>
+<sec id="S23">
+<title>Two-strain epidemiological model</title>
+<p id="P83">In order to explore if the transmission fitness effect of approximately 10% that we estimate for Spike D614G would have been sufficient to explain its rapid rise in frequency over the spring of 2020, we simulated the evolutionary dynamics of a mutant variant in a single host population under a two-strain Susceptible-Infected-Exposed-Recovered (SEIR) model parameterized for Covid-19. In this model, an initial resident strain (614G) with transmission rate <italic>β</italic> seeds the epidemic and then a mutant strain (614D) with transmission rate <italic>β<sub>m</sub>
+</italic> = <italic>βf<sub>m</sub>
+</italic> enters the population through external introductions. We then systematically vary the mutant’s fitness <italic>&#119891;<sub>m</sub>
+</italic> to see how much more fit the mutant needs to be in order to match the evolutionary trajectory of D614G.</p>
+<p id="P84">The epidemic dynamics in the host population are described by the following system of differentia equations: <disp-formula id="FD20">
+<label>(20)</label>
+<mml:math id="M24">
+<mml:mtable>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>S</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:mo>−</mml:mo>
+<mml:mi>S</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>β</mml:mi>
+<mml:mi>I</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:mi>β</mml:mi>
+<mml:mi>S</mml:mi>
+<mml:mi>I</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>η</mml:mi>
+<mml:mi>E</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:msub>
+<mml:mi>β</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mi>S</mml:mi>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>η</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>I</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:mi>η</mml:mi>
+<mml:mi>E</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mi>ν</mml:mi>
+<mml:mi>I</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:mi>ξ</mml:mi>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:mi>η</mml:mi>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo>−</mml:mo>
+<mml:mi>ν</mml:mi>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>ξ</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+<mml:mtr>
+<mml:mtd columnalign="right">
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>R</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mi>t</mml:mi>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+</mml:mtd>
+<mml:mtd columnalign="left">
+<mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:mspace width="0.3em"/>
+<mml:mi>ν</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>I</mml:mi>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:mi>I</mml:mi>
+<mml:mi>m</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mtd>
+</mml:mtr>
+</mml:mtable>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P85">Here, <italic>η</italic> is the incubation rate at which exposed individuals become infectious and <italic>ν</italic> is the removal or recovery rate. We assume a 4 day incubation period (η = 0.25) and a 7 day infectious period (ν = 0.143) (<xref ref-type="bibr" rid="R6">Davies et al., 2020</xref>; <xref ref-type="bibr" rid="R12">Ferretti et al., 2020</xref>). <italic>ξ</italic> and <italic>ξ<sub>m</sub>
+</italic> give the rate of external introductions into the host population (per capita) of the resident and mutant strain, respectively.</p>
+<p id="P86">We assume that there was a single infected individual in the population on Jan. 15th 2020, reflecting the timing of the earliest probable infections in the US (<xref ref-type="bibr" rid="R76">Worobey et al., 2020</xref>). External introductions of the resident strain occur at a rate of 1 per day after Jan. 15th. The external introduction rate of the mutant is initially zero, but switches to <italic>ξ</italic>
+<italic>
+<sub>m</sub>
+</italic> &gt; 0 after Feb. 15th to reflect the earliest probable introductions of D614G into the US. Because the relative rate at which the 614D and 614G entered the US through external introductions is a key unknown that largely determines the evolutionary trajectory of the mutant, we explore different ratios of <italic>ξ</italic> and <italic>ξ</italic>
+<italic>
+<sub>m</sub>
+</italic>.</p>
+<p id="P87">Finally, since no constant transmission rate can recapitulate the epidemic dynamics of Covid-19 in the US under the SEIR model, we allow the base transmission rate <italic>β</italic> to decline over time to mimic the effects of social distancing or other interventions. We let <italic>β</italic> decrease between piece-wise constant intervals such that <italic>R<sub>e</sub>
+</italic> is 2.5 between Jan. 15th and Feb. 15th, 1.5 between Feb. 15th and Mar. 15th, 1.25 between Mar. 15th and Apr 15th and 1.1 after Apr. 15th, reflecting the average <italic>R<sub>e</sub>
+</italic> values inferred for these time intervals under our phylodynamic model.</p>
+</sec>
+</sec>
+<sec sec-type="supplementary-material" id="SM">
+<title>Supplementary Material</title>
+<supplementary-material content-type="local-data" id="SD1">
+<label>Supplementary Figures</label>
+<media xlink:href="EMS108624-supplement-Supplementary_Figures.pdf" mimetype="application" mime-subtype="pdf" id="N69435" position="anchor"/>
+</supplementary-material>
+</sec>
+</body>
+<back>
+<ack id="S24">
+<title>Acknowledgments</title>
+<p>We would like to thank GISAID and all of the researchers who have submitted SARS-CoV-2 sequences to the GISAID database. A full list of authors and originating laboratories for GISAID submissions we use here is available at: <ext-link ext-link-type="uri" xlink:href="https://github.com/davidrasm/phyloTF2/blob/main/gisaid_hcov-19_acknowledgement_table_2020_12_11_10.pdf">https://github.com/davidrasm/phyloTF2/blob/main/gisaid_hcov-19_acknowledgement_table_2020_12_11_10.pdf</ext-link>. DAR is supported by the US Dept. of Agriculture Hatch project 1016556. LK is supported by the US Centers for Disease Control and Prevention (U01CK000587-01).</p>
+</ack>
+<sec id="S25" sec-type="data-availability">
+<title>Code and data availability</title>
+<p id="P88">Code and data to replicate our phylodynamic analysis is freely available on GitHub at <ext-link ext-link-type="uri" xlink:href="http://github.com/davidrasm/phyloTF2">github.com/davidrasm/phyloTF2</ext-link>.</p>
+</sec>
+<ref-list>
+<ref id="R1">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Abadi</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barham</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Davis</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Dean</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Devin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ghemawat</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Irving</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Isard</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tensorflow: A system for large-scale machine learning</article-title>
+<conf-name>12th { USENIX } Symposium on operating systems design and implementation ({OSDI} 16)</conf-name>
+<year>2016</year>
+<fpage>265</fpage>
+<lpage>283</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Alizon</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Hurford</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Mideo</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Van Baalen</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Virulence evolution and the trade-off hypothesis: history, current state of affairs and the future</article-title>
+<source>Journal of Evolutionary Biology</source>
+<year>2009</year>
+<volume>22</volume>
+<issue>2</issue>
+<fpage>245</fpage>
+<lpage>259</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barido-Sottani</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Vaughan</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Detection of HIV transmission clusters from phylogenetic trees using a multi-state birth-death model</article-title>
+<source>Journal of The Royal Society Interface</source>
+<year>2018</year>
+<volume>15</volume>
+<issue>146</issue>
+<elocation-id>20180512</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Consortium</surname>
+<given-names>CSME</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Molecular evolution of the SARS coronavirus during the course of the SARS epidemic in China</article-title>
+<source>Science</source>
+<year>2004</year>
+<volume>303</volume>
+<issue>5664</issue>
+<fpage>1666</fpage>
+<lpage>1669</lpage>
+</element-citation>
+</ref>
+<ref id="R5">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Dalziel</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Kissler</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gog</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Viboud</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bjørnstad</surname>
+<given-names>ON</given-names>
+</name>
+<name>
+<surname>Metcalf</surname>
+<given-names>CJE</given-names>
+</name>
+<name>
+<surname>Grenfell</surname>
+<given-names>BT</given-names>
+</name>
+</person-group>
+<article-title>Urbanization and humidity shape the intensity of influenza epidemics in us cities</article-title>
+<source>Science</source>
+<year>2018</year>
+<volume>362</volume>
+<issue>6410</issue>
+<fpage>75</fpage>
+<lpage>79</lpage>
+</element-citation>
+</ref>
+<ref id="R6">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davies</surname>
+<given-names>NG</given-names>
+</name>
+<name>
+<surname>Abbott</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Barnard</surname>
+<given-names>RC</given-names>
+</name>
+<name>
+<surname>Jarvis</surname>
+<given-names>CI</given-names>
+</name>
+<name>
+<surname>Kucharski</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Munday</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Pearson</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Russell</surname>
+<given-names>TW</given-names>
+</name>
+<name>
+<surname>Tully</surname>
+<given-names>DC</given-names>
+</name>
+<name>
+<surname>Washburne</surname>
+<given-names>AD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Estimated transmissibility and severity of novel SARS-CoV-2 Variant of Concern 202012/01 in England</article-title>
+<source>MedRxiv</source>
+<year>2021</year>
+<fpage>2020</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davies</surname>
+<given-names>NG</given-names>
+</name>
+<name>
+<surname>Kucharski</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Eggo</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Gimma</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Edmunds</surname>
+<given-names>WJ</given-names>
+</name>
+<name>
+<surname>Jombart</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>O’Reilly</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Endo</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hellewell</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Nightingale</surname>
+<given-names>ES</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study</article-title>
+<source>The Lancet Public Health</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>7</issue>
+<fpage>e375</fpage>
+<lpage>e385</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Deng</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Garcia-Knight</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Khalid</surname>
+<given-names>MM</given-names>
+</name>
+<name>
+<surname>Servellita</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Morris</surname>
+<given-names>MK</given-names>
+</name>
+<name>
+<surname>Sotomayor-Gonzalez</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Glasner</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Reyes</surname>
+<given-names>KR</given-names>
+</name>
+<name>
+<surname>Gliwa</surname>
+<given-names>AS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Transmission, infectivity, and antibody neutralization of an emerging SARS-CoV-2 variant in California carrying a L452R spike protein mutation</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Edmonds</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Lillie</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Cavalli-Sforza</surname>
+<given-names>LL</given-names>
+</name>
+</person-group>
+<article-title>Mutations arising in the wave front of an expanding population</article-title>
+<conf-name>Proceedings of the National Academy of Sciences</conf-name>
+<year>2004</year>
+<volume>101</volume>
+<issue>4</issue>
+<fpage>975</fpage>
+<lpage>979</lpage>
+</element-citation>
+</ref>
+<ref id="R10">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Elbe</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Buckland-Merrett</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Data, disease and diplomacy: GISAID’s innovative contribution to global health</article-title>
+<source>Global Challenges</source>
+<year>2017</year>
+<volume>1</volume>
+<issue>1</issue>
+<fpage>33</fpage>
+<lpage>46</lpage>
+</element-citation>
+</ref>
+<ref id="R11">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fauver</surname>
+<given-names>JR</given-names>
+</name>
+<name>
+<surname>Petrone</surname>
+<given-names>ME</given-names>
+</name>
+<name>
+<surname>Hodcroft</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Shioda</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Ehrlich</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Watts</surname>
+<given-names>AG</given-names>
+</name>
+<name>
+<surname>Vogels</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Brito</surname>
+<given-names>AF</given-names>
+</name>
+<name>
+<surname>Alpert</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Muyombwe</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Coast-to-coast spread of SARS-CoV-2 during the early epidemic in the United States</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ferretti</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wymant</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kendall</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Nurtay</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Abeler-Dörner</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Parker</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bonsall</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Fraser</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Quantifying SARS-CoV-2 transmission suggests epidemic control with digital contact tracing</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>368</volume>
+<issue>6491</issue>
+</element-citation>
+</ref>
+<ref id="R13">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Flaxman</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mishra</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gandy</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Unwin</surname>
+<given-names>HJT</given-names>
+</name>
+<name>
+<surname>Mellan</surname>
+<given-names>TA</given-names>
+</name>
+<name>
+<surname>Coupland</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Whittaker</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Berah</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Eaton</surname>
+<given-names>JW</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>584</volume>
+<issue>7820</issue>
+<fpage>257</fpage>
+<lpage>261</lpage>
+</element-citation>
+</ref>
+<ref id="R14">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Foll</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Shim</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>WFABC: a Wright-Fisher ABC-based approach for inferring effective population sizes and selection coefficients from time-sampled data</article-title>
+<source>Molecular Ecology Resources</source>
+<year>2015</year>
+<volume>15</volume>
+<issue>1</issue>
+<fpage>87</fpage>
+<lpage>98</lpage>
+</element-citation>
+</ref>
+<ref id="R15">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Fraser</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Hollingsworth</surname>
+<given-names>TD</given-names>
+</name>
+<name>
+<surname>Chapman</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>de Wolf</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Hanage</surname>
+<given-names>WP</given-names>
+</name>
+</person-group>
+<article-title>Variation in HIV-1 set-point viral load: epidemiological analysis and an evolutionary hypothesis</article-title>
+<conf-name>Proceedings of the National Academy of Sciences</conf-name>
+<year>2007</year>
+<volume>104</volume>
+<issue>44</issue>
+<fpage>17441</fpage>
+<lpage>17446</lpage>
+</element-citation>
+</ref>
+<ref id="R16">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Xiao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Paranhos-Baccalà</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Antibody against nucleocapsid protein predicts susceptibility to human coronavirus infection</article-title>
+<source>The Journal of Infection</source>
+<year>2015</year>
+<volume>71</volume>
+<issue>5</issue>
+<fpage>599</fpage>
+</element-citation>
+</ref>
+<ref id="R17">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Garry</surname>
+<given-names>RF</given-names>
+</name>
+<name>
+<surname>Andersen</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Gallaher</surname>
+<given-names>WR</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Gangaparapu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Latif</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Beddingfield</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Spike protein mutations in novel SARS-CoV-2 ‘variants of concern’ commonly occur in or near indels</article-title>
+<source>virological org</source>
+<year>2021</year>
+<volume>881</volume>
+<issue>1147</issue>
+<fpage>85</fpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gillespie</surname>
+<given-names>DT</given-names>
+</name>
+</person-group>
+<article-title>Stochastic simulation of chemical kinetics</article-title>
+<source>Annu Rev Phys Chem</source>
+<year>2007</year>
+<volume>58</volume>
+<fpage>35</fpage>
+<lpage>55</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Greaney</surname>
+<given-names>AJ</given-names>
+</name>
+<name>
+<surname>Loes</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Crawford</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Starr</surname>
+<given-names>TN</given-names>
+</name>
+<name>
+<surname>Malone</surname>
+<given-names>KD</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>HY</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>Comprehensive mapping of mutations to the SARS-CoV-2 receptor-binding domain that affect recognition by polyclonal human serum antibodies</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<fpage>2020</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hallatschek</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Nelson</surname>
+<given-names>DR</given-names>
+</name>
+</person-group>
+<article-title>Gene surfing in expanding populations</article-title>
+<source>Theoretical Population Biology</source>
+<year>2008</year>
+<volume>73</volume>
+<issue>1</issue>
+<fpage>158</fpage>
+<lpage>170</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Handel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Rohani</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>Crossing the scale from within-host infection dynamics to between-host transmission fitness: a discussion of current assumptions and knowledge</article-title>
+<source>Philosophical Transactions of the Royal Society B: Biological Sciences</source>
+<year>2015</year>
+<volume>370</volume>
+<issue>1675</issue>
+<elocation-id>20140302</elocation-id>
+</element-citation>
+</ref>
+<ref id="R22">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hodcroft</surname>
+<given-names>EB</given-names>
+</name>
+<name>
+<surname>Domman</surname>
+<given-names>DB</given-names>
+</name>
+<name>
+<surname>Snyder</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Oguntuyo</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Van Diest</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Densmore</surname>
+<given-names>KH</given-names>
+</name>
+<name>
+<surname>Schwalm</surname>
+<given-names>KC</given-names>
+</name>
+<name>
+<surname>Femling</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Carroll</surname>
+<given-names>JL</given-names>
+</name>
+<name>
+<surname>Scott</surname>
+<given-names>RS</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence in late 2020 of multiple lineages of SARS-CoV-2 Spike protein variants affecting amino acid position 677</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R23">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Illingworth</surname>
+<given-names>CJ</given-names>
+</name>
+<name>
+<surname>Mustonen</surname>
+<given-names>V</given-names>
+</name>
+</person-group>
+<article-title>Components of selection in the evolution of the influenza virus: linkage effects beat inherent selection</article-title>
+<source>PLoS Pathog</source>
+<year>2012</year>
+<volume>8</volume>
+<issue>12</issue>
+<elocation-id>e1003091</elocation-id>
+</element-citation>
+</ref>
+<ref id="R24">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ishikawa</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Zhukova</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Iwasaki</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gascuel</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<article-title>A fast likelihood method to reconstruct and visualize ancestral scenarios</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2019</year>
+<volume>36</volume>
+<issue>9</issue>
+<fpage>2069</fpage>
+<lpage>2085</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Issa</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Merhi</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Panossian</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Salloum</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Tokajian</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 and ORF3a: nonsynonymous mutations, functional domains, and viral pathogenesis</article-title>
+<source>Msystems</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>3</issue>
+</element-citation>
+</ref>
+<ref id="R26">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Katoh</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Standley</surname>
+<given-names>DM</given-names>
+</name>
+</person-group>
+<article-title>MAFFT multiple sequence alignment software version 7: improvements in performance and usability</article-title>
+<source>Molecular Biology and Evolution</source>
+<year>2013</year>
+<volume>30</volume>
+<issue>4</issue>
+<fpage>772</fpage>
+<lpage>780</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ke</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zitzmann</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Ribeiro</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Perelson</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>Kinetics of SARS-CoV-2 infection in the human upper and lower respiratory tracts and their relationship with infectiousness</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R28">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kingma</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Ba</surname>
+<given-names>J</given-names>
+</name>
+</person-group>
+<article-title>Adam: A method for stochastic optimization</article-title>
+<source>arXiv preprint arXiv:1412.6980</source>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R29">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kissler</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Kishore</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Prabhu</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Goffman</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Beilin</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Landau</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Gyamfi-Bannerman</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Bateman</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Katz</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Gal</surname>
+<given-names>J</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Reductions in commuting mobility predict geographic differences in SARS-CoV-2 prevalence in New York City</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R30">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klopfstein</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Currat</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Excoffier</surname>
+<given-names>L</given-names>
+</name>
+</person-group>
+<article-title>The fate of mutations surfing on the wave of a range expansion</article-title>
+<source>Molecular biology and evolution</source>
+<year>2006</year>
+<volume>23</volume>
+<issue>3</issue>
+<fpage>482</fpage>
+<lpage>490</lpage>
+</element-citation>
+</ref>
+<ref id="R31">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Korber</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Gnanakaran</surname>
+<given-names>SG</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Theiler</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Abfalterer</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Giorgi</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Parker</surname>
+<given-names>MD</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Spike mutation pipeline reveals the emergence of a more transmissible form of SARS-CoV-2</article-title>
+<source>bioRxiv</source>
+<year>2020a</year>
+</element-citation>
+</ref>
+<ref id="R32">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Korber</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Fischer</surname>
+<given-names>WM</given-names>
+</name>
+<name>
+<surname>Gnanakaran</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Theiler</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Abfalterer</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Hengartner</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Giorgi</surname>
+<given-names>EE</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Foley</surname>
+<given-names>B</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Tracking changes in SARS-CoV-2 Spike: evidence that D614G increases infectivity of the COVID-19 virus</article-title>
+<source>Cell</source>
+<year>2020b</year>
+<volume>182</volume>
+<issue>4</issue>
+<fpage>812</fpage>
+<lpage>827</lpage>
+</element-citation>
+</ref>
+<ref id="R33">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kuhnert</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Kouyos</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Shirreff</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Pečerska</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Scherrer</surname>
+<given-names>AU</given-names>
+</name>
+<name>
+<surname>Böni</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yerly</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Klimkait</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Aubert</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Gunthard</surname>
+<given-names>HF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Quantifying the fitness cost of HIV-1 drug resistance mutations through phylodynamics</article-title>
+<source>PLoS Pathogens</source>
+<year>2018</year>
+<volume>14</volume>
+<issue>2</issue>
+<elocation-id>e1006895</elocation-id>
+</element-citation>
+</ref>
+<ref id="R34">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ladner</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Henson</surname>
+<given-names>SN</given-names>
+</name>
+<name>
+<surname>Boyle</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Engelbrektson</surname>
+<given-names>AL</given-names>
+</name>
+<name>
+<surname>Fink</surname>
+<given-names>ZW</given-names>
+</name>
+<name>
+<surname>Rahee</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>D’ambrozio</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Schaecher</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Stone</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Dong</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Epitope-resolved profiling of the SARS-CoV-2 antibody response identifies cross-reactivity with endemic human coronaviruses</article-title>
+<source>Cell Reports Medicine</source>
+<year>2021</year>
+<volume>2</volume>
+<issue>1</issue>
+<elocation-id>100189</elocation-id>
+</element-citation>
+</ref>
+<ref id="R35">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lanfear</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>A global phylogeny of hcov-19 sequences from gisaid</article-title>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R36">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Larsen</surname>
+<given-names>BB</given-names>
+</name>
+<name>
+<surname>Worobey</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Phylogenetic evidence that B.1.1.7 has been circulating in the United States since early-to mid-November</article-title>
+<source>virological org</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R37">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lei</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kusov</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hilgenfeld</surname>
+<given-names>R</given-names>
+</name>
+</person-group>
+<article-title>Nsp3 of coronaviruses: structures and functions of a large multi-domain protein</article-title>
+<source>Antiviral research</source>
+<year>2018</year>
+<volume>149</volume>
+<fpage>58</fpage>
+<lpage>74</lpage>
+</element-citation>
+</ref>
+<ref id="R38">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leung</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Leung</surname>
+<given-names>GM</given-names>
+</name>
+<name>
+<surname>Lam</surname>
+<given-names>TT</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>JT</given-names>
+</name>
+</person-group>
+<article-title>Empirical transmission advantage of the D614G mutant strain of SARS-CoV-2</article-title>
+<source>medRxiv</source>
+<year>2020a</year>
+</element-citation>
+</ref>
+<ref id="R39">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Leung</surname>
+<given-names>NH</given-names>
+</name>
+<name>
+<surname>Chu</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Shiu</surname>
+<given-names>EY</given-names>
+</name>
+<name>
+<surname>Chan</surname>
+<given-names>K-H</given-names>
+</name>
+<name>
+<surname>McDevitt</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Hau</surname>
+<given-names>BJ</given-names>
+</name>
+<name>
+<surname>Yen</surname>
+<given-names>H-L</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ip</surname>
+<given-names>DK</given-names>
+</name>
+<name>
+<surname>Peiris</surname>
+<given-names>JM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Respiratory virus shedding in exhaled breath and efficacy of face masks</article-title>
+<source>Nature Medicine</source>
+<year>2020b</year>
+<volume>26</volume>
+<issue>5</issue>
+<fpage>676</fpage>
+<lpage>680</lpage>
+</element-citation>
+</ref>
+<ref id="R40">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lloyd-Smith</surname>
+<given-names>JO</given-names>
+</name>
+<name>
+<surname>Schreiber</surname>
+<given-names>SJ</given-names>
+</name>
+<name>
+<surname>Kopp</surname>
+<given-names>PE</given-names>
+</name>
+<name>
+<surname>Getz</surname>
+<given-names>WM</given-names>
+</name>
+</person-group>
+<article-title>Superspreading and the effect of individual variation on disease emergence</article-title>
+<source>Nature</source>
+<year>2005</year>
+<volume>438</volume>
+<issue>7066</issue>
+<fpage>355</fpage>
+<lpage>359</lpage>
+</element-citation>
+</ref>
+<ref id="R41">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Long</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Giotis</surname>
+<given-names>ES</given-names>
+</name>
+<name>
+<surname>Moncorgé</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Frise</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Mistry</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>James</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Morisson</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Iqbal</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Vignal</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Skinner</surname>
+<given-names>MA</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Species difference in ANP32A underlies influenza A virus polymerase host restriction</article-title>
+<source>Nature</source>
+<year>2016</year>
+<volume>529</volume>
+<issue>7584</issue>
+<fpage>101</fpage>
+<lpage>104</lpage>
+</element-citation>
+</ref>
+<ref id="R42">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>MacLean</surname>
+<given-names>OA</given-names>
+</name>
+<name>
+<surname>Lytras</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Weaver</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Singer</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Boni</surname>
+<given-names>MF</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Pond</surname>
+<given-names>SLK</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>Natural selection in the evolution of SARS-CoV-2 in bats, not humans, created a highly capable human pathogen</article-title>
+<source>BioRxiv</source>
+<year>2020a</year>
+</element-citation>
+</ref>
+<ref id="R43">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>MacLean</surname>
+<given-names>OA</given-names>
+</name>
+<name>
+<surname>Orton</surname>
+<given-names>RJ</given-names>
+</name>
+<name>
+<surname>Singer</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Robertson</surname>
+<given-names>DL</given-names>
+</name>
+</person-group>
+<article-title>No evidence for distinct types in the evolution of SARS-CoV-2</article-title>
+<source>Virus Evolution</source>
+<year>2020b</year>
+<volume>6</volume>
+<issue>1</issue>
+<elocation-id>veaa034</elocation-id>
+</element-citation>
+</ref>
+<ref id="R44">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maddison</surname>
+<given-names>WP</given-names>
+</name>
+<name>
+<surname>Midford</surname>
+<given-names>PE</given-names>
+</name>
+<name>
+<surname>Otto</surname>
+<given-names>SP</given-names>
+</name>
+</person-group>
+<article-title>Estimating a binary character’s effect on speciation and extinction</article-title>
+<source>Systematic biology</source>
+<year>2007</year>
+<volume>56</volume>
+<issue>5</issue>
+<fpage>701</fpage>
+<lpage>710</lpage>
+</element-citation>
+</ref>
+<ref id="R45">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maliet</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Hartig</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Morlon</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>A model with many small shifts for estimating speciesspecific diversification rates</article-title>
+<source>Nature Ecology and Evolution</source>
+<year>2019</year>
+<volume>3</volume>
+<issue>7</issue>
+<fpage>1086</fpage>
+<lpage>1092</lpage>
+</element-citation>
+</ref>
+<ref id="R46">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>DP</given-names>
+</name>
+<name>
+<surname>Weaver</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Tegally</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>San</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Shank</surname>
+<given-names>SD</given-names>
+</name>
+<name>
+<surname>Wilkinson</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Giandhari</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Naidoo</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Pillay</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Singh</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The emergence and ongoing convergent evolution of the N501Y lineages coincides with a major global shift in the SARS-CoV-2 selective landscape</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R47">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Muth</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Corman</surname>
+<given-names>VM</given-names>
+</name>
+<name>
+<surname>Roth</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Binger</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Dijkman</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Gottula</surname>
+<given-names>LT</given-names>
+</name>
+<name>
+<surname>Gloza-Rausch</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Balboni</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Battilani</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Rihtaric</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Attenuation of replication by a 29 nucleotide deletion in SARS-coronavirus acquired during the early stages of human-to-human transmission</article-title>
+<source>Scientific Reports</source>
+<year>2018</year>
+<volume>8</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>11</lpage>
+</element-citation>
+</ref>
+<ref id="R48">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nadeau</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Vaughan</surname>
+<given-names>TG</given-names>
+</name>
+<name>
+<surname>Sciré</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Huisman</surname>
+<given-names>JS</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>The origin and early spread of SARS-CoV-2 in Europe</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R49">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Naveca</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Nascimento</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Souza</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Corado</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Nascimento</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Silva</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Costa</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Duarte</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pessoa</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Goncalves</surname>
+<given-names>L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Phylogenetic relationship of SARS-CoV-2 sequences from Amazonas with emerging Brazilian variants harboring mutations E484K and N501Y in the Spike protein</article-title>
+<source>Virological org</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R50">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Neher</surname>
+<given-names>RA</given-names>
+</name>
+</person-group>
+<article-title>Genetic draft, selective interference, and population genetics of rapid adaptation</article-title>
+<source>Annual Review of Ecology, Evolution, and Systematics</source>
+<year>2013</year>
+<volume>44</volume>
+<issue>1</issue>
+<fpage>195</fpage>
+<lpage>215</lpage>
+</element-citation>
+</ref>
+<ref id="R51">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Neher</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>Russell</surname>
+<given-names>CA</given-names>
+</name>
+<name>
+<surname>Shraiman</surname>
+<given-names>BI</given-names>
+</name>
+</person-group>
+<article-title>Predicting evolution from the shape of genealogical trees</article-title>
+<source>Elife</source>
+<year>2014</year>
+<volume>3</volume>
+<elocation-id>e03568</elocation-id>
+</element-citation>
+</ref>
+<ref id="R52">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pater</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Bosmeny</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Barkau</surname>
+<given-names>CL</given-names>
+</name>
+<name>
+<surname>Ovington</surname>
+<given-names>KN</given-names>
+</name>
+<name>
+<surname>Chilamkurthy</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Parasrampuria</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Eddington</surname>
+<given-names>SB</given-names>
+</name>
+<name>
+<surname>Yinusa</surname>
+<given-names>AO</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Metz</surname>
+<given-names>PE</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence and evolution of a prevalent new SARS-CoV-2 variant in the United States</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R53">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Perez-Saez</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Lauer</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Kaiser</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Regard</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Delaporte</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Guessous</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Stringhini</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Azman</surname>
+<given-names>AS</given-names>
+</name>
+<name>
+<surname>Alioucha</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Arm-Vernez</surname>
+<given-names>I</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Serology-informed estimates of SARS-CoV-2 infection fatality risk in Geneva, Switzerland</article-title>
+<source>The Lancet Infectious Diseases</source>
+<year>2021</year>
+<volume>21</volume>
+<issue>4</issue>
+<fpage>e69</fpage>
+<lpage>e70</lpage>
+</element-citation>
+</ref>
+<ref id="R54">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Plante</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>BA</given-names>
+</name>
+<name>
+<surname>Lokugamage</surname>
+<given-names>KG</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Muruato</surname>
+<given-names>AE</given-names>
+</name>
+<name>
+<surname>Zou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Fontes-Garfias</surname>
+<given-names>CR</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Spike mutation D614G alters SARS-CoV-2 fitness</article-title>
+<source>Nature</source>
+<year>2020</year>
+<fpage>1</fpage>
+<lpage>9</lpage>
+</element-citation>
+</ref>
+<ref id="R55">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ragonnet-Cronin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Boyd</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Geidelberg</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Jorgensen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Nascimento</surname>
+<given-names>FF</given-names>
+</name>
+<name>
+<surname>Siveroni</surname>
+<given-names>I</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Baguelin</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Cucunuba</surname>
+<given-names>ZM</given-names>
+</name>
+<name>
+<surname>Jauneikaite</surname>
+<given-names>E</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Covid-19 epidemic severity is associated with timing of non-pharmaceutical interventions</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R56">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McCrone</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Ruis</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>du Plessis</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Py-bus</surname>
+<given-names>OG</given-names>
+</name>
+</person-group>
+<article-title>A dynamic nomenclature proposal for SARS-CoV-2 lineages to assist genomic epidemiology</article-title>
+<source>Nature Microbiology</source>
+<year>2020</year>
+<volume>5</volume>
+<issue>11</issue>
+<fpage>1403</fpage>
+<lpage>1407</lpage>
+</element-citation>
+</ref>
+<ref id="R57">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rasmussen</surname>
+<given-names>DA</given-names>
+</name>
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Coupling adaptive molecular evolution to phylodynamics using fitness-dependent birth-death models</article-title>
+<source>eLife</source>
+<year>2019</year>
+<volume>8</volume>
+<elocation-id>e45562</elocation-id>
+</element-citation>
+</ref>
+<ref id="R58">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Roberts</surname>
+<given-names>DR</given-names>
+</name>
+<name>
+<surname>Bahn</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Ciuti</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Boyce</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Elith</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Guillera-Arroita</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Hauenstein</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Lahoz-Monfort</surname>
+<given-names>JJ</given-names>
+</name>
+<name>
+<surname>Schroöder</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Thuiller</surname>
+<given-names>W</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure</article-title>
+<source>Ecography</source>
+<year>2017</year>
+<volume>40</volume>
+<issue>8</issue>
+<fpage>913</fpage>
+<lpage>929</lpage>
+</element-citation>
+</ref>
+<ref id="R59">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sankoff</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Minimal mutation trees of sequences</article-title>
+<source>SIAM Journal on Applied Mathematics</source>
+<year>1975</year>
+<volume>28</volume>
+<issue>1</issue>
+<fpage>35</fpage>
+<lpage>42</lpage>
+</element-citation>
+</ref>
+<ref id="R60">
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Shaman</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Kohn</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Absolute humidity modulates influenza survival, transmission, and seasonality</article-title>
+<conf-name>Proceedings of the National Academy of Sciences</conf-name>
+<year>2009</year>
+<volume>106</volume>
+<issue>9</issue>
+<fpage>3243</fpage>
+<lpage>3248</lpage>
+</element-citation>
+</ref>
+<ref id="R61">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>On incomplete sampling under birth-death models and connections to the samplingbased coalescent</article-title>
+<source>Journal of Theoretical Biology</source>
+<year>2009</year>
+<volume>261</volume>
+<issue>1</issue>
+<fpage>58</fpage>
+<lpage>66</lpage>
+</element-citation>
+</ref>
+<ref id="R62">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stadler</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Bonhoeffer</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Uncovering epidemiological dynamics in heterogeneous host populations using phylogenetic methods</article-title>
+<source>Philosophical Transactions of the Royal Society B: Biological Sciences</source>
+<year>2013</year>
+<volume>368</volume>
+<issue>1614</issue>
+<elocation-id>20120198</elocation-id>
+</element-citation>
+</ref>
+<ref id="R63">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Stamatakis</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>9</issue>
+<fpage>1312</fpage>
+<lpage>1313</lpage>
+</element-citation>
+</ref>
+<ref id="R64">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sukumaran</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Holder</surname>
+<given-names>MT</given-names>
+</name>
+</person-group>
+<article-title>DendroPy: a Python library for phylogenetic computing</article-title>
+<source>Bioinformatics</source>
+<year>2010</year>
+<volume>26</volume>
+<issue>12</issue>
+<fpage>1569</fpage>
+<lpage>1571</lpage>
+</element-citation>
+</ref>
+<ref id="R65">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tang</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Duan</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Qian</surname>
+<given-names>Z</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>On the origin and continuing evolution of SARS-CoV-2</article-title>
+<source>National Science Review</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R66">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tegally</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Wilkinson</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Giovanetti</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Iranzadeh</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Fonseca</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Giandhari</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Doolabh</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Pillay</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>San</surname>
+<given-names>EJ</given-names>
+</name>
+<name>
+<surname>Msomi</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Emergence and rapid spread of a new severe acute respiratory syndrome-related coronavirus 2 (SARS-CoV-2) lineage with multiple spike mutations in South Africa</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R67">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>To</surname>
+<given-names>T-H</given-names>
+</name>
+<name>
+<surname>Jung</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Lycett</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Gascuel</surname>
+<given-names>O</given-names>
+</name>
+</person-group>
+<article-title>Fast dating using least-squares criteria and algorithms</article-title>
+<source>Systematic Biology</source>
+<year>2015</year>
+<volume>65</volume>
+<issue>1</issue>
+<fpage>82</fpage>
+<lpage>97</lpage>
+</element-citation>
+</ref>
+<ref id="R68">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tuffley</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Steel</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Links between maximum likelihood and maximum parsimony under a simple model of site substitution</article-title>
+<source>Bulletin of Mathematical Biology</source>
+<year>1997</year>
+<volume>59</volume>
+<issue>3</issue>
+<fpage>581</fpage>
+<lpage>607</lpage>
+</element-citation>
+</ref>
+<ref id="R69">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Urbanowicz</surname>
+<given-names>RA</given-names>
+</name>
+<name>
+<surname>McClure</surname>
+<given-names>CP</given-names>
+</name>
+<name>
+<surname>Sakuntabhai</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Sall</surname>
+<given-names>AA</given-names>
+</name>
+<name>
+<surname>Kobinger</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Müller</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Holmes</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Rey</surname>
+<given-names>FA</given-names>
+</name>
+<name>
+<surname>Simon-Loriere</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Ball</surname>
+<given-names>JK</given-names>
+</name>
+</person-group>
+<article-title>Human adaptation of Ebola virus during the West African outbreak</article-title>
+<source>Cell</source>
+<year>2016</year>
+<volume>167</volume>
+<issue>4</issue>
+<fpage>1079</fpage>
+<lpage>1087</lpage>
+</element-citation>
+</ref>
+<ref id="R70">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Volz</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>McCrone</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Price</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jorgensen</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Southgate</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Jackson</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Nascimento</surname>
+<given-names>FF</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Evaluating the effects of SARS-CoV-2 Spike mutation D614G on transmissibility and pathogenicity</article-title>
+<source>Cell</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R71">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Volz</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Mishra</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Chand</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Barrett</surname>
+<given-names>JC</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Geidelberg</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hinsley</surname>
+<given-names>WR</given-names>
+</name>
+<name>
+<surname>Laydon</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Dabrera</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>O’Toole</surname>
+<given-names>Á</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Transmission of SARS-CoV-2 Lineage B. 1.1. 7 in England: Insights from linking epidemiological and genetic data</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+<fpage>2020</fpage>
+<lpage>12</lpage>
+</element-citation>
+</ref>
+<ref id="R72">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walensky</surname>
+<given-names>RP</given-names>
+</name>
+<name>
+<surname>Walke</surname>
+<given-names>HT</given-names>
+</name>
+<name>
+<surname>Fauci</surname>
+<given-names>AS</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 Variants of Concern in the United States—Challenges and Opportunities</article-title>
+<source>JAMA</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R73">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Washington</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>Gangavarapu</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Zeller</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Bolze</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Cirulli</surname>
+<given-names>ET</given-names>
+</name>
+<name>
+<surname>Barrett</surname>
+<given-names>KMS</given-names>
+</name>
+<name>
+<surname>Larsen</surname>
+<given-names>BB</given-names>
+</name>
+<name>
+<surname>Anderson</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Cassens</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Genomic epidemiology identifies emergence and rapid transmission of SARS-CoV-2 B. 1.1.7 in the United States</article-title>
+<source>medRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R74">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Washington</surname>
+<given-names>NL</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Barrett</surname>
+<given-names>KMS</given-names>
+</name>
+<name>
+<surname>Cirulli</surname>
+<given-names>ET</given-names>
+</name>
+<name>
+<surname>Bolze</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Lu</surname>
+<given-names>JT</given-names>
+</name>
+</person-group>
+<article-title>S gene dropout patterns in SARS-CoV-2 tests suggest spread of the H69del/V70del mutation in the US</article-title>
+<source>medRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R75">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wolfel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Corman</surname>
+<given-names>VM</given-names>
+</name>
+<name>
+<surname>Guggemos</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Seilmaier</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zange</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Müller</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Niemeyer</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Jones</surname>
+<given-names>TC</given-names>
+</name>
+<name>
+<surname>Vollmar</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Rothe</surname>
+<given-names>C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Virological assessment of hospitalized patients with COVID-2019</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<issue>7809</issue>
+<fpage>465</fpage>
+<lpage>469</lpage>
+</element-citation>
+</ref>
+<ref id="R76">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Worobey</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pekar</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Larsen</surname>
+<given-names>BB</given-names>
+</name>
+<name>
+<surname>Nelson</surname>
+<given-names>MI</given-names>
+</name>
+<name>
+<surname>Hill</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Joy</surname>
+<given-names>JB</given-names>
+</name>
+<name>
+<surname>Rambaut</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Suchard</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Wertheim</surname>
+<given-names>JO</given-names>
+</name>
+<name>
+<surname>Lemey</surname>
+<given-names>P</given-names>
+</name>
+</person-group>
+<article-title>The emergence of SARS-CoV-2 in Europe and North America</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>370</volume>
+<issue>6516</issue>
+<fpage>564</fpage>
+<lpage>570</lpage>
+</element-citation>
+</ref>
+<ref id="R77">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wu</surname>
+<given-names>SL</given-names>
+</name>
+<name>
+<surname>Mertens</surname>
+<given-names>AN</given-names>
+</name>
+<name>
+<surname>Crider</surname>
+<given-names>YS</given-names>
+</name>
+<name>
+<surname>Nguyen</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Pokpongkiat</surname>
+<given-names>NN</given-names>
+</name>
+<name>
+<surname>Djajadi</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Seth</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Hsiang</surname>
+<given-names>MS</given-names>
+</name>
+<name>
+<surname>Colford</surname>
+<given-names>JM</given-names>
+</name>
+<name>
+<surname>Reingold</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Substantial underestimation of SARS-CoV-2 infection in the United States</article-title>
+<source>Nature Communications</source>
+<year>2020</year>
+<volume>11</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>10</lpage>
+</element-citation>
+</ref>
+<ref id="R78">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Xue</surname>
+<given-names>KS</given-names>
+</name>
+<name>
+<surname>Bloom</surname>
+<given-names>JD</given-names>
+</name>
+</person-group>
+<article-title>Linking influenza virus evolution within and between human hosts</article-title>
+<source>Virus Evolution</source>
+<year>2020</year>
+<volume>6</volume>
+<issue>1</issue>
+<elocation-id>veaa010</elocation-id>
+</element-citation>
+</ref>
+<ref id="R79">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zahradnik</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Marciano</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Shemesh</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Zoler</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Chiaravalli</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Meyer</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Dym</surname>
+<given-names>O</given-names>
+</name>
+<name>
+<surname>Elad</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Schreiber</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>SARS-CoV-2 RBD in vitro evolution follows contagious mutation spread, yet generates an able infection inhibitor</article-title>
+<source>BioRxiv</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R80">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Nei</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>Accuracies of ancestral amino acid sequences inferred by the parsimony, likelihood, and distance methods</article-title>
+<source>Journal of Molecular Evolution</source>
+<year>1997</year>
+<volume>44</volume>
+<issue>1</issue>
+<fpage>S139</fpage>
+<lpage>S146</lpage>
+</element-citation>
+</ref>
+<ref id="R81">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Jackson</surname>
+<given-names>CB</given-names>
+</name>
+<name>
+<surname>Mou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Ojha</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Rangarajan</surname>
+<given-names>ES</given-names>
+</name>
+<name>
+<surname>Izard</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Choe</surname>
+<given-names>H</given-names>
+</name>
+</person-group>
+<article-title>The D614G mutation in the SARS-CoV-2 spike protein reduces S1 shedding and increases infectivity</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R82">
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Davis</surname>
+<given-names>BD</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>SS</given-names>
+</name>
+<name>
+<surname>Martinez</surname>
+<given-names>JMS</given-names>
+</name>
+<name>
+<surname>Plummer</surname>
+<given-names>JT</given-names>
+</name>
+<name>
+<surname>Vail</surname>
+<given-names>E</given-names>
+</name>
+</person-group>
+<article-title>Emergence of a Novel SARS-CoV-2 Variant in Southern California</article-title>
+<source>JAMA</source>
+<year>2021</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Background spatiotemporal heterogeneity in sampling fractions and effective reproductive number <italic>R<sub>e</sub>
+</italic> of SARS-CoV-2 in the US.</title>
+<p>(A) Sampling fractions estimated based on the number of full viral genomes deposited to GISAID relative to the estimated number of total COVID infections in each region and time interval. (B) Effective reproductive number R<sub>e</sub> estimates from the ML SARS-CoV-2 phylogeny. A regional transmission effect was estimated for each region and time interval, which was then used to rescale the estimated base transmission rate to compute R<sub>e</sub>. The base transmission rate was estimated to be 0.184 per day, which assuming a constant recovery/removal rate of 0.14 per day yields an estimate of the basic reproduction number R<sub>0</sub> = 1.31. States are grouped into the geographic regions designated by the US Department of Health and Human Services.</p>
+</caption>
+<graphic xlink:href="EMS108624-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Estimated transmission fitness effects of amino acid variants in the Pre-2020-09 data.</title>
+<p>Fitness effects are jointly estimated under a model of multiplicative fitness, such that neutral variants have a fitness of one. Variants are ordered from top to bottom by their genomic position. Bars are colored according to the maximum likelihood estimate (MLE) of each variant’s fitness effect. Capped lines indicate the 95% credible interval around the MLE. The MLE of each fitness effect is also shown for 10 replicate bootstrap trees as transparent circles. Sets of strongly linked variants are grouped together as single features to avoid collinearity among features. The nsp1 D75E-linked set includes nsp1 D75E, nsp3 P153L, nsp14 F233L and ORF8 V62L; the nsp14 N129D-linked set includes nsp14 N129D, nsp16 R216C, ORF3a G172V, ORF9 P199L and ORF9 P67S. The nsp14 N129D-linked set is referred to as the B.1.2 linked set below.</p>
+</caption>
+<graphic xlink:href="EMS108624-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Estimated transmission fitness effects of amino acid variants in the Post-2020-09 data.</title>
+<p>The fitness of each AAV is reported as a multiplicative effect on the base transmission rate. The B.1.1.7-linked set includes nsp3 T183I, nsp3 A890D, nsp3 I1412T, S A570D, S D1118H, S S982A, ORF8 Q27, ORF8 R52I, ORF8 Y73C. The nsp14 V167L-linked set includes nsp12 V776L, nsp14 V167L, ORF3a S180P and ORF9 Q389L. The B.1.526-linked set includes nsp13 D260Y, S S13I, S W152C and S L452R. The B.1.2-linked set includes nsp14 N129D, ORF3a G172V, ORF9 P67S and ORF9 P199L.</p>
+</caption>
+<graphic xlink:href="EMS108624-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<title>Evolutionary dynamics and background fitness of the Spike 614 variants.</title>
+<p>
+<bold>(A)</bold> Frequency of lineages carrying the Spike D614G and nsp12 P323L variants over time relative to all lineages in the ML phylogeny. These two variants are tightly linked so that they largely share the same evolutionary trajectory. <bold>(B)</bold> Relative background fitness of lineages with the Spike 614G variant versus the 614D variant. Background fitness was computed by averaging the fitness of all lineages with either variant present in the ML phylogeny at each time point. Total background fitness was then further split into a spatial and genetic component. Relative fitness is only shown up to July 1st, 2020 as the 614D variant was not sampled after this date.</p>
+</caption>
+<graphic xlink:href="EMS108624-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<title>Branching rates per lineage in each region for lineages with the Spike 614D versus 614G variant.</title>
+<p>Branching rates are reported here as the number of branching events per week in the ML phylogeny for lineages with either variant.</p>
+</caption>
+<graphic xlink:href="EMS108624-f005"/>
+</fig>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption>
+<title>Estimated fitness of major lineages circulating in the US.</title>
+<p>The fitness of each lineage is reported as a multiplicative effect on the base transmission rate shared among all lineages. Fitness effects were estimated before (solid circles) and after (shaded triangles) accounting for SGTF-variant sampling biases by allowing lineages with the ΔH69/V70 deletion mutation to have their own SGTF-variant specific sampling fraction.</p>
+</caption>
+<graphic xlink:href="EMS108624-f006"/>
+</fig>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption>
+<title>SARS-CoV-2 phylogeny with lineages colored by their transmission fitness (<italic>R<sub>e</sub>
+</italic>).</title>
+<p>The annotation block provides each sampled tip’s PANGO lineage assignment and genotype for several “landmark” genetic features in Spike. Fitness is predicted based on each lineage’s ancestral features using the fitted fitness mapping function with spatial, genetic and random effects. For the purposes of visualization, the full ML tree was thinned to include only 1000 randomly sampled tips and the fitness color scale was capped at a <italic>R<sub>e</sub>
+</italic> = 2 to emphasize variation in fitness surrounding the mean rather than the full range of fitness values.</p>
+</caption>
+<graphic xlink:href="EMS108624-f007"/>
+</fig>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption>
+<title>Fitness variation among lineages decomposed into sources attributable to different components of fitness.</title>
+<p>(A) Overall variation in fitness among lineages in the SARS-CoV-2 phylogeny through time. (B) Fraction of fitness variation explained by genetic, spatial and random fitness effects. (C) Fraction of fitness variation explained by different sets of genetic features.</p>
+</caption>
+<graphic xlink:href="EMS108624-f008"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Amino acid variants with significantly positive fitness effects in the Pre-2020-09 data.</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr style="border-top: hidden">
+<th align="left" valign="middle">Variant</th>
+<th align="left" valign="middle">MLE</th>
+<th align="left" valign="middle">95% CI</th>
+<th align="left" valign="middle">Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">nsp2 A336V</td>
+<td align="left" valign="middle">1.15</td>
+<td align="left" valign="middle">1.13-1.22</td>
+<td align="left" valign="middle">0.006</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp2 G199E</td>
+<td align="left" valign="middle">1.223</td>
+<td align="left" valign="middle">1.13-1.26</td>
+<td align="left" valign="middle">0.005</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp3 K384N</td>
+<td align="left" valign="middle">1.068</td>
+<td align="left" valign="middle">1.06-1.12</td>
+<td align="left" valign="middle">0.015</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp13 P47L</td>
+<td align="left" valign="middle">1.113</td>
+<td align="left" valign="middle">1.01-1.13</td>
+<td align="left" valign="middle">0.006</td>
+</tr>
+<tr>
+<td align="left" valign="middle">S Q675R</td>
+<td align="left" valign="middle">1.17</td>
+<td align="left" valign="middle">1.14-1.22</td>
+<td align="left" valign="middle">0.005</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 S194L</td>
+<td align="left" valign="middle">1.13</td>
+<td align="left" valign="middle">1.01-1.24</td>
+<td align="left" valign="middle">0.048</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 T205I</td>
+<td align="left" valign="middle">1.177</td>
+<td align="left" valign="middle">1.05-1.24</td>
+<td align="left" valign="middle">0.007</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>Amino acid variants outside of Spike with significantly positive fitness effects in the Post-2020-09 data</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr style="border-top: hidden">
+<th align="left" valign="middle">Variant</th>
+<th align="left" valign="middle">MLE</th>
+<th align="left" valign="middle">95% CI</th>
+<th align="left" valign="middle">Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">nsp3 K384N</td>
+<td align="left" valign="middle">1.057</td>
+<td align="left" valign="middle">1.05-1.07</td>
+<td align="left" valign="middle">0.016</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp3 T1189I</td>
+<td align="left" valign="middle">1.057</td>
+<td align="left" valign="middle">1.03-1.06</td>
+<td align="left" valign="middle">0.012</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp3 G1300D</td>
+<td align="left" valign="middle">1.052</td>
+<td align="left" valign="middle">1.05-1.07</td>
+<td align="left" valign="middle">0.023</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp4 T429I</td>
+<td align="left" valign="middle">1.093</td>
+<td align="left" valign="middle">1.04-1.13</td>
+<td align="left" valign="middle">0.019</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp13 Q88H</td>
+<td align="left" valign="middle">1.077</td>
+<td align="left" valign="middle">1.04-1.14</td>
+<td align="left" valign="middle">0.012</td>
+</tr>
+<tr>
+<td align="left" valign="middle">nsp14 V381L</td>
+<td align="left" valign="middle">1.06</td>
+<td align="left" valign="middle">1.05-1.07</td>
+<td align="left" valign="middle">0.014</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF3a T151I</td>
+<td align="left" valign="middle">1.074</td>
+<td align="left" valign="middle">1.07-1.11</td>
+<td align="left" valign="middle">0.015</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF3a D155Y</td>
+<td align="left" valign="middle">1.053</td>
+<td align="left" valign="middle">1.04-1.06</td>
+<td align="left" valign="middle">0.018</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF3a T223I</td>
+<td align="left" valign="middle">1.053</td>
+<td align="left" valign="middle">1.04-1.06</td>
+<td align="left" valign="middle">0.033</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF3a E226G</td>
+<td align="left" valign="middle">1.124</td>
+<td align="left" valign="middle">1.12-1.15</td>
+<td align="left" valign="middle">0.014</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 D3L</td>
+<td align="left" valign="middle">1.068</td>
+<td align="left" valign="middle">1.03-1.08</td>
+<td align="left" valign="middle">0.015</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 P207S</td>
+<td align="left" valign="middle">1.063</td>
+<td align="left" valign="middle">1.05-1.07</td>
+<td align="left" valign="middle">0.015</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 M234I</td>
+<td align="left" valign="middle">1.063</td>
+<td align="left" valign="middle">1.03-1.086</td>
+<td align="left" valign="middle">0.054</td>
+</tr>
+<tr>
+<td align="left" valign="middle">ORF9 E378Q</td>
+<td align="left" valign="middle">1.055</td>
+<td align="left" valign="middle">1.05-1.08</td>
+<td align="left" valign="middle">0.012</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" position="float" orientation="portrait">
+<label>Table 3</label>
+<caption>
+<title>SGTF-specific sampling fractions (as percentages) and the ratio of SGTF versus non-SGTF sampling fractions (parentheses)</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr style="border-top: hidden">
+<th align="left" valign="middle">Region</th>
+<th align="left" valign="middle">Nov 2020</th>
+<th align="left" valign="middle">Dec 2020</th>
+<th align="left" valign="middle">Jan 2021</th>
+<th align="left" valign="middle">Feb 2021</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">Region 1</td>
+<td align="left" valign="middle">1.07 (24.8)</td>
+<td align="left" valign="middle">1.83 (28.8)</td>
+<td align="left" valign="middle">0.9 (4.31)</td>
+<td align="left" valign="middle">0.23 (0.50)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 2</td>
+<td align="left" valign="middle">0.1 (1.74)</td>
+<td align="left" valign="middle">0.42 (3.38)</td>
+<td align="left" valign="middle">0.61 (3.04)</td>
+<td align="left" valign="middle">0.62 (1.04)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 3</td>
+<td align="left" valign="middle">0.04 (1.07)</td>
+<td align="left" valign="middle">0.16 (3.68)</td>
+<td align="left" valign="middle">0.39 (3.24)</td>
+<td align="left" valign="middle">0.18 (1.26)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 4</td>
+<td align="left" valign="middle">0.08 (1.66)</td>
+<td align="left" valign="middle">0.50 (16.3)</td>
+<td align="left" valign="middle">0.62 (9.9)</td>
+<td align="left" valign="middle">0.12 (0.8)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 5</td>
+<td align="left" valign="middle">&lt;0.01 (0.16)</td>
+<td align="left" valign="middle">0.15 (2.33)</td>
+<td align="left" valign="middle">0.37 (3.40)</td>
+<td align="left" valign="middle">0.31 (1.00)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 6</td>
+<td align="left" valign="middle">0.02 (0.15)</td>
+<td align="left" valign="middle">0.06 (0.85)</td>
+<td align="left" valign="middle">0.35 (1.18)</td>
+<td align="left" valign="middle">0.07 (0.57)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 7</td>
+<td align="left" valign="middle">-</td>
+<td align="left" valign="middle">0.03 (1.46)</td>
+<td align="left" valign="middle">0.18 (1.95)</td>
+<td align="left" valign="middle">0.15 (0.94)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 8</td>
+<td align="left" valign="middle">0.04 (0.87)</td>
+<td align="left" valign="middle">0.43 (2.45)</td>
+<td align="left" valign="middle">1.36 (2.67)</td>
+<td align="left" valign="middle">0.95 (1.53)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 9</td>
+<td align="left" valign="middle">0.45 (3.48)</td>
+<td align="left" valign="middle">0.93 (11.68)</td>
+<td align="left" valign="middle">1.46 (11.32)</td>
+<td align="left" valign="middle">0.32 (3.0)</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Region 10</td>
+<td align="left" valign="middle">0.09 (0.55)</td>
+<td align="left" valign="middle">0.22 (1.0)</td>
+<td align="left" valign="middle">0.56 (1.41)</td>
+<td align="left" valign="middle">0.38 (1.06)</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" position="float" orientation="portrait">
+<label>Table 4</label>
+<caption>
+<title>Model selection using the maximum log likelihood <inline-formula>
+<mml:math id="M25">
+<mml:mover accent="true">
+<mml:mi>L</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> for each model and AIC</title>
+</caption>
+<table frame="hsides" rules="groups">
+<thead>
+<tr style="border-top: hidden">
+<th align="left" valign="middle">Model</th>
+<th align="left" valign="middle"># params</th>
+<th align="left" valign="middle">
+<inline-formula>
+<mml:math id="M26">
+<mml:mover accent="true">
+<mml:mi>L</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>
+</th>
+<th align="left" valign="middle">AIC</th>
+<th align="left" valign="middle">ΔAIC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="middle">Base</td>
+<td align="left" valign="middle">1</td>
+<td align="left" valign="middle">15630.6</td>
+<td align="left" valign="middle">-31259.2</td>
+<td align="left" valign="middle"/>
+</tr>
+<tr>
+<td align="left" valign="middle">Spatial effects (by region)</td>
+<td align="left" valign="middle">10</td>
+<td align="left" valign="middle">15667.6</td>
+<td align="left" valign="middle">-31315.2</td>
+<td align="left" valign="middle">-56.0</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Spatial effects (by state)</td>
+<td align="left" valign="middle">52</td>
+<td align="left" valign="middle">15717.2</td>
+<td align="left" valign="middle">-31330.4</td>
+<td align="left" valign="middle">-71.2</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Temporal effects</td>
+<td align="left" valign="middle">9</td>
+<td align="left" valign="middle">16655.9</td>
+<td align="left" valign="middle">-33293.8</td>
+<td align="left" valign="middle">-2034.6</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Spatial (by region) x temporal effects</td>
+<td align="left" valign="middle">90</td>
+<td align="left" valign="middle">17290.1</td>
+<td align="left" valign="middle">-34400.2</td>
+<td align="left" valign="middle">-3141.0</td>
+</tr>
+<tr>
+<td align="left" valign="middle">Spatial (by state) x temporal effects</td>
+<td align="left" valign="middle">468</td>
+<td align="left" valign="middle">18083.6</td>
+<td align="left" valign="middle">-35231.2</td>
+<td align="left" valign="middle">-3972.0</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

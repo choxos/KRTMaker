@@ -1,0 +1,3808 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS108610</article-id>
+<article-id pub-id-type="doi">10.1101/2020.12.14.422772</article-id>
+<article-id pub-id-type="archive">PPR253578</article-id>
+<article-version article-version-type="publisher-id">2</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Transfer Learning for Predicting Virus-Host Protein Interactions for Novel Virus Sequences</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Lanchantin</surname>
+<given-names>Jack</given-names>
+</name>
+<aff id="A1">University of Virginia</aff>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Weingarten</surname>
+<given-names>Tom</given-names>
+</name>
+<aff id="A2">Google</aff>
+</contrib>
+</contrib-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Sekhon</surname>
+<given-names>Arshdeep</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Miller</surname>
+<given-names>Clint</given-names>
+</name>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+</contrib>
+<aff id="A3">University of Virginia</aff>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>19</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>15</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">Viruses such as SARS-CoV-2 infect the human body by forming interactions between virus proteins and human proteins. However, experimental methods to find protein interactions are inadequate: large scale experiments are noisy, and small scale experiments are slow and expensive. Inspired by the recent successes of deep neural networks, we hypothesize that deep learning methods are well-positioned to aid and augment biological experiments, hoping to help identify more accurate virus-host protein interaction maps. Moreover, computational methods can quickly adapt to predict how virus mutations change protein interactions with the host proteins.</p>
+<p id="P2">We propose DeepVHPPI, a novel deep learning framework combining a self-attention-based transformer architecture and a transfer learning training strategy to predict interactions between human proteins and virus proteins that have novel sequence patterns. We show that our approach outperforms the state-of-the-art methods significantly in predicting Virus–Human protein interactions for SARS-CoV-2, H1N1, and Ebola. In addition, we demonstrate how our framework can be used to predict and interpret the interactions of mutated SARS-CoV-2 Spike protein sequences.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P3">A protein-protein interaction (PPI) denotes a critical process where two proteins come in contact with each other to carry out specific biological functions. Virus proteins, such as those from the 2019 novel coronavirus, also known as SARS-CoV-2, interact with human proteins to infect the human body, and ultimately overtake physiological functions (e.g., alveolar gas exchange). Accordingly, protein-protein interactions are often the subject of intense research by virologists and pharmaceutical scientists. Knowing and understanding which host proteins a virus with a novel sequence pattern may interact with is crucial. Such discoveries will expedite our understanding of virus mechanisms and may aid in the development of vaccines, diagnostics, therapeutics, and antibodies.</p>
+<p id="P4">We aim to infer possible interactions between all host proteins and a novel virus protein or a novel variant. This setup is beneficial for three reasons. First, our model can predict an initial set of interactions if experiments have not yet been done. Second, our model can expand the initial set of experimental interactions, resulting in a more complete interactome. Finally, such computational models enable us to test hypotheses such as the effect of mutations.</p>
+<p id="P5">While protein-protein interaction information is expensive to obtain, protein sequence information is cheap and fast. In this paper, we propose a deep neural network (DNN) based framework, DeepVHPPI, to predict protein interactions between virus proteins and host proteins using sequence information alone. DeepVHPPI includes two key designs: (1) Motivated by the evidence that co-occurring short polypeptide sequences between interacting protein partners appear to be conserved across different organisms [<xref ref-type="bibr" rid="R47">47</xref>], we introduce a novel DNN architecture to learn short sequence patterns, or “protein motifs” via self-attention based deep representation learning. (2) since virus-host PPI data is limited, we propose a transfer learning approach to pretrain the network on general protein syntax and structure prediction tasks. The objective of this transfer learning approach is to improve generalization on the task of predicting protein-protein interactions involving novel virus proteins with unseen sequences.</p>
+<p id="P6">In summary, we make the following contributions: <list list-type="bullet" id="L1">
+<list-item>
+<p id="P7">We introduce the DeepVHPPI, a novel deep neural framework for protein sequence based Virus–Host PPI prediction for novel virus proteins or virus proteins with novel variants.</p>
+</list-item>
+<list-item>
+<p id="P8">DeepVHPPI combines a self-attention based transformer architecture and transfer learning for PPI prediction in the context of novel virus sequences (where no previous interactions are known).</p>
+</list-item>
+<list-item>
+<p id="P9">We evaluate DeepVHPPI with validated interactions on Virus–Host PPIs across three virus types: SARS-CoV-2, H1N1 and Ebola datasets. We show that DeepVHPPI outperforms the previous state-of-the-art methods, as well as provide an analysis of SARS-CoV-2 Spike protein mutations.</p>
+</list-item>
+</list>
+</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Background and Task Formulation</title>
+<p id="P10">Proteins are biomolecules that are comprised of a linear chain of amino acids. This allows them to be described by a sequence of tokens (each token is one amino acid (AA)). The dictionary of possible tokens contains 20 standard AAs, two non-standard AAs: selenocysteine and pyrrolysine, two ambiguous AAs, and a special character for unknown (i.e. missing) AAs. In other words, we can represent proteins as strings built from a dictionary <italic>V</italic> of size |<italic>V</italic>| = 25. We represent a protein x as a sequence of characters <italic>x</italic>
+<sub>1</sub>, <italic>x</italic>
+<sub>2</sub>, …, <italic>x<sub>L</sub>
+</italic>. Each character <italic>x<sub>i</sub>
+</italic> is one possible amino acid from <italic>V</italic>. Proteins rarely act in isolation but instead interact with other proteins to perform many biological processes. This is referred to as a protein-protein interaction (PPI).</p>
+<sec id="S3">
+<title>Task Formulation</title>
+<p id="P11">Viruses infect a host through Virus-Host PPIs. Therefore, predicting which host proteins a virus protein will bind to is a key step in understanding viral pathogenesis<sup>
+<xref ref-type="fn" rid="FN1">1</xref>
+</sup> and designing viral therapies. Identifying virus-host PPI interactions can be formulated as a binary classification problem: “given virus protein sequence x<sup>
+<italic>k</italic>
+</sup> and host protein sequence x<sup>
+<italic>q</italic>
+</sup>, does the pair interact or not?”. <xref ref-type="fig" rid="F1">Fig. 1</xref> gives a visual representation of the types of PPIs that we consider with our model. that occur within the human body. There are three types of proteins in this diagram: Host (human) proteins, previously known virus proteins, and a novel virus protein. As shown with solid lines, there are a set of known interactions between a pairs of host proteins as well as between known virus and host proteins. We consider known host-host interactions, known virus-host interactions, and unknown virus-host interactions. <xref ref-type="fig" rid="F1">Fig. 1</xref> visualizes the case of predicting unknown interactions between human proteins and SARS-CoV-2 proteins, given what is known about interactions with proteins from HIV and Zika. Our target task is to predict all possible unknown sets of interactions between the novel virus and host proteins, as shown with a dashed line. This formulation motivates the use of transfer learning because we want to transfer the learned interactions from known viruses to a novel virus. Specifically, we’re concerned here with proteins from novel viruses, which is different than a novel protein from a known virus in our training set</p>
+</sec>
+<sec id="S4">
+<title>Biological Experiments to Detect PPIs</title>
+<p id="P12">It remains difficult to accurately uncover the full set of protein-protein interactions from biological experiments. Traditionally, PPIs have been studied individually through the use of genetic, biochemical, and biophysical techniques such as measuring natural affinity of binding partners in-vivo or in-vitro [<xref ref-type="bibr" rid="R46">46</xref>]. While accurate, these small-scale experiments are not suitable for full proteome analyses [<xref ref-type="bibr" rid="R70">70</xref>]. This is because, for example, there are roughly |<italic>P<sub>h</sub>|</italic> ≈ 20,000 different human proteins, and |<italic>P<sub>v</sub>
+</italic>| ≈ 26 different virus proteins (in SARS-CoV-2, not considering mutated variants), so the potential search space of V–H interactions is |<italic>P<sub>v</sub>
+</italic>| × |<italic>P<sub>h</sub>|</italic> = 0.5M. This number can grow significantly larger when you consider virus protein variants.</p>
+<p id="P13">High-throughput technologies, such as yeast two-hybrid screens (Y2H) [<xref ref-type="bibr" rid="R19">19</xref>] and Affinity-purification–mass spectrometry (AP-MS) [<xref ref-type="bibr" rid="R21">21</xref>, <xref ref-type="bibr" rid="R27">27</xref>], are chiefly responsible for the relatively large amount of PPI evidence. Notably, the first experimental study for SARS-CoV-2 interactions used AP-MS [<xref ref-type="bibr" rid="R21">21</xref>]. However, these datasets are often incomplete, noisy, and hard to reproduce [<xref ref-type="bibr" rid="R64">64</xref>]. The resulting low sensitivity of high-throughput experiments is unfavorable when trying to fully understand how the virus interacts with humans.</p>
+</sec>
+<sec id="S5">
+<title>Past Machine Learning based PPI Prediction Studies</title>
+<p id="P14">Most previous computational methods to predict PPIs have focused on within-species interactions [<xref ref-type="bibr" rid="R7">7</xref>, <xref ref-type="bibr" rid="R20">20</xref>, <xref ref-type="bibr" rid="R22">22</xref>, <xref ref-type="bibr" rid="R23">23</xref>, <xref ref-type="bibr" rid="R36">36</xref>, <xref ref-type="bibr" rid="R47">47</xref>, <xref ref-type="bibr" rid="R61">61</xref>, <xref ref-type="bibr" rid="R67">67</xref>, <xref ref-type="bibr" rid="R69">69</xref>]. These methods do not easily generalize to cross-species interactions (e.g., V–H) [<xref ref-type="bibr" rid="R68">68</xref>]. Few methods have attempted to predict cross-species protein interactions between humans and a novel virus [<xref ref-type="bibr" rid="R68">68</xref>, <xref ref-type="bibr" rid="R71">71</xref>]. Furthermore, previous methods operating at the sequence level do not use structural information from previously known proteins to aid learning [<xref ref-type="bibr" rid="R18">18</xref>]. By training virus–host interactions from a variety of viruses and leveraging prior structural information, our proposed model, DeepVHPPI, allows us to predict the host interactions of an unseen virus protein.</p>
+<p id="P15">When designing machine learning models to predict V–H PPIs, two challenges stand out: (1) Existing sequence analysis tools focus on global alignment patterns while PPIs mostly depend on local binding motif patterns. (2) It is especially difficult for virus proteins that are unknown or are new variants, since there is limited or no experimental interaction data for those sequences. This requires the machine learning model to transfer knowledge from one domain (previously known sequences) to a new domain (novel virus sequences). We argue that this is a realistic task when an unknown virus is newly discovered. In other words, we want to rapidly predict all the host interactions of a newly sequenced virus protein. In this work, we propose a deep learning based pipeline to combine neural representation learning and transfer learning for solving the listed obstacles. Recent literature shows some successful transferability of large scale deep learning models on protein sequences to multiple downstream tasks [<xref ref-type="bibr" rid="R52">52</xref>, <xref ref-type="bibr" rid="R57">57</xref>]. To the authors’ best knowledge, we are the first to adapt the self-attention based transfer learning to the virus-host PPI prediction task.</p>
+</sec>
+</sec>
+<sec id="S6">
+<label>3</label>
+<title>Proposed DNN Framework for Virus Host PPI Prediction: DeepVHPPI</title>
+<p id="P16">We denote each amino acid in a protein sequence as x<sub>CLS</sub>, x<sub>1</sub>, x<sub>2</sub>
+<italic>, …,</italic> x<sub>
+<italic>n</italic>
+</sub>, where x<sub>
+<italic>i</italic>
+</sub> ∈ ℝ<sup>|<italic>V</italic>|</sup> denotes a one-hot vector and x<sub>CLS</sub> is a special classification token. Given virus protein x<sup>
+<italic>a</italic>
+</sup> ∈ ℝ<sup>n×|<italic>V</italic>|</sup> and human protein x<sup>
+<italic>b</italic>
+</sup> ∈ ℝ<sup>n×|<italic>V</italic>|</sup>, the goal of DeepVHPPI is to predict the interaction likelihood <inline-formula>
+<mml:math id="M1">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> of the pair of proteins. In this section, we explain the DeepVHPPI architecture, as shown in <xref ref-type="fig" rid="F2">Fig. 2</xref>, which maps a protein sequence x ∈ ℝ<sup>
+<italic>n</italic>×|<italic>V</italic>|</sup> to representation z ∈ ℝ<sup>
+<italic>n</italic>×<italic>d</italic>
+</sup>. In <xref ref-type="sec" rid="S4">section 3.1</xref>, we introduce the Transformer module which maps a protein sequence x to a hidden representation, z. In <xref ref-type="sec" rid="S6">section 3.2</xref>, we introduce the classification module which takes as input both the virus protein hidden representation, z<sup>
+<italic>a</italic>
+</sup>, and the host protein hidden representation, z<sup>
+<italic>b</italic>
+</sup>, and outputs the likelihood that the two proteins interact.</p>
+<sec id="S7">
+<label>3.1</label>
+<title>Transformer Layers to Learn Representations of Protein Sequences</title>
+<p id="P17">Transformers [<xref ref-type="bibr" rid="R63">63</xref>] have obtained state-of-the-art results in many domains such as natural language [<xref ref-type="bibr" rid="R17">17</xref>], images [<xref ref-type="bibr" rid="R51">51</xref>], and protein sequences [<xref ref-type="bibr" rid="R57">57</xref>]. A Transformer encoder layer is a parameterized function mapping input token sequence x ∈ ℝ<sup>
+<italic>n</italic>×<italic>d</italic>
+</sup> to z ∈ R<sup>
+<italic>n</italic>×<italic>d</italic>
+</sup>. At a high level, a Transformer encoder layer “transforms” the representations of input tokens (e.g., amino acids) by modeling dependencies between them in the form of attention. The importance, or weight, of token <italic>x<sub>j</sub>
+</italic> with respect to <italic>x<sub>i</sub>
+</italic> is learned through attention. Each Transformer encoder layer performs the following computation on input x: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msubsup>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mrow>
+<mml:mtext>softmax</mml:mtext>
+</mml:mrow>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mfrac>
+<mml:mrow>
+<mml:mo>〈</mml:mo>
+<mml:msup>
+<mml:mi>Q</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>K</mml:mi>
+<mml:mrow>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+<mml:mo>〉</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mrow>
+<mml:msqrt>
+<mml:mi>k</mml:mi>
+</mml:msqrt>
+</mml:mrow>
+</mml:mfrac>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD2">
+<label>(2)</label>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:msup>
+<mml:mtext>u</mml:mtext>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>H</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:mstyle>
+<mml:mstyle displaystyle="true">
+<mml:munderover>
+<mml:mi>∑</mml:mi>
+<mml:mrow>
+<mml:mi>j</mml:mi>
+<mml:mo>=</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+<mml:mi>n</mml:mi>
+</mml:munderover>
+<mml:mrow>
+<mml:msub>
+<mml:mi>α</mml:mi>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>j</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msup>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:mstyle>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD3">
+<label>(3)</label>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mtext>u</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>LayerNorm</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:msup>
+<mml:mtext>u</mml:mtext>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD4">
+<label>(4)</label>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:msup>
+<mml:mtext>z</mml:mtext>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mn>2</mml:mn>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:mtext>GELU</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mn>1</mml:mn>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msub>
+<mml:mtext>u</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD5">
+<label>(5)</label>
+<mml:math id="M6">
+<mml:mrow>
+<mml:msub>
+<mml:mtext>z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>LayerNorm</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>u</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:msub>
+<mml:msup>
+<mml:mtext>z</mml:mtext>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where <inline-formula>
+<mml:math id="M7">
+<mml:mrow>
+<mml:msup>
+<mml:mi>Q</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>K</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msup>
+<mml:mi>V</mml:mi>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mi>h</mml:mi>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:msup>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>v</mml:mi>
+</mml:mrow>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula>, and <inline-formula>
+<mml:math id="M8">
+<mml:mrow>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>q</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>h</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>v</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mi>k</mml:mi>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mi>m</mml:mi>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>m</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mi>d</mml:mi>
+</mml:mrow>
+</mml:msup>
+<mml:mo>,</mml:mo>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mrow>
+<mml:mi>c</mml:mi>
+<mml:mo>,</mml:mo>
+<mml:mi>h</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mi>d</mml:mi>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. <italic>H</italic>, <italic>k</italic>, <italic>m</italic>, and <italic>d</italic> are hyperparameters where <italic>H</italic> is the total number of Transformer “heads”, and <italic>k</italic>, <italic>m</italic>, and <italic>d</italic> are weight dimensions. GELU is a nonlinear layer [<xref ref-type="bibr" rid="R26">26</xref>], and LayerNorm is Layer Normalization [<xref ref-type="bibr" rid="R4">4</xref>]. The final z representation after <italic>L</italic> layers is the output of the Transformer encoder, which can then be used by a classification layer.</p>
+<sec id="S8">
+<title>Convolutional Layers to Extract Local Motif Patterns</title>
+<p id="P18">Protein sequences have short, local patterns known as sequence motifs, that have been a major bioinformatics tool for years [<xref ref-type="bibr" rid="R54">54</xref>]. If we view amino acids as the protein analog of natural language characters, motifs are analogous to words. In particular, virus proteins that successfully mimic host proteins and interact with other host proteins often display similar motifs to the target of mimicry [<xref ref-type="bibr" rid="R16">16</xref>]. To take advantage of these patterns, we introduce an architecture variant that stacks convolutional layers and transformer layers. The key contribution of this variation is to automatically learn sequence motifs via convolutional layers (motif module), and compose local patterns together via deeper transformer layers. Our motif module utilizes different length convolutional filters to find motifs directly from sequence end-to-end.</p>
+<p id="P19">Specifically, we apply six temporal convolutional filters of sizes {(1×128), (3×256), (5×384), (7×512), (9×512), (11×512)} to the one-hot encoded protein sequence <italic>x</italic> ∈ ℝ<sup>∈<italic>L</italic>×|<italic>V</italic>
+</sup>, where the first number of each filter is the width and the second number is the depth. Each filter is zero-padded to preserve the original sequence length. We depth-concatenate the output of the convolutional, producing <inline-formula>
+<mml:math id="M9">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>x</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mo>∈</mml:mo>
+<mml:mi>L</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mn>2304</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. <inline-formula>
+<mml:math id="M10">
+<mml:mover accent="true">
+<mml:mi>x</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is fed to a Feedforward layer to produce a <italic>L</italic> × <italic>d</italic> matrix <inline-formula>
+<mml:math id="M11">
+<mml:mrow>
+<mml:msup>
+<mml:mi>x</mml:mi>
+<mml:mo>′</mml:mo>
+</mml:msup>
+<mml:mo>=</mml:mo>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mn>1</mml:mn>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:mtext>GELU</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext>W</mml:mtext>
+<mml:mn>2</mml:mn>
+<mml:mi>T</mml:mi>
+</mml:msubsup>
+<mml:mover accent="true">
+<mml:mi>x</mml:mi>
+<mml:mo>¯</mml:mo>
+</mml:mover>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>. Finally, to encode positional information we add sinusoidal position tokens [<xref ref-type="bibr" rid="R63">63</xref>] to the <italic>x</italic>′ matrix. This output <italic>x</italic>′ is used as input to a Transformer encoder.</p>
+<p id="P20">Using several convolutional filters of varying size allows the model to learn a diverse set of motifs. Specifically, in our implementation, the set of filters allows the model to learn 2304 unique motifs of varying lengths. DeepVHPPI is illustrated in <xref ref-type="fig" rid="F2">Fig. 2</xref> (left).</p>
+</sec>
+</sec>
+<sec id="S9">
+<label>3.2</label>
+<title>Classification Layer to Predict V–H Protein Interactions</title>
+<p id="P21">The Convolutional and Transformer layers map virus protein sequence x<sup>
+<italic>a</italic>
+</sup> to z<sup>
+<italic>a</italic>
+</sup> and host sequence x<sup>
+<italic>b</italic>
+</sup> to z<sup>
+<italic>b</italic>
+</sup>. The final layer of DeepVHPPI is to predict the interaction likelihood of x<sup>
+<italic>a</italic>
+</sup> and x<sup>
+<italic>b</italic>
+</sup>. We first obtain a single vector representation of each protein using the the classification token outputs from the Transformer, <inline-formula>
+<mml:math id="M12">
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext>z</mml:mtext>
+<mml:mrow>
+<mml:mtext>CLS</mml:mtext>
+</mml:mrow>
+<mml:mi>a</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula> and <inline-formula>
+<mml:math id="M13">
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext>z</mml:mtext>
+<mml:mrow>
+<mml:mtext>CLS</mml:mtext>
+</mml:mrow>
+<mml:mi>b</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. In other words, each protein is fed into the shared Transformer model, and outputs an independent vector. Using these representations, we can predict <inline-formula>
+<mml:math id="M14">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula>, the likelihood that the two proteins interact with one another: <disp-formula id="FD6">
+<label>(6)</label>
+<mml:math id="M15">
+<mml:mrow>
+<mml:mtext mathvariant="bold">v</mml:mtext>
+<mml:mo>=</mml:mo>
+<mml:mtext>concat</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msubsup>
+<mml:mtext mathvariant="bold">z</mml:mtext>
+<mml:mrow>
+<mml:mtext>CLS</mml:mtext>
+</mml:mrow>
+<mml:mi>a</mml:mi>
+</mml:msubsup>
+<mml:mo>,</mml:mo>
+<mml:msubsup>
+<mml:mtext mathvariant="bold">z</mml:mtext>
+<mml:mrow>
+<mml:mtext>CLS</mml:mtext>
+</mml:mrow>
+<mml:mi>b</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> <disp-formula id="FD7">
+<label>(7)</label>
+<mml:math id="M16">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mtext mathvariant="bold">w</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mtext>GELU</mml:mtext>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext mathvariant="bold">W</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mtext mathvariant="bold">v</mml:mtext>
+<mml:mo>+</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where W<sub>1</sub> ∈ ℝ<sup>2<italic>d</italic>×<italic>d</italic>
+</sup>, and w<sub>2</sub> ∈ ℝ<sup>1×<italic>d</italic>
+</sup> are projection matrices, and v ∈ ℝ<sup>2<italic>d</italic>×1</sup> is a concatenation of the two protein representations. GELU is a nonlinear activation layer [<xref ref-type="bibr" rid="R26">26</xref>]. The virus sequence is always the first <italic>d</italic> weights in the concatenated representation, so the classifier is not invariant to the protein ordering. <inline-formula>
+<mml:math id="M17">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is then fed through a sigmoid function to obtain the interaction probability.</p>
+</sec>
+<sec id="S10">
+<label>3.3</label>
+<title>Proposed Training: Transfer Learning for Virus–Human PPI Prediction</title>
+<p id="P22">Our proposed DeepVHPPI network allows us to predict the interaction likelihood of two proteins given only sequence information of each protein. With this framework, we are faced with several difficulties in order to predict Virus-Host interactions. First, there is limited Virus-Host PPI data available to train on. In particular, there are few or no interactions known for novel virus protein sequences. Second, protein structure information is important for accurate PPI prediction [<xref ref-type="bibr" rid="R13">13</xref>] Using sequence features alone may not be sufficient for predicting certain interactions, but obtaining structure for novel proteins is a slow process. Both of these obstacles require a model that can generalize from knowledge learned in related protein prediction tasks. To this end, we introduce a “transfer learning” three-step training procedure. This involves pretraining the Convolutional and Transformer layers (<xref ref-type="sec" rid="S4">Section 3.1</xref>) of DeepVHPPI, before fine-tuning the entire network (<xref ref-type="sec" rid="S4">Section 3.1</xref> and <xref ref-type="sec" rid="S6">3.2</xref>) on the PPI task.</p>
+<p id="P23">The first step is to pretrain the DeepVHPPI using Masked Language Model (MLM) pretraining in order to learn generic representations from unlabeled protein sequences; the second step is to further pretrain the network using Structure Prediction (SP) to learn 3D structural representations; and the third step is to fine-tune the network on the Virus–Host PPI data for previously known viruses. Pretraining the network allows it to learn representations that transfer well to the PPI task for novel (i.e., unseen) virus sequence. An overview of our proposed training procedure is shown in <xref ref-type="fig" rid="F3">Figure 3</xref>, and we explain each training step below. Each task uses a task-specific classifier, shown as MLM, SS, CT, RH, and PPI in <xref ref-type="fig" rid="F3">Figure 3</xref>. In other words, the DeepVHPPI is shared between all tasks, but the classifier layers are not.</p>
+<sec id="S11">
+<label>3.3.1</label>
+<title>MLM: Masked Language Model Pretraining</title>
+<p id="P24">Recent literature on learning self-supervised representations of natural language have shown that pretraining using self-supervised and supervised methods encourages the model to learn semantics about the input domain that can help prediction accuracy on new tasks [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R12">12</xref>, <xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R37">37</xref>, <xref ref-type="bibr" rid="R44">44</xref>]. In order to learn basic protein semantics and syntax, leveraging large databases of protein sequences is paramount. Masked language model (MLM) training is a self-supervised technique to allow a model to build rich representations of sequences. Specifically, given a sequence x, the MLM objective optimizes the following loss function: <disp-formula id="FD8">
+<label>(8)</label>
+<mml:math id="M18">
+<mml:mrow>
+<mml:msub>
+<mml:mi>ℒ</mml:mi>
+<mml:mrow>
+<mml:mtext>MLM</mml:mtext>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:msub>
+<mml:mi mathvariant="double-struck">E</mml:mi>
+<mml:mrow>
+<mml:mtext mathvariant="bold">x</mml:mtext>
+<mml:mo>∼</mml:mo>
+<mml:mi>X</mml:mi>
+</mml:mrow>
+</mml:msub>
+<mml:msub>
+<mml:mi mathvariant="double-struck">E</mml:mi>
+<mml:mi>M</mml:mi>
+</mml:msub>
+<mml:munder>
+<mml:mrow>
+<mml:mstyle mathsize="140%" displaystyle="true">
+<mml:mi>∑</mml:mi>
+</mml:mstyle>
+</mml:mrow>
+<mml:mrow>
+<mml:mi>i</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mi>M</mml:mi>
+</mml:mrow>
+</mml:munder>
+<mml:mo>−</mml:mo>
+<mml:mi>log</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>∣</mml:mo>
+<mml:msub>
+<mml:mtext>x</mml:mtext>
+<mml:mrow>
+<mml:mo>/</mml:mo>
+<mml:mi>M</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</disp-formula> where M is a set of indices to mask, replacing the true character with a dummy mask character. The total loss is a sum of each masked character’s negative log likelihood of the true amino acid x<sub>
+<italic>i</italic>
+</sub> its context set of characters x/<italic>M</italic>. Specifically, for each training sample, we mask out a random 15% of the token positions for prediction. If the <italic>i</italic>-th token is chosen, it is replaced with (1) the <italic>MASK</italic> token 80% of the time (2) a random token 10% of the time (3) the unchanged i-th token 10% of the time. We use the output of the Transformer encoder, z to predict the likelihood of each amino acid a each missing token x<sub>
+<italic>i</italic>
+</sub> using the following linear mapping: <disp-formula id="FD9">
+<label>(9)</label>
+<mml:math id="M19">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mtext mathvariant="bold">y</mml:mtext>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext>W</mml:mtext>
+<mml:msub>
+<mml:mi>z</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> with learned matrix W ∈ ℝ<sup>|<italic>V</italic>|×<italic>d</italic>
+</sup>, bias <italic>b</italic>, and DeepVHPPI output <inline-formula>
+<mml:math id="M20">
+<mml:mrow>
+<mml:msub>
+<mml:mtext mathvariant="bold">z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>∈</mml:mo>
+<mml:msup>
+<mml:mi>ℝ</mml:mi>
+<mml:mrow>
+<mml:mi>d</mml:mi>
+<mml:mo>×</mml:mo>
+<mml:mn>1</mml:mn>
+</mml:mrow>
+</mml:msup>
+</mml:mrow>
+</mml:math>
+</inline-formula>. <inline-formula>
+<mml:math id="M21">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is then fed through a softmax function to obtain class probabilities, <inline-formula>
+<mml:math id="M22">
+<mml:mrow>
+<mml:mi>p</mml:mi>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mo>|</mml:mo>
+<mml:msub>
+<mml:mi>x</mml:mi>
+<mml:mrow>
+<mml:mo>/</mml:mo>
+<mml:mi>M</mml:mi>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+</mml:math>
+</inline-formula>.</p>
+</sec>
+<sec id="S12">
+<label>3.3.2</label>
+<title>SP: Structure Prediction Pretraining</title>
+<p id="P25">Masked language model pretraining uses large amounts of unlabeled data to learn protein sequence semantics. However, a key aspect of whether two proteins interact or not is the structure of each protein. Obtaining structural information is slow and expensive, so we generally do not have structure information for all proteins from a novel virus. We leverage existing structural information to further pretrain DeepVHPPI and learn structure from sequence by predicting known structures. We consider three structure-based classification tasks: (1) Secondary Structure (SS) prediction (2) Contact prediction, and, (3) Homology prediction. Each task is explained below.</p>
+<sec id="S13">
+<title>Secondary Structure Prediction</title>
+<p id="P26">Protein secondary structure is the three dimensional form of local segments of proteins. Each character in the sequence can be labeled by its secondary structure, which is one of |<italic>C</italic>| classes where <italic>C</italic> = {Helix, Strand, Other}. This results in a sequence tagging task where each input amino acid character x<sub>
+<italic>i</italic>
+</sub> is mapped to a label <italic>y<sub>i</sub>
+</italic> ∈ <italic>C</italic>. We predict the likelihood of each class for <italic>x<sub>i</sub>
+</italic> using the following linear mapping: <disp-formula id="FD10">
+<label>(10)</label>
+<mml:math id="M23">
+<mml:mrow>
+<mml:msub>
+<mml:mover accent="true">
+<mml:mtext mathvariant="bold">y</mml:mtext>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mtext mathvariant="bold">W</mml:mtext>
+<mml:msub>
+<mml:mtext mathvariant="bold">z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>b</mml:mi>
+</mml:mrow>
+</mml:math>
+</disp-formula> with learned matrix W ∈ ℝ<sup>|<italic>C</italic> |×<italic>d</italic>
+</sup>, bias <italic>b</italic>, and DeepVHPPI output z<sub>
+<italic>i</italic>
+</sub> ∈ ℝ<sup>
+<italic>d</italic>×1</sup>. <inline-formula>
+<mml:math id="M24">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is then fed through a softmax function to obtain class probabilities.</p>
+</sec>
+<sec id="S14">
+<title>Contact Prediction</title>
+<p id="P27">Protein contact maps are a simplified depiction of the global 3D structure protein, where binary contact points indicated interactions in the 3D space. Contact prediction aims to predict the contact of each set of amino acid pairs in the sequence. Pair (<italic>x<sub>i</sub>
+</italic>, <italic>x<sub>j</sub>
+</italic>) of input amino acids from sequence <bold>x</bold> is mapped to a label <italic>y<sub>ij</sub>
+</italic> ∈ {0, 1} indicating whether or not the amino acids are physically close (&lt; 8Å apart) to each other. To produce the contact likelihood of pair (<italic>x<sub>i</sub>, x<sub>j</sub>
+</italic>), we use the following formula which preserves non-directionality of contacts: <disp-formula id="FD11">
+<label>(11)</label>
+<mml:math id="M25">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mtext>z</mml:mtext>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>+</mml:mo>
+<mml:mrow>
+<mml:mo>(</mml:mo>
+<mml:mrow>
+<mml:msub>
+<mml:mtext>z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>2</mml:mn>
+</mml:msub>
+<mml:mo>⋅</mml:mo>
+<mml:msub>
+<mml:mtext>z</mml:mtext>
+<mml:mi>j</mml:mi>
+</mml:msub>
+<mml:msub>
+<mml:mtext>W</mml:mtext>
+<mml:mn>1</mml:mn>
+</mml:msub>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+</mml:mrow>
+<mml:mo>)</mml:mo>
+</mml:mrow>
+<mml:mo>/</mml:mo>
+<mml:mn>2</mml:mn>
+</mml:mrow>
+</mml:math>
+</disp-formula> where {W<sub>1</sub>, W<sub>2</sub>} ∈ ℝ<sup>
+<italic>d</italic>×<italic>d</italic>
+</sup>. <inline-formula>
+<mml:math id="M26">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is then fed through a sigmoid function to obtain the contact probability.</p>
+</sec>
+<sec id="S15">
+<title>Remote Homology Detection</title>
+<p id="P28">Remote homologues are pairs of proteins that share the same functional class, but have drastically different sequences. The goal of remote homology detection is predict the structural and functional class of a protein. Since proteins evolve, many proteins are structurally (and thus, functionally) similar, although their sequences are slightly different. Accurately predicting the homology of a protein would allow the model to group similar structural proteins together. We consider predicting the remote homology of a protein in terms of structural “fold” classes (e.g. Beta Barrel). This is a protein classification task where each input sequence x is mapped to a label <italic>y</italic> ∈ <italic>C</italic>, where |<italic>C</italic>| = 1195 different possible protein folds. We use the designated <italic>CLS</italic> token from the DeepVHPPI to predict one of the |<italic>C</italic>| labels for a given sequence. We use a single linear layer mapping z<sub>
+<italic>i</italic>
+</sub> to a |<italic>C</italic>|-dimensional vector: <disp-formula id="FD12">
+<label>(12)</label>
+<mml:math id="M27">
+<mml:mrow>
+<mml:mover accent="true">
+<mml:mtext mathvariant="bold">y</mml:mtext>
+<mml:mo>^</mml:mo>
+</mml:mover>
+<mml:mo>=</mml:mo>
+<mml:mtext mathvariant="bold">W</mml:mtext>
+<mml:msub>
+<mml:mtext mathvariant="bold">z</mml:mtext>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo>+</mml:mo>
+<mml:mi>b</mml:mi>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula> where W ∈ ℝ<sup>|<italic>C</italic>|×<italic>d</italic>
+</sup> is a projection matrix and z<sub>
+<italic>i</italic>
+</sub> ∈ R<sup>
+<italic>d</italic>×1</sup> is the <italic>CLS</italic> token output vector from the Transformer. <inline-formula>
+<mml:math id="M28">
+<mml:mover accent="true">
+<mml:mi>y</mml:mi>
+<mml:mo>^</mml:mo>
+</mml:mover>
+</mml:math>
+</inline-formula> is fed through a softmax function to obtain class probabilities.</p>
+</sec>
+<sec id="S16">
+<title>Multi-task Training</title>
+<p id="P29">For secondary structure and contact prediction, we use a binary cross-entropy loss, and for remote homoloy, we use cross entropy. We train all three structure prediction tasks simultaneously by sampling a new task uniformly in each gradient descent batch.</p>
+</sec>
+</sec>
+<sec id="S17">
+<label>3.3.3</label>
+<title>Finetuning on V-H PPI Task</title>
+<p id="P30">After MLM and SP pretraining, the final task is to finetune the model using the classifier in <xref ref-type="sec" rid="S6">Section 3.2</xref> on the known (i.e. experimentally validated) PPI data for previously known virus proteins. Once this model is trained, we can use it on pairs of Virus–Human interaction sequences where the virus was not used during training. The pretraining method on generic tasks learn structures of proteins which generalize well to unseen proteins.</p>
+</sec>
+</sec>
+</sec>
+<sec id="S18">
+<label>4</label>
+<title>Connecting to Related Work</title>
+<sec id="S19">
+<title>Protein-Protein Interaction Prediction</title>
+<p id="P31">Many previous PPI works focus on developing intra-species interactions [<xref ref-type="bibr" rid="R10">10</xref>, <xref ref-type="bibr" rid="R24">24</xref>, <xref ref-type="bibr" rid="R30">30</xref>, <xref ref-type="bibr" rid="R43">43</xref>, <xref ref-type="bibr" rid="R56">56</xref>, <xref ref-type="bibr" rid="R61">61</xref>, <xref ref-type="bibr" rid="R65">65</xref>]. In other words, they would have one model for only Human–Human interactions and another model for only Yeast–Yeast interactions. Cross-species interaction prediction instead relates to where each protein in the interaction comes from a different species. Many works predict cross-species PPIs where the testing set contains proteins that are in the training set [<xref ref-type="bibr" rid="R6">6</xref>, <xref ref-type="bibr" rid="R15">15</xref>, <xref ref-type="bibr" rid="R40">40</xref>, <xref ref-type="bibr" rid="R49">49</xref>, <xref ref-type="bibr" rid="R62">62</xref>]. These methods do not reflect the real-world setting for a novel virus since we don’t have training proteins available for the virus. Additionally, PPI prediction methods generally perform much better for test pairs that share components with a training set than for those that do not [<xref ref-type="bibr" rid="R42">42</xref>]. Few works have focused on the more difficult task of cross-species interaction prediction where one of the protein species is completely unseen during training, which is what our work tackles. DeNovo [<xref ref-type="bibr" rid="R18">18</xref>] used an SVM for cross species interaction prediction. Yang et al. [<xref ref-type="bibr" rid="R68">68</xref>] introduce a deep learning embedding method combined with a random forest. Zhou et al. [<xref ref-type="bibr" rid="R71">71</xref>] improved DeNovo’s SVM for novel Virus–Human interaction.</p>
+</sec>
+<sec id="S20">
+<title>Protein Sequence Classification</title>
+<p id="P32">Machine learning methods have achieved considerable results predicting properties of proteins that have yet to be experimentally validated by experimental studies. [<xref ref-type="bibr" rid="R35">35</xref>, <xref ref-type="bibr" rid="R48">48</xref>] introduce multitask deep learning models for sequence labeling tasks such as SS prediction. [<xref ref-type="bibr" rid="R38">38</xref>, <xref ref-type="bibr" rid="R52">52</xref>, <xref ref-type="bibr" rid="R57">57</xref>] focus on methods of language model pretraining for generalizable representations of sequences. In particular, [<xref ref-type="bibr" rid="R52">52</xref>, <xref ref-type="bibr" rid="R57">57</xref>] and [<xref ref-type="bibr" rid="R9">9</xref>] showed that self-supervised pretraining can produce protein representations that generalize across protein domains.</p>
+</sec>
+<sec id="S21">
+<title>Transformers</title>
+<p id="P33">Transformers [<xref ref-type="bibr" rid="R63">63</xref>] obtained state-of-the-art results on several NLP tasks [<xref ref-type="bibr" rid="R17">17</xref>]. One problem with the vanilla Transformer model on token level inputs is that locality is not preserved. [<xref ref-type="bibr" rid="R5">5</xref>] used varying convolutional filters on characters at the word level and took the mean of the output to get a single vector representation for each word. Since proteins have no inherent “words” we use the convolutional output for each character as its local word. Instead of using character level inputs, word or byte-pair encodings can be used in order to preserve the local structure of words in text [<xref ref-type="bibr" rid="R59">59</xref>].</p>
+</sec>
+<sec id="S22">
+<title>Transfer Learning</title>
+<p id="P34">Our work relates to several others in natural language processing where pretraining is used to transfer knowledge from both unlabeled and related labeled datasets [<xref ref-type="bibr" rid="R3">3</xref>, <xref ref-type="bibr" rid="R34">34</xref>, <xref ref-type="bibr" rid="R45">45</xref>]. Transfer learning is closely tied with few-shot learning [<xref ref-type="bibr" rid="R33">33</xref>, <xref ref-type="bibr" rid="R53">53</xref>], which typically aims to use representations from prior tasks to generalize. Transformers are particularly well-fitted for transfer learning as their parallelizable architecture allows for fast pretraining on large datasets [<xref ref-type="bibr" rid="R17">17</xref>, <xref ref-type="bibr" rid="R50">50</xref>]. It has been shown that this large-scale pretraining generalizes well enough for accurate few-shot learning [<xref ref-type="bibr" rid="R11">11</xref>].</p>
+</sec>
+</sec>
+<sec id="S23">
+<label>5</label>
+<title>Experimental Setup and Results</title>
+<sec id="S24">
+<label>5.1</label>
+<title>Model Details and Evaluation Metrics</title>
+<sec id="S25">
+<title>DeepVHPPI Variations and Details</title>
+<p id="P35">We evaluate three variants of our model: (1) DeepVHPPI: this is the base model which uses no pretraining, only training on the target PPI task. (2) DeepVHPPI+MLM: this variant uses the language model pretraining and finetuning on the PPI task. (3) DeepVHPPI+MLM+SP: this uses both language model pretraining and supervised structure/family prediction pretraining before finetuning on the PPI task. We test both single task and multi-task models on the 3 SP tasks. We use the multi-task trained model for all PPI tasks. We train all models using a 12-layer transformer of size <italic>d</italic> = 712 with <italic>H</italic>=8 attention heads.</p>
+<p id="P36">For all training and testing, we clip protein sequences to 1024 length. For language model pretraining, we use a batch size of 1024, a linear warmup, and max learning rate of 1e-3. For all other tasks, we use a batch size of 16 with max learning rate of 1e-5. The language model is trained for 60 epochs, and all others are trained for 100. All models are trained with an Adam optimizer [<xref ref-type="bibr" rid="R31">31</xref>] and 10% dropout. Our models are implemented in PyTorch and we run each model on 4 NVIDIA Titan X GPUs. Masked language model pretraining (MLM) takes approximately 3 days, structure prediction (SP) pretraining takes 1 day, and the PPI task takes 3 days. Testing on ∼0.5M PPI pairs takes about 1 hour.</p>
+</sec>
+<sec id="S26">
+<title>Metrics</title>
+<p id="P37">For the supervised pretraining tasks, we use the metrics reported by previous work [<xref ref-type="bibr" rid="R52">52</xref>]. For the PPI task, we are largely focused on ranking interaction predictions based on probability, so we report two non-thresholding metrics: area under the ROC curve (AUROC), and area under the precision-recall curve (AUPR). We additionally report F1 scores where we consider thresholds [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]. As done in previous works, the results are selected on the best performing test epoch for each metric. For the SARS-CoV-2 dataset, we evaluate each metric for each virus protein individually since we are interested in the accuracy of predicting human interactions for specific virus proteins. The reported results are the mean value across all 25 virus proteins. For this dataset, we also report precision at 100 (P@100).</p>
+</sec>
+</sec>
+<sec id="S27">
+<label>5.2</label>
+<title>Pretraining Tasks (MLM and SP)</title>
+<sec id="S28">
+<title>Datasets</title>
+<p id="P38">For the masked language model (MLM) task, we train DeepVHPPI on all Swiss-Prot protein sequences [<xref ref-type="bibr" rid="R14">14</xref>]. Swiss-Prot is a collection of 562,253 manually reviewed, non-redundant protein sequences from 9,594 organisms. It includes most human and known virus proteins, allowing our model to learn the distribution of both types. We then further pretrain the model with structure pretraining (SP) tasks. For secondary structure prediction, the original data is from [<xref ref-type="bibr" rid="R32">32</xref>] and we report accuracy. For contact prediction, data is from [<xref ref-type="bibr" rid="R1">1</xref>]. We report precision of the <italic>L</italic>/5 most likely contacts (where <italic>L</italic> is the sequence length) for medium and long-range contacts. For remote homology prediction, the data is from [<xref ref-type="bibr" rid="R29">29</xref>], and we report accuracy. In all 3 tasks, we use the train/validation/test splits from [<xref ref-type="bibr" rid="R52">52</xref>].</p>
+</sec>
+<sec id="S29">
+<title>Baselines</title>
+<p id="P39">We compare our model against three deep learning methods: a vanilla Transformer, an LSTM [<xref ref-type="bibr" rid="R28">28</xref>], and ResNet [<xref ref-type="bibr" rid="R25">25</xref>], all run by [<xref ref-type="bibr" rid="R52">52</xref>]. Our DeepVHPPI uses the same Transformer model size (number of trainable parameters) as the vanilla transformer, and similar model size to the LSTM and ResNet. We do not compare to the pretrained models from [<xref ref-type="bibr" rid="R52">52</xref>] since we use a different pretraining dataset. We also compare our method against two baseline methods from [<xref ref-type="bibr" rid="R52">52</xref>]. “One-hot” uses one-hot feature inputs that are fed to simple classifiers such as an MLP or 2-layer ConvNet. “Alignment” uses sequence alignment features (BLAST or HHBlits), which are matrices that encode evolutionary information about the protein [<xref ref-type="bibr" rid="R55">55</xref>, <xref ref-type="bibr" rid="R58">58</xref>].</p>
+</sec>
+<sec id="S30" sec-type="results">
+<title>Results</title>
+<p id="P40">Here we investigate the benefits of the DeepVHPPI on the structure prediction tasks. <xref ref-type="table" rid="T2">Table 2</xref> shows results on the three SP datasets. Our proposed DeepVHPPI performs as well or better than baseline methods, aside from alignment methods on SS prediction. Self supervised language modeling adds improvement over the base DeepVHPPI. Multi-task training with language model pretraining outperforms all other non-alignment methods. We do not evaluate the performance of the MLM task itself since better MLM performance does not always translate to better downstream task performance [<xref ref-type="bibr" rid="R57">57</xref>].</p>
+</sec>
+</sec>
+<sec id="S31">
+<label>5.3</label>
+<title>SARS-CoV-2–Human PPI Task</title>
+<sec id="S32">
+<title>Dataset</title>
+<p id="P41">While there may be no known Virus–Human interactions for a novel virus, there are many experimentally validated interactions for previous viruses. Our proposed approach is to train an interaction model on known V–H interactions (as indicated by solid lines in <xref ref-type="fig" rid="F1">Fig 1</xref>), and then test on all possible V–H interactions for the novel virus proteins (as indicated by dotted lines in <xref ref-type="fig" rid="F1">Fig 1</xref>). We explain our full training and testing setup below. A summary of the datasets used is provided in <xref ref-type="table" rid="T1">Table 1</xref>.</p>
+<sec id="S33">
+<title>Training Data</title>
+<p id="P42">We use the V–H dataset from Yang et al. [<xref ref-type="bibr" rid="R66">66</xref>], which is based on data from the Host-Pathogen interaction Database (HPIDB; version 3.0) [<xref ref-type="bibr" rid="R2">2</xref>]. Note this does only contains Host-Pathogen interactions, and not contain Human-Human interactions. This dataset processed interactions from large-scale mass spectrometry experiments, resulting in 22,653 experimentally verified host-virus PPIs as a positive sample set. The authors chose negative pairs based on the ‘Dissimilarity-Based Negative Sampling’ [<xref ref-type="bibr" rid="R18">18</xref>]. The selected ratio of positive to negative samples is 1:10. Following Yang et al., we use the same training set (80%) and an independent validation set (20%) for model training and hyperparameter selection, respectively.</p>
+</sec>
+<sec id="S34">
+<title>Testing Data</title>
+<p id="P43">For the novel virus testing dataset, we use the 13,947 known SARS-CoV-2–Human interactions from the BioGRID database (Coronavirus version 4.1.190) [<xref ref-type="bibr" rid="R41">41</xref>]. All BioGRID interactions are experimentally validated, many from [<xref ref-type="bibr" rid="R21">21</xref>]. Considering all 20,365 SwissProt human proteins, we label all other pairs from the total space of 20,365*26 to be non-interacting (a total of 529,490). It is important to note that the labeled “negative” samples contain many pairs of proteins that interact but are not known to do so. This can result in an overestimation of the false positive rate [<xref ref-type="bibr" rid="R20">20</xref>].</p>
+</sec>
+</sec>
+<sec id="S35">
+<title>Baselines</title>
+<p id="P44">We compare our method to the pretrained Embedding+RF method from Yang et al. [<xref ref-type="bibr" rid="R68">68</xref>], which uses Doc2Vec to embed protein sequences and then a random forest to classify pairs. To the best of our knowledge, no other methods provide code or a browser service to run novel protein interactions.</p>
+</sec>
+<sec id="S36" sec-type="results">
+<title>Results</title>
+<p id="P45">
+<xref ref-type="table" rid="T3">Table 3</xref> shows our results for SARS-CoV-2. Across most metrics, our method DeepVHPPI outperforms the baseline method. MLM and SP pretraining help generalize to our target PPI task, where the non-pretrained models aren’t as accurate. We note that the testing dataset is highly imbalanced. In other words, most interactions (99.7%) are negative, or non-interacting. Thus, the AUROC metric is not indicative of good results. We turn our attention to the AUPR metrics, where our method performs the best. This confirms our hypothesis that pretraining on large protein datasets learn evolutionary structures of proteins which generalize well to unseen proteins. This is a promising result not only for SARS-CoV-2, but for potential future novel viruses.</p>
+</sec>
+</sec>
+<sec id="S37">
+<label>5.4</label>
+<title>Other Virus–Host PPI Tasks (H1N1 and Ebola)</title>
+<sec id="S38">
+<title>Datasets</title>
+<p id="P46">In our SARS-CoV-2 dataset, we explain a testing scenario where we have no knowledge of the true V–H interactions, resulting in a large possible interaction space (all possible |<italic>P<sub>v</sub>
+</italic>| × |<italic>P<sub>h</sub>
+</italic>| interactions). Zhou et al. [<xref ref-type="bibr" rid="R71">71</xref>] created V–H datasets where they hand selected the negative interactions based on the known positives, making sure that they had an even positive/negative split. While this setup is unrealistic for a true novel virus (because we don’t know which ones are positive), we compare to their results to show the strength of our method. Zhou et a. provide two H–V datasets, H1N1 and Ebola.</p>
+<p id="P47">In the H1N1 dataset, the training set contains 10,955 true PPIs between human and any virus except H1N1 virus, plus an equal amount (10,955) negative interaction samples. The testing set contains 381 true PPIs between human and H1N1 virus, and 381 negative interactions. Similarly, in the Ebola dataset, the training set contains 11,341 true PPIs between human and any virus except Ebola virus, plus an equal amount (11,341) negative interaction samples. The testing set contains 150 true PPIs between human and Ebola virus, and 150 negative interactions.</p>
+</sec>
+<sec id="S39">
+<title>Baseline</title>
+<p id="P48">We compare to the SVM baseline from Zhou et al. [<xref ref-type="bibr" rid="R71">71</xref>], which showed that their method was the state-of-the-art.</p>
+</sec>
+<sec id="S40" sec-type="results">
+<title>Results</title>
+<p id="P49">
+<xref ref-type="table" rid="T4">Table 4</xref>, shows the results from the Zhou et al. datasets. For both the H1N1 and Ebola datasets, we can see that our method outperforms the previous state-of-the-art. While we believe this dataset is not indicative of a real novel virus setting since the test set negatives are hand-selected, we can use it to compare different methods. Since there is an even positive/negative testing split, AUROC is a good metric to compare methods, and we can see that across both novel viruses, our method outperforms the SVM. We see notable performance increase using LMT and SP pretraining.</p>
+</sec>
+</sec>
+<sec id="S41">
+<label>5.5</label>
+<title>Additional PPI Experiments</title>
+<p id="P50">We also report the results for our model on two extra baseline datasets. The first is the Virus–Host datasets from Barman et al. [<xref ref-type="bibr" rid="R6">6</xref>]. Although the testing dataset is not for a completely unseen test virus, we see our method outperforms the baselines. In <xref ref-type="table" rid="T5">Table 5</xref>, we see that our method outperforms previous methods including an SVM and random forest.</p>
+<p id="P51">The second is the SLiMs dataset from Eid et al. [<xref ref-type="bibr" rid="R18">18</xref>]. This dataset was constructed specifically to evaluate how well the model learns Short Linear Motifs (SLiMs) that are transferable across train/test splits. In <xref ref-type="table" rid="T6">Table 6</xref>, we see that our model is significantly better than the baselines. We hypothesize that this improvement is in part due to the convolutional motif finder layers of DeepVHPPI.</p>
+</sec>
+<sec id="S42">
+<label>5.6</label>
+<title>Sensitivity Analysis using Known H-V Interactions</title>
+<p id="P52">There exist two important situations we need to predict V-H PPI for virus protein with new sequences. (I) The first case is when a new virus is discovered, the protein interactions are unknown. (II) The second case is when the virus is known, and some interactions have been validated, but many are missing. Our above experiments have mostly focused on the first case. Here we experiment and analyze when some of the virus proteins are known. This setup can be used to expand the initial set of experimental interactions, resulting in a more complete interactome.</p>
+<p id="P53">On the SARS-CoV-2–Human PPI task, we simulate a new setup to evaluate our framework across these two settings. We generate five simulated settings where we vary the percentage of total SARS-CoV-2–Human interactions to be used as training data. We then test on the remaining SARS-CoV-2–Human interactions. The training percentages we use are 0%,20%,40%,60%,80%. We also consider training on all known Human–Human (H–H) interactions from the BioGrid database. Note that we are not using any other virus proteins in these simulations. <xref ref-type="fig" rid="F4">Fig. 4</xref> shows the results across each of the five settings for four DeepVHPPI model variations and a deep learning baseline from Rao et al. [<xref ref-type="bibr" rid="R52">52</xref>], which uses MLM pretraining.</p>
+<p id="P54">First, across all training settings, we can see that DeepVHPPI models outperform the baseline [<xref ref-type="bibr" rid="R52">52</xref>]. Across all settings, adding the transfer learning pretraining tasks helps significantly. Most importantly, we can see that in the case I (0%) and case II (20%) settings, MLM and SP pretraining help generalize to the target task, where the non-pretrained models fail to be able to classify well. Additionally, adding H–H interactions helps generalize for predicting novel virus sequence interactions.</p>
+</sec>
+<sec id="S43">
+<label>5.7</label>
+<title>Mutation Validation Analysis on SARS-CoV-2 Spike</title>
+<p id="P55">Understanding how a classifier changes its predictions based on small perturbations in the sequence is an important tool for interpreting deep learning models [<xref ref-type="bibr" rid="R39">39</xref>]. A commonly used strategy is to replace elements of a sequence with mutations, and look at how the classifier degrades. This method is cheap to evaluate but comes at a significant drawback. Samples where a subset of the features are replaced come from a different distribution. Therefore, this approach clearly violates one of the key assumptions in machine learning: the training and evaluation data come from the same distribution. Without re-training, it is unclear whether the degradation in prediction performance comes from the distribution shift or because the features that were removed are truly informative. For this reason we decide to verify how much information can be removed before accuracy of a retrained model breaks down completely.</p>
+<p id="P56">We used the deep mutational scan data from Starr et al. [<xref ref-type="bibr" rid="R60">60</xref>] to analyze the effectiveness of DeepVHPPI the accurately model binding affinity of virus mutations. This dataset contains 105,526 mutated SARS-CoV-2 Spike receptor binding domain sequences, with the corresponding Human ACE2 dissociation constant. The Spearman correlation between DeepVHPPI binding prediction and the in-vitro dissociation constant was 0.110 (pvalue=5.3e-235). DeepVHPPI was trained without any knowledge of the Spike protein, only previous virus and host interactions from HPIDB.</p>
+<p id="P57">Furthermore, our method allows for an easy way to rapidly test new mutations. Rather than experimentally checking all possible mutations to see which ones reduce interaction binding, we can computationally introduce mutations and observe how the predicted output changes. We show an example of this for a receptor-binding domain subsequence of the SARS-CoV-2 Spike protein when binding to the human ACE2 protein in <xref ref-type="fig" rid="F5">Fig. 5</xref>. We can observe specific locations, such as the first “K” amino acid in the virus sequence where mutating the amino acid will reduce the interaction prediction. There are also other locations where mutations can <italic>increase</italic> interaction binding, which may explain how certain viruses are able to mutate and infect humans more easily.</p>
+</sec>
+</sec>
+<sec id="S44" sec-type="conclusions">
+<label>6</label>
+<title>Conclusion</title>
+<p id="P58">Computational methods predicting protein-protein interactions (PPIs) can play an important role in understanding a novel virus that threatens widespread public health. Most previous methods are developed for intra-species interactions, and do not generalize to novel viruses. In this paper, we introduce DeepVHPPI, a novel deep learning architecture that uses a transfer learning approach for PPI prediction between a novel virus and a host. We show that our method can help accurately predict Virus–Host interactions early on in the virus discovery and experimentation pipeline. This can help biologists better understand how the virus attacks the human body, allowing researchers to potentially develop effective drugs more quickly. By providing a computational model for interaction prediction, we hope this will accelerate experimental efforts to define a reliable network of Virus–Host protein interactions. While this work is focused on SARS-CoV-2, H1N1, and Ebola, our framework is applicable for any virus. In the case of a future novel virus, our framework will be able to rapidly predict protein-protein interaction predictions.</p>
+</sec>
+</body>
+<back>
+<ack id="S45">
+<title>Acknowledgements</title>
+<p>This work was partly supported by the National Science Foundation under NSF CAREER award No. 1453580 to Y.Q, as well as the Google Cloud COVID-19 Credits Program. Any opinions, findings and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect those of the National Science Foundation.</p>
+</ack>
+<sec id="S46" sec-type="data-availability">
+<title>Availability</title>
+<p id="P59">We make all of our data and code available on GitHub <ext-link ext-link-type="uri" xlink:href="https://github.com/QData/DeepVHPPI">https://github.com/QData/DeepVHPPI</ext-link>.</p>
+</sec>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P60">Mechanisms by which virus infection leads to disease in the target host</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>AlQuraishi</surname>
+<given-names>Mohammed</given-names>
+</name>
+</person-group>
+<article-title>End-to-end differentiable learning of protein structure</article-title>
+<source>Cell systems</source>
+<volume>8</volume>
+<issue>4</issue>
+<fpage>292</fpage>
+<lpage>301</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ammari</surname>
+<given-names>Mais G</given-names>
+</name>
+<name>
+<surname>Gresham</surname>
+<given-names>Cathy R</given-names>
+</name>
+<name>
+<surname>McCarthy</surname>
+<given-names>Fiona M</given-names>
+</name>
+<name>
+<surname>Nanduri</surname>
+<given-names>Bindu</given-names>
+</name>
+</person-group>
+<article-title>Hpidb 2.0: a curated database for host–pathogen interactions</article-title>
+<source>Database</source>
+<year>2016</year>
+<volume>2016</volume>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ando</surname>
+<given-names>Rie Kubota</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Tong</given-names>
+</name>
+</person-group>
+<article-title>A framework for learning predictive structures from multiple tasks and unlabeled data</article-title>
+<source>Journal of Machine Learning Research</source>
+<volume>6</volume>
+<month>Nov</month>
+<fpage>1817</fpage>
+<lpage>1853</lpage>
+<year>2005</year>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ba</surname>
+<given-names>Jimmy Lei</given-names>
+</name>
+<name>
+<surname>Kiros</surname>
+<given-names>Jamie Ryan</given-names>
+</name>
+<name>
+<surname>Hinton</surname>
+<given-names>Geoffrey E</given-names>
+</name>
+</person-group>
+<article-title>Layer normalization</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1607.06450</elocation-id>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Baevski</surname>
+<given-names>Alexei</given-names>
+</name>
+<name>
+<surname>Edunov</surname>
+<given-names>Sergey</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Yinhan</given-names>
+</name>
+<name>
+<surname>Zettlemoyer</surname>
+<given-names>Luke</given-names>
+</name>
+<name>
+<surname>Auli</surname>
+<given-names>Michael</given-names>
+</name>
+</person-group>
+<article-title>Cloze-driven pretraining of self-attention networks</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1903.07785</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Barman</surname>
+<given-names>Ranjan Kumar</given-names>
+</name>
+<name>
+<surname>Saha</surname>
+<given-names>Sudipto</given-names>
+</name>
+<name>
+<surname>Das</surname>
+<given-names>Santasabuj</given-names>
+</name>
+</person-group>
+<article-title>Prediction of interactions between viral and host proteins using supervised machine learning methods</article-title>
+<source>PloS one</source>
+<volume>9</volume>
+<issue>11</issue>
+<elocation-id>e112034</elocation-id>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ben-Hur</surname>
+<given-names>Asa</given-names>
+</name>
+<name>
+<surname>Noble</surname>
+<given-names>William Stafford</given-names>
+</name>
+</person-group>
+<article-title>Kernel methods for predicting protein–protein interactions</article-title>
+<source>Bioinformatics</source>
+<volume>21</volume>
+<issue>1</issue>
+<fpage>i38</fpage>
+<lpage>i46</lpage>
+<year>2005</year>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bengio</surname>
+<given-names>Yoshua</given-names>
+</name>
+<name>
+<surname>Ducharme</surname>
+<given-names>Réjean</given-names>
+</name>
+<name>
+<surname>Vincent</surname>
+<given-names>Pascal</given-names>
+</name>
+<name>
+<surname>Jauvin</surname>
+<given-names>Christian</given-names>
+</name>
+</person-group>
+<article-title>A neural probabilistic language model</article-title>
+<source>Journal of machine learning research</source>
+<volume>3</volume>
+<month>Feb</month>
+<fpage>1137</fpage>
+<lpage>1155</lpage>
+<year>2003</year>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bepler</surname>
+<given-names>Tristan</given-names>
+</name>
+<name>
+<surname>Berger</surname>
+<given-names>Bonnie</given-names>
+</name>
+</person-group>
+<article-title>Learning protein sequence embeddings using information from structure</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1902.08661</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Bitbol</surname>
+<given-names>AnneFlorence</given-names>
+</name>
+</person-group>
+<article-title>Inferring interaction partners from protein sequences using mutual information</article-title>
+<source>PLoS computational biology</source>
+<volume>14</volume>
+<issue>11</issue>
+<elocation-id>e1006401</elocation-id>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Brown</surname>
+<given-names>Tom B</given-names>
+</name>
+<name>
+<surname>Mann</surname>
+<given-names>Benjamin</given-names>
+</name>
+<name>
+<surname>Ryder</surname>
+<given-names>Nick</given-names>
+</name>
+<name>
+<surname>Subbiah</surname>
+<given-names>Melanie</given-names>
+</name>
+<name>
+<surname>Kaplan</surname>
+<given-names>Jared</given-names>
+</name>
+<name>
+<surname>Dhariwal</surname>
+<given-names>Prafulla</given-names>
+</name>
+<name>
+<surname>Neelakantan</surname>
+<given-names>Arvind</given-names>
+</name>
+<name>
+<surname>Shyam</surname>
+<given-names>Pranav</given-names>
+</name>
+<name>
+<surname>Sastry</surname>
+<given-names>Girish</given-names>
+</name>
+<name>
+<surname>Askell</surname>
+<given-names>Amanda</given-names>
+</name>
+<name>
+<surname>Agarwal</surname>
+<given-names>Sandhini</given-names>
+</name>
+<etal/>
+</person-group>
+<source>Language models are few-shot learners</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>[12]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Collobert</surname>
+<given-names>Ronan</given-names>
+</name>
+<name>
+<surname>Weston</surname>
+<given-names>Jason</given-names>
+</name>
+<name>
+<surname>Bottou</surname>
+<given-names>Léon</given-names>
+</name>
+<name>
+<surname>Karlen</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Kavukcuoglu</surname>
+<given-names>Koray</given-names>
+</name>
+<name>
+<surname>Kuksa</surname>
+<given-names>Pavel</given-names>
+</name>
+</person-group>
+<article-title>Natural language processing (almost) from scratch</article-title>
+<source>Journal of machine learning research</source>
+<volume>12</volume>
+<month>Aug</month>
+<fpage>2493</fpage>
+<lpage>2537</lpage>
+<year>2011</year>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>[13]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cong</surname>
+<given-names>Qian</given-names>
+</name>
+<name>
+<surname>Anishchenko</surname>
+<given-names>Ivan</given-names>
+</name>
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>Sergey</given-names>
+</name>
+<name>
+<surname>Baker</surname>
+<given-names>David</given-names>
+</name>
+</person-group>
+<article-title>Protein interaction networks revealed by proteome coevolution</article-title>
+<source>Science</source>
+<volume>365</volume>
+<issue>6449</issue>
+<fpage>185</fpage>
+<lpage>189</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>[14]</label>
+<element-citation publication-type="journal">
+<collab>UniProt Consortium</collab>
+<article-title>Uniprot: a worldwide hub of protein knowledge</article-title>
+<source>Nucleic acids research</source>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D506</fpage>
+<lpage>D515</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>[15]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Cui</surname>
+<given-names>Guangyu</given-names>
+</name>
+<name>
+<surname>Fang</surname>
+<given-names>Chao</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>Kyungsook</given-names>
+</name>
+</person-group>
+<chapter-title>Prediction of protein-protein interactions between viruses and human by an svm model</chapter-title>
+<source>BMC bioinformatics</source>
+<comment>volume</comment>
+<volume>13</volume>
+<fpage>S5</fpage>
+<comment>Springer</comment>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>[16]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Davey</surname>
+<given-names>Norman E</given-names>
+</name>
+<name>
+<surname>Travé</surname>
+<given-names>Gilles</given-names>
+</name>
+<name>
+<surname>Gibson</surname>
+<given-names>Toby J</given-names>
+</name>
+</person-group>
+<article-title>How viruses hijack cell regulation</article-title>
+<source>Trends in biochemical sciences</source>
+<volume>36</volume>
+<issue>3</issue>
+<fpage>159</fpage>
+<lpage>169</lpage>
+<year>2011</year>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>[17]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Devlin</surname>
+<given-names>Jacob</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>MingWei</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>Kenton</given-names>
+</name>
+<name>
+<surname>Toutanova</surname>
+<given-names>Kristina</given-names>
+</name>
+</person-group>
+<article-title>Bert: Pre-training of deep bidirectional transformers for language understanding</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1810.04805</elocation-id>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>[18]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Eid</surname>
+<given-names>FatmaElzahraa</given-names>
+</name>
+<name>
+<surname>ElHefnawi</surname>
+<given-names>Mahmoud</given-names>
+</name>
+<name>
+<surname>Heath</surname>
+<given-names>Lenwood S</given-names>
+</name>
+</person-group>
+<article-title>Denovo: virus-host sequence-based protein–protein interaction prediction</article-title>
+<source>Bioinformatics</source>
+<volume>32</volume>
+<issue>8</issue>
+<fpage>1144</fpage>
+<lpage>1150</lpage>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>[19]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Fields</surname>
+<given-names>Stanley</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Okkyu</given-names>
+</name>
+</person-group>
+<article-title>A novel genetic system to detect protein–protein interactions</article-title>
+<source>Nature</source>
+<volume>340</volume>
+<issue>6230</issue>
+<fpage>245</fpage>
+<lpage>246</lpage>
+<year>1989</year>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>[20]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gomez</surname>
+<given-names>Shawn M</given-names>
+</name>
+<name>
+<surname>Noble</surname>
+<given-names>William Stafford</given-names>
+</name>
+<name>
+<surname>Rzhetsky</surname>
+<given-names>Andrey</given-names>
+</name>
+</person-group>
+<article-title>Learning to predict protein–protein interactions from protein sequences</article-title>
+<source>Bioinformatics</source>
+<volume>19</volume>
+<issue>15</issue>
+<fpage>1875</fpage>
+<lpage>1881</lpage>
+<year>2003</year>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>[21]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Gordon</surname>
+<given-names>David E</given-names>
+</name>
+<name>
+<surname>Jang</surname>
+<given-names>Gwendolyn M</given-names>
+</name>
+<name>
+<surname>Bouhaddou</surname>
+<given-names>Mehdi</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Jiewei</given-names>
+</name>
+<name>
+<surname>Obernier</surname>
+<given-names>Kirsten</given-names>
+</name>
+<name>
+<surname>White</surname>
+<given-names>Kris M</given-names>
+</name>
+<name>
+<surname>O’Meara</surname>
+<given-names>Matthew J</given-names>
+</name>
+<name>
+<surname>Rezelj</surname>
+<given-names>Veronica V</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Jeffrey Z</given-names>
+</name>
+<name>
+<surname>Swaney</surname>
+<given-names>Danielle L</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A sars-cov-2 protein interaction map reveals targets for drug repurposing</article-title>
+<source>Nature</source>
+<fpage>1</fpage>
+<lpage>13</lpage>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>[22]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guo</surname>
+<given-names>Yanzhi</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>Lezheng</given-names>
+</name>
+<name>
+<surname>Wen</surname>
+<given-names>Zhining</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Menglong</given-names>
+</name>
+</person-group>
+<article-title>Using support vector machine combined with auto covariance to predict protein–protein interactions from protein sequences</article-title>
+<source>Nucleic acids research</source>
+<volume>36</volume>
+<issue>9</issue>
+<fpage>3025</fpage>
+<lpage>3030</lpage>
+<year>2008</year>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>[23]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hamp</surname>
+<given-names>Tobias</given-names>
+</name>
+<name>
+<surname>Rost</surname>
+<given-names>Burkhard</given-names>
+</name>
+</person-group>
+<article-title>Evolutionary profiles improve protein–protein interaction prediction from sequence</article-title>
+<source>Bioinformatics</source>
+<volume>31</volume>
+<issue>12</issue>
+<fpage>1945</fpage>
+<lpage>1950</lpage>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>[24]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hashemifar</surname>
+<given-names>Somaye</given-names>
+</name>
+<name>
+<surname>Neyshabur</surname>
+<given-names>Behnam</given-names>
+</name>
+<name>
+<surname>Khan</surname>
+<given-names>Aly A</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>Jinbo</given-names>
+</name>
+</person-group>
+<article-title>Predicting protein–protein interactions through sequence-based deep learning</article-title>
+<source>Bioinformatics</source>
+<volume>34</volume>
+<issue>17</issue>
+<fpage>i802</fpage>
+<lpage>i810</lpage>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>[25]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>He</surname>
+<given-names>Kaiming</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Xiangyu</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>Shaoqing</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>Jian</given-names>
+</name>
+</person-group>
+<source>Deep residual learning for image recognition</source>
+<conf-name>Proceedings of the IEEE conference on computer vision and pattern recognition</conf-name>
+<fpage>770</fpage>
+<lpage>778</lpage>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>[26]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hendrycks</surname>
+<given-names>Dan</given-names>
+</name>
+<name>
+<surname>Gimpel</surname>
+<given-names>Kevin</given-names>
+</name>
+</person-group>
+<article-title>Gaussian error linear units (gelus)</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1606.08415</elocation-id>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>[27]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ho</surname>
+<given-names>Yuen</given-names>
+</name>
+<name>
+<surname>Gruhler</surname>
+<given-names>Albrecht</given-names>
+</name>
+<name>
+<surname>Heilbut</surname>
+<given-names>Adrian</given-names>
+</name>
+<name>
+<surname>Bader</surname>
+<given-names>Gary D</given-names>
+</name>
+<name>
+<surname>Moore</surname>
+<given-names>Lynda</given-names>
+</name>
+<name>
+<surname>Adams</surname>
+<given-names>SallyLin</given-names>
+</name>
+<name>
+<surname>Millar</surname>
+<given-names>Anna</given-names>
+</name>
+<name>
+<surname>Taylor</surname>
+<given-names>Paul</given-names>
+</name>
+<name>
+<surname>Bennett</surname>
+<given-names>Keiryn</given-names>
+</name>
+<name>
+<surname>Boutilier</surname>
+<given-names>Kelly</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Systematic identification of protein complexes in saccharomyces cerevisiae by mass spectrometry</article-title>
+<source>Nature</source>
+<volume>415</volume>
+<issue>6868</issue>
+<fpage>180</fpage>
+<lpage>183</lpage>
+<year>2002</year>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>[28]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hochreiter</surname>
+<given-names>Sepp</given-names>
+</name>
+<name>
+<surname>Schmidhuber</surname>
+<given-names>Jürgen</given-names>
+</name>
+</person-group>
+<article-title>Long short-term memory</article-title>
+<source>Neural computation</source>
+<volume>9</volume>
+<issue>8</issue>
+<fpage>1735</fpage>
+<lpage>1780</lpage>
+<year>1997</year>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>[29]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hou</surname>
+<given-names>Jie</given-names>
+</name>
+<name>
+<surname>Adhikari</surname>
+<given-names>Badri</given-names>
+</name>
+<name>
+<surname>Cheng</surname>
+<given-names>Jianlin</given-names>
+</name>
+</person-group>
+<article-title>Deepsf: deep convolutional neural network for mapping protein sequences to folds</article-title>
+<source>Bioinformatics</source>
+<volume>34</volume>
+<issue>8</issue>
+<fpage>1295</fpage>
+<lpage>1303</lpage>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>[30]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Karunakaran</surname>
+<given-names>Kalyani B</given-names>
+</name>
+<name>
+<surname>Balakrishnan</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Ganapathiraju</surname>
+<given-names>Madhavi K</given-names>
+</name>
+</person-group>
+<source>Interactome of sars-cov-2/ncov19 modulated host proteins with computationally predicted ppis</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>[31]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kingma</surname>
+<given-names>Diederik P</given-names>
+</name>
+<name>
+<surname>Ba</surname>
+<given-names>Jimmy</given-names>
+</name>
+</person-group>
+<article-title>Adam: A method for stochastic optimization</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1412.6980</elocation-id>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>[32]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Klausen</surname>
+<given-names>Michael Schantz</given-names>
+</name>
+<name>
+<surname>Jespersen</surname>
+<given-names>Martin Closter</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>Henrik</given-names>
+</name>
+<name>
+<surname>Jensen</surname>
+<given-names>Kamilla Kjaergaard</given-names>
+</name>
+<name>
+<surname>Jurtz</surname>
+<given-names>Vanessa Isabell</given-names>
+</name>
+<name>
+<surname>Soenderby</surname>
+<given-names>Casper Kaae</given-names>
+</name>
+<name>
+<surname>Sommer</surname>
+<given-names>Morten Otto Alexander</given-names>
+</name>
+<name>
+<surname>Winther</surname>
+<given-names>Ole</given-names>
+</name>
+<name>
+<surname>Nielsen</surname>
+<given-names>Morten</given-names>
+</name>
+<name>
+<surname>Petersen</surname>
+<given-names>Bent</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Netsurfp-2.0: Improved prediction of protein structural features by integrated deep learning</article-title>
+<source>Proteins: Structure, Function, and Bioinformatics</source>
+<volume>87</volume>
+<issue>6</issue>
+<fpage>520</fpage>
+<lpage>527</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>[33]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Li</surname>
+<given-names>Zhenguo</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Fengwei</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Fei</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Hang</given-names>
+</name>
+</person-group>
+<article-title>Meta-sgd: Learning to learn quickly for few-shot learning</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1707.09835</elocation-id>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R34">
+<label>[34]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>Dekang</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Xiaoyun</given-names>
+</name>
+</person-group>
+<source>Phrase clustering for discriminative learning</source>
+<conf-name>Proceedings of the Joint Conference of the 47th Annual Meeting of the ACL and the 4th International Joint Conference on Natural Language Processing of the AFNLP: Volume 2-Volume 2</conf-name>
+<conf-sponsor>Association for Computational Linguistics</conf-sponsor>
+<fpage>1030</fpage>
+<lpage>1038</lpage>
+<year>2009</year>
+</element-citation>
+</ref>
+<ref id="R35">
+<label>[35]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Lin</surname>
+<given-names>Zeming</given-names>
+</name>
+<name>
+<surname>Lanchantin</surname>
+<given-names>Jack</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+</person-group>
+<source>Must-cnn: a multilayer shift- and-stitch deep convolutional architecture for sequence-based protein structure prediction</source>
+<conf-name>Thirtieth AAAI conference on artificial intelligence</conf-name>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R36">
+<label>[36]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Martin</surname>
+<given-names>Shawn</given-names>
+</name>
+<name>
+<surname>Roe</surname>
+<given-names>Diana</given-names>
+</name>
+<name>
+<surname>Faulon</surname>
+<given-names>JeanLoup</given-names>
+</name>
+</person-group>
+<article-title>Predicting protein–protein interactions using signature products</article-title>
+<source>Bioinformatics</source>
+<volume>21</volume>
+<issue>2</issue>
+<fpage>218</fpage>
+<lpage>226</lpage>
+<year>2005</year>
+</element-citation>
+</ref>
+<ref id="R37">
+<label>[37]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mikolov</surname>
+<given-names>Tomas</given-names>
+</name>
+<name>
+<surname>Sutskever</surname>
+<given-names>Ilya</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Kai</given-names>
+</name>
+<name>
+<surname>Corrado</surname>
+<given-names>Greg S</given-names>
+</name>
+<name>
+<surname>Dean</surname>
+<given-names>Jeff</given-names>
+</name>
+</person-group>
+<article-title>Distributed representations of words and phrases and their compositionality</article-title>
+<source>Advances in neural information processing systems</source>
+<fpage>3111</fpage>
+<lpage>3119</lpage>
+<year>2013</year>
+</element-citation>
+</ref>
+<ref id="R38">
+<label>[38]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Min</surname>
+<given-names>Seonwoo</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>Seunghyun</given-names>
+</name>
+<name>
+<surname>Kim</surname>
+<given-names>Siwon</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>HyunSoo</given-names>
+</name>
+<name>
+<surname>Yoon</surname>
+<given-names>Sungroh</given-names>
+</name>
+</person-group>
+<source>Pre-training of deep bidirectional protein sequence representations with structural information</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R39">
+<label>[39]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Morris</surname>
+<given-names>John X</given-names>
+</name>
+<name>
+<surname>Lifland</surname>
+<given-names>Eli</given-names>
+</name>
+<name>
+<surname>Lanchantin</surname>
+<given-names>Jack</given-names>
+</name>
+<name>
+<surname>Ji</surname>
+<given-names>Yangfeng</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+</person-group>
+<article-title>Reevaluating adversarial examples in natural language</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:2004.14174</elocation-id>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R40">
+<label>[40]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Nourani</surname>
+<given-names>Esmaeil</given-names>
+</name>
+<name>
+<surname>Khunjush</surname>
+<given-names>Farshad</given-names>
+</name>
+<name>
+<surname>Durmuş</surname>
+<given-names>Saliha</given-names>
+</name>
+</person-group>
+<article-title>Computational approaches for prediction of pathogen-host protein-protein interactions</article-title>
+<source>Frontiers in microbiology</source>
+<volume>6</volume>
+<fpage>94</fpage>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R41">
+<label>[41]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Oughtred</surname>
+<given-names>Rose</given-names>
+</name>
+<name>
+<surname>Stark</surname>
+<given-names>Chris</given-names>
+</name>
+<name>
+<surname>Breitkreutz</surname>
+<given-names>BobbyJoe</given-names>
+</name>
+<name>
+<surname>Rust</surname>
+<given-names>Jennifer</given-names>
+</name>
+<name>
+<surname>Boucher</surname>
+<given-names>Lorrie</given-names>
+</name>
+<name>
+<surname>Chang</surname>
+<given-names>Christie</given-names>
+</name>
+<name>
+<surname>Kolas</surname>
+<given-names>Nadine</given-names>
+</name>
+<name>
+<surname>O’Donnell</surname>
+<given-names>Lara</given-names>
+</name>
+<name>
+<surname>Leung</surname>
+<given-names>Genie</given-names>
+</name>
+<name>
+<surname>McAdam</surname>
+<given-names>Rochelle</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The biogrid interaction database: 2019 update</article-title>
+<source>Nucleic acids research</source>
+<volume>47</volume>
+<issue>D1</issue>
+<fpage>D529</fpage>
+<lpage>D541</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R42">
+<label>[42]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Park</surname>
+<given-names>Yungki</given-names>
+</name>
+<name>
+<surname>Marcotte</surname>
+<given-names>Edward M</given-names>
+</name>
+</person-group>
+<article-title>Flaws in evaluation schemes for pair-input computational predictions</article-title>
+<source>Nature methods</source>
+<volume>9</volume>
+<issue>12</issue>
+<fpage>1134</fpage>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R43">
+<label>[43]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pazos</surname>
+<given-names>Florencio</given-names>
+</name>
+<name>
+<surname>Valencia</surname>
+<given-names>Alfonso</given-names>
+</name>
+</person-group>
+<article-title>Similarity of phylogenetic trees as indicator of protein–protein interaction</article-title>
+<source>Protein engineering</source>
+<volume>14</volume>
+<issue>9</issue>
+<fpage>609</fpage>
+<lpage>614</lpage>
+<year>2001</year>
+</element-citation>
+</ref>
+<ref id="R44">
+<label>[44]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Pennington</surname>
+<given-names>Jeffrey</given-names>
+</name>
+<name>
+<surname>Socher</surname>
+<given-names>Richard</given-names>
+</name>
+<name>
+<surname>Manning</surname>
+<given-names>Christopher D</given-names>
+</name>
+</person-group>
+<source>Glove: Global vectors for word representation</source>
+<conf-name>Proceedings of the 2014 conference on empirical methods in natural language processing (EMNLP)</conf-name>
+<fpage>1532</fpage>
+<lpage>1543</lpage>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R45">
+<label>[45]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peters</surname>
+<given-names>Matthew E</given-names>
+</name>
+<name>
+<surname>Ammar</surname>
+<given-names>Waleed</given-names>
+</name>
+<name>
+<surname>Bhagavatula</surname>
+<given-names>Chandra</given-names>
+</name>
+<name>
+<surname>Power</surname>
+<given-names>Russell</given-names>
+</name>
+</person-group>
+<article-title>Semi-supervised sequence tagging with bidirectional language models</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1705.00108</elocation-id>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R46">
+<label>[46]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Phizicky</surname>
+<given-names>EM</given-names>
+</name>
+<name>
+<surname>Fields</surname>
+<given-names>S</given-names>
+</name>
+</person-group>
+<article-title>Protein-protein interactions: methods for detection and analysis</article-title>
+<source>Microbiol Rev</source>
+<volume>59</volume>
+<issue>1</issue>
+<fpage>94</fpage>
+<lpage>123</lpage>
+<year>1995</year>
+</element-citation>
+</ref>
+<ref id="R47">
+<label>[47]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Pitre</surname>
+<given-names>Sylvain</given-names>
+</name>
+<name>
+<surname>Hooshyar</surname>
+<given-names>Mohsen</given-names>
+</name>
+<name>
+<surname>Schoenrock</surname>
+<given-names>Andrew</given-names>
+</name>
+<name>
+<surname>Samanfar</surname>
+<given-names>Bahram</given-names>
+</name>
+<name>
+<surname>Jessulat</surname>
+<given-names>Matthew</given-names>
+</name>
+<name>
+<surname>Green</surname>
+<given-names>James R</given-names>
+</name>
+<name>
+<surname>Dehne</surname>
+<given-names>Frank</given-names>
+</name>
+<name>
+<surname>Golshani</surname>
+<given-names>Ashkan</given-names>
+</name>
+</person-group>
+<article-title>Short co-occurring polypeptide regions can predict global protein interaction maps</article-title>
+<source>Scientific reports</source>
+<volume>2</volume>
+<fpage>239</fpage>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R48">
+<label>[48]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+<name>
+<surname>Oja</surname>
+<given-names>Merja</given-names>
+</name>
+<name>
+<surname>Weston</surname>
+<given-names>Jason</given-names>
+</name>
+<name>
+<surname>Noble</surname>
+<given-names>William Stafford</given-names>
+</name>
+</person-group>
+<article-title>A unified multitask architecture for predicting local protein properties</article-title>
+<source>PloS one</source>
+<volume>7</volume>
+<issue>3</issue>
+<elocation-id>e32235</elocation-id>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R49">
+<label>[49]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+<name>
+<surname>Tastan</surname>
+<given-names>Oznur</given-names>
+</name>
+<name>
+<surname>Carbonell</surname>
+<given-names>Jaime G</given-names>
+</name>
+<name>
+<surname>Klein-Seetharaman</surname>
+<given-names>Judith</given-names>
+</name>
+<name>
+<surname>Weston</surname>
+<given-names>Jason</given-names>
+</name>
+</person-group>
+<article-title>Semi-supervised multi-task learning for predicting interactions between hiv-1 and human proteins</article-title>
+<source>Bioinformatics</source>
+<volume>26</volume>
+<issue>18</issue>
+<fpage>i645</fpage>
+<lpage>i652</lpage>
+<year>2010</year>
+</element-citation>
+</ref>
+<ref id="R50">
+<label>[50]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Radford</surname>
+<given-names>Alec</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Jeffrey</given-names>
+</name>
+<name>
+<surname>Child</surname>
+<given-names>Rewon</given-names>
+</name>
+<name>
+<surname>Luan</surname>
+<given-names>David</given-names>
+</name>
+<name>
+<surname>Amodei</surname>
+<given-names>Dario</given-names>
+</name>
+<name>
+<surname>Sutskever</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>Language models are unsupervised multitask learners</source>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R51">
+<label>[51]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ramachandran</surname>
+<given-names>Prajit</given-names>
+</name>
+<name>
+<surname>Parmar</surname>
+<given-names>Niki</given-names>
+</name>
+<name>
+<surname>Vaswani</surname>
+<given-names>Ashish</given-names>
+</name>
+<name>
+<surname>Bello</surname>
+<given-names>Irwan</given-names>
+</name>
+<name>
+<surname>Levskaya</surname>
+<given-names>Anselm</given-names>
+</name>
+<name>
+<surname>Shlens</surname>
+<given-names>Jonathon</given-names>
+</name>
+</person-group>
+<article-title>Stand-alone self-attention in vision models</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1906.05909</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R52">
+<label>[52]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rao</surname>
+<given-names>Roshan</given-names>
+</name>
+<name>
+<surname>Bhattacharya</surname>
+<given-names>Nicholas</given-names>
+</name>
+<name>
+<surname>Thomas</surname>
+<given-names>Neil</given-names>
+</name>
+<name>
+<surname>Duan</surname>
+<given-names>Yan</given-names>
+</name>
+<name>
+<surname>Chen</surname>
+<given-names>Xi</given-names>
+</name>
+<name>
+<surname>Canny</surname>
+<given-names>John</given-names>
+</name>
+<name>
+<surname>Abbeel</surname>
+<given-names>Pieter</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>Yun S</given-names>
+</name>
+</person-group>
+<article-title>Evaluating protein transfer learning with tape</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1906.08230</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R53">
+<label>[53]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Ravi</surname>
+<given-names>Sachin</given-names>
+</name>
+<name>
+<surname>Larochelle</surname>
+<given-names>Hugo</given-names>
+</name>
+</person-group>
+<source>Optimization as a model for few-shot learning</source>
+<year>2016</year>
+</element-citation>
+</ref>
+<ref id="R54">
+<label>[54]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Redhead</surname>
+<given-names>Emma</given-names>
+</name>
+<name>
+<surname>Bailey</surname>
+<given-names>Timothy L</given-names>
+</name>
+</person-group>
+<article-title>Discriminative motif discovery in dna and protein sequences using the deme algorithm</article-title>
+<source>BMC bioinformatics</source>
+<volume>8</volume>
+<issue>1</issue>
+<fpage>385</fpage>
+<year>2007</year>
+</element-citation>
+</ref>
+<ref id="R55">
+<label>[55]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Remmert</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Biegert</surname>
+<given-names>Andreas</given-names>
+</name>
+<name>
+<surname>Hauser</surname>
+<given-names>Andreas</given-names>
+</name>
+<name>
+<surname>Söding</surname>
+<given-names>Johannes</given-names>
+</name>
+</person-group>
+<article-title>Hhblits: lightning-fast iterative protein sequence searching by hmm-hmm alignment</article-title>
+<source>Nature methods</source>
+<volume>9</volume>
+<issue>2</issue>
+<fpage>173</fpage>
+<year>2012</year>
+</element-citation>
+</ref>
+<ref id="R56">
+<label>[56]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Richoux</surname>
+<given-names>Florian</given-names>
+</name>
+<name>
+<surname>Servantie</surname>
+<given-names>Charlène</given-names>
+</name>
+<name>
+<surname>Borès</surname>
+<given-names>Cynthia</given-names>
+</name>
+<name>
+<surname>Téletchéa</surname>
+<given-names>Stéphane</given-names>
+</name>
+</person-group>
+<article-title>Comparing two deep learning sequence-based models for protein-protein interaction prediction</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1901.06268</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R57">
+<label>[57]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Rives</surname>
+<given-names>Alexander</given-names>
+</name>
+<name>
+<surname>Goyal</surname>
+<given-names>Siddharth</given-names>
+</name>
+<name>
+<surname>Meier</surname>
+<given-names>Joshua</given-names>
+</name>
+<name>
+<surname>Guo</surname>
+<given-names>Demi</given-names>
+</name>
+<name>
+<surname>Ott</surname>
+<given-names>Myle</given-names>
+</name>
+<name>
+<surname>Zitnick</surname>
+<given-names>C Lawrence</given-names>
+</name>
+<name>
+<surname>Ma</surname>
+<given-names>Jerry</given-names>
+</name>
+<name>
+<surname>Fergus</surname>
+<given-names>Rob</given-names>
+</name>
+</person-group>
+<article-title>Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences</article-title>
+<source>bioRxiv</source>
+<elocation-id>622803</elocation-id>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R58">
+<label>[58]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Schäffer</surname>
+<given-names>Alejandro A</given-names>
+</name>
+<name>
+<surname>Aravind</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Madden</surname>
+<given-names>Thomas L</given-names>
+</name>
+<name>
+<surname>Shavirin</surname>
+<given-names>Sergei</given-names>
+</name>
+<name>
+<surname>Spouge</surname>
+<given-names>John L</given-names>
+</name>
+<name>
+<surname>Wolf</surname>
+<given-names>Yuri I</given-names>
+</name>
+<name>
+<surname>Koonin</surname>
+<given-names>Eugene V</given-names>
+</name>
+<name>
+<surname>Altschul</surname>
+<given-names>Stephen F</given-names>
+</name>
+</person-group>
+<article-title>Improving the accuracy of psi-blast protein database searches with composition-based statistics and other refinements</article-title>
+<source>Nucleic acids research</source>
+<volume>29</volume>
+<issue>14</issue>
+<fpage>2994</fpage>
+<lpage>3005</lpage>
+<year>2001</year>
+</element-citation>
+</ref>
+<ref id="R59">
+<label>[59]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sennrich</surname>
+<given-names>Rico</given-names>
+</name>
+<name>
+<surname>Haddow</surname>
+<given-names>Barry</given-names>
+</name>
+<name>
+<surname>Birch</surname>
+<given-names>Alexandra</given-names>
+</name>
+</person-group>
+<article-title>Neural machine translation of rare words with subword units</article-title>
+<source>arXiv preprint</source>
+<elocation-id>arXiv:1508.07909</elocation-id>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R60">
+<label>[60]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Starr</surname>
+<given-names>Tyler N</given-names>
+</name>
+<name>
+<surname>Greaney</surname>
+<given-names>Allison J</given-names>
+</name>
+<name>
+<surname>Hilton</surname>
+<given-names>Sarah K</given-names>
+</name>
+<name>
+<surname>Ellis</surname>
+<given-names>Daniel</given-names>
+</name>
+<name>
+<surname>Crawford</surname>
+<given-names>Katharine HD</given-names>
+</name>
+<name>
+<surname>Dingens</surname>
+<given-names>Adam S</given-names>
+</name>
+<name>
+<surname>Navarro</surname>
+<given-names>Mary Jane</given-names>
+</name>
+<name>
+<surname>Bowen</surname>
+<given-names>John E</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>M Alejandra</given-names>
+</name>
+<name>
+<surname>Walls</surname>
+<given-names>Alexandra C</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Deep mutational scanning of sars-cov-2 receptor binding domain reveals constraints on folding and ace2 binding</article-title>
+<source>Cell</source>
+<volume>182</volume>
+<issue>5</issue>
+<fpage>1295</fpage>
+<lpage>1310</lpage>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R61">
+<label>[61]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>Tanlin</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>Bo</given-names>
+</name>
+<name>
+<surname>Lai</surname>
+<given-names>Luhua</given-names>
+</name>
+<name>
+<surname>Pei</surname>
+<given-names>Jianfeng</given-names>
+</name>
+</person-group>
+<article-title>Sequence-based prediction of protein protein interaction using a deep-learning algorithm</article-title>
+<source>BMC bioinformatics</source>
+<volume>18</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>8</lpage>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R62">
+<label>[62]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Tastan</surname>
+<given-names>Oznur</given-names>
+</name>
+<name>
+<surname>Qi</surname>
+<given-names>Yanjun</given-names>
+</name>
+<name>
+<surname>Carbonell</surname>
+<given-names>Jaime G</given-names>
+</name>
+<name>
+<surname>Klein-Seetharaman</surname>
+<given-names>Judith</given-names>
+</name>
+</person-group>
+<source>Prediction of interactions between hiv-1 and human proteins by information integration</source>
+<year>2009</year>
+</element-citation>
+</ref>
+<ref id="R63">
+<label>[63]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaswani</surname>
+<given-names>Ashish</given-names>
+</name>
+<name>
+<surname>Shazeer</surname>
+<given-names>Noam</given-names>
+</name>
+<name>
+<surname>Parmar</surname>
+<given-names>Niki</given-names>
+</name>
+<name>
+<surname>Uszkoreit</surname>
+<given-names>Jakob</given-names>
+</name>
+<name>
+<surname>Jones</surname>
+<given-names>Llion</given-names>
+</name>
+<name>
+<surname>Gomez</surname>
+<given-names>Aidan N</given-names>
+</name>
+<name>
+<surname>Kaiser</surname>
+<given-names>Łukasz</given-names>
+</name>
+<name>
+<surname>Polosukhin</surname>
+<given-names>Illia</given-names>
+</name>
+</person-group>
+<article-title>Attention is all you need</article-title>
+<source>Advances in neural information processing systems</source>
+<fpage>5998</fpage>
+<lpage>6008</lpage>
+<year>2017</year>
+</element-citation>
+</ref>
+<ref id="R64">
+<label>[64]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>von Mering</surname>
+<given-names>Christian</given-names>
+</name>
+<name>
+<surname>Krause</surname>
+<given-names>Roland</given-names>
+</name>
+<name>
+<surname>Snel</surname>
+<given-names>Berend</given-names>
+</name>
+<name>
+<surname>Cornell</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Oliver</surname>
+<given-names>Stephen G</given-names>
+</name>
+<name>
+<surname>Fields</surname>
+<given-names>Stanley</given-names>
+</name>
+<name>
+<surname>Bork</surname>
+<given-names>Peer</given-names>
+</name>
+</person-group>
+<article-title>Comparative assessment of large-scale data sets of protein-protein interactions</article-title>
+<source>Nature</source>
+<volume>417</volume>
+<issue>6887</issue>
+<fpage>399</fpage>
+<lpage>403</lpage>
+<year>2002</year>
+</element-citation>
+</ref>
+<ref id="R65">
+<label>[65]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Lei</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>HaiFeng</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>SanRong</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>Xin</given-names>
+</name>
+<name>
+<surname>Song</surname>
+<given-names>KeJian</given-names>
+</name>
+</person-group>
+<article-title>Predicting protein-protein interactions from matrix-based protein sequence using convolution neural network and feature-selective rotation forest</article-title>
+<source>Scientific reports</source>
+<volume>9</volume>
+<issue>1</issue>
+<fpage>1</fpage>
+<lpage>12</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R66">
+<label>[66]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>Kevin K</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Zachary</given-names>
+</name>
+<name>
+<surname>Arnold</surname>
+<given-names>Frances H</given-names>
+</name>
+</person-group>
+<article-title>Machine-learning-guided directed evolution for protein engineering</article-title>
+<source>Nature methods</source>
+<volume>16</volume>
+<issue>8</issue>
+<fpage>687</fpage>
+<lpage>694</lpage>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R67">
+<label>[67]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>Lei</given-names>
+</name>
+<name>
+<surname>Xia</surname>
+<given-names>JunFeng</given-names>
+</name>
+<name>
+<surname>Gui</surname>
+<given-names>Jie</given-names>
+</name>
+</person-group>
+<article-title>Prediction of protein-protein interactions from protein sequence using local descriptors</article-title>
+<source>Protein and Peptide Letters</source>
+<volume>17</volume>
+<issue>9</issue>
+<fpage>1085</fpage>
+<lpage>1090</lpage>
+<year>2010</year>
+</element-citation>
+</ref>
+<ref id="R68">
+<label>[68]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Yang</surname>
+<given-names>Xiaodi</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Shiping</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Qinmengge</given-names>
+</name>
+<name>
+<surname>Wuchty</surname>
+<given-names>Stefan</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Ziding</given-names>
+</name>
+</person-group>
+<article-title>Prediction of human-virus protein-protein interactions through a sequence embedding-based machine learning method</article-title>
+<source>Computational and structural biotechnology journal</source>
+<volume>18</volume>
+<fpage>153</fpage>
+<lpage>161</lpage>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R69">
+<label>[69]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>You</surname>
+<given-names>ZhuHong</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>Lin</given-names>
+</name>
+<name>
+<surname>Zheng</surname>
+<given-names>ChunHou</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>HongJie</given-names>
+</name>
+<name>
+<surname>Deng</surname>
+<given-names>SuPing</given-names>
+</name>
+<name>
+<surname>Ji</surname>
+<given-names>Zhen</given-names>
+</name>
+</person-group>
+<chapter-title>Prediction of protein-protein interactions from amino acid sequences using a novel multi-scale continuous and discontinuous feature set</chapter-title>
+<source>BMC bioinformatics</source>
+<volume>15</volume>
+<fpage>S9</fpage>
+<publisher-name>Springer</publisher-name>
+<year>2014</year>
+</element-citation>
+</ref>
+<ref id="R70">
+<label>[70]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhang</surname>
+<given-names>ShaoWu</given-names>
+</name>
+<name>
+<surname>Wei</surname>
+<given-names>ZeGang</given-names>
+</name>
+</person-group>
+<article-title>Some remarks on prediction of protein-protein interaction with machine learning</article-title>
+<source>Medicinal Chemistry</source>
+<volume>11</volume>
+<issue>3</issue>
+<fpage>254</fpage>
+<lpage>264</lpage>
+<year>2015</year>
+</element-citation>
+</ref>
+<ref id="R71">
+<label>[71]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Zhou</surname>
+<given-names>Xiang</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>Byungkyu</given-names>
+</name>
+<name>
+<surname>Choi</surname>
+<given-names>Daesik</given-names>
+</name>
+<name>
+<surname>Han</surname>
+<given-names>Kyungsook</given-names>
+</name>
+</person-group>
+<article-title>A generalized approach to predicting protein-protein interactions between virus and host</article-title>
+<source>BMC genomics</source>
+<volume>19</volume>
+<issue>6</issue>
+<fpage>568</fpage>
+<year>2018</year>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<p>Virus-Host Protein-Protein Interactions (PPI). Overview of our task, where there is a set of previously known protein-protein interactions. Our goal is to predict all possible Virus–Human interactions for a novel virus protein, such as SARS-CoV-2.</p>
+</caption>
+<graphic xlink:href="EMS108610-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>DeepVHPPI Architecture. A one-hot encoded sequence x gets input to the convolutional layers to find protein “motifs”. The convolution outputs are then concatenated along the depth dimension and input to a feedforward layer. Finally, several Transformer encoder layers [<xref ref-type="bibr" rid="R63">63</xref>] model the dependencies between the learned convolutional motifs, producing a final representation z. The representation can then be used for any arbitrary classifier layer to predict protein properties.</p>
+</caption>
+<graphic xlink:href="EMS108610-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>Transfer Learning Framework for DeepVHPPI. First, we pretrain the network on the Masked Language Model (MLM) task from a large repository of unlabeled protein sequences. Second, we further pretrain the network on a set of Structure Prediction (SP) tasks including secondary structure (SS), contact (CT), and remote homology (RH). Finally, we fine-tune the network on the protein-protein interaction (PPI) prediction task. The base DeepVHPPI shown as the large dark grey block is shared across all tasks, and each task uses its own classifier, shown as small light grey blocks.</p>
+</caption>
+<graphic xlink:href="EMS108610-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Sensitivity analysis on Human–SARS-CoV-2 V-H-PPI Predictions. The X-axis shows simulated training settings, where we assume there exist some (varying) portion of SARS-CoV-2 proteins in the training data. We can see that pretraining methods (LM and SPT) give substantial increases over cases without the pretraining methods. This indicates that transfer learning can help on novel virus protein interaction prediction.</p>
+</caption>
+<graphic xlink:href="EMS108610-f004"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption>
+<p>Mutation map on SARS-CoV-2 Spike when interacting with Human ACE2. Here we show how the predicted interaction score changes when inducing the mutation in the Y-axis for the original amino acid in the X-axis. This example is from the receptor-binding domain in the SARS-CoV-2 Spike protein, and the output shows the predicted difference in interaction score from the original reference amino acid. For example, changing the second reference “K” results in an interaction decrease.</p>
+</caption>
+<graphic xlink:href="EMS108610-f005"/>
+</fig>
+<table-wrap id="T1" orientation="portrait" position="float">
+<label>Table 1</label>
+<caption>
+<p>Datasets: For each category of training: Language Model (LM), Intermediate (SP) and PPI, we provide the dataset output type and training/validation/test set sizes. <italic>L</italic> represents the sequence length, and |<italic>V</italic>| represents the vocabulary size.</p>
+</caption>
+<table frame="box" rules="none">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left" style="border-right: solid thin">Dataset</th>
+<th valign="top" align="left" style="border-right: solid thin">Category</th>
+<th valign="top" align="left" style="border-right: solid thin">Output Shape</th>
+<th valign="top" align="left">|Total|</th>
+<th valign="top" align="left">|Train|</th>
+<th valign="top" align="left">|Valid|</th>
+<th valign="top" align="left">|Test|</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left" style="border-right: solid thin">Swiss-Prot</td>
+<td valign="top" align="left" style="border-right: solid thin">MLM</td>
+<td valign="top" align="left" style="border-right: solid thin">
+<italic>L</italic> × |<italic>V</italic>|</td>
+<td valign="top" align="left">562,280</td>
+<td valign="top" align="left">562,280</td>
+<td valign="top" align="left">N/A</td>
+<td valign="top" align="left">N/A</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">Secondary Structure</td>
+<td valign="top" align="left" style="border-right: solid thin">SP</td>
+<td valign="top" align="left" style="border-right: solid thin">
+<italic>L</italic> × 3</td>
+<td valign="top" align="left">11,361</td>
+<td valign="top" align="left">8,678</td>
+<td valign="top" align="left">2,170</td>
+<td valign="top" align="left">513</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">Contact</td>
+<td valign="top" align="left" style="border-right: solid thin">SP</td>
+<td valign="top" align="left" style="border-right: solid thin">
+<italic>L</italic> × <italic>L</italic>
+</td>
+<td valign="top" align="left">25,563</td>
+<td valign="top" align="left">25,299</td>
+<td valign="top" align="left">224</td>
+<td valign="top" align="left">40</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left" style="border-right: solid thin">Homology</td>
+<td valign="top" align="left" style="border-right: solid thin">SP</td>
+<td valign="top" align="left" style="border-right: solid thin">1195 × 1</td>
+<td valign="top" align="left">13,766</td>
+<td valign="top" align="left">12,312</td>
+<td valign="top" align="left">736</td>
+<td valign="top" align="left">718</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">SARS-CoV-2</td>
+<td valign="top" align="left" style="border-right: solid thin">PPI</td>
+<td valign="top" align="left" style="border-right: solid thin">1 × 1</td>
+<td valign="top" align="left">815,279</td>
+<td valign="top" align="left">199,346</td>
+<td valign="top" align="left">49,836</td>
+<td valign="top" align="left">610,950</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">H1N1 [<xref ref-type="bibr" rid="R71">71</xref>]</td>
+<td valign="top" align="left" style="border-right: solid thin">PPI</td>
+<td valign="top" align="left" style="border-right: solid thin">1 × 1</td>
+<td valign="top" align="left">22,291</td>
+<td valign="top" align="left">21,910</td>
+<td valign="top" align="left">N/A</td>
+<td valign="top" align="left">381</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">Ebola [<xref ref-type="bibr" rid="R71">71</xref>]</td>
+<td valign="top" align="left" style="border-right: solid thin">PPI</td>
+<td valign="top" align="left" style="border-right: solid thin">1 × 1</td>
+<td valign="top" align="left">22,982</td>
+<td valign="top" align="left">22,682</td>
+<td valign="top" align="left">N/A</td>
+<td valign="top" align="left">300</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" orientation="portrait" position="float">
+<label>Table 2</label>
+<caption>
+<p>Structure prediction (SP) pretraining task results. For SS and Homology, accuracy is reported. For Contact, precision at <italic>L</italic>/5 for for medium and long-range contacts is reported.</p>
+</caption>
+<table frame="box" rules="none">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left" style="border-right: solid thin">Method</th>
+<th valign="top" align="left">SS</th>
+<th valign="top" align="left">Contact</th>
+<th valign="top" align="left">Homology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">One-hot [<xref ref-type="bibr" rid="R52">52</xref>]</td>
+<td valign="top" align="left">0.69</td>
+<td valign="top" align="left">0.29</td>
+<td valign="top" align="left">0.09</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left" style="border-right: solid thin">Alignment [<xref ref-type="bibr" rid="R52">52</xref>]</td>
+<td valign="top" align="left">
+<bold>0.80</bold>
+</td>
+<td valign="top" align="left">0.64</td>
+<td valign="top" align="left">0.09</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">ResNet [<xref ref-type="bibr" rid="R52">52</xref>]</td>
+<td valign="top" align="left">0.70</td>
+<td valign="top" align="left">0.20</td>
+<td valign="top" align="left">0.10</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">LSTM [<xref ref-type="bibr" rid="R52">52</xref>]</td>
+<td valign="top" align="left">0.71</td>
+<td valign="top" align="left">0.19</td>
+<td valign="top" align="left">0.12</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left" style="border-right: solid thin">Transformer [<xref ref-type="bibr" rid="R52">52</xref>]</td>
+<td valign="top" align="left">0.70</td>
+<td valign="top" align="left">0.32</td>
+<td valign="top" align="left">0.09</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI</td>
+<td valign="top" align="left">0.70</td>
+<td valign="top" align="left">0.51</td>
+<td valign="top" align="left">0.12</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI + MLM</td>
+<td valign="top" align="left">0.71</td>
+<td valign="top" align="left">0.58</td>
+<td valign="top" align="left">0.22</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI (multi-task)</td>
+<td valign="top" align="left">0.64</td>
+<td valign="top" align="left">0.53</td>
+<td valign="top" align="left">0.13</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI + MLM (multi-task)</td>
+<td valign="top" align="left">0.71</td>
+<td valign="top" align="left">
+<bold>0.70</bold>
+</td>
+<td valign="top" align="left">
+<bold>0.38</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T3" orientation="portrait" position="float">
+<label>Table 3</label>
+<caption>
+<p>Human and SARS-CoV-2 Interaction Predictions. Each metric is reported as the mean across all virus proteins. Best results are reported in bold.</p>
+</caption>
+<table frame="box" rules="cols">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left">Method</th>
+<th valign="top" align="center">AUROC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">F1(%)</th>
+<th valign="top" align="center">P@100</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left">Embedding+RF [<xref ref-type="bibr" rid="R68">68</xref>]</td>
+<td valign="top" align="center">0.748</td>
+<td valign="top" align="center">0.071</td>
+<td valign="top" align="center">
+<bold>0.116</bold>
+</td>
+<td valign="top" align="center">0.126</td>
+</tr>
+<tr>
+<td valign="top" align="left">DeepVHPPI</td>
+<td valign="top" align="center">0.740</td>
+<td valign="top" align="center">0.065</td>
+<td valign="top" align="center">0.104</td>
+<td valign="top" align="center">0.129</td>
+</tr>
+<tr>
+<td valign="top" align="left">DeepVHPPI+MLM</td>
+<td valign="top" align="center">0.751</td>
+<td valign="top" align="center">0.070</td>
+<td valign="top" align="center">0.110</td>
+<td valign="top" align="center">0.147</td>
+</tr>
+<tr>
+<td valign="top" align="left">DeepVHPPI+MLM+SP</td>
+<td valign="top" align="center">
+<bold>0.753</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.076</bold>
+</td>
+<td valign="top" align="center">0.114</td>
+<td valign="top" align="center">
+<bold>0.151</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T4" orientation="portrait" position="float">
+<label>Table 4</label>
+<caption>
+<p>Virus–Human PPI Tasks from Zhou et al. [<xref ref-type="bibr" rid="R71">71</xref>]. Best results are in bold. “-” indicates the metric was not reported.</p>
+</caption>
+<table frame="box" rules="none">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left" style="border-right: solid thin"/>
+<th valign="top" align="center" colspan="3" style="border-right: solid thin">H1N1</th>
+<th valign="top" align="center" colspan="3">Ebola</th>
+</tr>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left" style="border-right: solid thin">Method</th>
+<th valign="top" align="center">AUROC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center" style="border-right: solid thin">F1(%)</th>
+<th valign="top" align="center">AUROC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">F1(%)</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left" style="border-right: solid thin">SVM [<xref ref-type="bibr" rid="R71">71</xref>]</td>
+<td valign="top" align="center">0.886</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center" style="border-right: solid thin">76.2</td>
+<td valign="top" align="center">0.867</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">76.0</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI</td>
+<td valign="top" align="center">0.903</td>
+<td valign="top" align="center">0.898</td>
+<td valign="top" align="center" style="border-right: solid thin">84.4</td>
+<td valign="top" align="center">0.912</td>
+<td valign="top" align="center">0.953</td>
+<td valign="top" align="center">86.0</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI+MLM</td>
+<td valign="top" align="center">0.908</td>
+<td valign="top" align="center">0.903</td>
+<td valign="top" align="center" style="border-right: solid thin">85.5</td>
+<td valign="top" align="center">0.953</td>
+<td valign="top" align="center">0.961</td>
+<td valign="top" align="center">
+<bold>90.4</bold>
+</td>
+</tr>
+<tr>
+<td valign="top" align="left" style="border-right: solid thin">DeepVHPPI+MLM+SP</td>
+<td valign="top" align="center">
+<bold>0.945</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.948</bold>
+</td>
+<td valign="top" align="center" style="border-right: solid thin">
+<bold>86.5</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.968</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.974</bold>
+</td>
+<td valign="top" align="center">89.6</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T5" orientation="portrait" position="float">
+<label>Table 5</label>
+<caption>
+<p>Virus–Human PPI Tasks from Barman et al. [<xref ref-type="bibr" rid="R6">6</xref>]. Best results are in bold. “-” indicates the metric was not reported.</p>
+</caption>
+<table frame="box" rules="cols">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left">Method</th>
+<th valign="top" align="center">AUROC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left">SVM [<xref ref-type="bibr" rid="R71">71</xref>]</td>
+<td valign="top" align="center">0.858</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">79.2</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left">Embedding + RF [<xref ref-type="bibr" rid="R68">68</xref>]</td>
+<td valign="top" align="center">0.871</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">79.8</td>
+</tr>
+<tr>
+<td valign="top" align="left">DeepVHPPI+UPT+SPT</td>
+<td valign="top" align="center">
+<bold>0.886</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.806</bold>
+</td>
+<td valign="top" align="center">
+<bold>80.6</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T6" orientation="portrait" position="float">
+<label>Table 6</label>
+<caption>
+<p>SLiM PPI Tasks from Eid et al. [<xref ref-type="bibr" rid="R18">18</xref>]. Best results are in bold. “-” indicates the metric was not reported.</p>
+</caption>
+<table frame="box" rules="cols">
+<thead>
+<tr style="border-bottom: solid thin">
+<th valign="top" align="left">Method</th>
+<th valign="top" align="center">AUROC</th>
+<th valign="top" align="center">AUPR</th>
+<th valign="top" align="center">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left">DeNovo [<xref ref-type="bibr" rid="R18">18</xref>]</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">81.9</td>
+</tr>
+<tr style="border-bottom: solid thin">
+<td valign="top" align="left">SVM [<xref ref-type="bibr" rid="R71">71</xref>]</td>
+<td valign="top" align="center">0.897</td>
+<td valign="top" align="center">-</td>
+<td valign="top" align="center">84.2</td>
+</tr>
+<tr>
+<td valign="top" align="left">DeepVHPPI+UPT+SPT</td>
+<td valign="top" align="center">
+<bold>0.989</bold>
+</td>
+<td valign="top" align="center">
+<bold>0.991</bold>
+</td>
+<td valign="top" align="center">
+<bold>95.9</bold>
+</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>

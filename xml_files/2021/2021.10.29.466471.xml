@@ -1,0 +1,746 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS139883</article-id>
+<article-id pub-id-type="doi">10.1101/2021.10.29.466471</article-id>
+<article-id pub-id-type="archive">PPR414524</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Interpretable Visualization of Scientific Hypotheses in Literature-based Discovery</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Tyagin</surname>
+<given-names>Ilya</given-names>
+</name>
+<aff id="A1">Center for Bioinformatics and Computational Biology, University of Delaware, Newark, DE</aff>
+<email>tyagin@udel.edu</email>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+<aff id="A2">Computer and Information Sciences, University of Delaware, Newark, DE</aff>
+<email>isafro@udel.edu</email>
+</contrib>
+</contrib-group>
+<pub-date pub-type="nihms-submitted">
+<day>22</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>02</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">In this paper we present an approach for interpretable visualization of scientific hypotheses that is based on the idea of semantic concept interconnectivity, network-based and topic modeling methods. Our visualization approach has numerous adjustable parameters which provides the domain experts with additional flexibility in their decision making process. We also make use of the Unified Medical Language System metadata by integrating it directly into the resulting topics, and adding the variability into hypotheses resolution. To demonstrate the proposed approach in action, we deployed end-to-end hypothesis generation pipeline AGATHA, which was evaluated by BioCreative VII experts with COVID-19-related queries.</p>
+</abstract>
+<kwd-group>
+<kwd>Hypothesis Generation</kwd>
+<kwd>Literature-Based Discovery</kwd>
+<kwd>Semantic Networks</kwd>
+<kwd>Visualization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<label>1</label>
+<title>Introduction</title>
+<p id="P2">Staying current in the fast growing amount of publicly available scientific literature is one of the main challenges the researchers are struggling with. Various machine learning models and artificial intelligence systems try to automatically connect previously disconnected concepts and formulate novel scientific hypotheses to accelerate the research pace by minimizing the time researchers spend on deriving information chains or more complicated patterns. However, interpretability of the results obtained by the literature based discovery and hypothesis generation systems has not yet reached its advanced stage representing in fact a very limited number of techniques.</p>
+<p id="P3">Interpretation and evaluation of the literature based discovery and hypothesis generation systems is extremely difficult because the correct results (i.e., novel scientific discoveries or insights) are unknown if the system is used for proactive research. Hypothesis generation should not be confused with the information retrieval because the primary goal of the former is discovering novelty while the latter are looking for existing information. In the same time, retroactive verification is also not easy due to the challenges of perfect separation of test and training data. Some systems are designed with the interpretability in mind in the first place (e.g., MOLIERE [<xref ref-type="bibr" rid="R1">1</xref>]), but the large-scale experiments show that they are outperformed by less interpretable modern deep learning-based counterparts [<xref ref-type="bibr" rid="R2">2</xref>] even if designed using similar principles. To fill the gap between interpretable and state-of-the-art performing hypothesis generation systems, we propose a method to visualize hypotheses generated by the knowledge graph based systems with the use case demonstrated on AGATHA, the graph mining and transformer based model.</p>
+<p id="P4">The proposed visualization is based on high interconnectivity of the biomedical concepts, i.e., typically, there is a very high chance that a pair of biomedical concepts is meaningfully connected in semantic knowledge networks. In these graphs, nodes and edges represent biomedical concepts (e.g., terms, genes, diseases, and papers) and semantic connections between them (e.g., co-occurrence in the paper, and experimental evidence of relation extracted from some database), respectively. To represent the nature of this data we use a network-based approach: all concepts are put in a large knowledge network in which the problem of finding a connection between any pair of them is formulated as finding a shortest path in a graph. Because such paths are usually short and not too informative, it is then <italic>enriched with a cloud of textual information</italic> located around it in this network, such that the connection between source and target terms is represented by a corpus of documents. Depending on the implementation and model, these documents might be represented by sentences or the entire abstracts. After the relevant documents are collected, <italic>the topic modeling</italic> is applied which results in a fuzzy clustering of the documents by topics. Each topic is, in turn, represented by documents and keywords. This fuzzy clustered representation of information is our explainability tool. The resulting topic model would represent a summary of documents related to both input terms, which can significantly improve the understanding the nature of their potential connection as it is expected to be not trivial and cannot be obtained with information retrieval systems.</p>
+</sec>
+<sec id="S2">
+<label>2</label>
+<title>Background and Related Work</title>
+<p id="P5">The main baseline and point of comparison for the proposed visualization approach is MOLIERE system released in 2017 [<xref ref-type="bibr" rid="R1">1</xref>]. It is a general purpose hypothesis generation system, which, at it was mentioned, was made with the interpretability in the first place. Its main concept of using shortest paths may look obsolete for high-throughput queries ran <italic>on scale</italic> and it is undoubtedly inferior to deep learning methods in terms of query execution speed, but this approach still holds when it comes to the visualization due to its natural explicitness and conceptual clarity.</p>
+<p id="P6">In the proposed approach shortest path concept is used <italic>for visualization purposes only</italic>. It helps us to obtain high quality ranking keeping the running times reasonable and perform time-consuming visualization step only when it is truly necessary. In addition, the main unit of information is changed from a full abstract to a single sentence, significantly increasing the knowledge base size and the overall problem complexity.</p>
+<p id="P7">Another important point of comparison is that MOLIERE resulting topics are static once generated, whereas in AGATHA Semantic Visualizer we perform generating topics <italic>on the fly</italic>. Topic modeling occurs during the browser session and only takes a couple of seconds to run. It is a significant improvement because the result may vary drastically with changing the underlying parameters.</p>
+</sec>
+<sec id="S3">
+<label>3</label>
+<title>Methods and Implementation</title>
+<p id="P8">The entire visualization pipeline consists of three major parts: 1) AGATHA semantic graph construction, 2) visualization preparation and 3) interactive session. We describe each of these parts in this section.</p>
+<sec id="S4">
+<label>3.1</label>
+<title>AGATHA Semantic Graph Construction</title>
+<p id="P9">We start with building a large heterogeneous graph, which is used as a data source for both inference and visualization purposes. For that we perform text pre-processing stage, which includes splitting all MEDLINE abstracts into sentences and extracting different semantic structures from these sentences. We note that according to our experiments processing the full text papers requires significantly more computational and time resources which does not necessarily improves the prediction quality [<xref ref-type="bibr" rid="R3">3</xref>]. The graph contains nodes that correspond to the following types of semantic objects: <list id="L1" list-type="bullet">
+<list-item>
+<p id="P10">Sentences (<italic>s</italic> type)</p>
+</list-item>
+<list-item>
+<p id="P11">Lemmas (<italic>l</italic> type)</p>
+</list-item>
+<list-item>
+<p id="P12">N-grams (<italic>n</italic> type)</p>
+</list-item>
+<list-item>
+<p id="P13">Entities (<italic>e</italic> type)</p>
+</list-item>
+<list-item>
+<p id="P14">Predicates (subject-verb-object triples) (<italic>p</italic> type)</p>
+</list-item>
+<list-item>
+<p id="P15">MeSH and UMLS terms (<italic>m</italic> type)</p>
+</list-item>
+</list>
+</p>
+<p id="P16">The edges between nodes are added based on the following rules: <list id="L2" list-type="bullet">
+<list-item>
+<p id="P17">Semantic structure (e.g. UMLS term or n-gram) is present in the sentence.</p>
+</list-item>
+<list-item>
+<p id="P18">Sentences have similar embedding vector representations.</p>
+</list-item>
+<list-item>
+<p id="P19">Sentences are from the same abstract and follow each other.</p>
+</list-item>
+<list-item>
+<p id="P20">Predicates are connected to both subject and object terms they contain.</p>
+</list-item>
+</list>
+</p>
+<p id="P21">As a result, we have a network containing hundreds of millions of nodes and billions of edges. The diagram of the network illustrated with a sample sentence and its extracted semantic objects is shown on <xref ref-type="fig" rid="F1">Figure 1</xref>. For more information we refer to the full description of AGATHA model [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R4">4</xref>].</p>
+<p id="P22">To obtain a low-dimensional representation of this network, we perform <italic>graph embedding</italic> stage with PyTorch BigGraph Graph Embedding System [<xref ref-type="bibr" rid="R5">5</xref>], which puts every node in a unified vector space of dimensionality <italic>d</italic> = 512, such that similar nodes are clustered together.</p>
+<p id="P23">After the graph is constructed and embedded, we train AGATHA deep learning model, which main purpose is to predict plausible term-term connections and for each input query generate a pairwise confidence score in the unit interval. The input format for the system is a pair of terms (source and target), which both should be represented as UMLS CUIs (Concept Unique Identifiers).</p>
+</sec>
+<sec id="S5">
+<label>3.2</label>
+<title>Visualization Preprocessing</title>
+<p id="P24">In order to generate a visualization relevant to the input query, the first step is to obtain the subset of nodes in the AGATHA semantic graph, which would be <italic>relevant to both source and target terms</italic>. For that we first locate source and target terms in the semantic graph and find a shortest path between them. From our experience, these paths are typically of length of 3-5. We should admit that this shortest path is not representative, it does not contain enough information about the query connection and is not very useful by itself. However, the information around or within a certain proximity of the path nodes can be used to represent the subset of data relevant to both source and target terms.</p>
+<p id="P25">Specifically, nodes of type <italic>s</italic> (sentence) are collected in the first place because they are considered as a corpus of documents for topic modeling and they are further processed during the interactive session. Another piece of information collected from the graph is sentence neighbors or semantic structures contained in the extracted sentences. These structures are used to form a vocabulary during the visualization part. We also keep track of the embeddings of these terms and add them to the visualization input.</p>
+</sec>
+<sec id="S6">
+<label>3.3</label>
+<title>Interactive Session</title>
+<p id="P26">When all the necessary data is collected (that is, source and target terms, AGATHA confidence score, input corpus and its adjacent nodes with their vector representations), interactive session can be started. Its main idea is to <italic>summarize the provided corpus and represent it in a network format</italic>. For that two main components are used: Latent Dirichlet Allocation (LDA) and k-Nearest Neighbors (KNN).</p>
+<p id="P27">The <bold>LDA</bold> [<xref ref-type="bibr" rid="R6">6</xref>] model is a statistical approach to find a set of implicit (unobserved) fuzzy clusters in the input dataset. In case of natural language processing, LDA is a way to represent the input corpus as a user-parametrized number of topics that cluster the documents in an explainable way. Each document is represented as a mixture of topics and each topic is represented as a mixture of keywords used in the text corpus. After applying LDA to the input corpus, we obtain a list of topics, which we then feed into the KNN algorithm.</p>
+<p id="P28">An important addition to the LDA algorithm that we propose is a <italic>bias towards terms of preferred category</italic>. It was mentioned earlier that the vocabulary consists of semantic structures discovered in sentences, not ordinary tokens. It significantly improves the vocabulary quality and makes topics more sensible overall. This strategy also makes possible to track and tune <italic>what vocabulary terms LDA should prioritize</italic>.</p>
+<p id="P29">A document <italic>d</italic> in LDA model is represented as a bag of vocabulary terms <italic>w<sub>i</sub>
+</italic>, where <italic>i</italic> - number of times a term <italic>w</italic> occurs in <italic>d</italic>. This approach treats all terms equally based on their raw document occurrences, but it can be trivially extended if additional information about terms <italic>w</italic> is available. In our case, <italic>w</italic> may belong to the following categories: <list id="L3" list-type="bullet">
+<list-item>
+<p id="P30">Lemmas (l type)</p>
+</list-item>
+<list-item>
+<p id="P31">N-grams (n type)</p>
+</list-item>
+<list-item>
+<p id="P32">Entities (e type)</p>
+</list-item>
+<list-item>
+<p id="P33">MeSH and UMLS terms (m type)</p>
+</list-item>
+</list>
+</p>
+<p id="P34">These categories are presented in the order of increasing specificity: lemmas and n-grams are generally more broad than entities and MeSH/UMLS terms. Moreover, MeSH and UMLS terms come with semantic types as part of UMLS metathesaurus <sup>
+<xref ref-type="fn" rid="FN1">1</xref>
+</sup>.</p>
+<p id="P35">Given all that, we can now adjust the bag-of-words document representation to prioritize the preferred categories of vocabulary terms: now each document <italic>d</italic> is represented as a bag of vocabulary terms <inline-formula>
+<mml:math id="M1">
+<mml:mrow>
+<mml:msubsup>
+<mml:mi>w</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:mi>c</mml:mi>
+</mml:msubsup>
+</mml:mrow>
+</mml:math>
+</inline-formula>, where <italic>c</italic> ∈, {<italic>l</italic>, <italic>n</italic>, <italic>e</italic>, <italic>m</italic>}- term category. When <italic>c</italic> = <italic>m</italic>, it is possible to identify a semantic type of a specific vocabulary keyword.</p>
+<p id="P36">If one would like to prioritize a specific keyword category (for example, n-grams), we simply duplicate the keywords belonging to this category in bag-of-words representation as many times as it may be needed to bias LDA model towards uncovering topics containing the desired keyword categories.</p>
+<p id="P37">Semantic types make this procedure even more useful: they allow a domain expert to pick a specific set of keyword types of interest (e.g. genes or diseases) and force LDA to generate results with higher likelihood of these terms appearing in the end topics.</p>
+<p id="P38">The <bold>KNN</bold> stage takes place when the result topical network is constructed. KNN algorithm takes a set of vectors as input and produces a network of closest <italic>&#119896;</italic> neighbors for these vectors. In order to obtain the vectors for each topic, we represent them as centroids of keywords they contain: <disp-formula id="FD1">
+<label>(1)</label>
+<mml:math id="M2">
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+<mml:mo>=</mml:mo>
+<mml:mfrac>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Σ</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+<mml:mi>P</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+<mml:mrow>
+<mml:msub>
+<mml:mi>Σ</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mo stretchy="false">(</mml:mo>
+<mml:mi>k</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+<mml:mo stretchy="false">)</mml:mo>
+</mml:mrow>
+</mml:mfrac>
+<mml:mo>,</mml:mo>
+<mml:mo>∀</mml:mo>
+<mml:mi>j</mml:mi>
+<mml:mo>∈</mml:mo>
+<mml:mn>0</mml:mn>
+<mml:mo>,</mml:mo>
+<mml:mo>…</mml:mo>
+<mml:mo>,</mml:mo>
+<mml:mi>t</mml:mi>
+<mml:mo>−</mml:mo>
+<mml:mn>1</mml:mn>
+<mml:mo>,</mml:mo>
+</mml:mrow>
+</mml:math>
+</disp-formula>
+</p>
+<p id="P39">where <inline-formula>
+<mml:math id="M3">
+<mml:mrow>
+<mml:msub>
+<mml:mi>E</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is an embedding for <italic>i</italic>-th keyword and <inline-formula>
+<mml:math id="M4">
+<mml:mrow>
+<mml:msub>
+<mml:mi>P</mml:mi>
+<mml:mrow>
+<mml:mi>k</mml:mi>
+<mml:mi>e</mml:mi>
+<mml:mi>y</mml:mi>
+<mml:mi>w</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>r</mml:mi>
+<mml:msub>
+<mml:mi>d</mml:mi>
+<mml:mi>i</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is a probability of <italic>i</italic>-th keyword being in <italic>topic<sub>j</sub>, t</italic> - number of topics in LDA model. In addition, <inline-formula>
+<mml:math id="M5">
+<mml:mrow>
+<mml:msub>
+<mml:mi>X</mml:mi>
+<mml:mrow>
+<mml:mi>t</mml:mi>
+<mml:mi>o</mml:mi>
+<mml:mi>p</mml:mi>
+<mml:mi>i</mml:mi>
+<mml:msub>
+<mml:mi>c</mml:mi>
+<mml:mi>j</mml:mi>
+</mml:msub>
+</mml:mrow>
+</mml:msub>
+</mml:mrow>
+</mml:math>
+</inline-formula> is a vector from the same space as the vocabulary terms, thus it can be compared to them. It is important because the topical KNN network would contain <italic>t</italic> + 2 nodes: <italic>t</italic> topic centroids as well as source and target terms. The main goal of building the topical network is to be able to connect source and target terms through intermediate topics using the shortest path strategy. A shortest path would represent a <italic>hypothesis</italic>: a suggested set of topics appearing “between” provided terms of interest. Topical graph techniques are discussed in details in [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P40">To display results in interface, UMAP [<xref ref-type="bibr" rid="R8">8</xref>] algorithm is used. It reduces dimensionality for both centroid and term vectors from <italic>d</italic> = 512 to <italic>d<sub>red</sub>
+</italic> = 2, which allows to draw them on screen. UMAP is chosen because it is known to preserve vectors topological features, such as global structure. UMAP-obtained vectors are used for <italic>visualization-only purposes</italic>: topic centroids and KNN network are constructed using the original <italic>d</italic> = 512 vectors obtained with PTBG system.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="results">
+<label>4</label>
+<title>Results</title>
+<p id="P41">This particular work focuses on the visualization part of the hypothesis generation process, thus the results do not include any numerical validation. The AGATHA system which this work is based on was thoroughly evaluated via time-slicing strategy demonstrating state-of-the-art results in different biomedical domains. For more details please refer to the original papers [<xref ref-type="bibr" rid="R2">2</xref>, <xref ref-type="bibr" rid="R4">4</xref>].</p>
+<p id="P42">In this section we would like to demonstrate visualization features and summarize the feedback obtained during the BioCreative VII IAT evaluation process.</p>
+<sec id="S8">
+<label>4.1</label>
+<title>Deployment Details</title>
+<p id="P43">To improve the overall system user experience, we deployed an AGATHA end-to-end pipeline, which is made of multiple building blocks and contains several important components. It is summarized on <xref ref-type="fig" rid="F2">Figure 2</xref>.</p>
+<p id="P44">The first component is a computational server, which runs all computationally expensive tasks. This server contains an AGATHA instance and it is used to run visualization preprocessing stage and generate large-scale hypotheses ranking on demand. The example of the ranking containing more than 130.000 calculated pairwise scores related to COVID-19 queries is included in the system user guide shared with all domain experts reviewing the system.</p>
+<p id="P45">The next part of the pipeline is a query submission form, which does not require a dedicated web server as part of the system and is hosted on Google servers for convenience.</p>
+<p id="P46">The last component is a visualization web server, where the web interface is run. This web server contains a Bokeh [<xref ref-type="bibr" rid="R9">9</xref>] server instance, and all user sessions are independent from each other. It is used only for visualization/exploration purposes and for reconstructing the topical network on demand. All the functions that are available through the web-based GUI are performed on the visualization web server.</p>
+<p id="P47">Pipeline is designed in this manner to isolate computationally intensive steps from the rest of the system. Generation visualizations occurs on demand meaning that powerful servers are not required to be utilized for the results displaying. Visualization server does not have significant system requirements, because the size of the data is significantly reduced during the preprocessing step.</p>
+</sec>
+<sec id="S9">
+<label>4.2</label>
+<title>Interface Walkthrough</title>
+<p id="P48">
+<bold>Topical hypothesis space (1):</bold> the “core” component of Agatha Hypothesis Space window. It shows how topics are arranged in latent semantic space and what are spatial relationships between source and target terms and topics related to them.</p>
+<p id="P49">
+<bold>Shortest path in detail (2).</bold> This pane contains a shortest path from the Topical hypothesis space pane, but in greater detail, such that a domain expert could see what each topic contains and how the transition between source and target terms occurs through the topics between them.</p>
+<p id="P50">
+<bold>Embeddings pane (3)</bold> displays the latent representation of terms within the topics participating in the highlighted shortest path, so there is a visual representation of not only how topics are arranged in the latent space, but also the terms, belonging to these topics. This window also illustrates how well graph embeddings represent concepts similarity.</p>
+<p id="P51">
+<bold>Sentences pane (4)</bold> shows a list of sentences associated with a specific topic and its confidence score. To pick a topic, one can use topics pane or click on a topic inside Topical Hypothesis Space.</p>
+<p id="P52">
+<bold>Topics pane (5)</bold> represents a list of all available topics generated from the corpus. A domain expert can scroll through it, pick a topic they are interested to construct a shortest path through and see what kind of chain of topics a system proposes, when an expert would like to see how the source term is connected to the target term through a specific midpoint.</p>
+<p id="P53">This functionality is added to make use of <italic>the entire topical space</italic> and not just the shortest path suggested by the algorithm. While it is true that the default shortest path is the “best” way to connect source and target terms in terms of their spatial proximity in the embedding space, it sometimes may not contain enough contextual information about potentially relevant topics. A path through an intermediate topic is constructed by concatenating two shortest paths: first from the source term to the intermediate node and second from the intermediate node to the target term. If a selected topic is not relevant and has a significant distance from the default shortest path, a redundant loop may be present in the resulting path.</p>
+<p id="P54">
+<bold>Settings pane (6)</bold> allows a user to fine-tune the representation of learned topics and adjust the parameters of topic extraction process.</p>
+</sec>
+<sec id="S10">
+<label>4.3</label>
+<title>BioCreative VII IAT &amp; User Feedback</title>
+<p id="P55">This work is presented at BioCreative VII competition Interactive Text Mining Track (IAT), where it was evaluated by the experts involved in biomedical research and related fields. The track is motivated by formal evaluation of interactive tools and providing user feedback on text mining systems made for specific purposes. This year the main focus of IAT was COVID-19-related text mining tools.</p>
+<p id="P56">We note that AGATHA is a general purpose hypothesis generation system not limited by any specific biomedical subdomain. It was recently enhanced with COVID-19 dataset CORD-19 [<xref ref-type="bibr" rid="R10">10</xref>], which made possible running queries involving COVID-19-associated terms and discovering novel connections, such as <italic>COVID-19 - Oxytocin</italic> [<xref ref-type="bibr" rid="R11">11</xref>]. Some of these connections were included in the default set of available visualizations.</p>
+<p id="P57">The experts were offered to participate in guided and exploratory activities. The activities included working with different system functions, such as inspecting term-topical paths, reconstructing topical network, adjusting the parameters of KNN algorithm/LDA topic modeling, investigate the obtained document clustering and saving results. Upon activities completion, the experts were suggested to participate in a survey to formallye valuate the system.</p>
+<p id="P58">The survey includes 32 questions, from them 26 questions are directly associated with the system. From these 26 questions 13 are rank-based and 13 are free-text/binary. We provide the boxplot of the responses to 12 rank questions having 1 – 5 scale in <xref ref-type="fig" rid="F4">Figure 4</xref>. The question <italic>“How likely is it that you would recommend this system to a colleague performing COVID-19 related research?”</italic> was on a scale of 1 – 10, where 1 = not at all likely and 10 = extremely likely. This question resulted in the mean value of 6, with the most frequent response of 7.</p>
+<p id="P59">Most respondents admit that they find the results produced by the system useful. Some respondents found results interpretation somewhat challenging due to specifics of topic modeling approach in general. Most of the comments and suggestions were addressed to the interface design and features, which some users found not intuitive enough. However, the overall approach to visual hypothesis exploration was generally well received.</p>
+<p id="P60">Based on the feedback provided by the domain experts we plan to introduce a number of improvements. For example, interface changes (such as clickable PubMed links and built-in hints for parameter tuning) are expected to help domain experts to get better user experience. In addition, we observe that sentence-level granularity might not always be enough from the interpretability perspective, and more contextual information may be required. To add more clarity to the resulting topics (and, to the document clustering, respectively), it is possible to perform topic modeling on full abstracts (similar to the MOLIERE system) instead of individual sentences. This will not only introduce significantly more cohesive information for the visualizer input (individual sentences sometimes perform poorly for the topic modeling purposes), but will also make the final representation have less in common with the original semantic network, which is used for inference purposes.</p>
+</sec>
+</sec>
+</body>
+<back>
+<fn-group>
+<fn id="FN1">
+<label>1</label>
+<p id="P61">
+<ext-link ext-link-type="uri" xlink:href="https://lhncbc.nlm.nih.gov/ii/tools/MetaMap/documentation">https://lhncbc.nlm.nih.gov/ii/tools/MetaMap/documentation/SemanticTypesAndGroups.html</ext-link>
+</p>
+</fn>
+<fn id="FN2">
+<label>2</label>
+<p id="P62">With two exceptions:</p>
+<p id="P63">
+<italic>How easy was it to format and input data into this tool?</italic>
+</p>
+<p id="P64">1 = not at all easy; 5 = extremely easy</p>
+<p id="P65">
+<italic>Please rate your overall impression with the system.</italic>
+</p>
+<p id="P66">1 = very negative; 5 = very positive</p>
+</fn>
+</fn-group>
+<ref-list>
+<ref id="R1">
+<label>[1]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Sybrandt</surname>
+<given-names>Justin</given-names>
+</name>
+<name>
+<surname>Shtutman</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>Moliere: Automatic biomedical hypothesis generation system</source>
+<conf-name>Proceedings of the 23rd ACM SIGKDD, KDD ‘17</conf-name>
+<conf-loc>New York, NY, USA</conf-loc>
+<conf-sponsor>ACM</conf-sponsor>
+<year>2017</year>
+<fpage>1633</fpage>
+<lpage>1642</lpage>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>[2]</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Sybrandt</surname>
+<given-names>Justin</given-names>
+</name>
+<name>
+<surname>Tyagin</surname>
+<given-names>Ilya</given-names>
+</name>
+<name>
+<surname>Shtutman</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>AGATHA: Automatic Graph Mining And Transformer Based Hypothesis Generation Approach</source>
+<publisher-name>Association for Computing Machinery</publisher-name>
+<publisher-loc>New York, NY, USA</publisher-loc>
+<year>2020</year>
+<fpage>2757</fpage>
+<lpage>2764</lpage>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>[3]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Sybrandt</surname>
+<given-names>Justin</given-names>
+</name>
+<name>
+<surname>Carrabba</surname>
+<given-names>Angelo</given-names>
+</name>
+<name>
+<surname>Herzog</surname>
+<given-names>Alexander</given-names>
+</name>
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>Are abstracts enough for hypothesis generation?</source>
+<conf-name>2018 IEEE International Conference on Big Data (Big Data)</conf-name>
+<conf-sponsor>IEEE</conf-sponsor>
+<year>2018</year>
+<fpage>1504</fpage>
+<lpage>1513</lpage>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>[4]</label>
+<element-citation publication-type="other">
+<person-group person-group-type="author">
+<name>
+<surname>Tyagin</surname>
+<given-names>Ilya</given-names>
+</name>
+<name>
+<surname>Kulshrestha</surname>
+<given-names>Ankit</given-names>
+</name>
+<name>
+<surname>Sybrandt</surname>
+<given-names>Justin</given-names>
+</name>
+<name>
+<surname>Matta</surname>
+<given-names>Krish</given-names>
+</name>
+<name>
+<surname>Shtutman</surname>
+<given-names>Michael</given-names>
+</name>
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>Accelerating covid-19 research with graph mining and transformer-based learning</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>[5]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Lerer</surname>
+<given-names>Adam</given-names>
+</name>
+<name>
+<surname>Wu</surname>
+<given-names>Ledell</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>Jiajun</given-names>
+</name>
+<name>
+<surname>Lacroix</surname>
+<given-names>Timothee</given-names>
+</name>
+<name>
+<surname>Wehrstedt</surname>
+<given-names>Luca</given-names>
+</name>
+<name>
+<surname>Bose</surname>
+<given-names>Abhijit</given-names>
+</name>
+<name>
+<surname>Peysakhovich</surname>
+<given-names>Alex</given-names>
+</name>
+</person-group>
+<source>PyTorch-BigGraph: A Large-scale Graph Embedding System</source>
+<conf-name>Proceedings of the 2nd SysML Conference</conf-name>
+<conf-loc>Palo Alto, CA, USA</conf-loc>
+<year>2019</year>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>[6]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Blei</surname>
+<given-names>David M</given-names>
+</name>
+<name>
+<surname>Andrew Y</surname>
+<given-names>Ng</given-names>
+</name>
+<name>
+<surname>Jordan</surname>
+<given-names>Michael I</given-names>
+</name>
+</person-group>
+<article-title>Latent dirichlet allocation</article-title>
+<source>J Mach Learn Res</source>
+<year>2003</year>
+<month>March</month>
+<volume>3</volume>
+<issue>null</issue>
+<fpage>993</fpage>
+<lpage>1022</lpage>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>[7]</label>
+<element-citation publication-type="confproc">
+<person-group person-group-type="author">
+<name>
+<surname>Sybrandt</surname>
+<given-names>Justin</given-names>
+</name>
+<name>
+<surname>Shtutman</surname>
+<given-names>Micheal</given-names>
+</name>
+<name>
+<surname>Safro</surname>
+<given-names>Ilya</given-names>
+</name>
+</person-group>
+<source>Large-scale validation of hypothesis generation systems via candidate ranking</source>
+<conf-name>2018 IEEE International Conference on Big Data</conf-name>
+<year>2018</year>
+<fpage>1494</fpage>
+<lpage>1503</lpage>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>[8]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>McInnes</surname>
+<given-names>Leland</given-names>
+</name>
+<name>
+<surname>Healy</surname>
+<given-names>John</given-names>
+</name>
+<name>
+<surname>Saul</surname>
+<given-names>Nathaniel</given-names>
+</name>
+<name>
+<surname>Grossberger</surname>
+<given-names>Lukas</given-names>
+</name>
+</person-group>
+<article-title>Umap: Uniform manifold approximation and projection</article-title>
+<source>The Journal of Open Source Software</source>
+<year>2018</year>
+<volume>3</volume>
+<issue>29</issue>
+<fpage>861</fpage>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>[9]</label>
+<element-citation publication-type="other">
+<collab>Bokeh Development Team</collab>
+<source>Bokeh: Python library for interactive visualization</source>
+<year>2018</year>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>[10]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Lucy Lu</given-names>
+</name>
+<name>
+<surname>Lo</surname>
+<given-names>Kyle</given-names>
+</name>
+<name>
+<surname>Chandrasekhar</surname>
+<given-names>Yoganand</given-names>
+</name>
+<name>
+<surname>Reas</surname>
+<given-names>Russell</given-names>
+</name>
+<name>
+<surname>Yang</surname>
+<given-names>Jiangjiang</given-names>
+</name>
+<name>
+<surname>Eide</surname>
+<given-names>Darrin</given-names>
+</name>
+<name>
+<surname>Funk</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Kinney</surname>
+<given-names>Rodney Michael</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>Ziyang</given-names>
+</name>
+<name>
+<surname>Merrill</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Mooney</surname>
+<given-names>P</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Cord-19: The covid-19 open research dataset</article-title>
+<source>ArXiv</source>
+<year>2020</year>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>[11]</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>Stephani C</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Yu-Feng</given-names>
+</name>
+</person-group>
+<article-title>Cardiovascular protective properties of oxytocin against covid-19</article-title>
+<source>Life Sciences</source>
+<year>2021</year>
+<elocation-id>119130</elocation-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>AGATHA Semantic Graph Structure.</title>
+</caption>
+<graphic xlink:href="EMS139883-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<p>AGATHA end-to-end pipeline. Colors: green: computational server; blue: Google servers; orange: visualization server.</p>
+</caption>
+<graphic xlink:href="EMS139883-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<p>AGATHA Semantic Visualizer main window. Interface elements are numbered and described in Interface Walkthrough section. Image was rotated for better readability.</p>
+</caption>
+<graphic xlink:href="EMS139883-f003"/>
+</fig>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption>
+<p>Boxplot of provided user feedback (rank-based questions, number of respondents: 8). Scale used: 1 – 5, where 1 was “strongly disagree” and 5 was “strongly agree”<sup>
+<xref ref-type="fn" rid="FN2">2</xref>
+</sup>.</p>
+</caption>
+<graphic xlink:href="EMS139883-f004"/>
+</fig>
+</floats-group>
+</article>

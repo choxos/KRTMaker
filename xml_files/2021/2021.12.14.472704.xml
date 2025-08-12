@@ -1,0 +1,1389 @@
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ali="http://www.niso.org/schemas/ali/1.0/" article-type="preprint">
+<?all-math-mml yes?>
+<?use-mml?>
+<?origin ukpmcpa?>
+<front>
+<journal-meta>
+<journal-id journal-id-type="nlm-ta">bioRxiv</journal-id>
+<journal-title-group>
+<journal-title>bioRxiv : the preprint server for biology</journal-title>
+</journal-title-group>
+<issn pub-type="ppub"/>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="manuscript">EMS141137</article-id>
+<article-id pub-id-type="doi">10.1101/2021.12.14.472704</article-id>
+<article-id pub-id-type="archive">PPR433140</article-id>
+<article-version article-version-type="publisher-id">1</article-version>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Article</subject>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>Simulation of the omicron variant of SARS-CoV-2 shows broad antibody escape, weakened ACE2 binding, and modest increase in furin binding</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Jawaid</surname>
+<given-names>M. Zaki</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Baidya</surname>
+<given-names>A.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Mahboubi-Ardakani</surname>
+<given-names>R.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Davis</surname>
+<given-names>Richard L.</given-names>
+</name>
+<xref ref-type="aff" rid="A2">2</xref>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Cox</surname>
+<given-names>Daniel L.</given-names>
+</name>
+<xref ref-type="aff" rid="A1">1</xref>
+<xref ref-type="aff" rid="A2">2</xref>
+<xref ref-type="corresp" rid="CR1">*</xref>
+</contrib>
+</contrib-group>
+<aff id="A1">
+<label>1</label>Department of Physics and Astronomy, University of California, Davis, CA USA 95616</aff>
+<aff id="A2">
+<label>2</label>Protein Architects Corp., Penn Valley PA, USA</aff>
+<author-notes>
+<corresp id="CR1">
+<label>*</label>Corresponding author: <email>dlcox@ucdavis.edu</email>
+</corresp>
+</author-notes>
+<pub-date pub-type="nihms-submitted">
+<day>07</day>
+<month>02</month>
+<year>2022</year>
+</pub-date>
+<pub-date pub-type="preprint">
+<day>15</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<permissions>
+<ali:free_to_read/>
+<license>
+<ali:license_ref>https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref>
+<license-p>This work is licensed under a <ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0 International license</ext-link>.</license-p>
+</license>
+</permissions>
+<abstract>
+<p id="P1">The recent emergence of the omicron variant of the SARS-CoV-2 virus with large numbers of mutations has raised concern about a potential new surge in infections. Here we use molecular dynamics to study the biophysics of the interface of the omicron spike protein binding to (i) the ACE2 receptor protein, (ii) antibodies from all known binding regions, and (iii) the furin binding domain. Our simulations suggest that while there is significant reduction of antibody binding strength corresponding to escape, the omicron spike pays a cost in terms of weaker receptor binding. The furin cleavage domain is the same or weaker binding than the alpha variant, suggesting less viral load and disease intensity than the extant delta variant.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="S1" sec-type="intro">
+<title>Introduction</title>
+<p id="P2">The omicron variant of the SARS-CoV-2 virus was first detected publicly in Nov. 2021 [<xref ref-type="bibr" rid="R1">1</xref>], and traced back to variants which appeared in mid 2020. Because the variant contains a large number of mutations relative to the original strain, including three relevant regions of the viral surface spike protein (the receptor binding domain (RBD), the furin cleavage domain (FCD), and the n-terminal domain (NTD)), the variant is of great concern. There is preliminary evidence that it has overtaken the predominant delta variant in South Africa where it was first detected [<xref ref-type="bibr" rid="R2">2</xref>].</p>
+<p id="P3">The fitness of a particular variant depends upon several factors. First, strong binding to surface receptors is of critical importance, and the SARS-CoV-2 RBD binds with high affinity to the ACE2 protein on human cells [<xref ref-type="bibr" rid="R3">3</xref>]. This contrasts with likely weaker binding of coronaviruses associated with the common cold such as OC43 which binds more weakly to sialic acid groups on the cell [<xref ref-type="bibr" rid="R4">4</xref>]. Second, escaping the background antibody (Ab) spectrum can confer relative fitness to the dominant variant. Third, efficient membrane fusion and transmission is apparently strongly regulated by the FCD. It has been shown, for example, that ferrets inoculated with a WT SARS-CoV-2 with the FCD deleted can become infected but fail to transmit to other ferrets [<xref ref-type="bibr" rid="R5">5</xref>]. The high viral load of the delta variant has been clearly associated with the mutation P681R of the FCD [<xref ref-type="bibr" rid="R6">6</xref>] and has led to the current dominance of 96% of SARS-CoV-2 sequences worldwide [<xref ref-type="bibr" rid="R7">7</xref>].</p>
+<p id="P4">Given the time lag in carrying out protein synthesis, structure determination of bound complexes, determining protein binding affinities, and measuring viral neutralization by Abs for new variants, there is clearly a role for rapid computational studies that can assess the differences of new variants relative to background variants as they arise.</p>
+<p id="P5">In this Letter, we point out here that computational ab initio molecular dynamics studies of omicron RBD-ACE2, RBD-antibody (AB), FCD-Furin, and NTD-antibody are consistent with: 1) robust antibody escape in all regions compared to wild type (WT) and delta, 2) FCD binding to Furin intermediate between WT and delta, and 3) weaker binding to the ACE2 than WT or delta. The Ab escape can confer transmissibility advantages for a population with a prevalent delta variant Ab spectrum, but the weaker binding to ACE2 and modest enhancement of furin binding are likely to lead to weaker transmissibility than delta. This work uses ColabFold’s [<xref ref-type="bibr" rid="R8">8</xref>] implementation of AlphaFold-Multimer [<xref ref-type="bibr" rid="R9">9</xref>] to generate structures for FCD-furin binding.</p>
+</sec>
+<sec id="S2" sec-type="materials | methods">
+<title>Materials and Methods</title>
+<sec id="S3">
+<label>0.1</label>
+<title>Molecular Models</title>
+<p id="P6">We drew our starting structures for RBD-ACE2 binding from PDB file 7A94 [<xref ref-type="bibr" rid="R10">10</xref>] reference for the WT and delta variants, and PDB file 6M0J [<xref ref-type="bibr" rid="R11">11</xref>] for the omicron variant. For Class I ABs, which bind in the same region of the RBD as the ACE2, we used 7CJF [<xref ref-type="bibr" rid="R12">12</xref>] and 7KVF [<xref ref-type="bibr" rid="R13">13</xref>], while as a representative class III Ab that binds to the RBD away from the ACE2 interface, we used 6YOR [<xref ref-type="bibr" rid="R14">14</xref>]. For an NTD-Ab we used 7C2L [<xref ref-type="bibr" rid="R15">15</xref>].</p>
+<p id="P7">The antibodies chosen do not comprehensively portray all neutralizing Abs for the SARS-CoV-2 spike, but are representative of the spectrum of antibodies that neutralize the SARS-CoV-2 virus. This study does not account for t-cell binding sites [<xref ref-type="bibr" rid="R16">16</xref>]. <xref ref-type="fig" rid="F1">Fig. 1</xref>shows the structures of the different complexes studied in this paper.</p>
+</sec>
+<sec id="S4">
+<label>0.2</label>
+<title>Molecular Dynamics</title>
+<p id="P8">To simulate the protein-protein interactions, we used the molecular-modelling package YASARA [<xref ref-type="bibr" rid="R17">17</xref>] to substitute individual residues and to search for minimum-energy conformations on the resulting modified structures of the complexes listed in <xref ref-type="table" rid="T1">Table 1</xref>. For all of the structures, we carried out an energy-minimization (EM) routine, which includes steepest descent and simulated annealing (until free energy stabilizes to within 50 J/mol) minimization to remove clashes. All molecular-dynamics simulations were run using the AMBER14 force field with [<xref ref-type="bibr" rid="R18">18</xref>] for solute, GAFF2 [<xref ref-type="bibr" rid="R19">19</xref>] and AM1BCC [<xref ref-type="bibr" rid="R20">20</xref>] for ligands, and TIP3P for water. The cutoff was 8 Å for Van der Waals forces (AMBER’s default value [<xref ref-type="bibr" rid="R21">21</xref>]) and no cutoff was applied for electrostatic forces (using the Particle Mesh Ewald algorithm [<xref ref-type="bibr" rid="R22">22</xref>]). The equations of motion were integrated with a multiple timestep of 1.25 fs for bonded interactions and 2.5 fs for non-bonded interactions at <italic>T</italic> = 298 K and <italic>P</italic> = 1 atm (NPT ensemble) via algorithms described in [<xref ref-type="bibr" rid="R23">23</xref>]. Prior to counting the hydrogen bonds and calculating the free energy, we carry out several pre-processing steps on the structure including an optimization of the hydrogen-bonding network [<xref ref-type="bibr" rid="R24">24</xref>] to increase the solute stability and a pKa prediction to fine-tune the protonation states of protein residues at the chosen pH of 7.4 [<xref ref-type="bibr" rid="R23">23</xref>]. Insertions and mutations were carried out using YASARA’s BuildLoop and SwapRes commands [<xref ref-type="bibr" rid="R23">23</xref>] respectively. Simulation data was collected every 100ps after 1-2ns of equilibration time, as determined by the solute root mean square deviations (RMSDs) from the starting structure.</p>
+<p id="P9">The hydrogen bond (HBond) counts were tabulated using a distance and angle approximation between donor and acceptor atoms as described in [<xref ref-type="bibr" rid="R24">24</xref>]. Note that in this approach, salt bridges of proximate residues, are effectively counted as H-bonds between basic side chain amide groups and acidic side chain carboxyl groups.</p>
+</sec>
+<sec id="S5">
+<label>0.3</label>
+<title>Endpoint Free Energy Analysis</title>
+<p id="P10">We calculated binding free energy for the energy-minimized structure using the molecular mechanics/generalized Born surface area (MM/GBSA) method [<xref ref-type="bibr" rid="R25">25</xref>–<xref ref-type="bibr" rid="R27">27</xref>], which is implemented by the HawkDock server [<xref ref-type="bibr" rid="R28">28</xref>]. While the MM/GBSA approximations overestimate the magnitude of binding free energy relative to in-vitro methods, the obtained values correlate well with H-bond counts. For each RBD-ACE2, RBD-AB, and NTD-Ab binding pair we average over five snapshots of equilibrium conformations. For each FCD-furin pair, we average over ten snapshots of equilibrium conformations.</p>
+</sec>
+<sec id="S6">
+<label>0.4</label>
+<title>Use of ColabFold/AlphaFold for Furin binding domain</title>
+<p id="P11">We will present a complete description of the use of ColabFold/AlphaFold for modeling the FCD-furin binding separately [<xref ref-type="bibr" rid="R29">29</xref>]. Full details of this method are provided in [<xref ref-type="bibr" rid="R8">8</xref>, <xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R30">30</xref>]. In brief, we used the heterocomplex prediction method known as AlphaFold-Multimer [<xref ref-type="bibr" rid="R9">9</xref>, <xref ref-type="bibr" rid="R30">30</xref>] as implemented within ColabFold [<xref ref-type="bibr" rid="R8">8</xref>] to predict the best bound structure to the furin enzyme of the six residue FCD from the WT protein. The delta and omicron structures were then obtained by mutation from the predicted WT FCD-furin structure.</p>
+</sec>
+</sec>
+<sec id="S7" sec-type="results">
+<label>1</label>
+<title>Results</title>
+<sec id="S8">
+<label>1.1</label>
+<title>Binding Strengths: HBond and Binding Free Energy</title>
+<p id="P12">Our main results for interfacial HBonds are summarized in <xref ref-type="table" rid="T1">Table 1</xref>. We find weaker binding to the ACE2 receptor in contrast to a recent quantum calculation [<xref ref-type="bibr" rid="R31">31</xref>], which should moderate infectivity, and significant antibody escape of the omicron for all three regions (Class I, Class III, and NTD) considered. This escape is measured by the reduction in hydrogen bond count between the antibodies and the spike protein. For the FCD-Furin binding, six residues fit into the binding pocket, which we argue elsewhere to begin with residue 681 for WT, alpha, and delta. For omicron, we consider the possibility of leading with the N679K mutation or P681H mutation. The latter is the same as the alpha variant. We see that the expected binding to the FCD is at best the same as the alpha variant, and significantly less than the delta variant.</p>
+<p id="P13">The binding energies from the GBSA analysis of molecular dynamics equilibrium conformations are shown in <xref ref-type="table" rid="T2">Table 2</xref>. The same PDBs are utilized. Evidently the trend of binding energies tracks well with the easier to estimate interfacial HBond count, with the lone exception of the Class III Ab binding to the delta variant.</p>
+</sec>
+<sec id="S9">
+<label>1.2</label>
+<title>Mutations leading to Ab Escape and weaker ACE2 binding</title>
+<p id="P14">
+<xref ref-type="fig" rid="F2">Fig. 2</xref>illustrates the key mutations leading to differences in binding for the delta and omicron variants relative to WT.</p>
+<p id="P15">ACE2 For ACE2 binding, four key mutations weaken the ACE2 binding for omicron: 1) K417N removes the K417(RBD)-D30(ACE2) salt bridge. 2) Q493K removes hydrogen bonding between the glutamine side chain and residues K31 and E35 on the ACE2 driven by K-K coulomb repulsion. 3) Q498R removes hydrogen bonding between the glutamine side chain and K353 of the ACE2 driven by R-K Coulomb repulsion. 4)</p>
+<p id="P16">Y505H removes hydrogen bonding between the Y505 sidechain where the O acts as a donor and the E37 sidechain of the ACE2.</p>
+<sec id="S10">
+<title>Class I Abs</title>
+<p id="P17">For Class I antibodies, the following mutations are critical to reducing binding strength: For binding to P4A1, 1) the Y455 binding to Y33.HC of the Ab heavy chain (HC) is removed. 2) The Q493K, G496S, and Q498R mutations lead to removal of bonds with E101.HC, W32.LC of the Ab light chain, and S67.LC. 3) The Y505H mutation removes bonds to S93.LC. For binding to C1A-B12, 1) the K417N mutation removes a salt bridge to D96.HC, a side chain bond to S98.HC, and weakens a side chain bond to Y52.HC. 2) The mutations Q493K, G496S, and Q498R remove bonds to R100.HC, S30.HC, and S67.HC. 3) The N501Y and Y505H mutations weaken bonds in the 501-505 region to G28.LC, S30.LC, and S93.LC.</p>
+</sec>
+<sec id="S11">
+<title>Class III Ab</title>
+<p id="P18">For the Class III antibody CR3022, the most noticeable differences compared to WT are 1) the absence of binding at N370 to Y27.HC. This appears to be driven by the hydrophobic substitution S371L, which pulls the asparagine at 370 out of bonding distance from Y27.HC. 2) Weakened bonding of T385 to S100.HC.</p>
+</sec>
+<sec id="S12">
+<title>NTD Ab</title>
+<p id="P19">For the NTD Ab 4A8, we find that the notable differences of omicron compared to WT are 1) weakened binding at 145-152 presumably due to the deletion at 142-145 relative to WT, and 2) significantly weakened bonding at 246-254 driven by the EPE insertion at 214 and the deletion at 211. Both the 142-145 deletion and the 211 deletion with EPE insertion disrupt the epitope positionings at 145-152 and 246-254 respectively.</p>
+</sec>
+</sec>
+<sec id="S13">
+<label>1.3</label>
+<title>Mutations in the FCD</title>
+<p id="P20">As we will discuss in more detail elsewhere, for the generic 681-686 sequence of the FCD, the most critical residue apears to be the 685. In the WT, the arginine is able to form a salt bridge in the interior pocket with D199 of the furin, and bond additionally with S146, W147, D151, A185, and S261. This tendency is illustrated in <xref ref-type="fig" rid="F1">Fig. 1D</xref>. These bonds are all strengthened for delta and omicron. For the alternate KSHRRA sequence of the omicron, beginning at 679, the position of the arginine in the binding pocket allows only the salt bridge formation with D199.</p>
+<p id="P21">As shown in <xref ref-type="fig" rid="F3">Fig. 3</xref>, we observe that the binding strength, which is determined to a large degree by the binding of the fifth residue of the FCD, correlates inversely with the root mean square fluctuation (RMSF) of the backbone Cα of the first FCD residue at 681. This suggests that locking the 681 Cα as happens for P681R is a key to lowering the fluctuation spectrum of the 685 residue allowing for stronger binding at this site. Evidently, the gain in binding enthalpy offsets any advantages in conformational entropy for the FCD.</p>
+</sec>
+</sec>
+<sec id="S14" sec-type="discussion">
+<label>2</label>
+<title>Discussion</title>
+<p id="P22">We observe that the strength of binding of the FCD appears to correlate well with the fluctuations of the initial residue at 681. The lower the fluctuation of the backbone carbon, the lower the fluctuation of the backbone carbon for residue 685, which dominates the bonding to the furin. The P681R mutation provides the lowest Cα RMSF observed amongst the four FCD examples considered here, and the alternate K679 starting point for omicron provides the largest Cα RMSF.</p>
+<p id="P23">The lower severity of omicron versus delta is related to the Furin Cleavage Domain. Once a corona virus is bound to a human cell, disease severity is regulated by furin cleavage of the spike. After initial binding to the human ACE2 protein, Furin protease cleavage breaks the spike to facilitate cell wall fusion [<xref ref-type="bibr" rid="R6">6</xref>] and viral reproduction. The higher the furin-FCD HBond binding count, the more efficient the fusion at the molecular level, and ultimately, higher viral load on the host.</p>
+<p id="P24">In summary, a consistent picture of omicron in comparison to the delta strain is emerging. Hospitalization data points to higher disease transmissibility but lower severity for the omicron strain compared to delta [<xref ref-type="bibr" rid="R32">32</xref>]. Our simulations see lower interfacial HBond counts for omicron for known RBD and NTD binding regions consistent with this, as well as weaker ACE2 binding and furin binding than the delta variant. Against an immunity background tuned to the delta variant, omicron will be more transmissible. (Note that two other studies suggest stronger ACE2 binding from omicron [<xref ref-type="bibr" rid="R31">31</xref>, <xref ref-type="bibr" rid="R33">33</xref>].) Experimental studies of the binding of the RBD to ACE2 and the FCD to furin will be needed to confirm these predictions.</p>
+</sec>
+</body>
+<back>
+<ack id="S15">
+<title>Acknowledgments</title>
+<p>We acknowledge useful conversations with Javier Arsuaga, Victor Muñoz, and Mariel Vazquez.</p>
+</ack>
+<ref-list>
+<ref id="R1">
+<label>1</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Karim</surname>
+<given-names>SSA</given-names>
+</name>
+<name>
+<surname>Karim</surname>
+<given-names>QA</given-names>
+</name>
+</person-group>
+<article-title>Omicron SARS-CoV-2 variant: a new chapter in the COVID-19 pandemic</article-title>
+<source>The Lancet</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1016/S0140-6736(21)02758-6</pub-id>
+</element-citation>
+</ref>
+<ref id="R2">
+<label>2</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Torjesen</surname>
+<given-names>I</given-names>
+</name>
+</person-group>
+<article-title>Covid-19: Omicron may be more transmissible than other variants and partly resistant to existing vaccines, scientists fear</article-title>
+<source>BMJ</source>
+<year>2021</year>
+<volume>375</volume>
+<elocation-id>n2943</elocation-id>
+<pub-id pub-id-type="doi">10.1136/bmj.n2943</pub-id>
+</element-citation>
+</ref>
+<ref id="R3">
+<label>3</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Walls</surname>
+<given-names>AC</given-names>
+</name>
+<name>
+<surname>Park</surname>
+<given-names>YJ</given-names>
+</name>
+<name>
+<surname>Tortorici</surname>
+<given-names>MA</given-names>
+</name>
+<name>
+<surname>Wall</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>McGuire</surname>
+<given-names>AT</given-names>
+</name>
+<name>
+<surname>Veesler</surname>
+<given-names>D</given-names>
+</name>
+</person-group>
+<article-title>Structure, function, and antigenicity of the SARS-CoV-2 spike glycoprotein</article-title>
+<source>Cell</source>
+<year>2020</year>
+<volume>181</volume>
+<issue>2</issue>
+<fpage>281</fpage>
+<lpage>292</lpage>
+<elocation-id>e6</elocation-id>
+</element-citation>
+</ref>
+<ref id="R4">
+<label>4</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hulswit</surname>
+<given-names>RJG</given-names>
+</name>
+<name>
+<surname>Lang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Bakkers</surname>
+<given-names>MJG</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>W</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Schouten</surname>
+<given-names>A</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Human coronaviruses OC43 and HKU1 bind to 9-O-acetylated sialic acids via a conserved receptor-binding site in spike protein domain A</article-title>
+<source>Proceedings of the National Academy of Sciences</source>
+<year>2019</year>
+<volume>116</volume>
+<issue>7</issue>
+<fpage>2681</fpage>
+<lpage>2690</lpage>
+<pub-id pub-id-type="doi">10.1073/pnas.1809667116</pub-id>
+</element-citation>
+</ref>
+<ref id="R5">
+<label>5</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Peacock</surname>
+<given-names>TP</given-names>
+</name>
+<name>
+<surname>Goldhill</surname>
+<given-names>DH</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Baillon</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Frise</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Swann</surname>
+<given-names>OC</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>The furin cleavage site in the SARS-CoV-2 spike protein is required for transmission in ferrets</article-title>
+<source>Nature Microbiology</source>
+<year>2021</year>
+<volume>6</volume>
+<issue>7</issue>
+<fpage>899</fpage>
+<lpage>909</lpage>
+<pub-id pub-id-type="doi">10.1038/s41564-021-00908-w</pub-id>
+</element-citation>
+</ref>
+<ref id="R6">
+<label>6</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Saito</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Irie</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Suzuki</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Maemura</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Nasser</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Uriu</surname>
+<given-names>K</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Enhanced fusogenicity and pathogenicity of SARS-CoV-2 Delta P681R mutation</article-title>
+<source>Nature</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1038/s41586-021-04266-9</pub-id>
+</element-citation>
+</ref>
+<ref id="R7">
+<label>7</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Vaughan</surname>
+<given-names>A</given-names>
+</name>
+</person-group>
+<article-title>Delta to dominate world</article-title>
+<source>New Scientist</source>
+<year>2021</year>
+<volume>250</volume>
+<issue>3341</issue>
+<fpage>9</fpage>
+<pub-id pub-id-type="doi">10.1016/S0262-4079(21)01121-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R8">
+<label>8</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Mirdita</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Ovchinnikov</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Steinegger</surname>
+<given-names>M</given-names>
+</name>
+</person-group>
+<article-title>ColabFold - Making protein folding accessible to all</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<elocation-id>2021.08.15.456425</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2021.08.15.456425</pub-id>
+</element-citation>
+</ref>
+<ref id="R9">
+<label>9</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Evans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>O’Neill</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Pritzel</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Antropova</surname>
+<given-names>N</given-names>
+</name>
+<name>
+<surname>Senior</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Green</surname>
+<given-names>T</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Protein complex prediction with AlphaFold-Multimer</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<elocation-id>2021.10.04.463034</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2021.10.04.463034</pub-id>
+</element-citation>
+</ref>
+<ref id="R10">
+<label>10</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Benton</surname>
+<given-names>DJ</given-names>
+</name>
+<name>
+<surname>Wrobel</surname>
+<given-names>AG</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Roustan</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Martin</surname>
+<given-names>SR</given-names>
+</name>
+<name>
+<surname>Rosenthal</surname>
+<given-names>PB</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Receptor binding and priming of the spike protein of SARS-CoV-2 for membrane fusion</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>588</volume>
+<issue>7837</issue>
+<fpage>327</fpage>
+<lpage>330</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2772-0</pub-id>
+</element-citation>
+</ref>
+<ref id="R11">
+<label>11</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Lan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Ge</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Yu</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Shan</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Fan</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structure of the SARS-CoV-2 spike receptor-binding domain bound to the ACE2 receptor</article-title>
+<source>Nature</source>
+<year>2020</year>
+<volume>581</volume>
+<issue>7807</issue>
+<fpage>215</fpage>
+<lpage>220</lpage>
+<pub-id pub-id-type="doi">10.1038/s41586-020-2180-5</pub-id>
+</element-citation>
+</ref>
+<ref id="R12">
+<label>12</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Guo</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Huang</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Yao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Shen</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A SARS-CoV-2 neutralizing antibody with extensive Spike binding coverage and modified for optimal therapeutic outcomes</article-title>
+<source>Nature Communications</source>
+<year>2021</year>
+<volume>12</volume>
+<issue>1</issue>
+<elocation-id>2623</elocation-id>
+<pub-id pub-id-type="doi">10.1038/s41467-021-22926-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R13">
+<label>13</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Clark</surname>
+<given-names>SA</given-names>
+</name>
+<name>
+<surname>Clark</surname>
+<given-names>LE</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Coscia</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>McKay</surname>
+<given-names>LGA</given-names>
+</name>
+<name>
+<surname>Shankar</surname>
+<given-names>S</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Molecular basis for a germline-biased neutralizing antibody response to SARS-CoV-2</article-title>
+<source>bioRxiv</source>
+<year>2020</year>
+<elocation-id>2020.11.13.381533</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2020.11.13.381533</pub-id>
+</element-citation>
+</ref>
+<ref id="R14">
+<label>14</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Huo</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhao</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Ren</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhou</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Duyvesteyn</surname>
+<given-names>HME</given-names>
+</name>
+<name>
+<surname>Ginn</surname>
+<given-names>HM</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Neutralization of SARS-CoV-2 by Destruction of the Prefusion Spike</article-title>
+<source>Cell Host &amp; Microbe</source>
+<year>2020</year>
+<volume>28</volume>
+<issue>3</issue>
+<fpage>445</fpage>
+<lpage>454</lpage>
+<elocation-id>e6</elocation-id>
+<pub-id pub-id-type="doi">10.1016/j.chom.2020.06.010</pub-id>
+</element-citation>
+</ref>
+<ref id="R15">
+<label>15</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chi</surname>
+<given-names>X</given-names>
+</name>
+<name>
+<surname>Yan</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>G</given-names>
+</name>
+<name>
+<surname>Zhang</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Hao</surname>
+<given-names>M</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>A neutralizing human antibody binds to the N-terminal domain of the Spike protein of SARS-CoV-2</article-title>
+<source>Science</source>
+<year>2020</year>
+<volume>369</volume>
+<issue>6504</issue>
+<fpage>650</fpage>
+<lpage>655</lpage>
+<pub-id pub-id-type="doi">10.1126/science.abc6952</pub-id>
+</element-citation>
+</ref>
+<ref id="R16">
+<label>16</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Venkatakrishnan</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Anand</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Lenehan</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Suratekar</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Raghunathan</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Niesen</surname>
+<given-names>MJ</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Omicron variant of SARS-CoV-2 harbors a unique insertion mutation of putative viral or human genomic origin</article-title>
+<year>2021</year>
+<comment>Available from: osf.io/f7txy</comment>
+</element-citation>
+</ref>
+<ref id="R17">
+<label>17</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krieger</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Vriend</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>YASARA View—molecular graphics for all devices—from smartphones to workstations</article-title>
+<source>Bioinformatics</source>
+<year>2014</year>
+<volume>30</volume>
+<issue>20</issue>
+<fpage>2981</fpage>
+<lpage>2982</lpage>
+</element-citation>
+</ref>
+<ref id="R18">
+<label>18</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Maier</surname>
+<given-names>JA</given-names>
+</name>
+<name>
+<surname>Martinez</surname>
+<given-names>C</given-names>
+</name>
+<name>
+<surname>Kasavajhala</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Wickstrom</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hauser</surname>
+<given-names>KE</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>ff14SB: improving the accuracy of protein side chain and backbone parameters from ff99SB</article-title>
+<source>Journal of chemical theory and computation</source>
+<year>2015</year>
+<volume>11</volume>
+<issue>8</issue>
+<fpage>3696</fpage>
+<lpage>3713</lpage>
+</element-citation>
+</ref>
+<ref id="R19">
+<label>19</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Wolf</surname>
+<given-names>RM</given-names>
+</name>
+<name>
+<surname>Caldwell</surname>
+<given-names>JW</given-names>
+</name>
+<name>
+<surname>Kollman</surname>
+<given-names>PA</given-names>
+</name>
+<name>
+<surname>Case</surname>
+<given-names>DA</given-names>
+</name>
+</person-group>
+<article-title>Development and testing of a general amber force field</article-title>
+<source>Journal of computational chemistry</source>
+<year>2004</year>
+<volume>25</volume>
+<issue>9</issue>
+<fpage>1157</fpage>
+<lpage>1174</lpage>
+</element-citation>
+</ref>
+<ref id="R20">
+<label>20</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jakalian</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jack</surname>
+<given-names>DB</given-names>
+</name>
+<name>
+<surname>Bayly</surname>
+<given-names>CI</given-names>
+</name>
+</person-group>
+<article-title>Fast, efficient generation of high-quality atomic charges. AM1-BCC model: II. Parameterization and validation</article-title>
+<source>Journal of computational chemistry</source>
+<year>2002</year>
+<volume>23</volume>
+<issue>16</issue>
+<fpage>1623</fpage>
+<lpage>1641</lpage>
+</element-citation>
+</ref>
+<ref id="R21">
+<label>21</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hornak</surname>
+<given-names>V</given-names>
+</name>
+<name>
+<surname>Abel</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Okur</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Strockbine</surname>
+<given-names>B</given-names>
+</name>
+<name>
+<surname>Roitberg</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Simmerling</surname>
+<given-names>C</given-names>
+</name>
+</person-group>
+<article-title>Comparison of multiple Amber force fields and development of improved protein backbone parameters</article-title>
+<source>Proteins: Structure Function and Bioinformatics</source>
+<year>2006</year>
+<volume>65</volume>
+<issue>3</issue>
+<fpage>712</fpage>
+<lpage>725</lpage>
+</element-citation>
+</ref>
+<ref id="R22">
+<label>22</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Essmann</surname>
+<given-names>U</given-names>
+</name>
+<name>
+<surname>Perera</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Berkowitz</surname>
+<given-names>ML</given-names>
+</name>
+<name>
+<surname>Darden</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Lee</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Pedersen</surname>
+<given-names>LG</given-names>
+</name>
+</person-group>
+<article-title>A smooth particle mesh Ewald method</article-title>
+<source>The Journal of chemical physics</source>
+<year>1995</year>
+<volume>103</volume>
+<issue>19</issue>
+<fpage>8577</fpage>
+<lpage>8593</lpage>
+</element-citation>
+</ref>
+<ref id="R23">
+<label>23</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Krieger</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Vriend</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>New ways to boost molecular dynamics simulations</article-title>
+<source>Journal of computational chemistry</source>
+<year>2015</year>
+<volume>36</volume>
+<issue>13</issue>
+<fpage>996</fpage>
+<lpage>1007</lpage>
+</element-citation>
+</ref>
+<ref id="R24">
+<label>24</label>
+<element-citation publication-type="book">
+<person-group person-group-type="author">
+<name>
+<surname>Krieger</surname>
+<given-names>E</given-names>
+</name>
+<name>
+<surname>Dunbrack</surname>
+<given-names>RL</given-names>
+</name>
+<name>
+<surname>Hooft</surname>
+<given-names>RW</given-names>
+</name>
+<name>
+<surname>Krieger</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<chapter-title>Assignment of protonation states in proteins and ligands: Combining pK a prediction with hydrogen bonding network optimization</chapter-title>
+<source>Computational Drug Discovery and Design</source>
+<publisher-name>Springer</publisher-name>
+<year>2012</year>
+<fpage>405</fpage>
+<lpage>421</lpage>
+</element-citation>
+</ref>
+<ref id="R25">
+<label>25</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Hou</surname>
+<given-names>T</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>W</given-names>
+</name>
+</person-group>
+<article-title>Assessing the performance of the MM/PBSA and MM/GBSA methods: I. The accuracy of binding free energy calculations based on molecular dynamics simulations</article-title>
+<source>Journal of Chemical Information &amp;; Modeling</source>
+<year>2001</year>
+<volume>51</volume>
+<fpage>69</fpage>
+<lpage>82</lpage>
+</element-citation>
+</ref>
+<ref id="R26">
+<label>26</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Sun</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Tian</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Xu</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Hou</surname>
+<given-names>T</given-names>
+</name>
+</person-group>
+<article-title>Assessing the performance of MM/PBSA and MM/GBSA methods. 4. Accuracies of MM/PBSA and MM/GBSA methodologies evaluated by various simulation protocols using PDBbind data set</article-title>
+<source>Physical Chemistry Chemical Physics</source>
+<year>2014</year>
+<volume>16</volume>
+<fpage>16719</fpage>
+<lpage>16729</lpage>
+</element-citation>
+</ref>
+<ref id="R27">
+<label>27</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Chen</surname>
+<given-names>F</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Sun</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Pan</surname>
+<given-names>P</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>Y</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Assessing the performance of the MM/PBSA and MM/GBSA methods. 6. Capability to predict protein-protein binding free energies and re-rank binding poses generated by protein-protein docking</article-title>
+<source>Physical Chemistry Chemical Physics</source>
+<year>2016</year>
+<volume>8</volume>
+<fpage>22129</fpage>
+<lpage>22139</lpage>
+</element-citation>
+</ref>
+<ref id="R28">
+<label>28</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Weng</surname>
+<given-names>GQ</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>EC</given-names>
+</name>
+<name>
+<surname>Wang</surname>
+<given-names>Z</given-names>
+</name>
+<name>
+<surname>Liu</surname>
+<given-names>H</given-names>
+</name>
+<name>
+<surname>Li</surname>
+<given-names>D</given-names>
+</name>
+<name>
+<surname>Zhu</surname>
+<given-names>F</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>HawkDock: a web server to predict and analyze the structures of protein-protein complexes based on computational docking and MM/GBSA</article-title>
+<source>Nucleic Acids Research</source>
+<year>2019</year>
+<volume>47</volume>
+<fpage>W322</fpage>
+<lpage>W330</lpage>
+</element-citation>
+</ref>
+<ref id="R29">
+<label>29</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jawaid</surname>
+<given-names>MZ</given-names>
+</name>
+<name>
+<surname>Baidya</surname>
+<given-names>A</given-names>
+</name>
+<name>
+<surname>Jakovcevic</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Mahboubi-Ardakani</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Lusk</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Solomon</surname>
+<given-names>N</given-names>
+</name>
+<etal/>
+</person-group>
+<article-title>Structures of the furin cleavage domain of coronaviruses studied using deep learning and molecular dynamics</article-title>
+<source>preparation to be submitted to Science</source>
+<year>2021</year>
+</element-citation>
+</ref>
+<ref id="R30">
+<label>30</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Jumper</surname>
+<given-names>J</given-names>
+</name>
+<name>
+<surname>Evans</surname>
+<given-names>R</given-names>
+</name>
+<name>
+<surname>Pritzel</surname>
+<given-names>Aea</given-names>
+</name>
+</person-group>
+<article-title>Highly accurate protein structure prediction with AlphaFold</article-title>
+<source>Nature</source>
+<year>2021</year>
+<pub-id pub-id-type="doi">10.1038/s41586-021-03819-2</pub-id>
+</element-citation>
+</ref>
+<ref id="R31">
+<label>31</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Genovese</surname>
+<given-names>L</given-names>
+</name>
+<name>
+<surname>Zaccaria</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Farzan</surname>
+<given-names>M</given-names>
+</name>
+<name>
+<surname>Johnson</surname>
+<given-names>WE</given-names>
+</name>
+<name>
+<surname>Momeni</surname>
+<given-names>B</given-names>
+</name>
+</person-group>
+<article-title>Investigating the mutational landscape of the SARS-CoV-2 Omicron variant via ab initio quantum mechanical modeling</article-title>
+<source>bioRxiv</source>
+<year>2021</year>
+<elocation-id>2021.12.01.470748</elocation-id>
+<pub-id pub-id-type="doi">10.1101/2021.12.01.470748</pub-id>
+</element-citation>
+</ref>
+<ref id="R32">
+<label>32</label>
+<element-citation publication-type="web">
+<person-group person-group-type="author">
+<name>
+<surname>Chapeshamano</surname>
+<given-names>N</given-names>
+</name>
+</person-group>
+<source>Discovery Health, South Africa’s largest private health insurance administrator, releases at-scale, real-world analysis of Omicron outbreak based on 211 000 COVID-l9 test results in South Africa, including collaboration with the South Africa</source>
+<year>202l</year>
+<comment>Available from: <ext-link ext-link-type="uri" xlink:href="https://bit.ly/33lkNbC">https://bit.ly/33lkNbC</ext-link>
+</comment>
+</element-citation>
+</ref>
+<ref id="R33">
+<label>33</label>
+<element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name>
+<surname>Kumar</surname>
+<given-names>S</given-names>
+</name>
+<name>
+<surname>Thambiraja</surname>
+<given-names>TS</given-names>
+</name>
+<name>
+<surname>Karuppanan</surname>
+<given-names>K</given-names>
+</name>
+<name>
+<surname>Subramaniam</surname>
+<given-names>G</given-names>
+</name>
+</person-group>
+<article-title>Omicron and Delta Variant of SARS-CoV-2: A Comparative Computational Study of Spike protein</article-title>
+<source>bioRxiv</source>
+<year>202l</year>
+<elocation-id>2021.12.02.470946</elocation-id>
+<pub-id pub-id-type="doi">10.1101/202l.l2.02.470946</pub-id>
+</element-citation>
+</ref>
+</ref-list>
+</back>
+<floats-group>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption>
+<title>Structures of WT spike protein complexes studied</title>
+<p>A) ACE2(red)-RBD(blue) binding. B) Binding of RBD(red) to Class I Ab C1A-B12 (binds in ACE2 interface region; heavy chain green, light chain cyan) and Class III Ab CR3022 (binds away from ACE2; heavy chain magenta, light chain yellow). C) Binding of NTD to 4A8 Ab (heavy chain green, light chain cyan). D) Binding of FCD (blue) to furin (red). Blowup highlighting position of fifth residue R5 (R685 for WT SARS-CoV-2) with proximate aspartic acid residues D151, D199 of the furin enzyme.</p>
+</caption>
+<graphic xlink:href="EMS141137-f001"/>
+</fig>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption>
+<title>Overview of binding changes for delta and omicron variants relative to WT</title>
+<p>Color coding is the same for all charts. For the FCD to furin binding, R1-R6 correspond to 681-686, except for the alternate omicron sequence 679-684. For clarity, RBD binding to P4A1 and CR3022 Abs are not shown.</p>
+</caption>
+<graphic xlink:href="EMS141137-f002"/>
+</fig>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption>
+<title>Correlation of FCD-furin interfacial HBond count with RMSF of first residue in FCD</title>
+<p>The higher the RMSF of the first residue in the FCD, the harder it is to bind to the furin, especially for the critical fifth residue which inserts into the furin pocket as shown in <xref ref-type="fig" rid="F1">Fig. 1D</xref>. R1 is residue 681 for all but the alternate omicron sequence which starts at residue 679.</p>
+</caption>
+<graphic xlink:href="EMS141137-f003"/>
+</fig>
+<table-wrap id="T1" position="float" orientation="portrait">
+<label>Table 1</label>
+<caption>
+<title>Interfacial hydrogen bonds between proteins for WT, delta, and omicron. Last column: reference PDB structure</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="middle">Bound Pair</th>
+<th align="center" valign="middle">WT</th>
+<th align="center" valign="middle">delta</th>
+<th align="center" valign="middle">omicron</th>
+<th align="center" valign="middle">PDB</th>
+</tr>
+<tr style="border-left: hidden; border-right: hidden">
+<th align="left" valign="middle" colspan="5"/>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">RBD-ACE2</td>
+<td align="center" valign="middle">8.43±1.69</td>
+<td align="center" valign="middle">8.32±1.46</td>
+<td align="center" valign="middle">5.06±1.20</td>
+<td align="center" valign="middle">7A94(WT,delta)<break/>6M0J</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-P4A1<break/>(Class I)</td>
+<td align="center" valign="middle">17.76±2.0</td>
+<td align="center" valign="middle">17.61±2.03</td>
+<td align="center" valign="middle">13.9±1.89</td>
+<td align="center" valign="middle">7CJF</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-C1A-B12<break/>(Class I)</td>
+<td align="center" valign="middle">19.23±1.87</td>
+<td align="center" valign="middle">14.94±2.66</td>
+<td align="center" valign="middle">11.41±2.49</td>
+<td align="center" valign="middle">7KFV</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-CR3022<break/>(Class III)</td>
+<td align="center" valign="middle">12.59±1.82</td>
+<td align="center" valign="middle">12.0±1.53</td>
+<td align="center" valign="middle">10.85±1.43</td>
+<td align="center" valign="middle">6Y0R</td>
+</tr>
+<tr>
+<td align="center" valign="middle">NTD-4A8</td>
+<td align="center" valign="middle">9.62±1.78</td>
+<td align="center" valign="middle">7.48±1.49</td>
+<td align="center" valign="middle">4.73±1.63</td>
+<td align="center" valign="middle">7C2L</td>
+</tr>
+<tr>
+<td align="center" valign="middle">FCD-Furin</td>
+<td align="center" valign="middle">10.93±1.72</td>
+<td align="center" valign="middle">15.36±1.86</td>
+<td align="center" valign="middle">8.65±1.59 (K679)<break/>12.05±1.68</td>
+<td align="center" valign="middle">NA</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+<table-wrap id="T2" position="float" orientation="portrait">
+<label>Table 2</label>
+<caption>
+<title>GBSA Binding free energy estimate in kcal/mole</title>
+</caption>
+<table frame="box" rules="all">
+<thead>
+<tr>
+<th align="center" valign="middle">Bound Pair</th>
+<th align="center" valign="middle">WT</th>
+<th align="center" valign="middle">delta</th>
+<th align="center" valign="middle">omicron</th>
+</tr>
+<tr style="border-left: hidden; border-right: hidden">
+<th align="left" valign="middle" colspan="5"/>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="middle">RBD-ACE2</td>
+<td align="center" valign="middle">-62.9±6.8</td>
+<td align="center" valign="middle">-64.3±3.6</td>
+<td align="center" valign="middle">-55.5±4.5</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-P4A1<break/>(Class I)</td>
+<td align="center" valign="middle">-115.9±7.0</td>
+<td align="center" valign="middle">-110.2±7.5</td>
+<td align="center" valign="middle">-75.6±9.5</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-C1A-B12<break/>(Class I)</td>
+<td align="center" valign="middle">-77.9±8.0</td>
+<td align="center" valign="middle">-70.3±8.4</td>
+<td align="center" valign="middle">-50.8±5.6</td>
+</tr>
+<tr>
+<td align="center" valign="middle">RBD-CR3022<break/>(Class III)</td>
+<td align="center" valign="middle">-95.4±2.5</td>
+<td align="center" valign="middle">-111.7±7.8</td>
+<td align="center" valign="middle">-84.1±13.3</td>
+</tr>
+<tr>
+<td align="center" valign="middle">NTD-4A8</td>
+<td align="center" valign="middle">-88.9±17.9</td>
+<td align="center" valign="middle">-81.1±5.7</td>
+<td align="center" valign="middle"/>
+</tr>
+<tr>
+<td align="center" valign="middle">FCD-Furin</td>
+<td align="center" valign="middle">-83.6±8.4</td>
+<td align="center" valign="middle">-117.3±4.8</td>
+<td align="center" valign="middle">-63.5±3.6 (K679)<break/>-93.2±3.8</td>
+</tr>
+</tbody>
+</table>
+</table-wrap>
+</floats-group>
+</article>
